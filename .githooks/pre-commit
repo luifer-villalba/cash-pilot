@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Hook de git que ejecuta linters dentro de Docker y bloquea el commit si fallan.
+
+echo "🔎 Running linters in Docker (ruff, black --check, isort --check-only)..."
+if ! make lint; then
+  echo ""
+  echo "❌ Pre-commit failed. Run 'make fmt' to auto-fix, then commit again."
+  exit 1
+fi
+
+echo "✅ Linters passed."
+exit 0
