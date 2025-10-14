@@ -1,9 +1,11 @@
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
+
 
 def create_app() -> FastAPI:
     """
     Factory function to create and configure a FastAPI app instance.
+
     Returns a new app instance each time it's called, which allows:
     - Fresh app for each test (no shared state)
     - Different configurations per environment (dev/prod/test)
@@ -16,6 +18,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()
