@@ -1,76 +1,81 @@
-# 💰 CashPilot – Backend (Docker-only Setup)
+# CashPilot 💰
 
-## 🧭 Overview
-CashPilot is a modern backend template for a personal or micro-business cash-flow tracker.
+A modern, Docker-first backend for personal cash flow tracking. Built with Python best practices for clean architecture and maintainability.
 
-This initial setup (ticket MIZ-5) gives you:
-- 🐳 **Docker-only environment** – no Python installed locally.
-- 🧹 **Code quality tools** – `ruff`, `black`, and `isort` for linting and formatting.
-- 🚫 **Git pre-commit hook** – automatically blocks commits if code quality checks fail.
-- ⚙️ **Makefile** – simple commands for setup, formatting, linting, and hooks.
-- 🧩 **src layout** – ready for FastAPI integration in the next ticket (MIZ-6).
+## 🎯 Project Purpose
 
----
+CashPilot is a learning-focused MVP designed to demonstrate:
+- Clean backend architecture (Django/FastAPI)
+- Docker-first development workflow
+- Code quality automation (ruff, black, isort)
+- Production-ready project structure
 
-## ⚙️ Quickstart
+## 🚀 Quickstart
 
-### 1️⃣ Build the image
+### Prerequisites
+- Docker & Docker Compose installed
+- No local Python required
+
+### Setup
+
+1. **Clone and build**
 ```bash
-docker compose build
+   git clone https://github.com/luifer-villalba/cash-pilot.git
+   cd cash-pilot
+   docker compose build
 ```
 
-### 2️⃣ Install the Git hook
+2. **Install git hooks** (blocks commits if linting fails)
 ```bash
-make hook-install
+   make hook-install
 ```
 
-### 3️⃣ Create the code base folder
+3. **Run code formatting**
 ```bash
-mkdir -p src/cashpilot && touch src/cashpilot/__init__.py
+   make fmt
 ```
 
-### 4️⃣ Format and lint everything
-```bash
-make fmt
-```
-
-### 5️⃣ Commit your first setup
-```bash
-git add -A
-git commit -m "chore: init docker-only toolchain with git hook"
-```
-
----
-
-## 🧪 Useful Commands
+## 🛠️ Available Commands
 
 | Command | Description |
-|----------|-------------|
-| `make fmt` | Auto-fix and format code (ruff + black + isort). |
-| `make lint` | Check code style without fixing (blocks commit if failing). |
-| `make sh` | Open a shell inside the container for manual commands. |
-| `make hook-install` | Installs the `.githooks/pre-commit` hook to Git. |
+|---------|-------------|
+| `make fmt` | Auto-format code (ruff + black + isort) |
+| `make lint` | Check code quality (runs in pre-commit hook) |
+| `make sh` | Open shell inside Docker container |
+| `make hook-install` | Install git pre-commit hook |
 
----
-
-## 🚦 Pre-commit Hook Behavior
-Each time you run `git commit`, the following happens automatically:
-
-1. Docker runs `make lint` inside the container.  
-2. If any check fails (`ruff`, `black`, `isort`), the commit is blocked.  
-3. Run `make fmt` to auto-fix and then commit again.
-
----
-
-## 🧱 Project Structure
+## 📁 Project Structure
 ```
 cashpilot/
-├─ src/
-│  └─ cashpilot/__init__.py
-├─ .githooks/pre-commit
-├─ Dockerfile
-├─ docker-compose.yml
-├─ Makefile
-├─ pyproject.toml
-└─ README.md
+├── src/
+│   └── cashpilot/          # Main application package
+├── .githooks/              # Git hooks (pre-commit)
+├── Dockerfile              # Container definition
+├── docker-compose.yml      # Service orchestration
+├── Makefile                # Development commands
+├── pyproject.toml          # Python dependencies & tool configs
+└── README.md               # This file
 ```
+
+## 🔄 Development Workflow
+
+1. Make changes in `src/`
+2. Run `make fmt` to auto-format
+3. Commit → pre-commit hook runs `make lint` automatically
+4. If lint fails, fix issues and commit again
+
+## 📚 Next Steps
+
+- [ ] FastAPI integration (MIZ-6)
+- [ ] Database setup with PostgreSQL
+- [ ] Authentication endpoints
+- [ ] Docker Compose with database service
+
+## 👤 Author
+
+**Luis F. Villalba** - Backend Developer  
+[LinkedIn](https://linkedin.com/in/luis-fernando-villalba) | [GitHub](https://github.com/luifer-villalba)
+
+---
+
+*This project follows Python best practices and is designed as a portfolio piece for backend development roles.*
