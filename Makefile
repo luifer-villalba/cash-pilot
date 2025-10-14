@@ -14,10 +14,10 @@ hook-install:
 	chmod +x .githooks/pre-commit
 	@echo '✔ Hook pre-commit instalado (docker-only).'
 
-# Ejecuta la API con autoreload en 0.0.0.0:8000
+# Run the FastAPI server with uvicorn
 run:
-	docker compose run --rm --service-ports app bash -lc "uvicorn cashpilot.app:app --reload --host 0.0.0.0 --port 8000"
+	docker compose run --rm --service-ports app python -m src.cashpilot.main
 
-# Pytest (cuando agreguemos tests)
+# Pytest (when we add tests)
 test:
 	docker compose run --rm app bash -lc "pytest -q"
