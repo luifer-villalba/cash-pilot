@@ -21,3 +21,20 @@ run:
 # Pytest (when we add tests)
 test:
 	docker compose run --rm app bash -lc "pytest -q"
+
+# Alembic migration commands
+migrate-create:
+	@read -p "Migration name: " name; \
+	docker compose exec app alembic revision --autogenerate -m "$$name"
+
+migrate-up:
+	docker compose exec app alembic upgrade head
+
+migrate-current:
+	docker compose exec app alembic current
+
+migrate-history:
+	docker compose exec app alembic history
+
+migrate-downgrade:
+	docker compose exec app alembic downgrade -1
