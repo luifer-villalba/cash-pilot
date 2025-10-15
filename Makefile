@@ -1,7 +1,7 @@
 .PHONY: fmt lint sh hook-install run test
 
 fmt:
-	docker compose run --rm app bash -lc "ruff check --fix src && ruff format src && isort src && black src"
+	docker compose run --rm app bash -lc "black src && isort src && ruff format src && ruff check --fix --unsafe-fixes src"
 
 lint:
 	docker compose run --rm app bash -lc "ruff check src && black --check src && isort --check-only src"
@@ -16,7 +16,7 @@ hook-install:
 
 # Run the FastAPI server with uvicorn
 run:
-	docker compose run --rm --service-ports app python -m src.cashpilot.main
+	docker compose run --rm --service-ports app uvicorn cashpilot.main:create_app --factory --reload --host 0.0.0.0 --port 8000
 
 # Pytest (when we add tests)
 test:
