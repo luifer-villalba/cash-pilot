@@ -46,12 +46,11 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
-
+    
     # Register health endpoint
     from cashpilot.api.health import router as health_router
-
     app.include_router(health_router)
-
+    
     return app
 
 
