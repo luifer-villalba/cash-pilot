@@ -39,6 +39,14 @@ migrate-history:
 migrate-downgrade:
 	docker compose exec app alembic downgrade -1
 
+# Check database tables and alembic version (reads env from the DB container)
+check-db:
+	@echo "📋 Listando tablas en la base de datos (usando env del contenedor db)..."
+	docker compose exec db sh -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -c "\dt"'
+	@echo ""
+	@echo "🧩 Versión de Alembic actualmente aplicada:"
+	docker compose exec db sh -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -c "SELECT * FROM alembic_version;"'
+
 # Clean rebuild (use when things get weird)
 rebuild:
 	docker compose down
