@@ -4,7 +4,6 @@ These schemas ensure data is valid before reaching the database
 and provide clean API responses.
 """
 
-from dataclasses import Field
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
