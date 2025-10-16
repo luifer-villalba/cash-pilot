@@ -14,10 +14,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# TODO: Import Base from models when we create them (MIZ-12)
-# from cashpilot.models import Base
-# target_metadata = Base.metadata
+from cashpilot.core.db import Base
+from cashpilot.models.movement import Movement  # ← AGREGAR ESTA LÍNEA
+
 target_metadata = Base.metadata
 
 
