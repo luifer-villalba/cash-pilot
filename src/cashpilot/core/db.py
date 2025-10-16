@@ -6,6 +6,7 @@ This module provides:
 - Declarative Base for models
 - FastAPI dependency for database sessions
 """
+
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -36,13 +37,13 @@ Base = declarative_base()
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
     FastAPI dependency that provides a database session.
-    
+
     Usage in endpoints:
         @router.get("/movements")
         async def list_movements(db: AsyncSession = Depends(get_db)):
             result = await db.execute(select(Movement))
             return result.scalars().all()
-    
+
     Yields:
         AsyncSession: Database session that auto-closes after request
     """
