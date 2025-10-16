@@ -39,29 +39,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    """
-    Application factory for CashPilot.
-
-    Returns:
-        Configured FastAPI application instance
-
-    Design notes:
-    - Factory pattern enables multiple instances for testing
-    - Lifespan events handle resource initialization/cleanup
-    - API routes are registered via router includes (added later)
-    """
+    """Application factory for CashPilot."""
     app = FastAPI(
         title="CashPilot API",
         description="Personal cash flow tracking backend for Guaraníes (Gs)",
         version="0.1.0",
         lifespan=lifespan,
     )
-
+    
     # Register health endpoint
     from cashpilot.api.health import router as health_router
-
     app.include_router(health_router)
-
+    
     return app
 
 

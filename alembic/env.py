@@ -5,6 +5,8 @@ from sqlalchemy import pool
 
 from alembic import context
 
+from cashpilot.core.db import Base
+
 # this is the Alembic Config object
 config = context.config
 
@@ -16,7 +18,7 @@ if config.config_file_name is not None:
 # TODO: Import Base from models when we create them (MIZ-12)
 # from cashpilot.models import Base
 # target_metadata = Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:

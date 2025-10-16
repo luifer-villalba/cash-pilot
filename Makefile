@@ -38,3 +38,22 @@ migrate-history:
 
 migrate-downgrade:
 	docker compose exec app alembic downgrade -1
+
+# Clean rebuild (use when things get weird)
+rebuild:
+	docker compose down
+	docker compose build --no-cache
+	docker compose up -d
+	@echo "✅ Clean rebuild complete"
+
+# Quick rebuild (faster, for dependency changes)
+rebuild-quick:
+	docker compose down
+	docker compose build
+	@echo "✅ Quick rebuild complete"
+
+check-sync:
+	@echo "Checking file sync..."
+	docker compose exec app ls -la /app/src/cashpilot/
+	@echo ""
+	@echo "If files are missing, run: make rebuild"
