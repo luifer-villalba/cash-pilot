@@ -14,7 +14,6 @@ WORKDIR /app
 # Copiamos metadata y fuentes ANTES de instalar
 COPY pyproject.toml /app/
 COPY README.md /app/
-COPY src /app/src
 
 # Prepara pip y wheel; instala el paquete en editable
 RUN pip install -U pip setuptools wheel
