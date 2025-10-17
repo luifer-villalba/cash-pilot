@@ -33,6 +33,6 @@ async def health_check() -> JSONResponse:
     - Return detailed subsystem status
     """
     return JSONResponse(
-        content={"status": "ok", "message": "CashPilot is healthy!"},  # Added message
+        content={"status": "ok"},
         status_code=status.HTTP_200_OK,
     )
