@@ -16,7 +16,20 @@ hook-install:
 
 # Run the FastAPI server with uvicorn
 run:
+	docker compose run --rm --service-ports app uvicorn cashpilot.main:create_app \
+		--factory --reload --reload-dir /app/src --host 0.0.0.0 --port 8000
+
+# Quick restart (when code isn't updating)
+restart:
+	@echo "🔄 Restarting server..."
+	docker compose restart app
 	docker compose run --rm --service-ports app uvicorn cashpilot.main:create_app --factory --reload --host 0.0.0.0 --port 8000
+
+# Development workflow
+dev:
+	@echo "Starting development environment..."
+	docker compose up -d db
+	make run
 
 # Pytest (when we add tests)
 test:

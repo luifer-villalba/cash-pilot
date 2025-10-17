@@ -19,7 +19,7 @@ class MovementBase(BaseModel):
     occurred_at: datetime = Field(
         ...,
         description="When the movement occurred",
-        examples=["2025-10-16T10:30:00Z"],
+        examples=["2025-10-16T10:30:00"],
     )
     type: MovementType = Field(
         ...,

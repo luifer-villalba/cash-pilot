@@ -52,6 +52,11 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
 
+    # Register movements endpoint
+    from cashpilot.api.movements import router as movements_router
+
+    app.include_router(movements_router)
+
     return app
 
 

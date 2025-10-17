@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./:/app                # 🆕 Mount entire project root
+      - ./:/app
     ports:
       - "8000:8000"
     working_dir: /app
