@@ -5,10 +5,11 @@ A modern, Docker-first backend for personal cash flow tracking. Built with Pytho
 ## 🎯 Project Purpose
 
 CashPilot is a learning-focused MVP designed to demonstrate:
-- Clean backend architecture (Django/FastAPI)
+- Clean backend architecture with FastAPI
 - Docker-first development workflow
 - Code quality automation (ruff, black, isort)
 - Production-ready project structure
+- RESTful API design with automated documentation
 
 ## 🚀 Quickstart
 
@@ -35,10 +36,19 @@ CashPilot is a learning-focused MVP designed to demonstrate:
    make fmt
 ```
 
+4. **Start the server**
+```bash
+   make run
+```
+
+The API will be available at [http://localhost:8000](http://localhost:8000)
+
 ## 🛠️ Available Commands
 
 | Command | Description |
 |---------|-------------|
+| `make run` | Start the FastAPI server on port 8000 |
+| `make test` | Run the test suite with pytest |
 | `make fmt` | Auto-format code (ruff + black + isort) |
 | `make lint` | Check code quality (runs in pre-commit hook) |
 | `make sh` | Open shell inside Docker container |
@@ -49,6 +59,8 @@ CashPilot is a learning-focused MVP designed to demonstrate:
 cashpilot/
 ├── src/
 │   └── cashpilot/          # Main application package
+│       └── main.py         # FastAPI application factory
+├── tests/                  # Test suite
 ├── .githooks/              # Git hooks (pre-commit)
 ├── Dockerfile              # Container definition
 ├── docker-compose.yml      # Service orchestration
@@ -57,19 +69,61 @@ cashpilot/
 └── README.md               # This file
 ```
 
+## 🌐 API Documentation
+
+### Running the Server
+
+Start the FastAPI server with:
+```bash
+make run
+```
+
+The server runs on [http://localhost:8000](http://localhost:8000)
+
+### Available Endpoints
+
+#### Health Check
+```bash
+curl http://localhost:8000/health
+```
+
+**Response:**
+```json
+{"status": "ok"}
+```
+
+### Interactive API Documentation
+
+Once the server is running, access the auto-generated API documentation:
+
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+### Running Tests
+
+Execute the test suite with:
+```bash
+make test
+```
+
 ## 🔄 Development Workflow
 
 1. Make changes in `src/`
 2. Run `make fmt` to auto-format
-3. Commit → pre-commit hook runs `make lint` automatically
-4. If lint fails, fix issues and commit again
+3. Run `make test` to verify tests pass
+4. Commit → pre-commit hook runs `make lint` automatically
+5. If lint fails, fix issues and commit again
 
 ## 📚 Next Steps
 
-- [ ] FastAPI integration (MIZ-6)
+- [x] FastAPI integration with health endpoint
+- [x] Application factory pattern implementation
+- [x] Test suite setup with pytest
 - [ ] Database setup with PostgreSQL
-- [ ] Authentication endpoints
+- [ ] Movement model CRUD endpoints
+- [ ] Authentication and authorization
 - [ ] Docker Compose with database service
+- [ ] API rate limiting and security headers
 
 ## 👤 Author
 
