@@ -1,6 +1,7 @@
 """
-Movement database model.
-Represents a cash flow event (income or expense) in the system.
+Pydantic schemas for Movement API.
+
+Separates API contracts from database models.
 """
 
 import uuid

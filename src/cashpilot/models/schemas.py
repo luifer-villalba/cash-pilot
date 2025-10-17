@@ -16,9 +16,9 @@ from cashpilot.models.enums import MovementType
 class MovementBase(BaseModel):
     """Base schema with common fields for creation and update"""
 
-    ocurred_at: datetime = Field(
+    occurred_at: datetime = Field(
         ...,
-        description="When the movement ocurred",
+        description="When the movement occurred",
         examples=["2025-10-16T10:30:00Z"],
     )
     type: MovementType = Field(
