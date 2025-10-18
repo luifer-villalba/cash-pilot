@@ -10,12 +10,13 @@ from cashpilot.core.db import get_db
 from cashpilot.models.movement import Movement
 from cashpilot.models.schemas import MovementCreate, MovementRead
 
+print(">> movements router LOADED (messi2) a ver")
+
 # Create router with tags for Swagger documentation
 router = APIRouter(
     prefix="/api/v1/movements",
     tags=["movements"],
 )
-
 
 @router.post(
     "",
