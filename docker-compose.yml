@@ -1,21 +1,44 @@
-version: '3.8'
-
+# docker-compose.yml
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/app                # 🆕 Mount entire project root
+    working_dir: /app
+    environment:
+      - PYTHONPATH=/app/src
+      - WATCHFILES_FORCE_POLLING=true
+      - PYTHONDONTWRITEBYTECODE=1
     ports:
       - "8000:8000"
-    working_dir: /app
     depends_on:
       db:
         condition: service_healthy
     env_file:
       - .env
-    command: sleep infinity
+    command: >
+      uvicorn cashpilot.main:create_app
+      --factory
+      --host 0.0.0.0
+      --port 8000
+      --reload
+      --reload-dir /app/src
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - .venv/
+            - __pycache__/
+            - .git/
+            - .mypy_cache/
+            - .ruff_cache/
+            - node_modules/
+            - dist/
+            - build/
+        - action: rebuild
+          path: pyproject.toml
 
   db:
     image: postgres:16-alpine

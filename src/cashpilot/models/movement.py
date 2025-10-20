@@ -1,6 +1,7 @@
 """
-Movement database model.
-Represents a cash flow event (income or expense) in the system.
+Pydantic schemas for Movement API.
+
+Separates API contracts from database models.
 """
 
 import uuid
@@ -73,13 +74,13 @@ class Movement(Base):
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
+        onupdate=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
     )
 
     def __repr__(self) -> str:
