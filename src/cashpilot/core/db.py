@@ -1,52 +1,37 @@
-"""
-Database configuration and session management.
+"""Database configuration and session management."""
 
-This module provides:
-- Async SQLAlchemy engine and session factory
-- Declarative Base for models
-- FastAPI dependency for database sessions
-"""
-
+import os
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
-# Read DATABASE_URL from environment
-# For now, hardcode for simplicity (we'll improve this later)
-DATABASE_URL = "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev"
+# Read from environment, fallback to dev DB
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev"
+)
 
 # Create async engine
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True,  # Log SQL queries (useful for development)
-    future=True,  # Use SQLAlchemy 2.0 style
+    echo=True,
+    future=True,
 )
 
-# Create async session factory
+# Session factory
 AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
-    expire_on_commit=False,  # Don't expire objects after commit
+    expire_on_commit=False,
 )
 
-# Declarative base for models
+# Declarative base
 Base = declarative_base()
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """
-    FastAPI dependency that provides a database session.
-
-    Usage in endpoints:
-        @router.get("/movements")
-        async def list_movements(db: AsyncSession = Depends(get_db)):
-            result = await db.execute(select(Movement))
-            return result.scalars().all()
-
-    Yields:
-        AsyncSession: Database session that auto-closes after request
-    """
+    """FastAPI dependency for database sessions."""
     async with AsyncSessionLocal() as session:
         try:
             yield session

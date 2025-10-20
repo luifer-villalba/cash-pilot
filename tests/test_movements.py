@@ -16,13 +16,6 @@ from cashpilot.models.enums import MovementType
 from cashpilot.models.movement import Movement
 
 
-@pytest.fixture
-def client() -> TestClient:
-    """Create a test client for the FastAPI app."""
-    app = create_app()
-    return TestClient(app)
-
-
 # ==========================================
 # POST /api/v1/movements - CREATE
 # ==========================================
