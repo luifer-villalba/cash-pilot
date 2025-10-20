@@ -55,11 +55,11 @@ migrate-create:
 	@read -p "Migration name: " name; \
 	docker compose exec app alembic revision --autogenerate -m "$$name"
 
-migrate-up:
+migrate-upgrade:
 	docker compose exec app alembic upgrade head
 
 migrate-current:
-	docker compose exec app alembic current
+	docker compose exec app sh -c "cd /app && alembic current"
 
 migrate-history:
 	docker compose exec app alembic history

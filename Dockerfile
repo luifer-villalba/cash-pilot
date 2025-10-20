@@ -14,6 +14,8 @@ WORKDIR /app
 COPY pyproject.toml /app/
 COPY README.md /app/
 COPY src /app/src
+COPY alembic.ini .
+COPY alembic/ ./alembic/
 
 RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -e .
