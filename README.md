@@ -21,24 +21,24 @@ CashPilot is a learning-focused MVP designed to demonstrate:
 
 1. **Clone and build**
 ```bash
-   git clone https://github.com/luifer-villalba/cash-pilot.git
-   cd cash-pilot
-   docker compose build
+git clone https://github.com/luifer-villalba/cash-pilot.git
+cd cash-pilot
+docker compose build
 ```
 
 2. **Install git hooks** (blocks commits if linting fails)
 ```bash
-   make hook-install
+make hook-install
 ```
 
 3. **Run code formatting**
 ```bash
-   make fmt
+make fmt
 ```
 
 4. **Start the server**
 ```bash
-   make run
+make run
 ```
 
 The API will be available at [http://localhost:8000](http://localhost:8000)
@@ -59,8 +59,12 @@ The API will be available at [http://localhost:8000](http://localhost:8000)
 cashpilot/
 ├── src/
 │   └── cashpilot/          # Main application package
+│       ├── api/            # API endpoints
+│       ├── models/         # Database models and schemas
+│       ├── core/           # Core utilities (database config)
 │       └── main.py         # FastAPI application factory
 ├── tests/                  # Test suite
+├── alembic/                # Database migrations
 ├── .githooks/              # Git hooks (pre-commit)
 ├── Dockerfile              # Container definition
 ├── docker-compose.yml      # Service orchestration
@@ -106,6 +110,11 @@ Execute the test suite with:
 make test
 ```
 
+Current test coverage includes:
+- Health endpoint functionality
+- Response format validation
+- Content-type headers
+
 ## 🔄 Development Workflow
 
 1. Make changes in `src/`
@@ -114,16 +123,49 @@ make test
 4. Commit → pre-commit hook runs `make lint` automatically
 5. If lint fails, fix issues and commit again
 
+## 📊 Database
+
+The project uses PostgreSQL with SQLAlchemy ORM and Alembic for migrations.
+
+### Database Commands
+
+| Command | Description |
+|---------|-------------|
+| `make migrate-create` | Create a new migration |
+| `make migrate-up` | Apply pending migrations |
+| `make migrate-current` | Show current migration version |
+| `make migrate-downgrade` | Rollback last migration |
+| `make check-db` | Inspect database tables and version |
+
+### Current Schema
+
+- **movements**: Stores income/expense transactions
+  - Fields: id, occurred_at, type, amount_gs, description, category
+  - Indexes on: occurred_at, type, category
+
 ## 📚 Next Steps
 
-- [x] FastAPI integration with health endpoint
-- [x] Application factory pattern implementation
-- [x] Test suite setup with pytest
-- [ ] Database setup with PostgreSQL
-- [ ] Movement model CRUD endpoints
-- [ ] Authentication and authorization
-- [ ] Docker Compose with database service
-- [ ] API rate limiting and security headers
+- [ ] Implement CRUD endpoints for movements
+- [ ] Add authentication and authorization
+- [ ] Implement filtering and pagination
+- [ ] Add comprehensive integration tests
+- [ ] Set up GitHub Actions CI/CD
+- [ ] Add API rate limiting
+- [ ] Implement error handling middleware
+- [ ] Add logging and monitoring
+
+## 🧪 Testing
+
+The project uses pytest with FastAPI TestClient:
+
+```bash
+# Run all tests
+make test
+
+# Run tests in the container shell (for debugging)
+make sh
+pytest -v
+```
 
 ## 👤 Author
 
