@@ -228,4 +228,3 @@ def test_update_movement(client: TestClient) -> None:
     movement_id = create_response.json()["id"]
     
     # Update it
-    update_payload =

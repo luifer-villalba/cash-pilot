@@ -27,8 +27,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     # Startup logic
     print("🚀 CashPilot starting up...")
-    # TODO: Initialize database connection pool
-    # TODO: Load configuration
+
+    # Seed default categories
+    from cashpilot.core.db import AsyncSessionLocal
+    from cashpilot.core.seed import seed_categories
+
+    async with AsyncSessionLocal() as db:
+        await seed_categories(db)
 
     yield  # Application runs here
 
@@ -48,12 +53,13 @@ def create_app() -> FastAPI:
     )
 
     # Register health endpoint
+    from cashpilot.api.categories import router as categories_router
     from cashpilot.api.health import router as health_router
-    app.include_router(health_router)
-
-    # Register movements endpoint
     from cashpilot.api.movements import router as movements_router
+
+    app.include_router(health_router)
     app.include_router(movements_router)
+    app.include_router(categories_router)
 
     return app
 

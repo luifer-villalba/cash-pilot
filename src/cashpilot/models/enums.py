@@ -18,5 +18,21 @@ class MovementType(enum.Enum):
     EXPENSE = "EXPENSE"
 
     def __str__(self) -> str:
-        """Return the enum value as string."""
+        return self.value
+
+
+class CategoryType(enum.Enum):
+    """
+    Category scope for movements.
+
+    INCOME: Only for income movements
+    EXPENSE: Only for expense movements
+    BOTH: Can be used for either (e.g., "Other")
+    """
+
+    INCOME = "INCOME"
+    EXPENSE = "EXPENSE"
+    BOTH = "BOTH"
+
+    def __str__(self) -> str:
         return self.value

@@ -1,20 +1,19 @@
-"""
-Pydantic schemas for Movement API.
-
-Separates API contracts from database models.
-"""
+"""Movement database model."""
 
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import datetime
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Enum as SQLEnum
-from sqlalchemy import Integer, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
 from cashpilot.models.enums import MovementType
+
+if TYPE_CHECKING:
+    from cashpilot.models.category import Category
 
 
 class Movement(Base):
@@ -65,22 +64,28 @@ class Movement(Base):
         nullable=True,
     )
 
-    category: Mapped[Optional[str]] = mapped_column(
-        String(100),
+    category_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("categories.id"),
         nullable=True,
         index=True,
+    )
+
+    category: Mapped[Optional["Category"]] = relationship(
+        "Category",
+        back_populates="movements",
     )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
+        default=datetime.utcnow,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
-        onupdate=lambda: datetime.now(timezone.utc).replace(tzinfo=None),
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
     )
 
     def __repr__(self) -> str:

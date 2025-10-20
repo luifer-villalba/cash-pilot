@@ -15,7 +15,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from cashpilot.core.db import Base
-from cashpilot.models.movement import Movement  # ← AGREGAR ESTA LÍNEA
+from cashpilot.models.movement import Movement 
+from cashpilot.models.category import Category
 
 target_metadata = Base.metadata
 

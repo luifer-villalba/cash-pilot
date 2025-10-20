@@ -1,53 +1,33 @@
-"""
-Pydantic schemas for API requests and responses.
-These schemas ensure data is valid before reaching the database
-and provide clean API responses.
-"""
+"""Pydantic schemas for API requests and responses."""
 
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from cashpilot.models.enums import MovementType
 
+if TYPE_CHECKING:
+    from cashpilot.models.category_schemas import CategoryRead
+
 
 class MovementBase(BaseModel):
-    """Base schema with common fields for creation and update"""
+    """Base schema with common fields."""
 
     occurred_at: datetime = Field(
         ...,
         description="When the movement occurred",
-        examples=["2025-10-16T10:30:00"],
+        examples=["2025-10-16T10:30:00Z"],
     )
-    type: MovementType = Field(
-        ...,
-        description="Type of movement: INCOME or EXPENSE",
-        examples=["INCOME", "EXPENSE"],
-    )
-    amount_gs: int = Field(
-        ...,
-        gt=0,
-        description="Amount in Guaraníes (always positive)",
-        examples=[150000, 50000],
-    )
-    description: Optional[str] = Field(
-        None,
-        max_length=500,
-        description="Optional text description of the movement",
-        examples=["Salary for October", "Grocery shopping"],
-    )
-    category: Optional[str] = Field(
-        None,
-        max_length=100,
-        description="Optional category for organization",
-        examples=["Salary", "Groceries", "Rent"],
-    )
+    type: MovementType
+    amount_gs: int = Field(..., gt=0)
+    description: Optional[str] = Field(None, max_length=500)
+    category_id: Optional[UUID] = None
 
 
 class MovementCreate(MovementBase):
-    """Schema for creating a new movement"""
+    """Schema for creating a new movement."""
 
     @field_validator("amount_gs")
     @classmethod
@@ -56,41 +36,38 @@ class MovementCreate(MovementBase):
             raise ValueError("Amount must be a positive integer")
         return v
 
+    @field_validator("occurred_at")
+    @classmethod
+    def strip_timezone(cls, v: datetime) -> datetime:
+        """Convert to naive UTC datetime for database."""
+        if v.tzinfo is not None:
+            return v.astimezone(timezone.utc).replace(tzinfo=None)
+        return v
+
 
 class MovementRead(MovementBase):
-    """Schema for reading a movement from the database"""
+    """Schema for reading a movement from the database."""
 
-    id: UUID = Field(
-        ...,
-        description="Unique identifier of the movement (UUID v4)",
-    )
-    created_at: datetime = Field(
-        ...,
-        description="When the record was created in the database",
-        examples=["2025-10-16T10:30:00Z"],
-    )
-    updated_at: datetime = Field(
-        ...,
-        description="When the record was last updated in the database",
-        examples=["2025-10-16T10:30:00Z"],
-    )
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+    category: Optional["CategoryRead"] = None
 
     model_config = ConfigDict(from_attributes=True)
 
 
 class MovementUpdate(BaseModel):
-    """Schema for updating a movement (all fields optional)."""
+    """Schema for updating a movement."""
 
     occurred_at: Optional[datetime] = None
     type: Optional[MovementType] = None
     amount_gs: Optional[int] = Field(None, gt=0)
     description: Optional[str] = Field(None, max_length=500)
-    category: Optional[str] = Field(None, max_length=100)
+    category_id: Optional[UUID] = None
 
     @field_validator("amount_gs")
     @classmethod
     def amount_must_be_positive(cls, v: Optional[int]) -> Optional[int]:
-        """Ensure amount is positive if provided."""
         if v is not None and v <= 0:
             raise ValueError("Amount must be greater than 0")
         return v
