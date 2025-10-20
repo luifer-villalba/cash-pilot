@@ -9,7 +9,7 @@ from sqlalchemy.orm import declarative_base
 # Read from environment, fallback to dev DB
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev"
+    "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev",
 )
 
 # Create async engine

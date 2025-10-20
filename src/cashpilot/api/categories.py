@@ -18,27 +18,23 @@ async def create_category(
     type: CategoryType,
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a new category."""
-
-    # Check for duplicate name+type
     result = await db.execute(
         select(Category).where(
             Category.name == name,
             Category.type == type,
-            Category.is_active is True,
+            Category.is_active == True,
         )
     )
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Category '{name}' with type {type.value} already exists",
+            detail=f"Category {name} already exists",
         )
-
+    
     category = Category(name=name, type=type)
     db.add(category)
     await db.commit()
     await db.refresh(category)
-
     return category
 
 
@@ -47,17 +43,12 @@ async def list_categories(
     type: CategoryType | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all active categories, optionally filtered by type."""
-
-    query = select(Category).where(Category.is_active is True)
-
+    query = select(Category).where(Category.is_active == True)
     if type:
         query = query.where(Category.type == type)
-
+    
     result = await db.execute(query.order_by(Category.name))
-    categories = result.scalars().all()
-
-    return categories
+    return result.scalars().all()
 
 
 @router.get("/{category_id}")
@@ -65,14 +56,7 @@ async def get_category(
     category_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    """Get a single category by ID."""
-
     category = await db.get(Category, category_id)
-
     if not category or not category.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found",
-        )
-
+        raise HTTPException(404, "Not found")
     return category
