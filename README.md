@@ -17,6 +17,21 @@ CashPilot is a learning-focused MVP designed to demonstrate:
 - Docker & Docker Compose installed
 - No local Python required
 
+### Environment Setup
+
+1. **Copy environment template**
+```bash
+cp .env.example .env
+```
+
+2. **Review and customize** `.env` if needed (defaults work for local dev)
+
+3. **Build and start services**
+```bash
+docker compose build
+docker compose up -d
+```
+
 ### Setup
 
 1. **Clone and build**
