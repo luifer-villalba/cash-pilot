@@ -27,39 +27,25 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     # Startup logic
     print("🚀 CashPilot starting up...")
-
-    # Seed default categories
-    from cashpilot.core.db import AsyncSessionLocal
-    from cashpilot.core.seed import seed_categories
-
-    async with AsyncSessionLocal() as db:
-        await seed_categories(db)
-
     yield  # Application runs here
 
     # Shutdown logic
     print("👋 CashPilot shutting down...")
-    # TODO: Close database connections
-    # TODO: Cleanup background tasks
 
 
 def create_app() -> FastAPI:
     """Application factory for CashPilot."""
     app = FastAPI(
         title="CashPilot API",
-        description="Personal cash flow tracking backend for Guaraníes (Gs)",
+        description="Pharmacy cash register reconciliation system",
         version="0.1.0",
         lifespan=lifespan,
     )
 
     # Register health endpoint
-    from cashpilot.api.categories import router as categories_router
     from cashpilot.api.health import router as health_router
-    from cashpilot.api.movements import router as movements_router
 
     app.include_router(health_router)
-    app.include_router(movements_router)
-    app.include_router(categories_router)
 
     return app
 
