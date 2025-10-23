@@ -1,11 +1,11 @@
 """Business model for pharmacy locations."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
 
@@ -55,13 +55,19 @@ class Business(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(),
+        onupdate=lambda: datetime.now(),
+    )
+
+    cash_sessions: Mapped[list["CashSession"]] = relationship(
+        "CashSession",
+        back_populates="business",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
