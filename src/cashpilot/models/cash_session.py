@@ -52,4 +52,7 @@ class CashSession(Base):
         return self.cash_sales - self.expected_sales
 
     def __repr__(self) -> str:
-        return f"<CashSession(id={self.id}, business_id={self.business_id}, opened_at={self.opened_at})>"
+        return (
+            f"<CashSession(id={self.id}, business_id={self.business_id}, "
+            f"opened_at={self.opened_at})>"
+        )
