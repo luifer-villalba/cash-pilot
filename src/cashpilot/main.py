@@ -44,8 +44,10 @@ def create_app() -> FastAPI:
 
     # Register health endpoint
     from cashpilot.api.health import router as health_router
-
     app.include_router(health_router)
+
+    from cashpilot.api.business import router as business_router
+    app.include_router(business_router)
 
     return app
 

@@ -29,7 +29,7 @@ class CashSession(Base):
 
     opened_at: Mapped[datetime] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(),
     )
 
     closed_at: Mapped[datetime | None] = mapped_column(nullable=True)
