@@ -5,22 +5,23 @@ description = "CashPilot – backend base"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-  "fastapi==0.115.0",
-  "uvicorn==0.30.6",       # sin [standard] para evitar compilar binarios
-  "watchfiles==0.22.0",    # autoreload en dev
-  "alembic==1.13.3",
-  "sqlalchemy==2.0.35",
-  "asyncpg==0.29.0",
-  "psycopg2-binary==2.9.9",
+    "fastapi==0.115.0",
+    "uvicorn==0.30.6", # sin [standard] para evitar compilar binarios
+    "watchfiles==0.22.0", # autoreload en dev
+    "alembic==1.13.3",
+    "sqlalchemy==2.0.35",
+    "asyncpg==0.29.0",
+    "psycopg2-binary==2.9.9",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "black==24.8.0",
-  "ruff==0.6.9",
-  "isort==5.13.2",
-  "pytest==8.3.2",
-  "httpx==0.27.0",
+    "black==24.8.0",
+    "ruff==0.6.9",
+    "isort==5.13.2",
+    "pytest==8.3.2",
+    "httpx==0.27.0",
+    "pytest-asyncio==0.24.0",
 ]
 
 [tool.black]
@@ -56,7 +57,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
