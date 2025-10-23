@@ -2,6 +2,7 @@
 
 from cashpilot.models.business import Business
 from cashpilot.models.business_schemas import BusinessCreate, BusinessRead, BusinessUpdate
+from cashpilot.models.cash_session import CashSession
 from cashpilot.models.enums import CategoryType, MovementType
 
 __all__ = [

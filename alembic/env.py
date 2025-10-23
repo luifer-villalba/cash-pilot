@@ -16,6 +16,7 @@ if config.config_file_name is not None:
 
 # Import all models so Alembic can detect them for migrations
 from cashpilot.models.business import Business
+from cashpilot.models.cash_session import CashSession
 
 target_metadata = Base.metadata
 
