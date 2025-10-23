@@ -12,6 +12,25 @@ from cashpilot.models import CashSession, CashSessionCreate, CashSessionRead, Ca
 router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
 
 
+@router.get("", response_model=list[CashSessionRead])
+async def list_shifts(
+        business_id: str | None = None,
+        skip: int = 0,
+        limit: int = 50,
+        db: AsyncSession = Depends(get_db)
+):
+    """List cash sessions with optional filtering."""
+    # Build query
+    stmt = select(CashSession)
+
+    if business_id:
+        stmt = stmt.where(CashSession.business_id == UUID(business_id))
+
+    stmt = stmt.offset(skip).limit(limit).order_by(CashSession.opened_at.desc())
+
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
 @router.post("", response_model=CashSessionRead, status_code=status.HTTP_201_CREATED)
 async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_db)):
     """Open a new cash session (shift)."""
