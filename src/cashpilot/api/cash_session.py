@@ -36,7 +36,9 @@ async def get_shift(session_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/{session_id}", response_model=CashSessionRead)
-async def close_shift(session_id: str, session: CashSessionUpdate, db: AsyncSession = Depends(get_db)):
+async def close_shift(
+    session_id: str, session: CashSessionUpdate, db: AsyncSession = Depends(get_db)
+):
     """Close a cash session (shift)."""
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))
     result = await db.execute(stmt)

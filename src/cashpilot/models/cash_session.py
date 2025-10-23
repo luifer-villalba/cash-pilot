@@ -1,12 +1,12 @@
 """CashSession model for shift tracking and reconciliation."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import String, ForeignKey, Numeric
+from sqlalchemy import ForeignKey, Numeric
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from cashpilot.core.db import Base
 

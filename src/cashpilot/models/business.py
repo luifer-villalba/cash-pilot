@@ -1,7 +1,7 @@
 """Business model for pharmacy locations."""
 
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import UUID
