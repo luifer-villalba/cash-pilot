@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from sqlalchemy import ForeignKey, Numeric
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
 
@@ -25,6 +25,11 @@ class CashSession(Base):
         ForeignKey("businesses.id"),
         nullable=False,
         index=True,
+    )
+
+    business: Mapped["Business"] = relationship(
+        "Business",
+        back_populates="cash_sessions",
     )
 
     opened_at: Mapped[datetime] = mapped_column(

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
 
@@ -62,6 +62,12 @@ class Business(Base):
         nullable=False,
         default=lambda: datetime.now(),
         onupdate=lambda: datetime.now(),
+    )
+
+    cash_sessions: Mapped[list["CashSession"]] = relationship(
+        "CashSession",
+        back_populates="business",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
