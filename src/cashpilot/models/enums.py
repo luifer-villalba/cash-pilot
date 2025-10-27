@@ -43,4 +43,3 @@ class SessionStatus(str, enum.Enum):
 
     OPEN = "OPEN"
     CLOSED = "CLOSED"
-

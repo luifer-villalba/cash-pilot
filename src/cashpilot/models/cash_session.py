@@ -1,5 +1,10 @@
 """CashSession model for shift tracking and reconciliation."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cashpilot.models.business import Business
+
 import uuid
 from datetime import datetime
 from decimal import Decimal
@@ -56,12 +61,8 @@ class CashSession(Base):
 
     initial_cash: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     final_cash: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=True)
-    envelope_amount: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), default=Decimal("0.00")
-    )
-    expected_sales: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), default=Decimal("0.00")
-    )
+    envelope_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    expected_sales: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
 
     @property
     def cash_sales(self) -> Decimal:

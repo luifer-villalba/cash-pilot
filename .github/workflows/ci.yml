@@ -1,0 +1,27 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file
+        run: cp .env.example .env
+
+      - name: Build Docker image
+        run: docker compose build app
+
+      - name: Run linters
+        run: docker compose run --rm --no-deps app bash -lc "ruff check src && black --check src && isort --check-only src"
+
+      - name: Run tests
+        run: docker compose run --rm --no-deps app bash -lc "pytest -q"
