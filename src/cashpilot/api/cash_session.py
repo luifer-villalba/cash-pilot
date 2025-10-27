@@ -1,4 +1,5 @@
 """CashSession API endpoints for shift management."""
+
 from datetime import datetime
 from uuid import UUID
 
@@ -7,7 +8,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
-from cashpilot.models import Business, CashSession, CashSessionCreate, CashSessionRead, CashSessionUpdate
+from cashpilot.models import (
+    Business,
+    CashSession,
+    CashSessionCreate,
+    CashSessionRead,
+    CashSessionUpdate,
+)
 from cashpilot.models.enums import SessionStatus
 
 router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
@@ -15,10 +22,10 @@ router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
 
 @router.get("", response_model=list[CashSessionRead])
 async def list_shifts(
-        business_id: str | None = None,
-        skip: int = 0,
-        limit: int = 50,
-        db: AsyncSession = Depends(get_db)
+    business_id: str | None = None,
+    skip: int = 0,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db),
 ):
     """List cash sessions with optional filtering."""
     # Build query
@@ -32,21 +39,19 @@ async def list_shifts(
     result = await db.execute(stmt)
     return result.scalars().all()
 
+
 @router.post("", response_model=CashSessionRead, status_code=status.HTTP_201_CREATED)
 async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_db)):
     """Open a new cash session (shift)."""
     # Verify business exists
-    business = await db.execute(
-        select(Business).where(Business.id == session.business_id)
-    )
+    business = await db.execute(select(Business).where(Business.id == session.business_id))
     if not business.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Business not found")
 
     # Check no open session for this business
     open_session = await db.execute(
         select(CashSession).where(
-            (CashSession.business_id == session.business_id) &
-            (CashSession.status == "OPEN")
+            (CashSession.business_id == session.business_id) & (CashSession.status == "OPEN")
         )
     )
     if open_session.scalar_one_or_none():
