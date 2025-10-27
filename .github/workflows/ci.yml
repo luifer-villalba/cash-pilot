@@ -21,7 +21,7 @@ jobs:
         run: docker compose build app
 
       - name: Run linters
-        run: docker compose run --rm --no-deps app make lint
+        run: docker compose run --rm --no-deps app bash -lc "ruff check src && black --check src && isort --check-only src"
 
       - name: Run tests
-        run: docker compose run --rm --no-deps app make test
+        run: docker compose run --rm --no-deps app bash -lc "pytest -q"
