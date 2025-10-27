@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Numeric
+from sqlalchemy import ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -32,6 +32,17 @@ class CashSession(Base):
         back_populates="cash_sessions",
     )
 
+    status: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="OPEN",
+        index=True,
+    )
+
+    cashier_name: Mapped[str] = mapped_column(nullable=False)
+
+    shift_hours: Mapped[str | None] = mapped_column(nullable=True)
+
     opened_at: Mapped[datetime] = mapped_column(
         nullable=False,
         default=lambda: datetime.now(),
@@ -39,10 +50,18 @@ class CashSession(Base):
 
     closed_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
+    closing_ticket: Mapped[str | None] = mapped_column(nullable=True)
+
+    notes: Mapped[str | None] = mapped_column(nullable=True)
+
     initial_cash: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     final_cash: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=True)
-    envelope_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
-    expected_sales: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    envelope_amount: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), default=Decimal("0.00")
+    )
+    expected_sales: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), default=Decimal("0.00")
+    )
 
     @property
     def cash_sales(self) -> Decimal:
