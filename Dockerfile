@@ -21,4 +21,4 @@ RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -e .
 RUN pip install --no-cache-dir .[dev]
 
-CMD ["bash"]
+CMD ["uvicorn", "cashpilot.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
