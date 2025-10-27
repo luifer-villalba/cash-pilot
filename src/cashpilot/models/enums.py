@@ -36,3 +36,11 @@ class CategoryType(enum.Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+class SessionStatus(str, enum.Enum):
+    """Session lifecycle states."""
+
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+
