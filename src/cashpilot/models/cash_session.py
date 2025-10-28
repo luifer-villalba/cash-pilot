@@ -45,36 +45,39 @@ class CashSession(Base):
     )
 
     cashier_name: Mapped[str] = mapped_column(nullable=False)
-
     shift_hours: Mapped[str | None] = mapped_column(nullable=True)
 
     opened_at: Mapped[datetime] = mapped_column(
         nullable=False,
         default=lambda: datetime.now(),
     )
-
     closed_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
     closing_ticket: Mapped[str | None] = mapped_column(nullable=True)
-
     notes: Mapped[str | None] = mapped_column(nullable=True)
 
+    # Cash register amounts
     initial_cash: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    final_cash: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=True)
+    final_cash: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     envelope_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
-    expected_sales: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+
+    # Payment method totals (reported at end of shift)
+    credit_card_total: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0.00")
+    )
+    debit_card_total: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0.00")
+    )
+    bank_transfer_total: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0.00")
+    )
 
     @property
     def cash_sales(self) -> Decimal:
-        """Calculate cash sales: (final + envelope) - initial."""
+        """Calculate total cash sales: (final + envelope) - initial."""
         if self.final_cash is None:
             return Decimal("0.00")
         return (self.final_cash + self.envelope_amount) - self.initial_cash
-
-    @property
-    def difference(self) -> Decimal:
-        """Calculate difference: cash_sales - expected_sales."""
-        return self.cash_sales - self.expected_sales
 
     def __repr__(self) -> str:
         return (
