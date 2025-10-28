@@ -1,4 +1,5 @@
 """CashSession API endpoints for shift management."""
+
 from datetime import datetime
 from uuid import UUID
 
@@ -8,7 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import NotFoundError
-from cashpilot.models import Business, CashSession, CashSessionCreate, CashSessionRead, CashSessionUpdate
+from cashpilot.models import (
+    Business,
+    CashSession,
+    CashSessionCreate,
+    CashSessionRead,
+    CashSessionUpdate,
+)
 from cashpilot.models.enums import SessionStatus
 
 router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
@@ -41,17 +48,14 @@ async def list_shifts(
 async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_db)):
     """Open a new cash session (shift)."""
     # Verify business exists
-    business = await db.execute(
-        select(Business).where(Business.id == session.business_id)
-    )
+    business = await db.execute(select(Business).where(Business.id == session.business_id))
     if not business.scalar_one_or_none():
         raise NotFoundError("Business", str(session.business_id))
 
     # Check no open session for this business
     open_session = await db.execute(
         select(CashSession).where(
-            (CashSession.business_id == session.business_id)
-            & (CashSession.status == "OPEN")
+            (CashSession.business_id == session.business_id) & (CashSession.status == "OPEN")
         )
     )
     if open_session.scalar_one_or_none():
