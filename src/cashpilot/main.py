@@ -8,6 +8,7 @@ This module follows the application factory pattern to allow:
 """
 
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import AsyncIterator
 
 import uvicorn
@@ -27,6 +28,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     # Startup logic
     print("🚀 CashPilot starting up...")
+
+    # Set app start time for health check uptime tracking
+    from cashpilot.api.health import set_app_start_time
+
+    set_app_start_time(datetime.now())
+
     yield  # Application runs here
 
     # Shutdown logic
