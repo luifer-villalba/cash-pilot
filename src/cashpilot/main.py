@@ -7,7 +7,6 @@ This module follows the application factory pattern to allow:
 - Clean dependency injection
 """
 
-import logging.config
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
@@ -15,7 +14,7 @@ import uvicorn
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from cashpilot.core.errors import AppException, ErrorDetail
+from cashpilot.core.errors import AppError, ErrorDetail
 from cashpilot.core.logging import configure_logging, get_logger
 from cashpilot.middleware.logging import RequestIDMiddleware
 
@@ -54,9 +53,9 @@ def create_app() -> FastAPI:
     # Add request ID middleware FIRST (runs first in chain)
     app.add_middleware(RequestIDMiddleware)
 
-    # Global exception handler for AppException
-    @app.exception_handler(AppException)
-    async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
+    # Global exception handler for AppError
+    @app.exception_handler(AppError)
+    async def app_exception_handler(request: Request, exc: AppError) -> JSONResponse:
         """Handle custom app exceptions with logging."""
         logger = get_logger(__name__)
         logger.error(
@@ -72,9 +71,7 @@ def create_app() -> FastAPI:
 
     # Global exception handler for unhandled exceptions
     @app.exception_handler(Exception)
-    async def general_exception_handler(
-        request: Request, exc: Exception
-    ) -> JSONResponse:
+    async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         """Handle unexpected errors."""
         logger = get_logger(__name__)
         logger.error(
@@ -91,9 +88,9 @@ def create_app() -> FastAPI:
         )
 
     # Include routers
-    from cashpilot.api.health import router as health_router
     from cashpilot.api.business import router as business_router
     from cashpilot.api.cash_session import router as cash_session_router
+    from cashpilot.api.health import router as health_router
 
     app.include_router(health_router)
     app.include_router(business_router)

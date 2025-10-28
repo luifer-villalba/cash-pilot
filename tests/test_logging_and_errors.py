@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from cashpilot.core.errors import (
-    AppException,
+    AppError,
     ConflictError,
     ErrorDetail,
     NotFoundError,

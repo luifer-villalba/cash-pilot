@@ -1,6 +1,6 @@
 .PHONY: fmt lint sh hook-install run dev restart up down logs watch dev-watch test \
         migrate-create migrate-up migrate-current migrate-history migrate-downgrade \
-        check-db rebuild rebuild-quick check-sync
+        check-db rebuild rebuild-quick check-sync fix-perms
 
 # ---------- Code quality ----------
 fmt:
@@ -17,6 +17,11 @@ hook-install:
 	git config core.hooksPath .githooks
 	chmod +x .githooks/pre-commit
 	@echo '✔ Pre-commit hook installed.'
+
+fix-perms:
+	@echo "🔧 Fixing file permissions in src/..."
+	find src -type f -exec chmod u+w {} \;
+	@echo "✅ File permissions fixed in src/."
 
 # ---------- Run ----------
 run dev:

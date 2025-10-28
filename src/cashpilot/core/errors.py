@@ -13,7 +13,7 @@ class ErrorDetail(BaseModel):
     details: Optional[dict[str, Any]] = Field(None, description="Additional context")
 
 
-class AppException(Exception):
+class AppError(Exception):
     """Base exception for all app-level errors."""
 
     def __init__(
@@ -38,7 +38,7 @@ class AppException(Exception):
         )
 
 
-class ValidationError(AppException):
+class ValidationError(AppError):
     """Raised when request validation fails."""
 
     def __init__(self, message: str, details: Optional[dict] = None):
@@ -50,7 +50,7 @@ class ValidationError(AppException):
         )
 
 
-class NotFoundError(AppException):
+class NotFoundError(AppError):
     """Raised when resource doesn't exist."""
 
     def __init__(self, resource: str, resource_id: str):
@@ -62,7 +62,7 @@ class NotFoundError(AppException):
         )
 
 
-class ConflictError(AppException):
+class ConflictError(AppError):
     """Raised when resource already exists or operation conflicts."""
 
     def __init__(self, message: str, details: Optional[dict] = None):
@@ -74,7 +74,7 @@ class ConflictError(AppException):
         )
 
 
-class InvalidStateError(AppException):
+class InvalidStateError(AppError):
     """Raised when operation conflicts with resource state."""
 
     def __init__(self, message: str, details: Optional[dict] = None):
@@ -86,7 +86,7 @@ class InvalidStateError(AppException):
         )
 
 
-class UnauthorizedError(AppException):
+class UnauthorizedError(AppError):
     """Raised when authentication fails."""
 
     def __init__(self, message: str = "Unauthorized"):
@@ -97,7 +97,7 @@ class UnauthorizedError(AppException):
         )
 
 
-class ForbiddenError(AppException):
+class ForbiddenError(AppError):
     """Raised when user lacks permission."""
 
     def __init__(self, message: str = "Forbidden"):
@@ -108,7 +108,7 @@ class ForbiddenError(AppException):
         )
 
 
-class DatabaseError(AppException):
+class DatabaseError(AppError):
     """Raised on database operation failures."""
 
     def __init__(self, message: str, details: Optional[dict] = None):
