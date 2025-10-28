@@ -3,11 +3,12 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
+from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
 from cashpilot.models import (
     Business,
     CashSession,
@@ -27,8 +28,7 @@ async def list_shifts(
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
 ):
-    """List cash sessions with optional filtering."""
-    # Build query
+    """List cash sessions with optional filtering by business."""
     stmt = select(CashSession)
 
     if business_id:
@@ -46,7 +46,7 @@ async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_
     # Verify business exists
     business = await db.execute(select(Business).where(Business.id == session.business_id))
     if not business.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Business not found")
+        raise NotFoundError("Business", str(session.business_id))
 
     # Check no open session for this business
     open_session = await db.execute(
@@ -55,7 +55,7 @@ async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_
         )
     )
     if open_session.scalar_one_or_none():
-        raise HTTPException(status_code=409, detail="Session already open for this business")
+        raise ConflictError("Session already open for this business")
 
     session_obj = CashSession(**session.model_dump())
     db.add(session_obj)
@@ -72,7 +72,7 @@ async def get_shift(session_id: str, db: AsyncSession = Depends(get_db)):
     session_obj = result.scalar_one_or_none()
 
     if not session_obj:
-        raise HTTPException(status_code=404, detail="Cash session not found")
+        raise NotFoundError("CashSession", session_id)
 
     return session_obj
 
@@ -96,10 +96,10 @@ async def close_shift(
     session_obj = result.scalar_one_or_none()
 
     if not session_obj:
-        raise HTTPException(status_code=404, detail="Cash session not found")
+        raise NotFoundError("CashSession", session_id)
 
-    if session_obj.status != SessionStatus.OPEN:
-        raise HTTPException(status_code=400, detail="Session is not open")
+    if session_obj.status != SessionStatus.OPEN.value:
+        raise InvalidStateError("Session is not open")
 
     # Set closed_at and status
     session_obj.closed_at = datetime.now()

@@ -7,12 +7,17 @@ This module follows the application factory pattern to allow:
 - Clean dependency injection
 """
 
+import logging.config
 from contextlib import asynccontextmanager
-from datetime import datetime
 from typing import AsyncIterator
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
+
+from cashpilot.core.errors import AppException, ErrorDetail
+from cashpilot.core.logging import configure_logging, get_logger
+from cashpilot.middleware.logging import RequestIDMiddleware
 
 
 @asynccontextmanager
@@ -27,17 +32,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     - Clean up resources on shutdown
     """
     # Startup logic
-    print("🚀 CashPilot starting up...")
-
-    # Set app start time for health check uptime tracking
-    from cashpilot.api.health import set_app_start_time
-
-    set_app_start_time(datetime.now())
+    configure_logging()
+    logger = get_logger(__name__)
+    logger.info("app.startup", event="CashPilot starting up")
 
     yield  # Application runs here
 
     # Shutdown logic
-    print("👋 CashPilot shutting down...")
+    logger.info("app.shutdown", event="CashPilot shutting down")
 
 
 def create_app() -> FastAPI:
@@ -49,16 +51,52 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # Add request ID middleware FIRST (runs first in chain)
+    app.add_middleware(RequestIDMiddleware)
+
+    # Global exception handler for AppException
+    @app.exception_handler(AppException)
+    async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
+        """Handle custom app exceptions with logging."""
+        logger = get_logger(__name__)
+        logger.error(
+            "app.error",
+            error_code=exc.code,
+            message=exc.message,
+            details=exc.details,
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=exc.to_response().model_dump(exclude_none=True),
+        )
+
+    # Global exception handler for unhandled exceptions
+    @app.exception_handler(Exception)
+    async def general_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        """Handle unexpected errors."""
+        logger = get_logger(__name__)
+        logger.error(
+            "app.unhandled_exception",
+            error_type=type(exc).__name__,
+            message=str(exc),
+        )
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=ErrorDetail(
+                code="INTERNAL_ERROR",
+                message="Internal server error",
+            ).model_dump(exclude_none=True),
+        )
+
+    # Include routers
     from cashpilot.api.health import router as health_router
-
-    app.include_router(health_router)
-
     from cashpilot.api.business import router as business_router
-
-    app.include_router(business_router)
-
     from cashpilot.api.cash_session import router as cash_session_router
 
+    app.include_router(health_router)
+    app.include_router(business_router)
     app.include_router(cash_session_router)
 
     return app
