@@ -59,7 +59,7 @@ async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_
 
     session_obj = CashSession(**session.model_dump())
     db.add(session_obj)
-    await db.flush()
+    await db.commit()
     await db.refresh(session_obj)
     return session_obj
 
@@ -81,7 +81,16 @@ async def get_shift(session_id: str, db: AsyncSession = Depends(get_db)):
 async def close_shift(
     session_id: str, session: CashSessionUpdate, db: AsyncSession = Depends(get_db)
 ):
-    """Close a cash session (shift)."""
+    """
+    Close a cash session (shift).
+
+    Payment method totals:
+    - final_cash: Physical cash counted
+    - envelope_amount: Cash removed during shift
+    - credit_card_total: From POS terminal
+    - debit_card_total: From POS terminal
+    - bank_transfer_total: Manual count
+    """
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))
     result = await db.execute(stmt)
     session_obj = result.scalar_one_or_none()
@@ -102,6 +111,6 @@ async def close_shift(
         setattr(session_obj, key, value)
 
     db.add(session_obj)
-    await db.flush()
+    await db.commit()
     await db.refresh(session_obj)
     return session_obj

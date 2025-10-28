@@ -17,11 +17,26 @@ jobs:
       - name: Create .env file
         run: cp .env.example .env
 
-      - name: Build Docker image
-        run: docker compose build app
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Start database
+        run: docker compose up -d db
+
+      - name: Wait for database to be ready
+        run: |
+          timeout 30 bash -c 'until docker compose exec -T db pg_isready -U cashpilot; do sleep 1; done'
+
+      - name: Create test database
+        run: |
+          docker compose exec -T db psql -U cashpilot -d cashpilot_dev -c "CREATE DATABASE cashpilot_test;"
 
       - name: Run linters
         run: docker compose run --rm --no-deps app bash -lc "ruff check src && black --check src && isort --check-only src"
 
       - name: Run tests
-        run: docker compose run --rm --no-deps app bash -lc "pytest -q"
+        run: docker compose run --rm app bash -lc "pytest -q"
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v

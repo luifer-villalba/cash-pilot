@@ -21,7 +21,9 @@ class CashSessionUpdate(BaseModel):
 
     final_cash: Decimal | None = Field(None, ge=0, decimal_places=2)
     envelope_amount: Decimal | None = Field(None, ge=0, decimal_places=2)
-    expected_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
+    credit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
+    debit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
+    bank_transfer_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     closing_ticket: str | None = Field(None, max_length=50)
     notes: str | None = None
 
@@ -39,7 +41,9 @@ class CashSessionRead(BaseModel):
     initial_cash: Decimal
     final_cash: Decimal | None
     envelope_amount: Decimal
-    expected_sales: Decimal
+    credit_card_total: Decimal
+    debit_card_total: Decimal
+    bank_transfer_total: Decimal
     closing_ticket: str | None
     notes: str | None
 

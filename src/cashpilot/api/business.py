@@ -13,10 +13,10 @@ router = APIRouter(prefix="/businesses", tags=["businesses"])
 @router.post("", response_model=BusinessRead, status_code=status.HTTP_201_CREATED)
 async def create_business(business: BusinessCreate, db: AsyncSession = Depends(get_db)):
     business_obj = Business(**business.model_dump())  # Create model instance from schema
-    db.add(business_obj)  # Add to session
-    await db.flush()  # Write to DB without commit
-    await db.refresh(business_obj)  # Reload from DB (gets id, timestamps)
-    return business_obj  # Return the obj
+    db.add(business_obj)
+    await db.commit()
+    await db.refresh(business_obj)
+    return business_obj
 
 
 @router.get("/{business_id}", response_model=BusinessRead)
@@ -49,7 +49,6 @@ async def update_business(
 
     # Add and commit
     db.add(business_obj)
-    await db.flush()  # Write to DB without commit
-    await db.refresh(business_obj)  # Reload from DB (gets id, timestamps)
-
+    await db.commit()
+    await db.refresh(business_obj)
     return business_obj
