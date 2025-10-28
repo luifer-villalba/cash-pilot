@@ -246,6 +246,58 @@ The project uses PostgreSQL with SQLAlchemy ORM (async) and Alembic for migratio
 - One Business → Many CashSessions
 - CashSession belongs to one Business
 
+## 🌱 Seeding Demo Data
+
+The project includes a seed script to populate the database with realistic demo data for testing and development.
+
+### What Gets Created
+
+- **3 Pharmacy Businesses**: Farmacia Central, Farmacia San Lorenzo, Farmacia Villa Morra
+- **30 Days of Cash Sessions**: Varied shift patterns (morning/afternoon)
+- **Realistic Reconciliation Scenarios**:
+  - 60% perfect matches (difference = 0)
+  - 25% small shortages (₲50k-200k)
+  - 10% small surpluses (₲10k-100k)
+  - 5% significant shortages (>₲200k)
+
+### Usage
+
+```bash
+# Seed demo data (idempotent - safe to run multiple times)
+make seed
+
+# Reset database and re-seed (destructive!)
+make seed-reset
+```
+
+The seed script is **idempotent** - it checks if data exists before creating, so you can safely run `make seed` multiple times without duplicating data.
+
+### Manual Execution
+
+You can also run the seed script directly:
+
+```bash
+docker compose exec app python -m cashpilot.scripts.seed
+```
+
+### Sample Output
+
+```
+🌱 Starting CashPilot seed script...
+
+✅ Created 3 businesses
+✅ Created 87 cash sessions
+
+🎉 Seed complete!
+   📊 Businesses: 3
+   📊 Cash sessions: 87
+
+   📈 Reconciliation outcomes:
+      ✓ Perfect matches: 52
+      ⚠ Shortages: 22
+      📦 Surpluses: 9
+```
+
 ## 🔄 Development Workflow
 
 1. Make changes in `src/`

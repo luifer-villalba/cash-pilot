@@ -13,6 +13,24 @@ from cashpilot.models import Business, BusinessCreate, BusinessRead, BusinessUpd
 router = APIRouter(prefix="/businesses", tags=["businesses"])
 
 
+@router.get("", response_model=list[BusinessRead])
+async def list_businesses(
+    skip: int = 0,
+    limit: int = 50,
+    is_active: bool | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """List all businesses with pagination and optional filtering."""
+    stmt = select(Business)
+
+    if is_active is not None:
+        stmt = stmt.where(Business.is_active == is_active)
+
+    stmt = stmt.offset(skip).limit(limit).order_by(Business.name)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+
 @router.post("", response_model=BusinessRead, status_code=status.HTTP_201_CREATED)
 async def create_business(business: BusinessCreate, db: AsyncSession = Depends(get_db)):
     """Create a new business (pharmacy location)."""
@@ -57,3 +75,18 @@ async def update_business(
     await db.commit()
     await db.refresh(business_obj)
     return business_obj
+
+
+@router.delete("/{business_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_business(business_id: str, db: AsyncSession = Depends(get_db)):
+    """Soft-delete business (sets is_active=False)."""
+    stmt = select(Business).where(Business.id == UUID(business_id))
+    result = await db.execute(stmt)
+    business_obj = result.scalar_one_or_none()
+
+    if not business_obj:
+        raise NotFoundError("Business", business_id)
+
+    business_obj.is_active = False
+    await db.commit()
+    return None

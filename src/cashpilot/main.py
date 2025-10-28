@@ -11,12 +11,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 import uvicorn
-from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
-
-from cashpilot.core.errors import AppError, ErrorDetail
-from cashpilot.core.logging import configure_logging, get_logger
-from cashpilot.middleware.logging import RequestIDMiddleware
+from fastapi import FastAPI
 
 
 @asynccontextmanager
@@ -31,14 +26,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     - Clean up resources on shutdown
     """
     # Startup logic
-    configure_logging()
-    logger = get_logger(__name__)
-    logger.info("app.startup", event="CashPilot starting up")
-
+    print("🚀 CashPilot starting up...")
     yield  # Application runs here
 
     # Shutdown logic
-    logger.info("app.shutdown", event="CashPilot shutting down")
+    print("👋 CashPilot shutting down...")
 
 
 def create_app() -> FastAPI:
@@ -50,50 +42,16 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Add request ID middleware FIRST (runs first in chain)
-    app.add_middleware(RequestIDMiddleware)
-
-    # Global exception handler for AppError
-    @app.exception_handler(AppError)
-    async def app_exception_handler(request: Request, exc: AppError) -> JSONResponse:
-        """Handle custom app exceptions with logging."""
-        logger = get_logger(__name__)
-        logger.error(
-            "app.error",
-            error_code=exc.code,
-            message=exc.message,
-            details=exc.details,
-        )
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=exc.to_response().model_dump(exclude_none=True),
-        )
-
-    # Global exception handler for unhandled exceptions
-    @app.exception_handler(Exception)
-    async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-        """Handle unexpected errors."""
-        logger = get_logger(__name__)
-        logger.error(
-            "app.unhandled_exception",
-            error_type=type(exc).__name__,
-            message=str(exc),
-        )
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=ErrorDetail(
-                code="INTERNAL_ERROR",
-                message="Internal server error",
-            ).model_dump(exclude_none=True),
-        )
-
-    # Include routers
-    from cashpilot.api.business import router as business_router
-    from cashpilot.api.cash_session import router as cash_session_router
     from cashpilot.api.health import router as health_router
 
     app.include_router(health_router)
+
+    from cashpilot.api.business import router as business_router
+
     app.include_router(business_router)
+
+    from cashpilot.api.cash_session import router as cash_session_router
+
     app.include_router(cash_session_router)
 
     return app

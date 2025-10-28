@@ -102,3 +102,15 @@ check-sync:
 	@echo "👉 If files are missing: make rebuild"
 	@echo "👉 If everything looks good but app is stale: make restart"
 	@echo "✅ Sync check complete."
+
+# ---------- Seed Data ----------
+seed:
+	@echo "🌱 Seeding demo data..."
+	docker compose exec app python -m cashpilot.scripts.seed
+	@echo "✅ Seed complete. Check output above for details."
+
+seed-reset:
+	@echo "⚠️  Dropping all data and re-seeding..."
+	@read -p "Are you sure? (yes/no): " confirm && [ "$$confirm" = "yes" ] || exit 1
+	docker compose exec db sh -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -c "TRUNCATE TABLE cash_sessions, businesses CASCADE;"'
+	@$(MAKE) seed

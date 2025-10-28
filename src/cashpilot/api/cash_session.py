@@ -1,21 +1,14 @@
 """CashSession API endpoints for shift management."""
-
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
-from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
-from cashpilot.models import (
-    Business,
-    CashSession,
-    CashSessionCreate,
-    CashSessionRead,
-    CashSessionUpdate,
-)
+from cashpilot.core.errors import NotFoundError
+from cashpilot.models import Business, CashSession, CashSessionCreate, CashSessionRead, CashSessionUpdate
 from cashpilot.models.enums import SessionStatus
 
 router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
@@ -24,15 +17,19 @@ router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
 @router.get("", response_model=list[CashSessionRead])
 async def list_shifts(
     business_id: str | None = None,
+    status_filter: str | None = None,
     skip: int = 0,
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
 ):
-    """List cash sessions with optional filtering by business."""
+    """List cash sessions with optional filtering."""
     stmt = select(CashSession)
 
     if business_id:
         stmt = stmt.where(CashSession.business_id == UUID(business_id))
+
+    if status_filter:
+        stmt = stmt.where(CashSession.status == status_filter)
 
     stmt = stmt.offset(skip).limit(limit).order_by(CashSession.opened_at.desc())
 
@@ -44,22 +41,25 @@ async def list_shifts(
 async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_db)):
     """Open a new cash session (shift)."""
     # Verify business exists
-    business = await db.execute(select(Business).where(Business.id == session.business_id))
+    business = await db.execute(
+        select(Business).where(Business.id == session.business_id)
+    )
     if not business.scalar_one_or_none():
         raise NotFoundError("Business", str(session.business_id))
 
     # Check no open session for this business
     open_session = await db.execute(
         select(CashSession).where(
-            (CashSession.business_id == session.business_id) & (CashSession.status == "OPEN")
+            (CashSession.business_id == session.business_id)
+            & (CashSession.status == "OPEN")
         )
     )
     if open_session.scalar_one_or_none():
-        raise ConflictError("Session already open for this business")
+        raise HTTPException(status_code=409, detail="Session already open for this business")
 
     session_obj = CashSession(**session.model_dump())
     db.add(session_obj)
-    await db.commit()
+    await db.flush()
     await db.refresh(session_obj)
     return session_obj
 
@@ -81,16 +81,7 @@ async def get_shift(session_id: str, db: AsyncSession = Depends(get_db)):
 async def close_shift(
     session_id: str, session: CashSessionUpdate, db: AsyncSession = Depends(get_db)
 ):
-    """
-    Close a cash session (shift).
-
-    Payment method totals:
-    - final_cash: Physical cash counted
-    - envelope_amount: Cash removed during shift
-    - credit_card_total: From POS terminal
-    - debit_card_total: From POS terminal
-    - bank_transfer_total: Manual count
-    """
+    """Close a cash session (shift)."""
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))
     result = await db.execute(stmt)
     session_obj = result.scalar_one_or_none()
@@ -99,11 +90,11 @@ async def close_shift(
         raise NotFoundError("CashSession", session_id)
 
     if session_obj.status != SessionStatus.OPEN.value:
-        raise InvalidStateError("Session is not open")
+        raise HTTPException(status_code=400, detail="Session is not open")
 
     # Set closed_at and status
     session_obj.closed_at = datetime.now()
-    session_obj.status = "CLOSED"
+    session_obj.status = SessionStatus.CLOSED.value
 
     # Apply updates
     update_data = session.model_dump(exclude_unset=True)
@@ -111,6 +102,6 @@ async def close_shift(
         setattr(session_obj, key, value)
 
     db.add(session_obj)
-    await db.commit()
+    await db.flush()
     await db.refresh(session_obj)
     return session_obj

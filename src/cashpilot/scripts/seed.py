@@ -1,24 +1,36 @@
-"""Seed database with sample data for development and demo."""
+"""
+Seed script for CashPilot demo data.
+
+Creates:
+- 3 pharmacy businesses
+- 30 days of cash sessions with varied reconciliation outcomes
+"""
 
 import asyncio
+import random
 from datetime import datetime, timedelta
 from decimal import Decimal
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import AsyncSessionLocal
 from cashpilot.models import Business, CashSession
 
 
-async def clear_data():
-    """Clear existing data (for development only)."""
-    async with AsyncSessionLocal() as session:
-        await session.execute("DELETE FROM cash_sessions")
-        await session.execute("DELETE FROM businesses")
-        await session.commit()
-    print("✅ Cleared existing data")
+async def seed_businesses(db: AsyncSession) -> list[Business]:
+    """
+    Create 3 pharmacy businesses if they don't exist.
 
+    Idempotent: checks if businesses exist first.
+    """
+    # Check if any businesses exist
+    result = await db.execute(select(Business).limit(1))
+    if result.scalar_one_or_none():
+        print("ℹ️  Businesses already exist, skipping...")
+        result = await db.execute(select(Business))
+        return list(result.scalars().all())
 
-async def seed_businesses():
-    """Create sample businesses."""
     businesses = [
         Business(
             name="Farmacia Central",
@@ -27,139 +39,166 @@ async def seed_businesses():
             is_active=True,
         ),
         Business(
+            name="Farmacia San Lorenzo",
+            address="Ruta 2 Km 15, San Lorenzo",
+            phone="+595 21 234-5678",
+            is_active=True,
+        ),
+        Business(
             name="Farmacia Villa Morra",
-            address="Av. San Martín 5678, Asunción",
-            phone="+595 21 987-6543",
+            address="Av. San Martín 890, Villa Morra",
+            phone="+595 21 345-6789",
             is_active=True,
         ),
     ]
 
-    async with AsyncSessionLocal() as session:
-        session.add_all(businesses)
-        await session.commit()
-        for biz in businesses:
-            await session.refresh(biz)
+    for business in businesses:
+        db.add(business)
 
+    await db.flush()
     print(f"✅ Created {len(businesses)} businesses")
+
     return businesses
 
 
-async def seed_cash_sessions(businesses: list[Business]):
-    """Create realistic cash sessions."""
+async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> list[CashSession]:
+    """
+    Generate 30 days of cash sessions for each business.
 
-    biz1, biz2 = businesses
-    base_date = datetime.now() - timedelta(days=7)
+    Reconciliation outcomes:
+    - 60% perfect match (difference = 0)
+    - 25% small shortage (-50k to -200k)
+    - 10% small surplus (+10k to +100k)
+    - 5% significant shortage (< -200k)
 
-    sessions = [
-        # Session 1: Perfect reconciliation (no shortage/surplus)
-        CashSession(
-            business_id=biz1.id,
-            cashier_name="María González",
-            shift_hours="08:00-16:00",
-            opened_at=base_date,
-            closed_at=base_date + timedelta(hours=8),
-            status="CLOSED",
-            initial_cash=Decimal("500000.00"),
-            final_cash=Decimal("3500000.00"),
-            envelope_amount=Decimal("1000000.00"),
-            credit_card_total=Decimal("800000.00"),
-            debit_card_total=Decimal("600000.00"),
-            bank_transfer_total=Decimal("200000.00"),
-            closing_ticket="TKT-001",
-            notes="Turno tranquilo, sin problemas",
-        ),
-        # Session 2: High cash sales day
-        CashSession(
-            business_id=biz1.id,
-            cashier_name="Juan Pérez",
-            shift_hours="16:00-22:00",
-            opened_at=base_date + timedelta(days=1),
-            closed_at=base_date + timedelta(days=1, hours=6),
-            status="CLOSED",
-            initial_cash=Decimal("500000.00"),
-            final_cash=Decimal("6500000.00"),
-            envelope_amount=Decimal("2000000.00"),
-            credit_card_total=Decimal("1200000.00"),
-            debit_card_total=Decimal("900000.00"),
-            bank_transfer_total=Decimal("400000.00"),
-            closing_ticket="TKT-002",
-            notes="Viernes muy movido, muchas ventas",
-        ),
-        # Session 3: Mostly card payments
-        CashSession(
-            business_id=biz2.id,
-            cashier_name="Ana Silva",
-            shift_hours="08:00-16:00",
-            opened_at=base_date + timedelta(days=2),
-            closed_at=base_date + timedelta(days=2, hours=8),
-            status="CLOSED",
-            initial_cash=Decimal("500000.00"),
-            final_cash=Decimal("1800000.00"),
-            envelope_amount=Decimal("500000.00"),
-            credit_card_total=Decimal("2500000.00"),
-            debit_card_total=Decimal("1800000.00"),
-            bank_transfer_total=Decimal("700000.00"),
-            closing_ticket="TKT-003",
-            notes="Mayoría pagó con tarjeta",
-        ),
-        # Session 4: Large bank transfer
-        CashSession(
-            business_id=biz2.id,
-            cashier_name="Carlos Ramírez",
-            shift_hours="16:00-22:00",
-            opened_at=base_date + timedelta(days=3),
-            closed_at=base_date + timedelta(days=3, hours=6),
-            status="CLOSED",
-            initial_cash=Decimal("500000.00"),
-            final_cash=Decimal("2200000.00"),
-            envelope_amount=Decimal("800000.00"),
-            credit_card_total=Decimal("600000.00"),
-            debit_card_total=Decimal("400000.00"),
-            bank_transfer_total=Decimal("3500000.00"),
-            closing_ticket="TKT-004",
-            notes="Cliente hizo transferencia grande por medicamento especial",
-        ),
-        # Session 5: Currently OPEN (in progress)
-        CashSession(
-            business_id=biz1.id,
-            cashier_name="María González",
-            shift_hours="08:00-16:00",
-            opened_at=datetime.now() - timedelta(hours=2),
-            status="OPEN",
-            initial_cash=Decimal("500000.00"),
-            final_cash=None,
-            envelope_amount=Decimal("0.00"),
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
-            bank_transfer_total=Decimal("0.00"),
-        ),
+    Idempotent: checks if sessions exist first.
+    """
+    # Check if any sessions exist
+    result = await db.execute(select(CashSession).limit(1))
+    if result.scalar_one_or_none():
+        print("ℹ️  Cash sessions already exist, skipping...")
+        result = await db.execute(select(CashSession))
+        return list(result.scalars().all())
+
+    cashier_names = [
+        "María González",
+        "Juan Pérez",
+        "Carmen Rodríguez",
+        "Luis Martínez",
+        "Ana Silva",
+        "Carlos Benítez",
     ]
 
-    async with AsyncSessionLocal() as session:
-        session.add_all(sessions)
-        await session.commit()
+    shift_patterns = [
+        ("07:00-15:00", "morning"),
+        ("15:00-23:00", "afternoon"),
+    ]
 
+    sessions = []
+    today = datetime.now()
+
+    for business in businesses:
+        for days_ago in range(30, 0, -1):
+            session_date = today - timedelta(days=days_ago)
+
+            # Skip some days randomly (not every business operates every day)
+            if random.random() < 0.15:
+                continue
+
+            # 1-2 sessions per day per business
+            num_sessions = random.choices([1, 2], weights=[0.3, 0.7])[0]
+
+            for i in range(num_sessions):
+                shift_hours, shift_type = shift_patterns[i % 2]
+
+                # Base values
+                initial_cash = Decimal(random.randint(500_000, 1_000_000))
+                envelope_amount = Decimal(random.randint(0, 300_000))
+
+                # Card payments (these exist in the model)
+                credit_card_total = Decimal(random.randint(1_000_000, 3_000_000))
+                debit_card_total = Decimal(random.randint(500_000, 2_000_000))
+                bank_transfer_total = Decimal(random.randint(0, 1_000_000))
+
+                # Determine reconciliation outcome
+                outcome = random.random()
+
+                if outcome < 0.60:  # 60% perfect match
+                    difference = Decimal(0)
+                elif outcome < 0.85:  # 25% small shortage
+                    difference = Decimal(random.randint(-200_000, -50_000))
+                elif outcome < 0.95:  # 10% small surplus
+                    difference = Decimal(random.randint(10_000, 100_000))
+                else:  # 5% significant shortage
+                    difference = Decimal(random.randint(-500_000, -200_001))
+
+                # Expected cash = initial_cash (no sales in this simplified model)
+                # Just vary final_cash to show reconciliation
+                final_cash = initial_cash + difference
+
+                # Determine if session is closed (last 2 days might be open)
+                is_open = days_ago <= 2 and random.random() < 0.3
+
+                session = CashSession(
+                    business_id=business.id,
+                    cashier_name=random.choice(cashier_names),
+                    shift_hours=shift_hours,
+                    opened_at=session_date.replace(
+                        hour=int(shift_hours.split("-")[0].split(":")[0]),
+                        minute=0,
+                        second=0,
+                    ),
+                    initial_cash=initial_cash,
+                    envelope_amount=envelope_amount,
+                    credit_card_total=credit_card_total,
+                    debit_card_total=debit_card_total,
+                    bank_transfer_total=bank_transfer_total,
+                )
+
+                if not is_open:
+                    session.status = "CLOSED"
+                    session.final_cash = final_cash
+                    session.closed_at = session.opened_at + timedelta(hours=8)
+
+                    # Add optional closing notes for problematic cases
+                    if difference < -200_000:
+                        session.notes = "Verificar: diferencia significativa detectada"
+                    elif difference > 100_000:
+                        session.notes = "Revisar: excedente inusual"
+
+                db.add(session)
+                sessions.append(session)
+
+    await db.flush()
     print(f"✅ Created {len(sessions)} cash sessions")
-    print("   - 4 closed sessions (realistic scenarios)")
-    print("   - 1 open session (in progress)")
+
+    return sessions
 
 
 async def main():
-    """Run all seed functions."""
-    print("🌱 Starting database seed...")
+    """Main seeding function."""
+    print("🌱 Starting CashPilot seed script...\n")
 
-    # Optional: clear existing data
-    # await clear_data()
+    async with AsyncSessionLocal() as db:
+        try:
+            # Seed businesses
+            businesses = await seed_businesses(db)
 
-    businesses = await seed_businesses()
-    await seed_cash_sessions(businesses)
+            # Seed cash sessions
+            sessions = await seed_cash_sessions(db, businesses)
 
-    print("\n✅ Seed complete!")
-    print("\n📊 Summary:")
-    print("   - 2 pharmacies (Farmacia Central, Farmacia Villa Morra)")
-    print("   - 5 cash sessions (4 closed, 1 open)")
-    print("   - Various scenarios: perfect day, high volume, card-heavy, large transfer")
-    print("\n💡 Test with: GET /cash-sessions or GET /businesses")
+            # Commit transaction
+            await db.commit()
+
+            print("\n🎉 Seed complete!")
+            print(f"   📊 Businesses: {len(businesses)}")
+            print(f"   📊 Cash sessions: {len(sessions)}")
+            print("\n   💡 Tip: Check reconciliation outcomes via API or database")
+
+        except Exception as e:
+            await db.rollback()
+            print(f"❌ Seed failed: {e}")
+            raise
 
 
 if __name__ == "__main__":
