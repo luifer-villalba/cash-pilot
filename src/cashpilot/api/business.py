@@ -38,7 +38,7 @@ async def get_business(business_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{business_id}", response_model=BusinessRead)
 async def update_business(
-        business_id: str, business: BusinessUpdate, db: AsyncSession = Depends(get_db)
+    business_id: str, business: BusinessUpdate, db: AsyncSession = Depends(get_db)
 ):
     """Update business details."""
     stmt = select(Business).where(Business.id == UUID(business_id))

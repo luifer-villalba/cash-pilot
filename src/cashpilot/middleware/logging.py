@@ -1,7 +1,6 @@
 """Request logging and ID injection middleware."""
 
 import uuid
-from typing import Callable
 
 from starlette.types import ASGIApp, Receive, Scope, Send
 
