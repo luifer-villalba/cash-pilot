@@ -3,12 +3,12 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
-from cashpilot.core.errors import NotFoundError
+from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
 from cashpilot.models import (
     Business,
     CashSession,
@@ -59,7 +59,10 @@ async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_
         )
     )
     if open_session.scalar_one_or_none():
-        raise HTTPException(status_code=409, detail="Session already open for this business")
+        raise ConflictError(
+            "Session already open for this business",
+            details={"business_id": str(session.business_id)},
+        )
 
     session_obj = CashSession(**session.model_dump())
     db.add(session_obj)
@@ -94,7 +97,10 @@ async def close_shift(
         raise NotFoundError("CashSession", session_id)
 
     if session_obj.status != SessionStatus.OPEN.value:
-        raise HTTPException(status_code=400, detail="Session is not open")
+        raise InvalidStateError(
+            "Session is not open",
+            details={"status": session_obj.status, "session_id": str(session_id)},
+        )
 
     # Set closed_at and status
     session_obj.closed_at = datetime.now()

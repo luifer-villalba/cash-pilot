@@ -58,6 +58,11 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # Register global exception handlers
+    from cashpilot.core.exception_handlers import register_exception_handlers
+
+    register_exception_handlers(app)
+
     # Add request ID middleware (injects X-Request-ID header)
     app.add_middleware(RequestIDMiddleware)
 
