@@ -8,10 +8,19 @@ This module follows the application factory pattern to allow:
 """
 
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import AsyncIterator
 
 import uvicorn
 from fastapi import FastAPI
+
+from cashpilot.core.logging import configure_logging, get_logger
+from cashpilot.middleware.logging import RequestIDMiddleware
+
+# Configure logging at module level (before any loggers are used)
+configure_logging()
+
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
@@ -26,11 +35,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     - Clean up resources on shutdown
     """
     # Startup logic
-    print("🚀 CashPilot starting up...")
+    start_time = datetime.now()
+    logger.info("app.startup", message="CashPilot starting up", timestamp=start_time.isoformat())
+
+    # Set app start time for health check uptime tracking
+    from cashpilot.api.health import set_app_start_time
+
+    set_app_start_time(start_time)
+
     yield  # Application runs here
 
     # Shutdown logic
-    print("👋 CashPilot shutting down...")
+    logger.info("app.shutdown", message="CashPilot shutting down gracefully")
 
 
 def create_app() -> FastAPI:
@@ -42,6 +58,10 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # Add request ID middleware (injects X-Request-ID header)
+    app.add_middleware(RequestIDMiddleware)
+
+    # Register routers
     from cashpilot.api.health import router as health_router
 
     app.include_router(health_router)
@@ -53,6 +73,8 @@ def create_app() -> FastAPI:
     from cashpilot.api.cash_session import router as cash_session_router
 
     app.include_router(cash_session_router)
+
+    logger.info("app.configured", message="FastAPI application created successfully")
 
     return app
 
