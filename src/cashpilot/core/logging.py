@@ -31,8 +31,8 @@ def configure_logging() -> None:
             structlog.processors.TimeStamper(fmt="iso"),
             # Add log level
             structlog.processors.add_log_level,
-            # Filter out sensitive fields
-            structlog.processors.ExceptionDumper(),
+            # Format exceptions properly
+            structlog.processors.format_exc_info,
             # JSON output
             structlog.processors.JSONRenderer(),
         ],
