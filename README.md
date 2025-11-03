@@ -1,5 +1,9 @@
 # CashPilot 💰
 
+[![Build Status](https://github.com/luifer-villalba/cash-pilot/actions/workflows/ci.yml/badge.svg)](https://github.com/luifer-villalba/cash-pilot/actions)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A modern, Docker-first backend for pharmacy cash register reconciliation. Built with Python best practices for clean architecture and maintainability.
 
 ## 🎯 Project Purpose
@@ -11,6 +15,43 @@ CashPilot is a pharmacy cash register reconciliation system designed to:
 - Provide audit trail for cash handling
 
 Built with production-ready FastAPI patterns and clean architecture principles.
+
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph API["FastAPI Application"]
+        Health["/health<br/>Health Check"]
+        Business["/businesses<br/>CRUD Operations"]
+        CashSession["/cash-sessions<br/>Shift Management"]
+    end
+
+    subgraph Models["Domain Layer"]
+        BusinessModel["Business Model<br/>Pharmacy Locations"]
+        SessionModel["CashSession Model<br/>Shift Tracking"]
+        Schemas["Pydantic Schemas<br/>Validation & Serialization"]
+    end
+
+    subgraph Database["PostgreSQL"]
+        BusinessTable["businesses table<br/>UUID, name, address, phone"]
+        SessionTable["cash_sessions table<br/>UUID, business_id, status, amounts"]
+    end
+
+    API --> Models
+    Models --> Database
+    Business --> BusinessModel
+    CashSession --> SessionModel
+    Health -.-> Database
+    BusinessModel --> Schemas
+    SessionModel --> Schemas
+    Schemas --> BusinessTable
+    Schemas --> SessionTable
+```
+
+**Layer responsibilities:**
+- **API**: HTTP endpoints, dependency injection, error handling
+- **Models**: SQLAlchemy ORM + Pydantic schemas, business logic
+- **Database**: PostgreSQL with async driver (asyncpg)
 
 ## 🚀 Quickstart
 
@@ -88,13 +129,22 @@ cashpilot/
 │       │   ├── cash_session.py # Cash session model
 │       │   ├── business_schemas.py # Business Pydantic schemas
 │       │   ├── cash_session_schemas.py # Session Pydantic schemas
-│       │   └── enums.py    # Domain enums (MovementType, SessionStatus)
+│       │   └── enums.py    # Domain enums (SessionStatus)
 │       ├── core/           # Core utilities
-│       │   └── db.py       # Database config & session management
+│       │   ├── db.py       # Database config & session management
+│       │   ├── errors.py   # Custom exceptions
+│       │   └── logging.py  # Structured logging
+│       ├── middleware/     # Request/response middleware
+│       │   └── logging.py  # Request ID injection
+│       ├── scripts/        # Utility scripts
+│       │   └── seed.py     # Demo data seeding
 │       └── main.py         # FastAPI application factory
 ├── tests/                  # Test suite
 │   ├── conftest.py         # Pytest fixtures
-│   └── test_health.py      # Health endpoint tests
+│   ├── test_health.py      # Health endpoint tests
+│   ├── test_business.py    # Business CRUD tests
+│   ├── test_cash_session.py # Cash session tests
+│   └── test_logging_and_errors.py # Error handling tests
 ├── alembic/                # Database migrations
 ├── .githooks/              # Git hooks (pre-commit)
 ├── Dockerfile              # Container definition
@@ -124,7 +174,16 @@ curl http://localhost:8000/health
 
 **Response:**
 ```json
-{"status": "ok"}
+{
+  "status": "ok",
+  "uptime_seconds": 120,
+  "checks": {
+    "database": {
+      "status": "ok",
+      "response_time_ms": 5
+    }
+  }
+}
 ```
 
 #### Businesses (Pharmacy Locations)
@@ -183,7 +242,6 @@ curl -X PUT http://localhost:8000/cash-sessions/{session_id} \
   -d '{
     "final_cash": 1250000.00,
     "envelope_amount": 300000.00,
-    "expected_sales": 1000000.00,
     "closing_ticket": "T-12345",
     "notes": "Normal shift, no issues"
   }'
@@ -204,9 +262,11 @@ make test
 ```
 
 Current test coverage includes:
-- Health endpoint functionality
-- Response format validation
-- Content-type headers
+- Health endpoint functionality and response format
+- Business CRUD operations (create, read, update, delete)
+- Cash session lifecycle (open, close, filter)
+- Error handling and validation
+- Request ID injection and logging
 
 ## 📊 Database
 
@@ -234,13 +294,14 @@ The project uses PostgreSQL with SQLAlchemy ORM (async) and Alembic for migratio
 - `initial_cash` (Numeric 12,2)
 - `final_cash` (Numeric 12,2, optional)
 - `envelope_amount` (Numeric 12,2, default: 0.00)
-- `expected_sales` (Numeric 12,2, default: 0.00)
+- `credit_card_total` (Numeric 12,2, default: 0.00)
+- `debit_card_total` (Numeric 12,2, default: 0.00)
+- `bank_transfer_total` (Numeric 12,2, default: 0.00)
 - `closing_ticket` (String, optional)
 - `notes` (String, optional)
 
 **Calculated properties** (CashSession model):
 - `cash_sales` = `(final_cash + envelope_amount) - initial_cash`
-- `difference` = `cash_sales - expected_sales`
 
 ### Relationships
 - One Business → Many CashSessions
