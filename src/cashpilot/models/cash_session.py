@@ -74,10 +74,61 @@ class CashSession(Base):
 
     @property
     def cash_sales(self) -> Decimal:
-        """Calculate total cash sales: (final + envelope) - initial."""
+        """
+        Calculate cash sales: (final_cash - initial_cash) + envelope_amount.
+
+        Represents total cash that should be in drawer at end of shift.
+
+        Example:
+            initial_cash = 500,000
+            final_cash = 1,200,000
+            envelope_amount = 300,000
+            cash_sales = (1,200,000 - 500,000) + 300,000 = 1,000,000
+        """
         if self.final_cash is None:
             return Decimal("0.00")
-        return (self.final_cash + self.envelope_amount) - self.initial_cash
+        return (self.final_cash - self.initial_cash) + self.envelope_amount
+
+    @property
+    def total_sales(self) -> Decimal:
+        """
+        Calculate total sales across all payment methods.
+
+        total_sales = cash_sales + credit_card + debit_card + bank_transfer
+
+        Example:
+            cash_sales = 1,000,000
+            credit_card_total = 800,000
+            debit_card_total = 450,000
+            bank_transfer_total = 150,000
+            total_sales = 1,000,000 + 800,000 + 450,000 + 150,000 = 2,400,000
+        """
+        return (
+            self.cash_sales
+            + self.credit_card_total
+            + self.debit_card_total
+            + self.bank_transfer_total
+        )
+
+    @property
+    def difference(self) -> Decimal:
+        """
+        Calculate reconciliation difference.
+
+        difference = total_sales - cash_sales
+
+        Interpretation:
+            Positive = shortage (missing cash, should investigate)
+            Negative = overage (extra cash in drawer)
+            Zero = perfect match (ideal state)
+
+        Example:
+            total_sales = 2,400,000
+            cash_sales = 1,000,000
+            difference = 2,400,000 - 1,000,000 = 1,400,000
+            (This indicates all non-cash payments, which is correct)
+        """
+        return self.total_sales - self.cash_sales
 
     def __repr__(self) -> str:
         return (

@@ -47,4 +47,18 @@ class CashSessionRead(BaseModel):
     closing_ticket: str | None
     notes: str | None
 
+    # Calculated properties - auto-computed by API
+    cash_sales: Decimal = Field(
+        ...,
+        description="(final_cash - initial_cash) + envelope_amount. Cash that entered drawer.",
+    )
+    total_sales: Decimal = Field(
+        ...,
+        description="cash_sales + credit_card + debit_card + bank_transfer. Total revenue.",
+    )
+    difference: Decimal = Field(
+        ...,
+        description="total_sales - cash_sales. 0 = perfect match, >0 = shortage, <0 = overage.",
+    )
+
     model_config = ConfigDict(from_attributes=True)
