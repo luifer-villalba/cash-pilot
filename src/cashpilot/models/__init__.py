@@ -8,7 +8,7 @@ from cashpilot.models.cash_session_schemas import (
     CashSessionRead,
     CashSessionUpdate,
 )
-from cashpilot.models.enums import CategoryType, MovementType
+from cashpilot.models.enums import SessionStatus
 
 __all__ = [
     "Business",
@@ -19,6 +19,5 @@ __all__ = [
     "CashSessionCreate",
     "CashSessionRead",
     "CashSessionUpdate",
-    "CategoryType",
-    "MovementType",
+    "SessionStatus",
 ]
