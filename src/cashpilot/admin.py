@@ -1,10 +1,8 @@
 """SQLAdmin configuration for CashPilot."""
 
-from sqladmin import Admin, ModelView
 from fastapi import FastAPI
+from sqladmin import Admin
 from sqlalchemy.ext.asyncio import AsyncEngine
-
-from cashpilot.core.db import AsyncSessionLocal
 
 
 class CashPilotAdmin(Admin):
