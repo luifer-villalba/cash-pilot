@@ -6,13 +6,16 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi==0.115.0",
-    "uvicorn==0.30.6", # sin [standard] para evitar compilar binarios
-    "watchfiles==0.22.0", # autoreload en dev
+    "uvicorn==0.30.6",
+    "watchfiles==0.22.0",
     "alembic==1.13.3",
     "sqlalchemy==2.0.35",
     "asyncpg==0.29.0",
     "psycopg2-binary==2.9.9",
     "structlog==24.4.0",
+    "sqladmin==0.21.0",
+    "wtforms==3.1.1",
+    "starlette-wtf==0.4.4",
 ]
 
 [project.optional-dependencies]
