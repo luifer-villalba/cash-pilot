@@ -14,6 +14,7 @@ from typing import AsyncIterator
 import uvicorn
 from fastapi import FastAPI
 
+from cashpilot.core.db import engine
 from cashpilot.core.logging import configure_logging, get_logger
 from cashpilot.middleware.logging import RequestIDMiddleware
 
@@ -79,6 +80,11 @@ def create_app() -> FastAPI:
 
     app.include_router(cash_session_router)
 
+    # Admin Setup
+    from cashpilot.admin import setup_admin
+
+    setup_admin(app, engine)
+
     logger.info("app.configured", message="FastAPI application created successfully")
 
     return app
@@ -93,8 +99,9 @@ def run() -> None:
     """
     uvicorn.run(
         "cashpilot.main:create_app",
-        factory=True,  # calls create_app() on reload
+        factory=True,
         host="0.0.0.0",
         port=8000,
-        reload=True,  # Auto-reload on code changes
+        reload=True,
+        reload_dir="/app/src",
     )
