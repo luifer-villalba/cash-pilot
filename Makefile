@@ -20,7 +20,8 @@ hook-install:
 
 fix-perms:
 	@echo "🔧 Fixing file permissions in src/..."
-	find src -type f -exec chmod u+w {} \;
+	sudo chown -R $$USER:$$USER src/
+	chmod -R u+w src/
 	@echo "✅ File permissions fixed in src/."
 
 # ---------- Run ----------

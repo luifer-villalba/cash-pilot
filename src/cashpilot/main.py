@@ -15,9 +15,9 @@ import uvicorn
 from fastapi import FastAPI
 from sqladmin import Admin
 
+from cashpilot.core.db import engine
 from cashpilot.core.logging import configure_logging, get_logger
 from cashpilot.middleware.logging import RequestIDMiddleware
-from cashpilot.core.db import engine
 
 # Configure logging at module level (before any loggers are used)
 configure_logging()
