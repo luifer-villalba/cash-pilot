@@ -13,10 +13,11 @@ from typing import AsyncIterator
 
 import uvicorn
 from fastapi import FastAPI
+from sqladmin import Admin
 
-from cashpilot.core.db import engine
 from cashpilot.core.logging import configure_logging, get_logger
 from cashpilot.middleware.logging import RequestIDMiddleware
+from cashpilot.core.db import engine
 
 # Configure logging at module level (before any loggers are used)
 configure_logging()
@@ -80,10 +81,12 @@ def create_app() -> FastAPI:
 
     app.include_router(cash_session_router)
 
-    # Admin Setup
-    from cashpilot.admin import setup_admin
+    # Setup SQLAdmin
+    from cashpilot.admin import BusinessAdmin, CashSessionAdmin
 
-    setup_admin(app, engine)
+    admin = Admin(app, engine, title="CashPilot Admin", base_url="/admin")
+    admin.add_view(BusinessAdmin)
+    admin.add_view(CashSessionAdmin)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 
@@ -99,9 +102,8 @@ def run() -> None:
     """
     uvicorn.run(
         "cashpilot.main:create_app",
-        factory=True,
+        factory=True,  # calls create_app() on reload
         host="0.0.0.0",
         port=8000,
-        reload=True,
-        reload_dir="/app/src",
+        reload=True,  # Auto-reload on code changes
     )

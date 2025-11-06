@@ -73,4 +73,4 @@ def configure_logging() -> None:
 
 def get_logger(name: str) -> structlog.BoundLogger:
     """Get a structlog logger with request ID already bound."""
-    return structlog.get_logger(name).bind(request_id=get_request_id)
+    return structlog.get_logger(name).bind(request_id=get_request_id())
