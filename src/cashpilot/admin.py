@@ -1,11 +1,11 @@
 """SQLAdmin configuration for CashPilot."""
 
 from sqladmin import ModelView
-from wtforms import SelectField, validators
 from sqlalchemy import select
+from wtforms import SelectField, validators
 
-from cashpilot.models import Business, CashSession
 from cashpilot.core.db import AsyncSessionLocal
+from cashpilot.models import Business, CashSession
 
 
 class BusinessAdmin(ModelView, model=Business):
@@ -176,9 +176,7 @@ class CashSessionAdmin(ModelView, model=CashSession):
         # Fetch businesses
         async with AsyncSessionLocal() as db:
             result = await db.execute(
-                select(Business)
-                .where(Business.is_active == True)
-                .order_by(Business.name)
+                select(Business).where(Business.is_active is True).order_by(Business.name)
             )
             businesses = result.scalars().all()
 
