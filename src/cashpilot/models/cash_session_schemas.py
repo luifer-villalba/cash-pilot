@@ -13,7 +13,10 @@ class CashSessionCreate(BaseModel):
     business_id: UUID
     cashier_name: str = Field(..., min_length=2, max_length=100)
     initial_cash: Decimal = Field(..., ge=0, decimal_places=2)
-    shift_hours: str | None = Field(None, max_length=20)
+    opened_at: datetime | None = Field(
+        None, description="Optional: override opened_at (default: now)"
+    )
+    allow_overlap: bool = Field(False, description="Override conflict check if true")
 
 
 class CashSessionUpdate(BaseModel):
@@ -35,7 +38,6 @@ class CashSessionRead(BaseModel):
     business_id: UUID
     status: str
     cashier_name: str
-    shift_hours: str | None
     opened_at: datetime
     closed_at: datetime | None
     initial_cash: Decimal
@@ -47,18 +49,9 @@ class CashSessionRead(BaseModel):
     closing_ticket: str | None
     notes: str | None
 
-    # Calculated properties - auto-computed by API
-    cash_sales: Decimal = Field(
-        ...,
-        description="(final_cash - initial_cash) + envelope_amount. Cash that entered drawer.",
-    )
-    total_sales: Decimal = Field(
-        ...,
-        description="cash_sales + credit_card + debit_card + bank_transfer. Total revenue.",
-    )
-    difference: Decimal = Field(
-        ...,
-        description="total_sales - cash_sales. 0 = perfect match, >0 = shortage, <0 = overage.",
-    )
+    # Calculated properties
+    cash_sales: Decimal = Field(...)
+    total_sales: Decimal = Field(...)
+    difference: Decimal = Field(...)
 
     model_config = ConfigDict(from_attributes=True)

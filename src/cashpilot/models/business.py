@@ -76,4 +76,4 @@ class Business(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Business(id={self.id}, name={self.name}, is_active={self.is_active})>"
+        return self.name

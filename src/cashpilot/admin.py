@@ -1,10 +1,8 @@
 """SQLAdmin configuration for CashPilot."""
 
+from datetime import datetime
 from sqladmin import ModelView
-from sqlalchemy import select
-from wtforms import SelectField, validators
 
-from cashpilot.core.db import AsyncSessionLocal
 from cashpilot.models import Business, CashSession
 
 
@@ -55,8 +53,6 @@ class BusinessAdmin(ModelView, model=Business):
         ),
     }
 
-    form_columns = [Business.name, Business.address, Business.phone, Business.is_active]
-
 
 class CashSessionAdmin(ModelView, model=CashSession):
     """Admin view for CashSession (cash register shifts)."""
@@ -68,15 +64,12 @@ class CashSessionAdmin(ModelView, model=CashSession):
     column_list = [
         CashSession.status,
         CashSession.cashier_name,
-        CashSession.business_id,
+        "business.name",
         CashSession.opened_at,
         CashSession.closed_at,
         CashSession.initial_cash,
         CashSession.final_cash,
     ]
-
-    column_default_sort = [(CashSession.opened_at, True)]
-
     column_sortable_list = [
         CashSession.opened_at,
         CashSession.status,
@@ -85,12 +78,16 @@ class CashSessionAdmin(ModelView, model=CashSession):
     column_filterable_list = [CashSession.status, CashSession.opened_at]
     column_searchable_list = [CashSession.cashier_name]
 
+    column_default_sort = [
+        (CashSession.opened_at, True),  # True = descending
+        ("business.name", False),  # False = ascending
+    ]
+
     column_details_list = [
         CashSession.id,
         CashSession.business_id,
         CashSession.status,
         CashSession.cashier_name,
-        CashSession.shift_hours,
         CashSession.opened_at,
         CashSession.closed_at,
         CashSession.initial_cash,
@@ -99,14 +96,15 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.credit_card_total,
         CashSession.debit_card_total,
         CashSession.bank_transfer_total,
+        CashSession.notes,
     ]
 
     column_labels = {
         CashSession.id: "ID",
         CashSession.business_id: "Sucursal",
+        "business": "Sucursal",
         CashSession.status: "Estado",
         CashSession.cashier_name: "Cajero",
-        CashSession.shift_hours: "Horario",
         CashSession.opened_at: "Abierto",
         CashSession.closed_at: "Cerrado",
         CashSession.initial_cash: "Monto Inicial",
@@ -115,6 +113,8 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.credit_card_total: "Tarjeta Crédito",
         CashSession.debit_card_total: "Tarjeta Débito",
         CashSession.bank_transfer_total: "Transferencia",
+        CashSession.notes: "Notas",
+        "business.name": "Sucursal",
     }
 
     column_formatters = {
@@ -122,7 +122,7 @@ class CashSessionAdmin(ModelView, model=CashSession):
             m.opened_at.strftime("%d/%m/%Y %H:%M") if m.opened_at else "-"
         ),
         CashSession.closed_at: lambda m, a: (
-            m.closed_at.strftime("%d/%m/%Y %H:%M") if m.closed_at else "-"
+            m.closed_at.strftime("%d/%m/%Y %H:%M") if m.closed_at else "⏰ Abierta"
         ),
         CashSession.initial_cash: lambda m, a: (
             f"₲ {int(m.initial_cash):,}" if m.initial_cash else "-"
@@ -140,62 +140,4 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.bank_transfer_total: lambda m, a: (
             f"₲ {int(m.bank_transfer_total):,}" if m.bank_transfer_total else "-"
         ),
-        CashSession.business_id: lambda m, a: (
-            m.__dict__.get("business").name if m.__dict__.get("business") else str(m.business_id)
-        ),
-        CashSession.status: lambda m, a: "Apertura" if m.status == "OPEN" else "Cierre",
     }
-
-    form_columns = [
-        CashSession.business_id,
-        CashSession.cashier_name,
-        CashSession.shift_hours,
-        CashSession.initial_cash,
-        CashSession.final_cash,
-        CashSession.envelope_amount,
-        CashSession.credit_card_total,
-        CashSession.debit_card_total,
-        CashSession.bank_transfer_total,
-        CashSession.status,
-    ]
-
-    form_overrides = {
-        "business_id": SelectField,
-        "status": SelectField,
-    }
-
-    async def on_model_change(self, data, model, is_created, request):
-        """Validate business_id is provided."""
-        if not data.get("business_id"):
-            raise ValueError("Sucursal is required")
-
-    async def scaffold_form(self):
-        """Set up form with SelectFields for business_id and status."""
-        form_class = await super().scaffold_form()
-
-        # Fetch businesses
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                select(Business).where(Business.is_active is True).order_by(Business.name)
-            )
-            businesses = result.scalars().all()
-
-        business_choices = [(str(b.id), b.name) for b in businesses]
-        status_choices = [("OPEN", "Apertura"), ("CLOSED", "Cierre")]
-
-        return type(
-            "CashSessionForm",
-            (form_class,),
-            {
-                "business_id": SelectField(
-                    "Sucursal",
-                    choices=business_choices,
-                    validators=[validators.DataRequired()],
-                ),
-                "status": SelectField(
-                    "Estado",
-                    choices=status_choices,
-                    validators=[validators.DataRequired()],
-                ),
-            },
-        )

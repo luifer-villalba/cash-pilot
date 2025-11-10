@@ -138,19 +138,22 @@ cashpilot/
 │       │   └── logging.py  # Request ID injection
 │       ├── scripts/        # Utility scripts
 │       │   └── seed.py     # Demo data seeding
+│       ├── admin.py        # SQLAdmin configuration
 │       └── main.py         # FastAPI application factory
 ├── tests/                  # Test suite
 │   ├── conftest.py         # Pytest fixtures
 │   ├── test_health.py      # Health endpoint tests
 │   ├── test_business.py    # Business CRUD tests
 │   ├── test_cash_session.py # Cash session tests
-│   └── test_logging_and_errors.py # Error handling tests
+│   ├── test_logging_and_errors.py # Error handling tests
+│   └── test_reconciliation_properties.py # Reconciliation tests
 ├── alembic/                # Database migrations
 ├── .githooks/              # Git hooks (pre-commit)
 ├── Dockerfile              # Container definition
 ├── docker-compose.yml      # Service orchestration (app + db)
 ├── Makefile                # Development commands
 ├── pyproject.toml          # Python dependencies & tool configs
+├── API_DEMO.md             # Complete API walkthrough with cURL
 └── README.md               # This file
 ```
 
@@ -164,6 +167,26 @@ make run
 ```
 
 The server runs on [http://localhost:8000](http://localhost:8000)
+
+### Interactive API Documentation
+
+Once the server is running, access the auto-generated API documentation:
+
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+### Admin Dashboard
+
+Manage businesses and cash sessions via web interface:
+
+- **URL**: [http://localhost:8000/admin](http://localhost:8000/admin)
+- Features: Create, edit, filter, and soft-delete records
+- Search by name, filter by status/date, view full reconciliation details
+- Spanish UI labels for pharmacy staff
+
+### Full API Walkthrough
+
+For detailed cURL examples and complete workflow demos, see [API_DEMO.md](API_DEMO.md)
 
 ### Core Endpoints
 
@@ -247,26 +270,64 @@ curl -X PUT http://localhost:8000/cash-sessions/{session_id} \
   }'
 ```
 
-### Interactive API Documentation
+## 💰 Reconciliation Calculation (Key Feature)
 
-Once the server is running, access the auto-generated API documentation:
+CashSession automatically calculates three critical properties for cash reconciliation:
 
-- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+**cash_sales** = (final_cash - initial_cash) + envelope_amount
+- Represents total cash that should be in drawer at end of shift
+- Example: `(1,200,000 - 500,000) + 300,000 = 1,000,000₲`
 
-### Running Tests
+**total_sales** = cash_sales + credit_card + debit_card + bank_transfer
+- Total revenue across all payment methods
+- Example: `1,000,000 + 800,000 + 450,000 + 150,000 = 2,400,000₲`
 
-Execute the test suite with:
-```bash
-make test
+**difference** = total_sales - cash_sales
+- Reconciliation indicator:
+  - `0` = Perfect match ✅ (ideal state)
+  - `> 0` = Shortage ⚠️ (missing cash, investigate)
+  - `< 0` = Overage 📦 (extra cash in drawer)
+
+Example perfect scenario:
+```json
+{
+  "initial_cash": 500000,
+  "final_cash": 1200000,
+  "envelope_amount": 300000,
+  "credit_card_total": 800000,
+  "cash_sales": 1000000,
+  "total_sales": 1800000,
+  "difference": 800000
+}
 ```
 
-Current test coverage includes:
-- Health endpoint functionality and response format
-- Business CRUD operations (create, read, update, delete)
-- Cash session lifecycle (open, close, filter)
-- Error handling and validation
-- Request ID injection and logging
+## 🔒 Error Handling & Logging
+
+**Custom Error Responses**
+
+All errors return standardized JSON with:
+- `code`: Machine-readable error code (NOT_FOUND, CONFLICT, INVALID_STATE, etc.)
+- `message`: Human-readable description
+- `details`: Additional context (resource type, IDs, etc.)
+
+Example error response:
+```json
+{
+  "code": "NOT_FOUND",
+  "message": "Business with ID 123 not found",
+  "details": {"resource": "Business", "resource_id": "123"}
+}
+```
+
+**Structured Logging**
+
+Every request is logged with:
+- Unique request ID (X-Request-ID header)
+- HTTP method, path, status code
+- Response time
+- Structured JSON output for parsing
+
+Request ID is automatically injected into all logs for tracing.
 
 ## 📊 Database
 
@@ -367,26 +428,6 @@ docker compose exec app python -m cashpilot.scripts.seed
 4. Commit → pre-commit hook runs `make lint` automatically
 5. If lint fails, fix issues and commit again
 
-## 📚 Next Steps
-
-### Sprint 3: Production Ready
-- [ ] Add comprehensive tests for Business + CashSession endpoints
-- [ ] Add seed script with sample data
-- [ ] Set up GitHub Actions CI/CD
-- [ ] Deploy to Render/Railway with PostgreSQL
-- [ ] Add architecture diagram to README
-
-### Future Enhancements
-- [ ] Add authentication and authorization (JWT)
-- [ ] Implement filtering and pagination for list endpoints
-- [ ] Add Movement model for detailed cash flow tracking
-- [ ] Add Category model for expense/income categorization
-- [ ] Implement daily/weekly/monthly reports
-- [ ] Add API rate limiting
-- [ ] Implement error handling middleware
-- [ ] Add structured logging (loguru)
-- [ ] Add monitoring (Datadog/Sentry integration)
-
 ## 🧪 Testing
 
 The project uses pytest with FastAPI TestClient:
@@ -413,6 +454,64 @@ pytest -v
 **Alembic Migrations**: Version-controlled database schema changes
 
 **Code Quality**: Pre-commit hooks enforce ruff, black, isort standards
+
+## 📚 Next Steps
+
+### Sprint 3: Production Ready
+- [ ] Add comprehensive tests for Business + CashSession endpoints
+- [ ] Add seed script with sample data
+- [ ] Set up GitHub Actions CI/CD
+- [ ] Deploy to Render/Railway with PostgreSQL
+- [ ] Add architecture diagram to README
+
+### Future Enhancements
+- [ ] Add authentication and authorization (JWT)
+- [ ] Implement filtering and pagination for list endpoints
+- [ ] Add Movement model for detailed cash flow tracking
+- [ ] Add Category model for expense/income categorization
+- [ ] Implement daily/weekly/monthly reports
+- [ ] Add API rate limiting
+- [ ] Add monitoring (Datadog/Sentry integration)
+
+## ⚠️ Troubleshooting
+
+### Port 8000 already in use
+```bash
+lsof -i :8000
+kill -9 <PID>
+```
+
+### Database connection issues
+```bash
+# Full rebuild and restart
+make rebuild
+
+# Or quick restart
+make down && make up
+```
+
+### File permission errors
+```bash
+make fix-perms
+```
+
+### Stale code/cache issues
+```bash
+# Reload app manually
+make reload
+
+# Or use watch mode
+make dev-watch
+```
+
+### Database won't initialize
+```bash
+# Check current migration status
+make migrate-current
+
+# Create fresh test database
+docker compose exec db psql -U cashpilot -d cashpilot_dev -c "\dt"
+```
 
 ## 👤 Author
 
