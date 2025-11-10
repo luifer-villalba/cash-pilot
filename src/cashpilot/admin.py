@@ -1,6 +1,6 @@
 """SQLAdmin configuration for CashPilot."""
 
-from datetime import datetime
+
 from sqladmin import ModelView
 
 from cashpilot.models import Business, CashSession

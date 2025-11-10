@@ -22,7 +22,6 @@ from cashpilot.core.db import engine
 from cashpilot.core.logging import configure_logging, get_logger
 from cashpilot.middleware.logging import RequestIDMiddleware
 
-
 configure_logging()
 logger = get_logger(__name__)
 
@@ -43,6 +42,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("app.startup", message="CashPilot starting up", timestamp=start_time.isoformat())
 
     from cashpilot.api.health import set_app_start_time
+
     set_app_start_time(start_time)
 
     yield
@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
     )
 
     from cashpilot.core.exception_handlers import register_exception_handlers
+
     register_exception_handlers(app)
 
     # Add admin redirect middleware FIRST
@@ -67,12 +68,15 @@ def create_app() -> FastAPI:
     app.add_middleware(RequestIDMiddleware)
 
     from cashpilot.api.health import router as health_router
+
     app.include_router(health_router)
 
     from cashpilot.api.business import router as business_router
+
     app.include_router(business_router)
 
     from cashpilot.api.cash_session import router as cash_session_router
+
     app.include_router(cash_session_router)
 
     # Setup SQLAdmin
