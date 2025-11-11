@@ -1,7 +1,8 @@
 """SQLAdmin configuration for CashPilot."""
 
-
+from markupsafe import Markup
 from sqladmin import ModelView
+from wtforms import SelectField
 
 from cashpilot.models import Business, CashSession
 
@@ -61,6 +62,35 @@ class CashSessionAdmin(ModelView, model=CashSession):
     name_plural = "Cajas"
     icon = "fa-solid fa-cash-register"
 
+    form_columns = [
+        "business",
+        CashSession.status,
+        CashSession.cashier_name,
+        CashSession.opened_at,
+        CashSession.closed_at,
+        CashSession.initial_cash,
+        CashSession.final_cash,
+        CashSession.envelope_amount,
+        CashSession.credit_card_total,
+        CashSession.debit_card_total,
+        CashSession.bank_transfer_total,
+        CashSession.closing_ticket,
+        CashSession.notes,
+    ]
+
+    # Override status field to be a dropdown
+    form_overrides = {
+        "status": SelectField,
+    }
+
+    # Provide choices for status dropdown
+    form_args = {
+        "status": {
+            "choices": [("OPEN", "Abierta"), ("CLOSED", "Cerrada")],
+            "default": "OPEN",
+        }
+    }
+
     column_list = [
         CashSession.status,
         CashSession.cashier_name,
@@ -79,8 +109,8 @@ class CashSessionAdmin(ModelView, model=CashSession):
     column_searchable_list = [CashSession.cashier_name]
 
     column_default_sort = [
-        (CashSession.opened_at, True),  # True = descending
-        ("business.name", False),  # False = ascending
+        (CashSession.opened_at, True),
+        ("business.name", False),
     ]
 
     column_details_list = [
@@ -118,11 +148,27 @@ class CashSessionAdmin(ModelView, model=CashSession):
     }
 
     column_formatters = {
+        CashSession.status: lambda m, a: (
+            Markup(
+                '<span style="background-color: #fef3c7; color: #92400e; '
+                'padding: 2px 8px; border-radius: 4px; font-weight: 500;">⏰ ABIERTA</span>'
+            )
+            if m.status == "OPEN"
+            else Markup(
+                '<span style="background-color: #d1fae5; color: #065f46; '
+                'padding: 2px 8px; border-radius: 4px; font-weight: 500;">✓ CERRADA</span>'
+            )
+        ),
         CashSession.opened_at: lambda m, a: (
             m.opened_at.strftime("%d/%m/%Y %H:%M") if m.opened_at else "-"
         ),
         CashSession.closed_at: lambda m, a: (
-            m.closed_at.strftime("%d/%m/%Y %H:%M") if m.closed_at else "⏰ Abierta"
+            m.closed_at.strftime("%d/%m/%Y %H:%M")
+            if m.closed_at
+            else Markup(
+                '<span style="background-color: #fee2e2; color: #991b1b; '
+                'padding: 2px 8px; border-radius: 4px; font-weight: 500;">⚠ Sin cerrar</span>'
+            )
         ),
         CashSession.initial_cash: lambda m, a: (
             f"₲ {int(m.initial_cash):,}" if m.initial_cash else "-"
