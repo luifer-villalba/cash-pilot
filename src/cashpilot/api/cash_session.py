@@ -1,6 +1,6 @@
 """CashSession API endpoints for shift management."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
-from cashpilot.core.validation import check_session_overlap
+from cashpilot.core.validation import check_session_overlap, validate_session_dates
 from cashpilot.models import (
     Business,
     CashSession,
@@ -105,13 +105,7 @@ async def get_shift(session_id: str, db: AsyncSession = Depends(get_db)):
 async def close_shift(
     session_id: str, session: CashSessionUpdate, db: AsyncSession = Depends(get_db)
 ):
-    """
-    Close a cash session (shift).
-
-    Requirements:
-    - Session must be OPEN
-    - final_cash, envelope_amount, credit_card_total required to close
-    """
+    """Close a cash session."""
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))
     result = await db.execute(stmt)
     session_obj = result.scalar_one_or_none()
@@ -120,32 +114,37 @@ async def close_shift(
         raise NotFoundError("CashSession", session_id)
 
     if session_obj.status != SessionStatus.OPEN.value:
-        raise InvalidStateError(
-            "Session is not open",
-            details={"status": session_obj.status, "session_id": str(session_id)},
-        )
+        raise InvalidStateError("Session is not open", details={"status": session_obj.status})
 
-    # Validate required fields to close
     if (
         session.final_cash is None
         or session.envelope_amount is None
         or session.credit_card_total is None
     ):
         raise InvalidStateError(
-            "Cannot close session: final_cash, envelope_amount, and credit_card_total required",
-            details={
-                "final_cash": session.final_cash,
-                "envelope_amount": session.envelope_amount,
-                "credit_card_total": session.credit_card_total,
-            },
+            "Cannot close session: final_cash, envelope_amount, and credit_card_total required"
         )
 
-    # Set closed_at and status
-    session_obj.closed_at = datetime.now()
-    session_obj.status = SessionStatus.CLOSED.value
+    # Use provided dates or defaults
+    proposed_opened_at = session.opened_at or session_obj.opened_at
+    proposed_closed_at = session.closed_at or datetime.now()
 
-    # Apply updates
-    update_data = session.model_dump(exclude_unset=True)
+    # Ensure closed_at is strictly after opened_at
+    if proposed_closed_at <= proposed_opened_at:
+        proposed_closed_at = proposed_opened_at.replace(microsecond=0) + timedelta(seconds=1)
+
+    # Validate dates
+    date_error = await validate_session_dates(proposed_opened_at, proposed_closed_at)
+    if date_error:
+        raise InvalidStateError(date_error["message"], details=date_error["details"])
+
+    session_obj.opened_at = proposed_opened_at
+    session_obj.closed_at = proposed_closed_at
+    session_obj.status = SessionStatus.CLOSED.value
+    session_obj.has_conflict = False
+
+    # Apply other updates
+    update_data = session.model_dump(exclude_unset=True, exclude={"opened_at", "closed_at"})
     for key, value in update_data.items():
         setattr(session_obj, key, value)
 

@@ -29,6 +29,8 @@ class CashSessionUpdate(BaseModel):
     bank_transfer_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     closing_ticket: str | None = Field(None, max_length=50)
     notes: str | None = None
+    opened_at: datetime | None = None
+    closed_at: datetime | None = None
 
 
 class CashSessionRead(BaseModel):

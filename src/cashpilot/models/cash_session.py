@@ -9,8 +9,9 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Numeric, String
+from sqlalchemy import ForeignKey, Numeric, String, and_, select
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
@@ -60,6 +61,12 @@ class CashSession(Base):
     final_cash: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     envelope_amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
 
+    has_conflict: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+        index=True,
+    )
+
     # Payment method totals
     credit_card_total: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=Decimal("0.00")
@@ -89,6 +96,19 @@ class CashSession(Base):
     @property
     def difference(self) -> Decimal:
         return self.total_sales - self.cash_sales
+
+    async def get_conflicting_sessions(self, db: AsyncSession) -> list["CashSession"]:
+        """Find all sessions that overlap with this one in same business."""
+        stmt = select(CashSession).where(
+            and_(
+                CashSession.business_id == self.business_id,
+                CashSession.id != self.id,  # Exclude self
+                CashSession.opened_at < (self.closed_at or datetime.now()),
+                CashSession.closed_at.is_(None) | (CashSession.closed_at > self.opened_at),
+            )
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
 
     def __repr__(self) -> str:
         return (
