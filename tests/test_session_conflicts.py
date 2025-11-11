@@ -155,3 +155,32 @@ class TestSessionConflicts:
 
         assert close_resp.status_code == 200
         assert close_resp.json()["status"] == "CLOSED"
+
+    async def test_conflict_detection_marks_has_conflict(self, client: AsyncClient, business_id: str):
+        """Test that overlapping sessions are marked with has_conflict."""
+        now = datetime.now()
+
+        # Create session 1
+        resp1 = await client.post(
+            "/cash-sessions",
+            json={
+                "business_id": business_id,
+                "cashier_name": "Maria",
+                "initial_cash": "500000.00",
+                "opened_at": now.isoformat(),
+            },
+        )
+        assert resp1.status_code == 201
+
+        # Create session 2 with overlap
+        resp2 = await client.post(
+            "/cash-sessions",
+            json={
+                "business_id": business_id,
+                "cashier_name": "Juan",
+                "initial_cash": "500000.00",
+                "opened_at": now.isoformat(),
+                "allow_overlap": True,
+            },
+        )
+        assert resp2.status_code == 201

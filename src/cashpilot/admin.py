@@ -4,6 +4,8 @@ from markupsafe import Markup
 from sqladmin import ModelView
 from wtforms import SelectField
 
+from cashpilot.core.db import AsyncSessionLocal
+from cashpilot.core.validation import validate_session_dates
 from cashpilot.models import Business, CashSession
 
 
@@ -78,12 +80,10 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.notes,
     ]
 
-    # Override status field to be a dropdown
     form_overrides = {
         "status": SelectField,
     }
 
-    # Provide choices for status dropdown
     form_args = {
         "status": {
             "choices": [("OPEN", "Abierta"), ("CLOSED", "Cerrada")],
@@ -147,16 +147,62 @@ class CashSessionAdmin(ModelView, model=CashSession):
         "business.name": "Sucursal",
     }
 
+    async def on_model_change(self, data: dict, model, is_created: bool, request) -> None:
+        """Hook called before save - validate dates and detect conflicts."""
+
+        # Validate dates if closed_at is being set or updated
+        if data.get("closed_at"):
+            opened_at = data.get("opened_at") or model.opened_at
+            closed_at = data.get("closed_at")
+
+            date_error = await validate_session_dates(opened_at, closed_at)
+            if date_error:
+                raise ValueError(date_error["message"])
+
+        # Detect conflicts with NEW dates (not old ones)
+        if not is_created and (data.get("opened_at") or data.get("closed_at")):
+            # Apply only scalar fields (skip relationships like 'business')
+            safe_fields = {
+                "opened_at",
+                "closed_at",
+                "status",
+                "initial_cash",
+                "final_cash",
+                "envelope_amount",
+                "credit_card_total",
+                "debit_card_total",
+                "bank_transfer_total",
+                "closing_ticket",
+                "notes",
+                "cashier_name",
+            }
+            for key, value in data.items():
+                if key in safe_fields and hasattr(model, key):
+                    setattr(model, key, value)
+
+            async with AsyncSessionLocal() as db:
+                # Now conflicts are checked with NEW dates
+                conflicts = await model.get_conflicting_sessions(db)
+                model.has_conflict = len(conflicts) > 0
+                data["has_conflict"] = model.has_conflict
+
     column_formatters = {
         CashSession.status: lambda m, a: (
             Markup(
-                '<span style="background-color: #fef3c7; color: #92400e; '
-                'padding: 2px 8px; border-radius: 4px; font-weight: 500;">⏰ ABIERTA</span>'
+                '<span style="background-color: #fca5a5; color: #991b1b; '
+                'padding: 4px 8px; border-radius: 4px; font-weight: 500;">⚠ CONFLICTO</span>'
             )
-            if m.status == "OPEN"
-            else Markup(
-                '<span style="background-color: #d1fae5; color: #065f46; '
-                'padding: 2px 8px; border-radius: 4px; font-weight: 500;">✓ CERRADA</span>'
+            if m.has_conflict
+            else (
+                Markup(
+                    '<span style="background-color: #fef3c7; color: #92400e; '
+                    'padding: 2px 8px; border-radius: 4px; font-weight: 500;">⏰ ABIERTA</span>'
+                )
+                if m.status == "OPEN"
+                else Markup(
+                    '<span style="background-color: #d1fae5; color: #065f46; '
+                    'padding: 2px 8px; border-radius: 4px; font-weight: 500;">✓ CERRADA</span>'
+                )
             )
         ),
         CashSession.opened_at: lambda m, a: (
@@ -173,7 +219,7 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.initial_cash: lambda m, a: (
             f"₲ {int(m.initial_cash):,}" if m.initial_cash else "-"
         ),
-        CashSession.final_cash: lambda m, a: f"₲ {int(m.final_cash):,}" if m.final_cash else "-",
+        CashSession.final_cash: lambda m, a: (f"₲ {int(m.final_cash):,}" if m.final_cash else "-"),
         CashSession.envelope_amount: lambda m, a: (
             f"₲ {int(m.envelope_amount):,}" if m.envelope_amount else "-"
         ),
