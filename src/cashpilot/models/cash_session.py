@@ -120,19 +120,6 @@ class CashSession(Base):
         result = await db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_conflicting_sessions(self, db: AsyncSession) -> list["CashSession"]:
-        """Find all sessions that overlap with this one in same business."""
-        stmt = select(CashSession).where(
-            and_(
-                CashSession.business_id == self.business_id,
-                CashSession.id != self.id,  # Exclude self
-                CashSession.opened_at < (self.closed_at or datetime.now()),
-                CashSession.closed_at.is_(None) | (CashSession.closed_at > self.opened_at),
-            )
-        )
-        result = await db.execute(stmt)
-        return list(result.scalars().all())
-
     def __repr__(self) -> str:
         return (
             f"<CashSession(id={self.id}, business_id={self.business_id}, "
