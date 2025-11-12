@@ -13,6 +13,7 @@ class CashSessionCreate(BaseModel):
     business_id: UUID
     cashier_name: str = Field(..., min_length=2, max_length=100)
     initial_cash: Decimal = Field(..., ge=0, decimal_places=2)
+    expenses: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)  # ADD THIS
     opened_at: datetime | None = Field(
         None, description="Optional: override opened_at (default: now)"
     )
@@ -27,6 +28,7 @@ class CashSessionUpdate(BaseModel):
     credit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     debit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     bank_transfer_total: Decimal | None = Field(None, ge=0, decimal_places=2)
+    expenses: Decimal | None = Field(None, ge=0, decimal_places=2)  # ADD THIS
     closing_ticket: str | None = Field(None, max_length=50)
     notes: str | None = None
     opened_at: datetime | None = None
@@ -48,12 +50,14 @@ class CashSessionRead(BaseModel):
     credit_card_total: Decimal
     debit_card_total: Decimal
     bank_transfer_total: Decimal
+    expenses: Decimal
     closing_ticket: str | None
     notes: str | None
 
     # Calculated properties
     cash_sales: Decimal = Field(...)
+    cash_debit_transfer_sales: Decimal = Field(...)
     total_sales: Decimal = Field(...)
-    difference: Decimal = Field(...)
+    net_earnings: Decimal = Field(...)
 
     model_config = ConfigDict(from_attributes=True)
