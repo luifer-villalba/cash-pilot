@@ -14,11 +14,9 @@ from typing import AsyncIterator
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from sqladmin import Admin
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
-from cashpilot.core.db import engine
 from cashpilot.core.logging import configure_logging, get_logger
 from cashpilot.middleware.logging import RequestIDMiddleware
 
@@ -78,13 +76,6 @@ def create_app() -> FastAPI:
     from cashpilot.api.cash_session import router as cash_session_router
 
     app.include_router(cash_session_router)
-
-    # Setup SQLAdmin
-    from cashpilot.admin import BusinessAdmin, CashSessionAdmin
-
-    admin = Admin(app, engine, title="CashPilot Admin", base_url="/admin")
-    admin.add_view(CashSessionAdmin)
-    admin.add_view(BusinessAdmin)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 
