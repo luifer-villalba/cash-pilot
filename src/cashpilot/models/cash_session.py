@@ -77,6 +77,9 @@ class CashSession(Base):
     bank_transfer_total: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=Decimal("0.00")
     )
+    expenses: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0.00")
+    )
 
     @property
     def cash_sales(self) -> Decimal:
@@ -85,7 +88,13 @@ class CashSession(Base):
         return (self.final_cash - self.initial_cash) + self.envelope_amount
 
     @property
+    def cash_debit_transfer_sales(self) -> Decimal:
+        """Cash + debit + bank transfer (excludes credit card)."""
+        return self.cash_sales + self.debit_card_total + self.bank_transfer_total
+
+    @property
     def total_sales(self) -> Decimal:
+        """All revenue across all payment methods."""
         return (
             self.cash_sales
             + self.credit_card_total
@@ -94,8 +103,22 @@ class CashSession(Base):
         )
 
     @property
-    def difference(self) -> Decimal:
-        return self.total_sales - self.cash_sales
+    def net_earnings(self) -> Decimal:
+        """Total sales minus business expenses."""
+        return self.total_sales - self.expenses
+
+    async def get_conflicting_sessions(self, db: AsyncSession) -> list["CashSession"]:
+        """Find all sessions that overlap with this one in same business."""
+        stmt = select(CashSession).where(
+            and_(
+                CashSession.business_id == self.business_id,
+                CashSession.id != self.id,  # Exclude self
+                CashSession.opened_at < (self.closed_at or datetime.now()),
+                CashSession.closed_at.is_(None) | (CashSession.closed_at > self.opened_at),
+            )
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
 
     async def get_conflicting_sessions(self, db: AsyncSession) -> list["CashSession"]:
         """Find all sessions that overlap with this one in same business."""

@@ -76,6 +76,7 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.credit_card_total,
         CashSession.debit_card_total,
         CashSession.bank_transfer_total,
+        CashSession.expenses,
         CashSession.closing_ticket,
         CashSession.notes,
     ]
@@ -145,6 +146,7 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.bank_transfer_total: "Transferencia",
         CashSession.notes: "Notas",
         "business.name": "Sucursal",
+        CashSession.expenses: "Gastos",
     }
 
     async def on_model_change(self, data: dict, model, is_created: bool, request) -> None:
@@ -232,4 +234,5 @@ class CashSessionAdmin(ModelView, model=CashSession):
         CashSession.bank_transfer_total: lambda m, a: (
             f"₲ {int(m.bank_transfer_total):,}" if m.bank_transfer_total else "-"
         ),
+        CashSession.expenses: lambda m, a: (f"₲ {int(m.expenses):,}" if m.expenses else "₲ 0"),
     }
