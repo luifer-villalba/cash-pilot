@@ -8,8 +8,8 @@ from wtforms import SelectField
 from cashpilot.core.db import AsyncSessionLocal
 from cashpilot.models import Business, CashSession
 
-
 # ==================== HELPER FUNCTIONS ====================
+
 
 def _format_schedule(session) -> str:
     """Format schedule as: DD/MM/YYYY HH:MM - HH:MM (or pending close)."""
@@ -54,6 +54,7 @@ def _format_status_badge(session) -> Markup:
 
 
 # ==================== BUSINESS ADMIN ====================
+
 
 class BusinessAdmin(ModelView, model=Business):
     """Admin view for Business (pharmacy locations)."""
@@ -106,6 +107,7 @@ class BusinessAdmin(ModelView, model=Business):
 
 # ==================== CASH SESSION ADMIN ====================
 
+
 class CashSessionAdmin(ModelView, model=CashSession):
     """Admin view for CashSession (operational dashboard for reconciliation)."""
 
@@ -115,20 +117,20 @@ class CashSessionAdmin(ModelView, model=CashSession):
 
     # ==================== FORM (for create/edit) ====================
     form_columns = [
-        "business",                             # 1. Sucursal
-        CashSession.status,                     # 2. Estado
-        CashSession.cashier_name,               # 3. Responsable
-        CashSession.opened_at,                  # 4. Horario
-        CashSession.closed_at,                  # 5. Horario Cierre
-        CashSession.initial_cash,               # 6. Monto Inicial
-        CashSession.final_cash,                 # 7. Caja Final
-        CashSession.envelope_amount,            # 8. Depósito Bancario
-        CashSession.credit_card_total,          # 9. TC
-        CashSession.debit_card_total,           # 10. TD
-        CashSession.bank_transfer_total,        # 11. Transferencias
-        CashSession.expenses,                   # 12. Gastos
-        CashSession.closing_ticket,             # 13. Ticket
-        CashSession.notes,                      # 14. Notas
+        "business",  # 1. Sucursal
+        CashSession.status,  # 2. Estado
+        CashSession.cashier_name,  # 3. Responsable
+        CashSession.opened_at,  # 4. Horario
+        CashSession.closed_at,  # 5. Horario Cierre
+        CashSession.initial_cash,  # 6. Monto Inicial
+        CashSession.final_cash,  # 7. Caja Final
+        CashSession.envelope_amount,  # 8. Depósito Bancario
+        CashSession.credit_card_total,  # 9. TC
+        CashSession.debit_card_total,  # 10. TD
+        CashSession.bank_transfer_total,  # 11. Transferencias
+        CashSession.expenses,  # 12. Gastos
+        CashSession.closing_ticket,  # 13. Ticket
+        CashSession.notes,  # 14. Notas
     ]
 
     form_overrides = {
@@ -145,17 +147,17 @@ class CashSessionAdmin(ModelView, model=CashSession):
     # ==================== LIST VIEW (Operational Dashboard) ====================
     # Same order as form_columns (first 11 fields for list view)
     column_list = [
-        "business.name",                        # 1. Sucursal
-        CashSession.status,                     # 2. Estado
-        CashSession.cashier_name,               # 3. Responsable
-        CashSession.opened_at,                  # 4. Horario
-        CashSession.initial_cash,               # 5. Monto Inicial
-        CashSession.final_cash,                 # 6. Caja Final
-        CashSession.envelope_amount,            # 7. Depósito Bancario
-        CashSession.credit_card_total,          # 8. TC
-        CashSession.debit_card_total,           # 9. TD
-        CashSession.bank_transfer_total,        # 10. Transferencias
-        CashSession.expenses,                   # 11. Gastos
+        "business.name",  # 1. Sucursal
+        CashSession.status,  # 2. Estado
+        CashSession.cashier_name,  # 3. Responsable
+        CashSession.opened_at,  # 4. Horario
+        CashSession.initial_cash,  # 5. Monto Inicial
+        CashSession.final_cash,  # 6. Caja Final
+        CashSession.envelope_amount,  # 7. Depósito Bancario
+        CashSession.credit_card_total,  # 8. TC
+        CashSession.debit_card_total,  # 9. TD
+        CashSession.bank_transfer_total,  # 10. Transferencias
+        CashSession.expenses,  # 11. Gastos
     ]
 
     column_sortable_list = [
@@ -225,10 +227,8 @@ class CashSessionAdmin(ModelView, model=CashSession):
     column_formatters = {
         # Status with visual badge
         CashSession.status: lambda m, a: _format_status_badge(m),
-
         # Schedule: "15/11/2025 08:00 - 15:00" or "15/11/2025 08:00 - (sin cerrar)"
         CashSession.opened_at: lambda m, a: _format_schedule(m),
-
         # Currency formatting with Guaraní symbol
         CashSession.initial_cash: lambda m, a: _format_currency(m.initial_cash),
         CashSession.final_cash: lambda m, a: _format_currency(m.final_cash if m.final_cash else 0),
