@@ -14,8 +14,6 @@ from typing import AsyncIterator
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
@@ -65,22 +63,24 @@ def create_app() -> FastAPI:
     # Add middleware
     app.add_middleware(AdminRedirectMiddleware)
     from cashpilot.middleware.logging import RequestIDMiddleware
-    app.add_middleware(RequestIDMiddleware)
 
-    # Mount static files
-    app.mount("/static", StaticFiles(directory="src/cashpilot/static"), name="static")
+    app.add_middleware(RequestIDMiddleware)
 
     # Include routers
     from cashpilot.api.health import router as health_router
+
     app.include_router(health_router)
 
     from cashpilot.api.business import router as business_router
+
     app.include_router(business_router)
 
     from cashpilot.api.cash_session import router as cash_session_router
+
     app.include_router(cash_session_router)
 
     from cashpilot.api.frontend import router as frontend_router
+
     app.include_router(frontend_router)
 
     logger.info("app.configured", message="FastAPI application created successfully")
