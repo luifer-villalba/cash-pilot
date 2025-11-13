@@ -1,10 +1,10 @@
 """
-FastAPI application factory and entrypoint.
+FastAPI application factory with frontend support.
 
-This module follows the application factory pattern to allow:
-- Multiple instances for testing
-- Different configurations per environment
-- Clean dependency injection
+Includes:
+- Templates (Jinja2)
+- Static files (CSS, JS, images)
+- Frontend routes
 """
 
 from contextlib import asynccontextmanager
@@ -18,7 +18,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 from cashpilot.core.logging import configure_logging, get_logger
-from cashpilot.middleware.logging import RequestIDMiddleware
 
 configure_logging()
 logger = get_logger(__name__)
@@ -61,10 +60,13 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
 
-    # Add admin redirect middleware FIRST
+    # Add middleware
     app.add_middleware(AdminRedirectMiddleware)
+    from cashpilot.middleware.logging import RequestIDMiddleware
+
     app.add_middleware(RequestIDMiddleware)
 
+    # Include routers
     from cashpilot.api.health import router as health_router
 
     app.include_router(health_router)
@@ -76,6 +78,10 @@ def create_app() -> FastAPI:
     from cashpilot.api.cash_session import router as cash_session_router
 
     app.include_router(cash_session_router)
+
+    from cashpilot.api.frontend import router as frontend_router
+
+    app.include_router(frontend_router)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 

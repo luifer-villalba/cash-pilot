@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Create Session - CashPilot{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Form -->
+    <div class="lg:col-span-2">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">Open New Cash Session</h2>
+
+                <form method="POST" action="/sessions" class="space-y-4">
+                    <!-- Business Selection -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Business</span>
+                        </label>
+                        <select name="business_id" class="select select-bordered" required>
+                            <option value="">Select a business...</option>
+                            {% for business in businesses %}
+                                <option value="{{ business.id }}">{{ business.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Cashier Name -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Cashier Name</span>
+                        </label>
+                        <input type="text" name="cashier_name" class="input input-bordered"
+                               placeholder="e.g., María López" required minlength="2" maxlength="100"/>
+                        <label class="label">
+                            <span class="label-text-alt">Who is opening this session?</span>
+                        </label>
+                    </div>
+
+                    <!-- Initial Cash -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Initial Cash (₲)</span>
+                        </label>
+                        <input type="number" name="initial_cash" class="input input-bordered"
+                               placeholder="500000.00" step="0.01" min="0" required/>
+                        <label class="label">
+                            <span class="label-text-alt">Starting amount in drawer</span>
+                        </label>
+                    </div>
+
+                    <!-- Optional: Opened At -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Opened At (Optional)</span>
+                        </label>
+                        <input type="datetime-local" name="opened_at" class="input input-bordered"/>
+                        <label class="label">
+                            <span class="label-text-alt">Leave blank for current time</span>
+                        </label>
+                    </div>
+
+                    <!-- Allow Overlap Checkbox -->
+                    <div class="form-control">
+                        <label class="label cursor-pointer">
+                            <span class="label-text">Allow overlapping sessions?</span>
+                            <input type="checkbox" name="allow_overlap" class="checkbox" />
+                        </label>
+                        <label class="label">
+                            <span class="label-text-alt">Check only if multiple cashiers on same shift</span>
+                        </label>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-control mt-6">
+                        <div class="flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-1">Open Session</button>
+                            <a href="/" class="btn btn-outline flex-1">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="lg:col-span-1">
+        <div class="card bg-info text-info-content shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title">📝 Quick Guide</h3>
+                <ul class="list-disc list-inside space-y-2">
+                    <li><strong>Cashier Name:</strong> Who's working this shift?</li>
+                    <li><strong>Initial Cash:</strong> Amount you start with</li>
+                    <li><strong>Business:</strong> Which pharmacy location?</li>
+                    <li><strong>Allow Overlap:</strong> Only if multiple cashiers</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card bg-warning text-warning-content shadow-xl mt-4">
+            <div class="card-body">
+                <h3 class="card-title">⚠️ Important</h3>
+                <p>Once opened, only one session can be active per business unless overlap is enabled.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
