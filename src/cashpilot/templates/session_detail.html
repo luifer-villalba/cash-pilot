@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Session - CashPilot{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Main Content -->
+    <div class="lg:col-span-2">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="card-title">Session Details</h2>
+                    {% if session.status == 'OPEN' %}
+                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-sm">Close Session</a>
+                    {% endif %}
+                </div>
+
+                <!-- Session Info -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <span class="label-text-alt">Cashier</span>
+                        <p class="font-bold">{{ session.cashier_name }}</p>
+                    </div>
+                    <div>
+                        <span class="label-text-alt">Status</span>
+                        <p class="font-bold">
+                            {% if session.status == 'OPEN' %}
+                                <span class="badge badge-success text-success-content font-bold">OPEN</span>
+                            {% else %}
+                                <span class="badge badge-ghost text-base-content font-bold">CLOSED</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <span class="label-text-alt">Opened At</span>
+                        <p class="font-bold">{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                    <div>
+                        <span class="label-text-alt">Closed At</span>
+                        <p class="font-bold">
+                            {% if session.closed_at %}
+                                {{ session.closed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                                <span class="opacity-50">-</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="divider">Cash Flow</div>
+
+                <!-- Cash Register Section -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                        <span class="text-sm opacity-70">Initial Cash</span>
+                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.initial_cash) }}</p>
+                    </div>
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                        <span class="text-sm opacity-70">Final Cash</span>
+                        <p class="text-2xl font-bold">
+                            {% if session.final_cash %}
+                                ₲ {{ "{:,.2f}".format(session.final_cash) }}
+                            {% else %}
+                                <span class="opacity-50">Pending</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                        <span class="text-sm opacity-70">Envelope Amount</span>
+                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.envelope_amount) }}</p>
+                    </div>
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-success">
+                        <span class="text-sm opacity-70">Cash Sales</span>
+                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.cash_sales) }}</p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="divider">Payment Methods</div>
+
+                <!-- Payment Methods Grid -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                        <span class="text-sm opacity-70">Credit Card</span>
+                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.credit_card_total) }}</p>
+                    </div>
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                        <span class="text-sm opacity-70">Debit Card</span>
+                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.debit_card_total) }}</p>
+                    </div>
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                        <span class="text-sm opacity-70">Bank Transfer</span>
+                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.bank_transfer_total) }}</p>
+                    </div>
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-warning">
+                        <span class="text-sm opacity-70">Expenses</span>
+                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.expenses) }}</p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="divider">Reconciliation</div>
+
+                <!-- Reconciliation Summary -->
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                        <h3 class="font-bold">Total Sales</h3>
+                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.total_sales) }}</p>
+                        <p class="text-sm mt-2 opacity-70">cash_sales + all payment methods</p>
+                    </div>
+                    <div class="bg-base-200 p-4 rounded border-l-4 border-success">
+                        <h3 class="font-bold">Net Earnings</h3>
+                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.net_earnings) }}</p>
+                        <p class="text-sm mt-2 opacity-70">total_sales - expenses</p>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                {% if session.closing_ticket or session.notes %}
+                <div class="divider">Additional Info</div>
+
+                {% if session.closing_ticket %}
+                <div class="mb-4">
+                    <span class="label-text-alt">Closing Ticket</span>
+                    <p class="font-mono">{{ session.closing_ticket }}</p>
+                </div>
+                {% endif %}
+
+                {% if session.notes %}
+                <div>
+                    <span class="label-text-alt">Notes</span>
+                    <p class="text-sm whitespace-pre-wrap">{{ session.notes }}</p>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar: Quick Actions -->
+    <div class="lg:col-span-1 space-y-4">
+        <!-- Session Status Card -->
+        <div class="card {% if session.status == 'OPEN' %}bg-base-200 border-l-4 border-success{% else %}bg-base-100{% endif %} shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title">Status</h3>
+                <p class="text-lg font-bold">
+                    {% if session.status == 'OPEN' %}
+                        <span class="text-success">✓ Session Active</span>
+                    {% else %}
+                        ✓ Session Closed
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Business Info -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-base">Business</h3>
+                <p class="text-sm">{{ session.business.name }}</p>
+                {% if session.business.address %}
+                <p class="text-xs opacity-70">{{ session.business.address }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-base">Actions</h3>
+                <div class="space-y-2">
+                    <a href="/" class="btn btn-outline btn-block btn-sm">Back to Dashboard</a>
+                    {% if session.status == 'OPEN' %}
+                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-block btn-sm">Close Session</a>
+                    {% else %}
+                        <a href="/sessions/create" class="btn btn-outline btn-block btn-sm">New Session</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Formula Reference -->
+        <div class="card bg-base-200 border-l-4 border-accent shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-sm">📋 Formulas</h3>
+                <div class="text-xs space-y-2">
+                    <div>
+                        <p><strong>Cash Sales:</strong></p>
+                        <p>(final - initial) + envelope</p>
+                    </div>
+                    <div>
+                        <p><strong>Total Sales:</strong></p>
+                        <p>cash + credit + debit + bank</p>
+                    </div>
+                    <div>
+                        <p><strong>Net Earnings:</strong></p>
+                        <p>total - expenses</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

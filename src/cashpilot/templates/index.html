@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CashPilot{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-4xl font-bold">Dashboard</h1>
+        <a href="/sessions/create" class="btn btn-primary">+ New Session</a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+            <div class="stat-title">Active Sessions</div>
+            <div class="stat-value text-primary">{{ active_sessions_count }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+            <div class="stat-title">Total Businesses</div>
+            <div class="stat-value text-info">{{ businesses_count }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+            <div class="stat-title">Today's Revenue</div>
+            <div class="stat-value text-success">₲ {{ total_revenue }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+            <div class="stat-title">Discrepancies</div>
+            <div class="stat-value text-warning">{{ discrepancies_count }}</div>
+        </div>
+    </div>
+
+    <!-- Recent Sessions Table -->
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <h2 class="card-title">Recent Cash Sessions</h2>
+
+            {% if sessions %}
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>Cashier</th>
+                            <th>Business</th>
+                            <th>Status</th>
+                            <th>Opened At</th>
+                            <th>Cash Sales</th>
+                            <th>Total Sales</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions %}
+                        <tr>
+                            <td class="font-semibold">{{ session.cashier_name }}</td>
+                            <td>{{ session.business.name }}</td>
+                            <td>
+                                {% if session.status == 'OPEN' %}
+                                    <span class="badge badge-success text-success-content font-bold">OPEN</span>
+                                {% else %}
+                                    <span class="badge badge-ghost text-base-content font-bold">CLOSED</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>₲ {{ "{:,.2f}".format(session.cash_sales) }}</td>
+                            <td>₲ {{ "{:,.2f}".format(session.total_sales) }}</td>
+                            <td>
+                                <a href="/sessions/{{ session.id }}" class="btn btn-sm btn-outline">View</a>
+                                {% if session.status == 'OPEN' %}
+                                    <a href="/sessions/{{ session.id }}/edit" class="btn btn-sm btn-outline">Close</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-info-content">
+                <span>No sessions yet. <a href="/sessions/create" class="link link-hover">Create one</a></span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
