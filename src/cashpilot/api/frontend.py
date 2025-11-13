@@ -1,13 +1,13 @@
 """Frontend routes for HTML templates."""
 
-from datetime import datetime, date
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import and_, cast, func, Numeric, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -22,10 +22,7 @@ router = APIRouter(tags=["frontend"])
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
-    request: Request,
-    skip: int = 0,
-    limit: int = 50,
-    db: AsyncSession = Depends(get_db)
+    request: Request, skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)
 ):
     """Dashboard homepage with paginated session list."""
     # Get paginated sessions (most recent first)
@@ -45,9 +42,14 @@ async def dashboard(
     total_sessions = result.scalar() or 0
 
     # Active sessions count
-    stmt_active = select(func.count(CashSession.id)).where(CashSession.status == "OPEN")
+    stmt_active = (
+        select(CashSession)
+        .options(joinedload(CashSession.business))
+        .where(CashSession.status == "OPEN")
+        .limit(10)
+    )
     result = await db.execute(stmt_active)
-    active_sessions_count = result.scalar() or 0
+    active_sessions_count = len(result.scalars().all())
 
     # Active businesses count
     stmt_businesses = select(func.count(Business.id)).where(Business.is_active is True)
@@ -56,35 +58,29 @@ async def dashboard(
 
     # Today's total revenue (closed sessions only)
     today = date.today()
-    stmt_revenue = (
-        select(
-            func.sum(
-                (CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash)
-                + CashSession.credit_card_total
-                + CashSession.debit_card_total
-                + CashSession.bank_transfer_total
-            )
+    stmt_revenue = select(
+        func.sum(
+            (CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash)
+            + CashSession.credit_card_total
+            + CashSession.debit_card_total
+            + CashSession.bank_transfer_total
         )
-        .where(
-            and_(
-                CashSession.status == "CLOSED",
-                CashSession.final_cash.isnot(None),  # Only sum closed sessions with final_cash
-                func.date(CashSession.closed_at) == today,
-            )
+    ).where(
+        and_(
+            CashSession.status == "CLOSED",
+            CashSession.final_cash.isnot(None),  # Only sum closed sessions with final_cash
+            func.date(CashSession.closed_at) == today,
         )
     )
     result = await db.execute(stmt_revenue)
     total_revenue = result.scalar() or Decimal("0.00")
 
     # Discrepancies count (closed sessions from today with has_conflict=true)
-    stmt_discrepancies = (
-        select(func.count(CashSession.id))
-        .where(
-            and_(
-                CashSession.status == "CLOSED",
-                CashSession.has_conflict is True,
-                func.date(CashSession.closed_at) == today,
-            )
+    stmt_discrepancies = select(func.count(CashSession.id)).where(
+        and_(
+            CashSession.status == "CLOSED",
+            CashSession.has_conflict is True,
+            func.date(CashSession.closed_at) == today,
         )
     )
     result = await db.execute(stmt_discrepancies)
@@ -115,7 +111,7 @@ async def dashboard(
 @router.get("/sessions/create", response_class=HTMLResponse)
 async def create_session_form(request: Request, db: AsyncSession = Depends(get_db)):
     """Form to create new cash session."""
-    stmt = select(Business).where(Business.is_active == True).order_by(Business.name)
+    stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
     result = await db.execute(stmt)
     businesses = list(result.scalars().all())
 
