@@ -22,7 +22,7 @@
         </div>
         <div class="stat bg-base-100 rounded-lg shadow text-base-content">
             <div class="stat-title">Today's Revenue</div>
-            <div class="stat-value text-success">₲ {{ total_revenue }}</div>
+            <div class="stat-value text-success">₲ {{ "{:,.2f}".format(total_revenue) }}</div>
         </div>
         <div class="stat bg-base-100 rounded-lg shadow text-base-content">
             <div class="stat-title">Discrepancies</div>
@@ -33,7 +33,7 @@
     <!-- Recent Sessions Table -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <h2 class="card-title">Recent Cash Sessions</h2>
+            <h2 class="card-title">Cash Sessions (Page {{ current_page }} of {{ total_pages }})</h2>
 
             {% if sessions %}
             <div class="overflow-x-auto">
@@ -44,6 +44,8 @@
                             <th>Business</th>
                             <th>Status</th>
                             <th>Opened At</th>
+                            <th>Initial Cash</th>
+                            <th>Final Cash</th>
                             <th>Cash Sales</th>
                             <th>Total Sales</th>
                             <th>Actions</th>
@@ -62,19 +64,62 @@
                                 {% endif %}
                             </td>
                             <td>{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>₲ {{ "{:,.2f}".format(session.initial_cash) }}</td>
+                            <td>
+                                {% if session.final_cash %}
+                                    ₲ {{ "{:,.2f}".format(session.final_cash) }}
+                                {% else %}
+                                    <span class="opacity-50">-</span>
+                                {% endif %}
+                            </td>
                             <td>₲ {{ "{:,.2f}".format(session.cash_sales) }}</td>
                             <td>₲ {{ "{:,.2f}".format(session.total_sales) }}</td>
                             <td>
-                                <a href="/sessions/{{ session.id }}" class="btn btn-sm btn-outline">View</a>
-                                {% if session.status == 'OPEN' %}
-                                    <a href="/sessions/{{ session.id }}/edit" class="btn btn-sm btn-outline">Close</a>
-                                {% endif %}
+                                <div class="flex gap-1">
+                                    <a href="/sessions/{{ session.id }}" class="btn btn-xs btn-outline">View</a>
+                                    {% if session.status == 'OPEN' %}
+                                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-xs btn-outline">Close</a>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination Controls -->
+            <div class="flex justify-between items-center mt-6">
+                <div class="text-sm opacity-75">
+                    Showing {{ skip + 1 }}-{{ [skip + limit, total_sessions]|min }} of {{ total_sessions }} sessions
+                </div>
+                <div class="join">
+                    {% if current_page > 1 %}
+                        <a href="/?skip={{ [skip - limit, 0]|max }}&limit={{ limit }}" class="join-item btn">«</a>
+                        <a href="/?skip={{ [skip - limit, 0]|max }}&limit={{ limit }}" class="join-item btn">Prev</a>
+                    {% else %}
+                        <button class="join-item btn" disabled>«</button>
+                        <button class="join-item btn" disabled>Prev</button>
+                    {% endif %}
+
+                    {% for page_num in range(1, total_pages + 1) %}
+                        {% if page_num == current_page %}
+                            <button class="join-item btn btn-active">{{ page_num }}</button>
+                        {% else %}
+                            <a href="/?skip={{ (page_num - 1) * limit }}&limit={{ limit }}" class="join-item btn">{{ page_num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if current_page < total_pages %}
+                        <a href="/?skip={{ skip + limit }}&limit={{ limit }}" class="join-item btn">Next</a>
+                        <a href="/?skip={{ (total_pages - 1) * limit }}&limit={{ limit }}" class="join-item btn">»</a>
+                    {% else %}
+                        <button class="join-item btn" disabled>Next</button>
+                        <button class="join-item btn" disabled>»</button>
+                    {% endif %}
+                </div>
+            </div>
+
             {% else %}
             <div class="alert alert-info text-info-content">
                 <span>No sessions yet. <a href="/sessions/create" class="link link-hover">Create one</a></span>
