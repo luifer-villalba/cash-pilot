@@ -1,13 +1,13 @@
 """Frontend routes for HTML templates."""
 
-from datetime import datetime
+from datetime import datetime, date
 from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
+from sqlalchemy import and_, cast, func, Numeric, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -21,26 +21,78 @@ router = APIRouter(tags=["frontend"])
 
 
 @router.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
-    """Dashboard homepage with session list."""
-    # Get active sessions with business eager loaded
-    stmt_active = (
+async def dashboard(
+    request: Request,
+    skip: int = 0,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db)
+):
+    """Dashboard homepage with paginated session list."""
+    # Get paginated sessions (most recent first)
+    stmt_sessions = (
         select(CashSession)
         .options(joinedload(CashSession.business))
-        .where(CashSession.status == "OPEN")
-        .limit(10)
+        .order_by(CashSession.opened_at.desc())
+        .offset(skip)
+        .limit(limit)
     )
+    result = await db.execute(stmt_sessions)
+    sessions = result.scalars().unique().all()
+
+    # Total session count (for pagination)
+    stmt_total = select(func.count(CashSession.id))
+    result = await db.execute(stmt_total)
+    total_sessions = result.scalar() or 0
+
+    # Active sessions count
+    stmt_active = select(func.count(CashSession.id)).where(CashSession.status == "OPEN")
     result = await db.execute(stmt_active)
-    sessions = result.scalars().all()
+    active_sessions_count = result.scalar() or 0
 
-    # Get stats
-    stmt_count_active = select(CashSession).where(CashSession.status == "OPEN")
-    result = await db.execute(stmt_count_active)
-    active_sessions_count = len(result.scalars().all())
+    # Active businesses count
+    stmt_businesses = select(func.count(Business.id)).where(Business.is_active is True)
+    result = await db.execute(stmt_businesses)
+    businesses_count = result.scalar() or 0
 
-    stmt_count_business = select(Business).where(Business.is_active is True)
-    result = await db.execute(stmt_count_business)
-    businesses_count = len(result.scalars().all())
+    # Today's total revenue (closed sessions only)
+    today = date.today()
+    stmt_revenue = (
+        select(
+            func.sum(
+                (CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash)
+                + CashSession.credit_card_total
+                + CashSession.debit_card_total
+                + CashSession.bank_transfer_total
+            )
+        )
+        .where(
+            and_(
+                CashSession.status == "CLOSED",
+                CashSession.final_cash.isnot(None),  # Only sum closed sessions with final_cash
+                func.date(CashSession.closed_at) == today,
+            )
+        )
+    )
+    result = await db.execute(stmt_revenue)
+    total_revenue = result.scalar() or Decimal("0.00")
+
+    # Discrepancies count (closed sessions from today with has_conflict=true)
+    stmt_discrepancies = (
+        select(func.count(CashSession.id))
+        .where(
+            and_(
+                CashSession.status == "CLOSED",
+                CashSession.has_conflict is True,
+                func.date(CashSession.closed_at) == today,
+            )
+        )
+    )
+    result = await db.execute(stmt_discrepancies)
+    discrepancies_count = result.scalar() or 0
+
+    # Pagination info
+    total_pages = (total_sessions + limit - 1) // limit
+    current_page = (skip // limit) + 1
 
     return templates.TemplateResponse(
         "index.html",
@@ -49,8 +101,13 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
             "sessions": sessions,
             "active_sessions_count": active_sessions_count,
             "businesses_count": businesses_count,
-            "total_revenue": "2,400,000",
-            "discrepancies_count": 0,
+            "total_revenue": total_revenue,
+            "discrepancies_count": discrepancies_count,
+            "skip": skip,
+            "limit": limit,
+            "total_sessions": total_sessions,
+            "current_page": current_page,
+            "total_pages": total_pages,
         },
     )
 
@@ -58,7 +115,7 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
 @router.get("/sessions/create", response_class=HTMLResponse)
 async def create_session_form(request: Request, db: AsyncSession = Depends(get_db)):
     """Form to create new cash session."""
-    stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
+    stmt = select(Business).where(Business.is_active == True).order_by(Business.name)
     result = await db.execute(stmt)
     businesses = list(result.scalars().all())
 

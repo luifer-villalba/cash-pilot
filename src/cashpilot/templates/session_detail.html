@@ -25,9 +25,9 @@
                         <span class="label-text-alt">Status</span>
                         <p class="font-bold">
                             {% if session.status == 'OPEN' %}
-                                <span class="badge badge-success text-success-content font-bold">OPEN</span>
+                                <span class="badge badge-warning">OPEN</span>
                             {% else %}
-                                <span class="badge badge-ghost text-base-content font-bold">CLOSED</span>
+                                <span class="badge badge-outline badge-ghost">CLOSED</span>
                             {% endif %}
                         </p>
                     </div>
