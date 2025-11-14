@@ -1,0 +1,329 @@
+# File: src/cashpilot/translations/es_PY/LC_MESSAGES/messages.po
+# Spanish (Paraguay) translations for CashPilot
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the CashPilot project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CashPilot 0.1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-11-14 18:15+0000\n"
+"PO-Revision-Date: 2025-11-14 18:20+0000\n"
+"Last-Translator: Luifer Villalba <luifer@example.com>\n"
+"Language: es_PY\n"
+"Language-Team: es_PY <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.14.0\n"
+
+msgid "+ New Session"
+msgstr "+ Nueva Caja"
+
+msgid "API Docs"
+msgstr "Docs API"
+
+msgid "Actions"
+msgstr "Acciones"
+
+msgid "Active Sessions"
+msgstr "Sesiones Activas"
+
+msgid "Additional Info"
+msgstr "Información Adicional"
+
+msgid "Allow Overlap:"
+msgstr "Permitir Superposición:"
+
+msgid "Allow overlapping sessions?"
+msgstr "¿Permitir sesiones superpuestas?"
+
+msgid "Amount you start with"
+msgstr "Cantidad con la que comienzas"
+
+msgid "Any discrepancies or notes..."
+msgstr "Cualquier discrepancia o nota..."
+
+msgid "Back to Dashboard"
+msgstr "Volver al Panel"
+
+msgid "Bank Transfer"
+msgstr "Transferencia Bancaria"
+
+msgid "Bank Transfer Total (₲)"
+msgstr "Total Transferencia Bancaria (₲)"
+
+msgid "Business"
+msgstr "Negocio"
+
+msgid "Business Cash Register Reconciliation System"
+msgstr "Sistema de Reconciliación de Caja de Farmacia"
+
+msgid "Business expenses during shift"
+msgstr "Gastos del negocio durante el turno"
+
+msgid "Business:"
+msgstr "Negocio:"
+
+msgid "Businesses"
+msgstr "Negocios"
+
+msgid "CLOSED"
+msgstr "CERRADO"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Cash Flow"
+msgstr "Flujo de Caja"
+
+msgid "Cash Sales"
+msgstr "Ventas en Efectivo"
+
+msgid "Cash Sales:"
+msgstr "Ventas en Efectivo:"
+
+msgid "Cash Sessions"
+msgstr "Sesiones de Caja"
+
+msgid "Cash removed from register (if any)"
+msgstr "Efectivo retirado de la caja (si aplica)"
+
+msgid "Cashier"
+msgstr "Cajero/a"
+
+msgid "Cashier Name"
+msgstr "Nombre del Cajero/a"
+
+msgid "Cashier Name:"
+msgstr "Nombre del Cajero/a:"
+
+msgid "Cashier:"
+msgstr "Cajero/a:"
+
+msgid "Check only if multiple cashiers on same shift"
+msgstr "Marcar solo si hay múltiples cajeros en el mismo turno"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Close Cash Session"
+msgstr "Cerrar Sesión de Caja"
+
+msgid "Close Session"
+msgstr "Cerrar Sesión"
+
+msgid "Closed At"
+msgstr "Cerrado a las"
+
+msgid "Closing Ticket"
+msgstr "Ticket de Cierre"
+
+msgid "Closing Ticket #"
+msgstr "# Ticket de Cierre"
+
+msgid "Create Session"
+msgstr "Crear Sesión"
+
+msgid "Create one"
+msgstr "Crear una"
+
+msgid "Credit Card"
+msgstr "Tarjeta de Crédito"
+
+msgid "Credit Card Total (₲)"
+msgstr "Total Tarjeta Crédito (₲)"
+
+msgid "Dashboard"
+msgstr "Panel de Control"
+
+msgid "Debit Card"
+msgstr "Tarjeta de Débito"
+
+msgid "Debit Card Total (₲)"
+msgstr "Total Tarjeta Débito (₲)"
+
+msgid "Discrepancies"
+msgstr "Diferencias"
+
+msgid "Envelope Amount"
+msgstr "Cantidad en Sobre"
+
+msgid "Envelope Amount (₲)"
+msgstr "Cantidad en Sobre (₲)"
+
+msgid "Expenses"
+msgstr "Gastos"
+
+msgid "Expenses (₲)"
+msgstr "Gastos (₲)"
+
+msgid "Fill form fields to see preview..."
+msgstr "Completa los campos para ver vista previa..."
+
+msgid "Final Cash"
+msgstr "Efectivo Final"
+
+msgid "Final Cash Count (₲)"
+msgstr "Conteo Efectivo Final (₲)"
+
+msgid "Formula"
+msgstr "Fórmula"
+
+msgid "Formulas"
+msgstr "Fórmulas"
+
+msgid "Important"
+msgstr "Importante"
+
+msgid "Initial Cash"
+msgstr "Efectivo Inicial"
+
+msgid "Initial Cash (₲)"
+msgstr "Efectivo Inicial (₲)"
+
+msgid "Initial Cash:"
+msgstr "Efectivo Inicial:"
+
+msgid "Leave blank for current time"
+msgstr "Dejar en blanco para la hora actual"
+
+msgid "Net Earnings"
+msgstr "Ganancias Netas"
+
+msgid "Net Earnings:"
+msgstr "Ganancias Netas:"
+
+msgid "New Session"
+msgstr "Nueva Sesión"
+
+msgid "No sessions yet."
+msgstr "Sin sesiones aún."
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "OPEN"
+msgstr "ABIERTO"
+
+msgid "Only if multiple cashiers"
+msgstr "Solo si hay múltiples cajeros"
+
+msgid "Open New Cash Session"
+msgstr "Abrir Nueva Sesión de Caja"
+
+msgid "Open Session"
+msgstr "Abrir"
+
+msgid "Opened At"
+msgstr "Apertura"
+
+msgid "Opened At (Optional)"
+msgstr "Abierto a las (Opcional)"
+
+msgid "Opened At:"
+msgstr "Apertura:"
+
+msgid "Opening Info"
+msgstr "Información de Apertura"
+
+msgid "Optional: POS ticket number"
+msgstr "Opcional: número de ticket POS"
+
+msgid "Page"
+msgstr "Página"
+
+msgid "Payment Methods"
+msgstr "Métodos de Pago"
+
+msgid "Pending"
+msgstr "Pendiente"
+
+msgid "Quick Guide"
+msgstr "Guía Rápida"
+
+msgid "Reconciliation"
+msgstr "Reconciliación"
+
+msgid "Reconciliation Preview"
+msgstr "Vista Previa de Reconciliación"
+
+msgid "Select a business..."
+msgstr "Selecciona un negocio..."
+
+msgid "Session"
+msgstr "Sesión"
+
+msgid "Session Active"
+msgstr "Sesión Activa"
+
+msgid "Session Closed"
+msgstr "Sesión Cerrada"
+
+msgid "Session Details"
+msgstr "Detalles de la Sesión"
+
+msgid "Sessions"
+msgstr "Sesiones"
+
+msgid "Showing"
+msgstr "Mostrando"
+
+msgid "Starting amount in drawer"
+msgstr "Cantidad inicial en la caja"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "Status:"
+msgstr "Estado:"
+
+msgid "Today's Revenue"
+msgstr "Ingresos Hoy"
+
+msgid "Total Businesses"
+msgstr "Negocios Totales"
+
+msgid "Total Sales"
+msgstr "Ventas Totales"
+
+msgid "Total Sales:"
+msgstr "Ventas Totales:"
+
+msgid "Total counted in drawer"
+msgstr "Total contado en la caja"
+
+msgid "View"
+msgstr "Ver"
+
+msgid "Which pharmacy location?"
+msgstr "¿Cuál sucursal de farmacia?"
+
+msgid "Who is opening this session?"
+msgstr "¿Quién abre esta sesión?"
+
+msgid "Who's working this shift?"
+msgstr "¿Quién trabaja este turno?"
+
+msgid "cash_sales + all payment methods"
+msgstr "ventas_efectivo + todos los métodos de pago"
+
+msgid "e.g., John Doe"
+msgstr "ej. José López"
+
+msgid "e.g., T-20251112-001"
+msgstr "ej. T-20251112-001"
+
+msgid "of"
+msgstr "de"
+
+msgid "sessions"
+msgstr "sesiones"
+
+msgid "total_sales - expenses"
+msgstr "ventas_totales - gastos"
+
+msgid "Once opened, only one session can be active per business unless overlap is enabled."
+msgstr "Una vez abierta, solo una sesión puede estar activa por negocio a menos que se habilite la superposición."

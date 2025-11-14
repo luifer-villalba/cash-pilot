@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Session - CashPilot{% endblock %}
+{% block title %}{{ _('Session') }} - CashPilot{% endblock %}
 
 {% block content %}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -9,34 +9,34 @@
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="card-title">Session Details</h2>
+                    <h2 class="card-title">{{ _('Session Details') }}</h2>
                     {% if session.status == 'OPEN' %}
-                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-sm">Close Session</a>
+                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-sm">{{ _('Close Session') }}</a>
                     {% endif %}
                 </div>
 
                 <!-- Session Info -->
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                        <span class="label-text-alt">Cashier</span>
+                        <span class="label-text-alt">{{ _('Cashier') }}</span>
                         <p class="font-bold">{{ session.cashier_name }}</p>
                     </div>
                     <div>
-                        <span class="label-text-alt">Status</span>
+                        <span class="label-text-alt">{{ _('Status') }}</span>
                         <p class="font-bold">
                             {% if session.status == 'OPEN' %}
-                                <span class="badge badge-warning">OPEN</span>
+                                <span class="badge badge-warning">{{ _('OPEN') }}</span>
                             {% else %}
-                                <span class="badge badge-outline badge-ghost">CLOSED</span>
+                                <span class="badge badge-outline badge-ghost">{{ _('CLOSED') }}</span>
                             {% endif %}
                         </p>
                     </div>
                     <div>
-                        <span class="label-text-alt">Opened At</span>
+                        <span class="label-text-alt">{{ _('Opened At') }}</span>
                         <p class="font-bold">{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</p>
                     </div>
                     <div>
-                        <span class="label-text-alt">Closed At</span>
+                        <span class="label-text-alt">{{ _('Closed At') }}</span>
                         <p class="font-bold">
                             {% if session.closed_at %}
                                 {{ session.closed_at.strftime('%Y-%m-%d %H:%M') }}
@@ -48,88 +48,88 @@
                 </div>
 
                 <!-- Divider -->
-                <div class="divider">Cash Flow</div>
+                <div class="divider">{{ _('Cash Flow') }}</div>
 
                 <!-- Cash Register Section -->
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">Initial Cash</span>
+                        <span class="text-sm opacity-70">{{ _('Initial Cash') }}</span>
                        <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">Final Cash</span>
+                        <span class="text-sm opacity-70">{{ _('Final Cash') }}</span>
                         <p class="text-2xl font-bold">
                             {% if session.final_cash %}
                                 ₲ {{ "{:,.0f}".format(session.final_cash) }}
                             {% else %}
-                                <span class="opacity-50">Pending</span>
+                                <span class="opacity-50">{{ _('Pending') }}</span>
                             {% endif %}
                         </p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">Envelope Amount</span>
+                        <span class="text-sm opacity-70">{{ _('Envelope Amount') }}</span>
                         <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.envelope_amount) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-success">
-                        <span class="text-sm opacity-70">Cash Sales</span>
+                        <span class="text-sm opacity-70">{{ _('Cash Sales') }}</span>
                         <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.cash_sales) }}</p>
                     </div>
                 </div>
 
                 <!-- Divider -->
-                <div class="divider">Payment Methods</div>
+                <div class="divider">{{ _('Payment Methods') }}</div>
 
                 <!-- Payment Methods Grid -->
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">Credit Card</span>
+                        <span class="text-sm opacity-70">{{ _('Credit Card') }}</span>
                         <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.credit_card_total) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">Debit Card</span>
+                        <span class="text-sm opacity-70">{{ _('Debit Card') }}</span>
                         <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.debit_card_total) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">Bank Transfer</span>
+                        <span class="text-sm opacity-70">{{ _('Bank Transfer') }}</span>
                         <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.bank_transfer_total) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-warning">
-                        <span class="text-sm opacity-70">Expenses</span>
+                        <span class="text-sm opacity-70">{{ _('Expenses') }}</span>
                         <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.expenses) }}</p>
                     </div>
                 </div>
 
                 <!-- Divider -->
-                <div class="divider">Reconciliation</div>
+                <div class="divider">{{ _('Reconciliation') }}</div>
 
                 <!-- Reconciliation Summary -->
                 <div class="grid grid-cols-1 gap-4">
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <h3 class="font-bold">Total Sales</h3>
+                        <h3 class="font-bold">{{ _('Total Sales') }}</h3>
                         <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.total_sales) }}</p>
-                        <p class="text-sm mt-2 opacity-70">cash_sales + all payment methods</p>
+                        <p class="text-sm mt-2 opacity-70">{{ _('cash_sales + all payment methods') }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-success">
-                        <h3 class="font-bold">Net Earnings</h3>
+                        <h3 class="font-bold">{{ _('Net Earnings') }}</h3>
                         <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.net_earnings) }}</p>
-                        <p class="text-sm mt-2 opacity-70">total_sales - expenses</p>
+                        <p class="text-sm mt-2 opacity-70">{{ _('total_sales - expenses') }}</p>
                     </div>
                 </div>
 
                 <!-- Additional Info -->
                 {% if session.closing_ticket or session.notes %}
-                <div class="divider">Additional Info</div>
+                <div class="divider">{{ _('Additional Info') }}</div>
 
                 {% if session.closing_ticket %}
                 <div class="mb-4">
-                    <span class="label-text-alt">Closing Ticket</span>
+                    <span class="label-text-alt">{{ _('Closing Ticket') }}</span>
                     <p class="font-mono">{{ session.closing_ticket }}</p>
                 </div>
                 {% endif %}
 
                 {% if session.notes %}
                 <div>
-                    <span class="label-text-alt">Notes</span>
+                    <span class="label-text-alt">{{ _('Notes') }}</span>
                     <p class="text-sm whitespace-pre-wrap">{{ session.notes }}</p>
                 </div>
                 {% endif %}
@@ -143,12 +143,12 @@
         <!-- Session Status Card -->
         <div class="card {% if session.status == 'OPEN' %}bg-base-200 border-l-4 border-success{% else %}bg-base-100{% endif %} shadow-xl">
             <div class="card-body">
-                <h3 class="card-title">Status</h3>
+                <h3 class="card-title">{{ _('Status') }}</h3>
                 <p class="text-lg font-bold">
                     {% if session.status == 'OPEN' %}
-                        <span class="text-success">✓ Session Active</span>
+                        <span class="text-success">✓ {{ _('Session Active') }}</span>
                     {% else %}
-                        ✓ Session Closed
+                        ✓ {{ _('Session Closed') }}
                     {% endif %}
                 </p>
             </div>
@@ -157,7 +157,7 @@
         <!-- Business Info -->
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <h3 class="card-title text-base">Business</h3>
+                <h3 class="card-title text-base">{{ _('Business') }}</h3>
                 <p class="text-sm">{{ session.business.name }}</p>
                 {% if session.business.address %}
                 <p class="text-xs opacity-70">{{ session.business.address }}</p>
@@ -168,13 +168,13 @@
         <!-- Actions -->
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <h3 class="card-title text-base">Actions</h3>
+                <h3 class="card-title text-base">{{ _('Actions') }}</h3>
                 <div class="space-y-2">
-                    <a href="/" class="btn btn-outline btn-block btn-sm">Back to Dashboard</a>
+                    <a href="/" class="btn btn-outline btn-block btn-sm">{{ _('Back to Dashboard') }}</a>
                     {% if session.status == 'OPEN' %}
-                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-block btn-sm">Close Session</a>
+                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-block btn-sm">{{ _('Close Session') }}</a>
                     {% else %}
-                        <a href="/sessions/create" class="btn btn-outline btn-block btn-sm">New Session</a>
+                        <a href="/sessions/create" class="btn btn-outline btn-block btn-sm">{{ _('New Session') }}</a>
                     {% endif %}
                 </div>
             </div>
@@ -183,18 +183,18 @@
         <!-- Formula Reference -->
         <div class="card bg-base-200 border-l-4 border-accent shadow-xl">
             <div class="card-body">
-                <h3 class="card-title text-sm">📋 Formulas</h3>
+                <h3 class="card-title text-sm">📋 {{ _('Formulas') }}</h3>
                 <div class="text-xs space-y-2">
                     <div>
-                        <p><strong>Cash Sales:</strong></p>
+                        <p><strong>{{ _('Cash Sales:') }}</strong></p>
                         <p>(final - initial) + envelope</p>
                     </div>
                     <div>
-                        <p><strong>Total Sales:</strong></p>
+                        <p><strong>{{ _('Total Sales:') }}</strong></p>
                         <p>cash + credit + debit + bank</p>
                     </div>
                     <div>
-                        <p><strong>Net Earnings:</strong></p>
+                        <p><strong>{{ _('Net Earnings:') }}</strong></p>
                         <p>total - expenses</p>
                     </div>
                 </div>

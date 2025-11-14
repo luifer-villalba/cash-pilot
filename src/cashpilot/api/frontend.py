@@ -1,9 +1,10 @@
-# File: src/cashpilot/api/frontend.py (reordered by logical flow)
+# File: src/cashpilot/api/frontend.py
+"""Frontend routes for HTML templates with i18n support."""
 
-"""Frontend routes for HTML templates."""
-
+import gettext
 from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
@@ -19,7 +20,41 @@ from cashpilot.models import Business, CashSession
 # Configure templates
 templates = Jinja2Templates(directory="src/cashpilot/templates")
 
+# Translations directory
+TRANSLATIONS_DIR = Path(__file__).parent.parent / "translations"
+
 router = APIRouter(tags=["frontend"])
+
+
+def get_locale(request: Request) -> str:
+    """Get locale from query param (?lang=es) or Accept-Language header. Default: en."""
+    # Check query param first
+    lang = request.query_params.get("lang", "").lower()
+    if lang in ["es", "en"]:
+        return lang
+
+    # Check Accept-Language header
+    accept_lang = request.headers.get("accept-language", "").split(",")[0].split("-")[0].lower()
+    if accept_lang == "es":
+        return "es"
+
+    return "en"  # Default
+
+
+def get_translation_function(locale: str):
+    """Get gettext translation function for locale."""
+    if locale == "es":
+        try:
+            translation = gettext.translation(
+                "messages",
+                localedir=str(TRANSLATIONS_DIR),
+                languages=["es_PY"],
+                fallback=True,
+            )
+            return translation.gettext
+        except Exception:
+            return lambda x: x
+    return lambda x: x  # English: identity function
 
 
 # Dashboard (list view)
@@ -30,6 +65,9 @@ async def dashboard(
     db: AsyncSession = Depends(get_db),
 ):
     """Dashboard homepage with paginated session list."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
     per_page = 50
     skip = (page - 1) * per_page
 
@@ -83,6 +121,8 @@ async def dashboard(
             "total_sessions": total_sessions,
             "total_revenue": total_revenue,
             "discrepancies_count": 0,
+            "locale": locale,
+            "_": _,
         },
     )
 
@@ -91,6 +131,9 @@ async def dashboard(
 @router.get("/sessions/create", response_class=HTMLResponse)
 async def create_session_form(request: Request, db: AsyncSession = Depends(get_db)):
     """Form to create new cash session."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
     stmt = select(Business).where(Business.is_active).order_by(Business.name)
     result = await db.execute(stmt)
     businesses = list(result.scalars().all())
@@ -100,6 +143,8 @@ async def create_session_form(request: Request, db: AsyncSession = Depends(get_d
         {
             "request": request,
             "businesses": businesses,
+            "locale": locale,
+            "_": _,
         },
     )
 
@@ -107,6 +152,9 @@ async def create_session_form(request: Request, db: AsyncSession = Depends(get_d
 @router.post("/sessions", response_class=HTMLResponse)
 async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
     """Handle session creation form submission."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
     form_data = await request.form()
 
     try:
@@ -137,6 +185,8 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
                 "request": request,
                 "error": str(e),
                 "businesses": businesses,
+                "locale": locale,
+                "_": _,
             },
         )
 
@@ -149,6 +199,9 @@ async def view_session(
     db: AsyncSession = Depends(get_db),
 ):
     """View single session details."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
     stmt = (
         select(CashSession)
         .options(joinedload(CashSession.business))
@@ -165,6 +218,8 @@ async def view_session(
         {
             "request": request,
             "session": session_obj,
+            "locale": locale,
+            "_": _,
         },
     )
 
@@ -177,6 +232,9 @@ async def edit_session_form(
     db: AsyncSession = Depends(get_db),
 ):
     """Form to edit/close cash session."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
     stmt = (
         select(CashSession)
         .options(joinedload(CashSession.business))
@@ -200,6 +258,8 @@ async def edit_session_form(
         {
             "request": request,
             "session": session,
+            "locale": locale,
+            "_": _,
         },
     )
 
@@ -211,6 +271,9 @@ async def close_session(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle session close form submission."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
     form_data = await request.form()
 
     try:
@@ -257,5 +320,7 @@ async def close_session(
                 "request": request,
                 "session": session_obj,
                 "error": str(e),
+                "locale": locale,
+                "_": _,
             },
         )
