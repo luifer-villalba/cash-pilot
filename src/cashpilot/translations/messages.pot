@@ -457,3 +457,32 @@ msgstr ""
 msgid "Formulas"
 msgstr ""
 
+msgid "Filters"
+msgstr ""
+
+msgid "From Date"
+msgstr ""
+
+msgid "To Date"
+msgstr ""
+
+msgid "Search..."
+msgstr ""
+
+msgid "All Businesses"
+msgstr ""
+
+msgid "Clear Filters"
+msgstr ""
+
+msgid "From:"
+msgstr ""
+
+msgid "To:"
+msgstr ""
+
+msgid "Cashier:"
+msgstr ""
+
+msgid "No sessions found."
+msgstr ""

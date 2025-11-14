@@ -31,87 +31,132 @@
         </div>
     </div>
 
-    <!-- Recent Sessions Table -->
+    <!-- Filters Section (OUTSIDE HTMX TARGET) -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <h2 class="card-title">{{ _('Cash Sessions') }} ({{ _('Page') }} {{ page }} {{ _('of') }} {{ total_pages }})</h2>
+            <h3 class="card-title">{{ _('Filters') }}</h3>
 
-            {% if sessions %}
-            <div class="overflow-x-auto">
-                <table class="table table-zebra w-full">
-                    <thead>
-                        <tr>
-                            <th>{{ _('Cashier') }}</th>
-                            <th>{{ _('Business') }}</th>
-                            <th>{{ _('Status') }}</th>
-                            <th>{{ _('Opened At') }}</th>
-                            <th>{{ _('Cash Sales') }}</th>
-                            <th>{{ _('Total Sales') }}</th>
-                            <th>{{ _('Actions') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for session in sessions %}
-                        <tr>
-                            <td class="font-semibold">{{ session.cashier_name }}</td>
-                            <td>{{ session.business.name }}</td>
-                            <td>
-                                {% if session.status == 'OPEN' %}
-                                    <span class="badge badge-warning">{{ _('OPEN') }}</span>
-                                {% else %}
-                                    <span class="badge badge-outline badge-ghost">{{ _('CLOSED') }}</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>₲ {{ "{:,.0f}".format(session.cash_sales) }}</td>
-                            <td>₲ {{ "{:,.0f}".format(session.total_sales) }}</td>
-                            <td>
-                                <a href="/sessions/{{ session.id }}" class="btn btn-sm btn-outline">{{ _('View') }}</a>
-                                {% if session.status == 'OPEN' %}
-                                    <a href="/sessions/{{ session.id }}/edit" class="btn btn-sm btn-outline">{{ _('Close') }}</a>
-                                {% endif %}
-                            </td>
-                        </tr>
+            <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <!-- Date From -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm">{{ _('From Date') }}</span>
+                    </label>
+                    <input
+                        type="date"
+                        name="from_date"
+                        class="input input-bordered input-sm"
+                        value="{{ current_filters.from_date or '' }}"
+                        hx-get="/sessions/table"
+                        hx-include="#filter-form"
+                        hx-target="#sessions-table"
+                        hx-swap="innerHTML"
+                        hx-trigger="change"
+                    />
+                </div>
+
+                <!-- Date To -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm">{{ _('To Date') }}</span>
+                    </label>
+                    <input
+                        type="date"
+                        name="to_date"
+                        class="input input-bordered input-sm"
+                        value="{{ current_filters.to_date or '' }}"
+                        hx-get="/sessions/table"
+                        hx-include="#filter-form"
+                        hx-target="#sessions-table"
+                        hx-swap="innerHTML"
+                        hx-trigger="change"
+                    />
+                </div>
+
+                <!-- Cashier Name -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm">{{ _('Cashier Name') }}</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="cashier_name"
+                        class="input input-bordered input-sm"
+                        placeholder="{{ _('Search...') }}"
+                        value="{{ current_filters.cashier_name or '' }}"
+                        hx-get="/sessions/table"
+                        hx-include="#filter-form"
+                        hx-target="#sessions-table"
+                        hx-swap="innerHTML"
+                        hx-trigger="changed delay:500ms"
+                    />
+                </div>
+
+                <!-- Business Dropdown -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm">{{ _('Business') }}</span>
+                    </label>
+                    <select
+                        name="business_id"
+                        class="select select-bordered select-sm"
+                        hx-get="/sessions/table"
+                        hx-include="#filter-form"
+                        hx-target="#sessions-table"
+                        hx-swap="innerHTML"
+                        hx-trigger="change"
+                    >
+                        <option value="">{{ _('All Businesses') }}</option>
+                        {% for biz in businesses %}
+                            <option value="{{ biz.id }}" {% if current_filters.business_id == biz.id|string %}selected{% endif %}>
+                                {{ biz.name }}
+                            </option>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    </select>
+                </div>
 
-            <!-- Pagination Controls -->
-            <div class="flex justify-between items-center mt-6">
-                <p class="text-sm opacity-70">
-                    {{ _('Showing') }} {{ (page - 1) * 50 + 1 }}-{{ [page * 50, total_sessions] | min }} {{ _('of') }} {{ total_sessions }} {{ _('sessions') }}
-                </p>
+                <!-- Clear Filters Button -->
+                <div class="form-control">
+                    <a href="/" class="btn btn-outline btn-sm">{{ _('Clear Filters') }}</a>
+                </div>
+            </form>
 
-                <div class="join">
-                    {% if page > 1 %}
-                        <a href="/?page=1" class="join-item btn btn-sm">«</a>
-                        <a href="/?page={{ page - 1 }}" class="join-item btn btn-sm">‹</a>
+            <!-- Active Filters Chips -->
+            {% if active_filters %}
+            <div class="mt-4">
+                <div class="flex flex-wrap gap-2">
+                    {% if active_filters.from_date %}
+                        <div class="badge badge-primary gap-2">
+                            {{ _('From:') }} {{ active_filters.from_date }}
+                        </div>
                     {% endif %}
-
-                    {% set page_start = [1, page - 2] | max %}
-                    {% set page_end = [total_pages + 1, page + 3] | min %}
-                    {% for p in range(page_start, page_end) %}
-                        {% if p == page %}
-                            <button class="join-item btn btn-sm btn-active">{{ p }}</button>
-                        {% else %}
-                            <a href="/?page={{ p }}" class="join-item btn btn-sm">{{ p }}</a>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if page < total_pages %}
-                        <a href="/?page={{ page + 1 }}" class="join-item btn btn-sm">›</a>
-                        <a href="/?page={{ total_pages }}" class="join-item btn btn-sm">»</a>
+                    {% if active_filters.to_date %}
+                        <div class="badge badge-primary gap-2">
+                            {{ _('To:') }} {{ active_filters.to_date }}
+                        </div>
+                    {% endif %}
+                    {% if active_filters.cashier_name %}
+                        <div class="badge badge-primary gap-2">
+                            {{ _('Cashier:') }} {{ active_filters.cashier_name }}
+                        </div>
+                    {% endif %}
+                    {% if active_filters.business_id %}
+                        <div class="badge badge-primary gap-2">
+                            {{ _('Business:') }}
+                            {% for biz in businesses %}
+                                {% if biz.id|string == active_filters.business_id %}{{ biz.name }}{% endif %}
+                            {% endfor %}
+                        </div>
                     {% endif %}
                 </div>
             </div>
-
-            {% else %}
-            <div class="alert alert-info text-info-content">
-                <span>{{ _('No sessions yet.') }} <a href="/sessions/create" class="link link-hover">{{ _('Create one') }}</a></span>
-            </div>
             {% endif %}
         </div>
+    </div>
+
+    <!-- Sessions Table (HTMX TARGET - only this replaces) -->
+    <div id="sessions-table">
+        {% include "partials/sessions_table.html" %}
     </div>
 </div>
 {% endblock %}
