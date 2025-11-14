@@ -100,7 +100,9 @@ async def dashboard(
             pass
 
     # Count total matching
-    count_stmt = select(CashSession).where(stmt.whereclause if hasattr(stmt, 'whereclause') else True)
+    count_stmt = select(CashSession).where(
+        stmt.whereclause if hasattr(stmt, "whereclause") else True
+    )
     count_result = await db.execute(count_stmt)
     total_sessions = len(count_result.scalars().all())
     total_pages = (total_sessions + per_page - 1) // per_page
@@ -137,13 +139,13 @@ async def dashboard(
     # Build active filters display
     active_filters = {}
     if from_date:
-        active_filters['from_date'] = from_date
+        active_filters["from_date"] = from_date
     if to_date:
-        active_filters['to_date'] = to_date
+        active_filters["to_date"] = to_date
     if cashier_name:
-        active_filters['cashier_name'] = cashier_name
+        active_filters["cashier_name"] = cashier_name
     if business_id:
-        active_filters['business_id'] = business_id
+        active_filters["business_id"] = business_id
 
     return templates.TemplateResponse(
         "index.html",
@@ -172,6 +174,7 @@ async def dashboard(
 
 
 # SPECIFIC ROUTES FIRST (before parametrized routes)
+
 
 @router.get("/sessions/create", response_class=HTMLResponse)
 async def create_session_form(request: Request, db: AsyncSession = Depends(get_db)):
@@ -270,6 +273,7 @@ async def get_sessions_table(
 
 
 # PARAMETRIZED ROUTES (catch-all, goes last)
+
 
 @router.get("/sessions/{session_id}", response_class=HTMLResponse)
 async def view_session(
