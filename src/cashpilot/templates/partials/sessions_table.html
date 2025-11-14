@@ -1,0 +1,82 @@
+<!-- File: src/cashpilot/templates/partials/sessions_table.html -->
+<div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+        <h2 class="card-title">{{ _('Cash Sessions') }} ({{ _('Page') }} {{ page }} {{ _('of') }} {{ total_pages }})</h2>
+
+        {% if sessions %}
+        <div class="overflow-x-auto">
+            <table class="table table-zebra w-full">
+                <thead>
+                    <tr>
+                        <th>{{ _('Cashier') }}</th>
+                        <th>{{ _('Business') }}</th>
+                        <th>{{ _('Status') }}</th>
+                        <th>{{ _('Opened At') }}</th>
+                        <th>{{ _('Cash Sales') }}</th>
+                        <th>{{ _('Total Sales') }}</th>
+                        <th>{{ _('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td class="font-semibold">{{ session.cashier_name }}</td>
+                        <td>{{ session.business.name }}</td>
+                        <td>
+                            {% if session.status == 'OPEN' %}
+                                <span class="badge badge-warning">{{ _('OPEN') }}</span>
+                            {% else %}
+                                <span class="badge badge-outline badge-ghost">{{ _('CLOSED') }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>₲ {{ "{:,.0f}".format(session.cash_sales) }}</td>
+                        <td>₲ {{ "{:,.0f}".format(session.total_sales) }}</td>
+                        <td>
+                            <a href="/sessions/{{ session.id|string }}" class="btn btn-sm btn-outline">{{ _('View') }}</a>
+                            {% if session.status == 'OPEN' %}
+                                <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-sm btn-outline">{{ _('Close') }}</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center mt-6">
+            <p class="text-sm opacity-70">
+                {{ _('Showing') }} {{ (page - 1) * 50 + 1 }}-{{ [page * 50, total_sessions] | min }} {{ _('of') }} {{ total_sessions }} {{ _('sessions') }}
+            </p>
+
+            <div class="join">
+                {% if page > 1 %}
+                    <a href="/sessions/table?page=1{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page=1{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">«</a>
+                    <a href="/sessions/table?page={{ page - 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ page - 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">‹</a>
+                {% endif %}
+
+                {% set page_start = [1, page - 2] | max %}
+                {% set page_end = [total_pages + 1, page + 3] | min %}
+                {% for p in range(page_start, page_end) %}
+                    {% if p == page %}
+                        <button class="join-item btn btn-sm btn-active">{{ p }}</button>
+                    {% else %}
+                        <a href="/sessions/table?page={{ p }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ p }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                    <a href="/sessions/table?page={{ page + 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ page + 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">›</a>
+                    <a href="/sessions/table?page={{ total_pages }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ total_pages }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">»</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% else %}
+        <div class="alert alert-info text-info-content">
+            <span>{{ _('No sessions found.') }} <a href="/sessions/create" class="link link-hover">{{ _('Create one') }}</a></span>
+        </div>
+        {% endif %}
+    </div>
+</div>

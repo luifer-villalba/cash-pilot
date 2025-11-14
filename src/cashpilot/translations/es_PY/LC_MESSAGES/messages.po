@@ -327,3 +327,33 @@ msgstr "ventas_totales - gastos"
 
 msgid "Once opened, only one session can be active per business unless overlap is enabled."
 msgstr "Una vez abierta, solo una sesión puede estar activa por negocio a menos que se habilite la superposición."
+
+msgid "Filters"
+msgstr "Filtros"
+
+msgid "From Date"
+msgstr "Desde"
+
+msgid "To Date"
+msgstr "Hasta"
+
+msgid "Search..."
+msgstr "Buscar..."
+
+msgid "All Businesses"
+msgstr "Todos los Negocios"
+
+msgid "Clear Filters"
+msgstr "Limpiar Filtros"
+
+msgid "From:"
+msgstr "Desde:"
+
+msgid "To:"
+msgstr "Hasta:"
+
+msgid "Cashier:"
+msgstr "Cajero/a:"
+
+msgid "No sessions found."
+msgstr "No hay sesiones."
