@@ -22,8 +22,8 @@
                         <label class="label">
                             <span class="label-text font-semibold">Final Cash Count (₲)</span>
                         </label>
-                        <input type="number" name="final_cash" class="input input-bordered"
-                               placeholder="1250000.00" step="0.01" min="0" required/>
+                        <input type="text" name="final_cash" class="input input-bordered"
+                               placeholder="1250000" inputmode="decimal" required/>
                         <label class="label">
                             <span class="label-text-alt">Total counted in drawer</span>
                         </label>
@@ -34,8 +34,8 @@
                         <label class="label">
                             <span class="label-text font-semibold">Envelope Amount (₲)</span>
                         </label>
-                        <input type="number" name="envelope_amount" class="input input-bordered"
-                               placeholder="0.00" step="0.01" min="0" required/>
+                        <input type="text" name="envelope_amount" class="input input-bordered"
+                               placeholder="0" inputmode="decimal" required/>
                         <label class="label">
                             <span class="label-text-alt">Cash removed from register (if any)</span>
                         </label>
@@ -49,8 +49,8 @@
                         <label class="label">
                             <span class="label-text font-semibold">Credit Card Total (₲)</span>
                         </label>
-                        <input type="number" name="credit_card_total" class="input input-bordered"
-                               placeholder="0.00" step="0.01" min="0" required/>
+                        <input type="text" name="credit_card_total" class="input input-bordered"
+                               placeholder="0" inputmode="decimal" required/>
                     </div>
 
                     <!-- Debit Card -->
@@ -58,8 +58,8 @@
                         <label class="label">
                             <span class="label-text font-semibold">Debit Card Total (₲)</span>
                         </label>
-                        <input type="number" name="debit_card_total" class="input input-bordered"
-                               placeholder="0.00" step="0.01" min="0"/>
+                        <input type="text" name="debit_card_total" class="input input-bordered"
+                               placeholder="0" inputmode="decimal"/>
                     </div>
 
                     <!-- Bank Transfer -->
@@ -67,8 +67,8 @@
                         <label class="label">
                             <span class="label-text font-semibold">Bank Transfer Total (₲)</span>
                         </label>
-                        <input type="number" name="bank_transfer_total" class="input input-bordered"
-                               placeholder="0.00" step="0.01" min="0"/>
+                        <input type="text" name="bank_transfer_total" class="input input-bordered"
+                               placeholder="0" inputmode="decimal"/>
                     </div>
 
                     <!-- Expenses -->
@@ -76,8 +76,8 @@
                         <label class="label">
                             <span class="label-text font-semibold">Expenses (₲)</span>
                         </label>
-                        <input type="number" name="expenses" class="input input-bordered"
-                               placeholder="0.00" step="0.01" min="0"/>
+                        <input type="text" name="expenses" class="input input-bordered"
+                               placeholder="0" inputmode="decimal"/>
                         <label class="label">
                             <span class="label-text-alt">Business expenses during shift</span>
                         </label>
@@ -132,7 +132,7 @@
                     </div>
                     <div>
                         <span class="label-text-alt">Initial Cash:</span>
-                        <p class="font-semibold">₲ {{ "{:,.2f}".format(session.initial_cash) }}</p>
+                        <p class="font-semibold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                 </div>
             </div>
@@ -164,28 +164,33 @@
 
 <!-- Live Preview Script -->
 <script>
-document.querySelectorAll('input[type="number"]').forEach(input => {
+document.querySelectorAll('input[type="text"]').forEach(input => {
     input.addEventListener('input', updatePreview);
 });
 
 function updatePreview() {
-    const finalCash = parseFloat(document.querySelector('[name="final_cash"]').value) || 0;
+    const finalCash = parseInt(document.querySelector('[name="final_cash"]').value?.replace(/\D/g, '')) || 0;
     const initialCash = {{ session.initial_cash }};
-    const envelope = parseFloat(document.querySelector('[name="envelope_amount"]').value) || 0;
-    const creditCard = parseFloat(document.querySelector('[name="credit_card_total"]').value) || 0;
-    const debitCard = parseFloat(document.querySelector('[name="debit_card_total"]').value) || 0;
-    const bankTransfer = parseFloat(document.querySelector('[name="bank_transfer_total"]').value) || 0;
-    const expenses = parseFloat(document.querySelector('[name="expenses"]').value) || 0;
+    const envelope = parseInt(document.querySelector('[name="envelope_amount"]').value?.replace(/\D/g, '')) || 0;
+    const creditCard = parseInt(document.querySelector('[name="credit_card_total"]').value?.replace(/\D/g, '')) || 0;
+    const debitCard = parseInt(document.querySelector('[name="debit_card_total"]').value?.replace(/\D/g, '')) || 0;
+    const bankTransfer = parseInt(document.querySelector('[name="bank_transfer_total"]').value?.replace(/\D/g, '')) || 0;
+    const expenses = parseInt(document.querySelector('[name="expenses"]').value?.replace(/\D/g, '')) || 0;
 
     const cashSales = (finalCash - initialCash) + envelope;
     const totalSales = cashSales + creditCard + debitCard + bankTransfer;
     const netEarnings = totalSales - expenses;
 
+    const formatterPY = new Intl.NumberFormat('es-PY', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    });
+
     const preview = document.getElementById('preview');
     preview.innerHTML = `
-        <div><span>Cash Sales:</span> <p class="font-bold">₲ ${cashSales.toLocaleString()}</p></div>
-        <div><span>Total Sales:</span> <p class="font-bold">₲ ${totalSales.toLocaleString()}</p></div>
-        <div><span>Net Earnings:</span> <p class="font-bold">₲ ${netEarnings.toLocaleString()}</p></div>
+        <div><span>Cash Sales:</span> <p class="font-bold">₲ ${formatterPY.format(cashSales)}</p></div>
+        <div><span>Total Sales:</span> <p class="font-bold">₲ ${formatterPY.format(totalSales)}</p></div>
+        <div><span>Net Earnings:</span> <p class="font-bold">₲ ${formatterPY.format(netEarnings)}</p></div>
     `;
 }
 

@@ -22,7 +22,7 @@
         </div>
         <div class="stat bg-base-100 rounded-lg shadow text-base-content">
             <div class="stat-title">Today's Revenue</div>
-            <div class="stat-value text-success">₲ {{ "{:,.2f}".format(total_revenue) }}</div>
+            <div class="stat-value text-success">₲ {{ "{:,.0f}".format(total_revenue) }}</div>
         </div>
         <div class="stat bg-base-100 rounded-lg shadow text-base-content">
             <div class="stat-title">Discrepancies</div>
@@ -44,8 +44,6 @@
                             <th>Business</th>
                             <th>Status</th>
                             <th>Opened At</th>
-                            <th>Initial Cash</th>
-                            <th>Final Cash</th>
                             <th>Cash Sales</th>
                             <th>Total Sales</th>
                             <th>Actions</th>
@@ -58,29 +56,19 @@
                             <td>{{ session.business.name }}</td>
                             <td>
                                 {% if session.status == 'OPEN' %}
-                                    <span class="badge badge-success text-success-content font-bold">OPEN</span>
+                                    <span class="badge badge-warning">OPEN</span>
                                 {% else %}
-                                    <span class="badge badge-ghost text-base-content font-bold">CLOSED</span>
+                                    <span class="badge badge-outline badge-ghost">CLOSED</span>
                                 {% endif %}
                             </td>
                             <td>{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>₲ {{ "{:,.2f}".format(session.initial_cash) }}</td>
+                            <td>₲ {{ "{:,.0f}".format(session.cash_sales) }}</td>
+                            <td>₲ {{ "{:,.0f}".format(session.total_sales) }}</td>
                             <td>
-                                {% if session.final_cash %}
-                                    ₲ {{ "{:,.2f}".format(session.final_cash) }}
-                                {% else %}
-                                    <span class="opacity-50">-</span>
+                                <a href="/sessions/{{ session.id }}" class="btn btn-sm btn-outline">View</a>
+                                {% if session.status == 'OPEN' %}
+                                    <a href="/sessions/{{ session.id }}/edit" class="btn btn-sm btn-outline">Close</a>
                                 {% endif %}
-                            </td>
-                            <td>₲ {{ "{:,.2f}".format(session.cash_sales) }}</td>
-                            <td>₲ {{ "{:,.2f}".format(session.total_sales) }}</td>
-                            <td>
-                                <div class="flex gap-1">
-                                    <a href="/sessions/{{ session.id }}" class="btn btn-xs btn-outline">View</a>
-                                    {% if session.status == 'OPEN' %}
-                                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-xs btn-outline">Close</a>
-                                    {% endif %}
-                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -90,32 +78,29 @@
 
             <!-- Pagination Controls -->
             <div class="flex justify-between items-center mt-6">
-                <div class="text-sm opacity-75">
-                    Showing {{ skip + 1 }}-{{ [skip + limit, total_sessions]|min }} of {{ total_sessions }} sessions
-                </div>
+                <p class="text-sm opacity-70">
+                    Showing {{ (page - 1) * 50 + 1 }}-{{ [page * 50, total_sessions] | min }} of {{ total_sessions }} sessions
+                </p>
+
                 <div class="join">
-                    {% if current_page > 1 %}
-                        <a href="/?skip={{ [skip - limit, 0]|max }}&limit={{ limit }}" class="join-item btn">«</a>
-                        <a href="/?skip={{ [skip - limit, 0]|max }}&limit={{ limit }}" class="join-item btn">Prev</a>
-                    {% else %}
-                        <button class="join-item btn" disabled>«</button>
-                        <button class="join-item btn" disabled>Prev</button>
+                    {% if page > 1 %}
+                        <a href="/?page=1" class="join-item btn btn-sm">«</a>
+                        <a href="/?page={{ page - 1 }}" class="join-item btn btn-sm">‹</a>
                     {% endif %}
 
-                    {% for page_num in range(1, total_pages + 1) %}
-                        {% if page_num == current_page %}
-                            <button class="join-item btn btn-active">{{ page_num }}</button>
+                    {% set page_start = [1, page - 2] | max %}
+                    {% set page_end = [total_pages + 1, page + 3] | min %}
+                    {% for p in range(page_start, page_end) %}
+                        {% if p == page %}
+                            <button class="join-item btn btn-sm btn-active">{{ p }}</button>
                         {% else %}
-                            <a href="/?skip={{ (page_num - 1) * limit }}&limit={{ limit }}" class="join-item btn">{{ page_num }}</a>
+                            <a href="/?page={{ p }}" class="join-item btn btn-sm">{{ p }}</a>
                         {% endif %}
                     {% endfor %}
 
-                    {% if current_page < total_pages %}
-                        <a href="/?skip={{ skip + limit }}&limit={{ limit }}" class="join-item btn">Next</a>
-                        <a href="/?skip={{ (total_pages - 1) * limit }}&limit={{ limit }}" class="join-item btn">»</a>
-                    {% else %}
-                        <button class="join-item btn" disabled>Next</button>
-                        <button class="join-item btn" disabled>»</button>
+                    {% if page < total_pages %}
+                        <a href="/?page={{ page + 1 }}" class="join-item btn btn-sm">›</a>
+                        <a href="/?page={{ total_pages }}" class="join-item btn btn-sm">»</a>
                     {% endif %}
                 </div>
             </div>

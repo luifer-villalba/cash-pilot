@@ -44,6 +44,40 @@
         </div>
     </footer>
 
+    <!-- Currency Formatting Script -->
+    <script>
+        // Format Paraguay currency (no decimals, period as thousands separator)
+        const formatterPY = new Intl.NumberFormat('es-PY', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0
+        });
+
+        // Only target currency fields, NOT cashier_name
+        document.querySelectorAll('input[type="text"][name="initial_cash"], input[type="text"][name="final_cash"], input[type="text"][name="envelope_amount"], input[type="text"][name="credit_card_total"], input[type="text"][name="debit_card_total"], input[type="text"][name="bank_transfer_total"], input[type="text"][name="expenses"]').forEach(input => {
+          input.addEventListener('blur', function() {
+            if (this.value) {
+              const num = parseInt(this.value.replace(/\D/g, '')) || 0;
+              this.value = formatterPY.format(num);
+            }
+          });
+
+          input.addEventListener('focus', function() {
+            this.value = this.value.replace(/\D/g, '');
+          });
+        });
+
+        // Parse on form submit
+        document.querySelectorAll('form').forEach(form => {
+          form.addEventListener('submit', function() {
+            form.querySelectorAll('input[type="text"][name="initial_cash"], input[type="text"][name="final_cash"], input[type="text"][name="envelope_amount"], input[type="text"][name="credit_card_total"], input[type="text"][name="debit_card_total"], input[type="text"][name="bank_transfer_total"], input[type="text"][name="expenses"]').forEach(input => {
+              if (input.value) {
+                input.value = input.value.replace(/\D/g, '');
+              }
+            });
+          });
+        });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
