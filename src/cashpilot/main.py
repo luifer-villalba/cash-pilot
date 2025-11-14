@@ -9,7 +9,6 @@ from typing import AsyncIterator
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from jinja2 import Environment
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
