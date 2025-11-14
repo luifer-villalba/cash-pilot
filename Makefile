@@ -45,7 +45,7 @@ down:
 logs:
 	docker compose logs -f app
 
-# ---------- Compose Watch (requires v2.22+) ----------
+# ---------- Compose Watch ----------
 watch:
 	docker compose watch
 
@@ -116,3 +116,20 @@ seed-reset:
 	@read -p "Are you sure? (yes/no): " confirm && [ "$$confirm" = "yes" ] || exit 1
 	docker compose exec db sh -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -c "TRUNCATE TABLE cash_sessions, businesses CASCADE;"'
 	@$(MAKE) seed
+
+# ---------- i18n / Translations ----------
+i18n-extract:
+	@echo "🌍 Extracting translatable strings..."
+	docker compose exec app pybabel extract -F babel.cfg -o src/cashpilot/translations/messages.pot src/
+
+i18n-init-es:
+	@echo "🌍 Initializing Spanish translations..."
+	docker compose exec app pybabel init -i src/cashpilot/translations/messages.pot -d src/cashpilot/translations -l es_PY
+
+i18n-compile:
+	@echo "🌍 Compiling translations..."
+	docker compose exec app pybabel compile -d src/cashpilot/translations
+
+i18n-update:
+	@echo "🌍 Updating Spanish translations from extracted strings..."
+	docker compose exec app pybabel update -i src/cashpilot/translations/messages.pot -d src/cashpilot/translations -l es_PY

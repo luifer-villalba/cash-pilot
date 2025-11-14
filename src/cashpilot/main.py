@@ -1,10 +1,5 @@
 """
-FastAPI application factory with frontend support.
-
-Includes:
-- Templates (Jinja2)
-- Static files (CSS, JS, images)
-- Frontend routes
+FastAPI application factory with frontend support + i18n.
 """
 
 from contextlib import asynccontextmanager

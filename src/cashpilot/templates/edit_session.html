@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Close Session - CashPilot{% endblock %}
+{% block title %}{{ _('Close Session') }} - CashPilot{% endblock %}
 
 {% block content %}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -8,10 +8,10 @@
     <div class="lg:col-span-2">
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <h2 class="card-title">Close Cash Session</h2>
+                <h2 class="card-title">{{ _('Close Cash Session') }}</h2>
                 <p class="text-sm text-base-content opacity-75 mb-4">
-                    Cashier: <strong>{{ session.cashier_name }}</strong> |
-                    Status: <strong>{{ session.status }}</strong>
+                    {{ _('Cashier:') }} <strong>{{ session.cashier_name }}</strong> |
+                    {{ _('Status:') }} <strong>{{ session.status }}</strong>
                 </p>
 
                 <form method="POST" action="/sessions/{{ session.id }}" class="space-y-4">
@@ -20,34 +20,34 @@
                     <!-- Final Cash -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Final Cash Count (₲)</span>
+                            <span class="label-text font-semibold">{{ _('Final Cash Count (₲)') }}</span>
                         </label>
                         <input type="text" name="final_cash" class="input input-bordered"
                                placeholder="1250000" inputmode="decimal" required/>
                         <label class="label">
-                            <span class="label-text-alt">Total counted in drawer</span>
+                            <span class="label-text-alt">{{ _('Total counted in drawer') }}</span>
                         </label>
                     </div>
 
                     <!-- Envelope Amount -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Envelope Amount (₲)</span>
+                            <span class="label-text font-semibold">{{ _('Envelope Amount (₲)') }}</span>
                         </label>
                         <input type="text" name="envelope_amount" class="input input-bordered"
                                placeholder="0" inputmode="decimal" required/>
                         <label class="label">
-                            <span class="label-text-alt">Cash removed from register (if any)</span>
+                            <span class="label-text-alt">{{ _('Cash removed from register (if any)') }}</span>
                         </label>
                     </div>
 
                     <!-- Payment Methods Section -->
-                    <div class="divider">Payment Methods</div>
+                    <div class="divider">{{ _('Payment Methods') }}</div>
 
                     <!-- Credit Card -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Credit Card Total (₲)</span>
+                            <span class="label-text font-semibold">{{ _('Credit Card Total (₲)') }}</span>
                         </label>
                         <input type="text" name="credit_card_total" class="input input-bordered"
                                placeholder="0" inputmode="decimal" required/>
@@ -56,7 +56,7 @@
                     <!-- Debit Card -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Debit Card Total (₲)</span>
+                            <span class="label-text font-semibold">{{ _('Debit Card Total (₲)') }}</span>
                         </label>
                         <input type="text" name="debit_card_total" class="input input-bordered"
                                placeholder="0" inputmode="decimal"/>
@@ -65,7 +65,7 @@
                     <!-- Bank Transfer -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Bank Transfer Total (₲)</span>
+                            <span class="label-text font-semibold">{{ _('Bank Transfer Total (₲)') }}</span>
                         </label>
                         <input type="text" name="bank_transfer_total" class="input input-bordered"
                                placeholder="0" inputmode="decimal"/>
@@ -74,44 +74,44 @@
                     <!-- Expenses -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Expenses (₲)</span>
+                            <span class="label-text font-semibold">{{ _('Expenses (₲)') }}</span>
                         </label>
                         <input type="text" name="expenses" class="input input-bordered"
                                placeholder="0" inputmode="decimal"/>
                         <label class="label">
-                            <span class="label-text-alt">Business expenses during shift</span>
+                            <span class="label-text-alt">{{ _('Business expenses during shift') }}</span>
                         </label>
                     </div>
 
                     <!-- Additional Info -->
-                    <div class="divider">Additional Info</div>
+                    <div class="divider">{{ _('Additional Info') }}</div>
 
                     <!-- Closing Ticket -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Closing Ticket #</span>
+                            <span class="label-text font-semibold">{{ _('Closing Ticket #') }}</span>
                         </label>
                         <input type="text" name="closing_ticket" class="input input-bordered"
-                               placeholder="e.g., T-20251112-001"/>
+                               placeholder="{{ _('e.g., T-20251112-001') }}"/>
                         <label class="label">
-                            <span class="label-text-alt">Optional: POS ticket number</span>
+                            <span class="label-text-alt">{{ _('Optional: POS ticket number') }}</span>
                         </label>
                     </div>
 
                     <!-- Notes -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">Notes</span>
+                            <span class="label-text font-semibold">{{ _('Notes') }}</span>
                         </label>
                         <textarea name="notes" class="textarea textarea-bordered h-24"
-                                  placeholder="Any discrepancies or notes..."></textarea>
+                                  placeholder="{{ _('Any discrepancies or notes...') }}"></textarea>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="form-control mt-6">
                         <div class="flex gap-2">
-                            <button type="submit" class="btn btn-success flex-1">Close Session</button>
-                            <a href="/sessions/{{ session.id }}" class="btn btn-outline flex-1">Cancel</a>
+                            <button type="submit" class="btn btn-success flex-1">{{ _('Close Session') }}</button>
+                            <a href="/sessions/{{ session.id }}" class="btn btn-outline flex-1">{{ _('Cancel') }}</a>
                         </div>
                     </div>
                 </form>
@@ -124,14 +124,14 @@
         <!-- Opening Summary -->
         <div class="card bg-base-100 shadow-xl text-base-content">
             <div class="card-body">
-                <h3 class="card-title text-lg">Opening Info</h3>
+                <h3 class="card-title text-lg">{{ _('Opening Info') }}</h3>
                 <div class="space-y-2 text-sm">
                     <div>
-                        <span class="label-text-alt">Opened At:</span>
+                        <span class="label-text-alt">{{ _('Opened At:') }}</span>
                         <p class="font-semibold">{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</p>
                     </div>
                     <div>
-                        <span class="label-text-alt">Initial Cash:</span>
+                        <span class="label-text-alt">{{ _('Initial Cash:') }}</span>
                         <p class="font-semibold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                 </div>
@@ -141,9 +141,9 @@
         <!-- Reconciliation Preview (JavaScript updates) -->
         <div class="card bg-success text-success-content shadow-xl">
             <div class="card-body">
-                <h3 class="card-title text-lg">Reconciliation Preview</h3>
+                <h3 class="card-title text-lg">{{ _('Reconciliation Preview') }}</h3>
                 <div class="space-y-2 text-sm" id="preview">
-                    <p class="opacity-75">Fill form fields to see preview...</p>
+                    <p class="opacity-75">{{ _('Fill form fields to see preview...') }}</p>
                 </div>
             </div>
         </div>
@@ -151,11 +151,11 @@
         <!-- Quick Reference -->
         <div class="card bg-accent text-accent-content shadow-xl">
             <div class="card-body">
-                <h3 class="card-title text-sm">📋 Formula</h3>
+                <h3 class="card-title text-sm">📋 {{ _('Formula') }}</h3>
                 <div class="text-xs space-y-1">
-                    <p><strong>Cash Sales:</strong> (final - initial) + envelope</p>
-                    <p><strong>Total Sales:</strong> cash + card methods</p>
-                    <p><strong>Net Earnings:</strong> total - expenses</p>
+                    <p><strong>{{ _('Cash Sales:') }}</strong> (final - initial) + envelope</p>
+                    <p><strong>{{ _('Total Sales:') }}</strong> cash + card methods</p>
+                    <p><strong>{{ _('Net Earnings:') }}</strong> total - expenses</p>
                 </div>
             </div>
         </div>
@@ -188,9 +188,9 @@ function updatePreview() {
 
     const preview = document.getElementById('preview');
     preview.innerHTML = `
-        <div><span>Cash Sales:</span> <p class="font-bold">₲ ${formatterPY.format(cashSales)}</p></div>
-        <div><span>Total Sales:</span> <p class="font-bold">₲ ${formatterPY.format(totalSales)}</p></div>
-        <div><span>Net Earnings:</span> <p class="font-bold">₲ ${formatterPY.format(netEarnings)}</p></div>
+        <div><span>{{ _('Cash Sales:') }}</span> <p class="font-bold">₲ ${formatterPY.format(cashSales)}</p></div>
+        <div><span>{{ _('Total Sales:') }}</span> <p class="font-bold">₲ ${formatterPY.format(totalSales)}</p></div>
+        <div><span>{{ _('Net Earnings:') }}</span> <p class="font-bold">₲ ${formatterPY.format(netEarnings)}</p></div>
     `;
 }
 
