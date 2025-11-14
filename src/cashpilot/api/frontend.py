@@ -1,13 +1,15 @@
+# File: src/cashpilot/api/frontend.py (reordered by logical flow)
+
 """Frontend routes for HTML templates."""
 
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import and_, func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -20,98 +22,76 @@ templates = Jinja2Templates(directory="src/cashpilot/templates")
 router = APIRouter(tags=["frontend"])
 
 
+# Dashboard (list view)
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
-    request: Request, skip: int = 0, limit: int = 50, db: AsyncSession = Depends(get_db)
+    request: Request,
+    page: int = 1,
+    db: AsyncSession = Depends(get_db),
 ):
     """Dashboard homepage with paginated session list."""
-    # Get paginated sessions (most recent first)
+    per_page = 50
+    skip = (page - 1) * per_page
+
+    # Get total count
+    count_stmt = select(CashSession)
+    count_result = await db.execute(count_stmt)
+    total_sessions = len(count_result.scalars().all())
+    total_pages = (total_sessions + per_page - 1) // per_page
+
+    # Get paginated sessions
     stmt_sessions = (
         select(CashSession)
         .options(joinedload(CashSession.business))
         .order_by(CashSession.opened_at.desc())
         .offset(skip)
-        .limit(limit)
+        .limit(per_page)
     )
     result = await db.execute(stmt_sessions)
     sessions = result.scalars().unique().all()
 
-    # Total session count (for pagination)
-    stmt_total = select(func.count(CashSession.id))
-    result = await db.execute(stmt_total)
-    total_sessions = result.scalar() or 0
-
-    # Active sessions count
-    stmt_active = (
-        select(CashSession)
-        .options(joinedload(CashSession.business))
-        .where(CashSession.status == "OPEN")
-        .limit(10)
-    )
+    # Get active sessions count
+    stmt_active = select(CashSession).where(CashSession.status == "OPEN")
     result = await db.execute(stmt_active)
-    active_sessions_count = len(result.scalars().all())
+    active_count = len(result.scalars().all())
 
-    # Active businesses count
-    stmt_businesses = select(func.count(Business.id)).where(Business.is_active is True)
+    # Get businesses count
+    stmt_businesses = select(Business).where(Business.is_active)
     result = await db.execute(stmt_businesses)
-    businesses_count = result.scalar() or 0
+    businesses_count = len(result.scalars().all())
 
-    # Today's total revenue (closed sessions only)
-    today = date.today()
-    stmt_revenue = select(
-        func.sum(
-            (CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash)
-            + CashSession.credit_card_total
-            + CashSession.debit_card_total
-            + CashSession.bank_transfer_total
-        )
-    ).where(
-        and_(
-            CashSession.status == "CLOSED",
-            CashSession.final_cash.isnot(None),  # Only sum closed sessions with final_cash
-            func.date(CashSession.closed_at) == today,
-        )
+    # Calculate today's revenue
+    today = datetime.now().date()
+    stmt_today = select(CashSession).where(
+        CashSession.closed_at >= datetime.combine(today, datetime.min.time())
     )
-    result = await db.execute(stmt_revenue)
-    total_revenue = result.scalar() or Decimal("0.00")
-
-    # Discrepancies count (closed sessions from today with has_conflict=true)
-    stmt_discrepancies = select(func.count(CashSession.id)).where(
-        and_(
-            CashSession.status == "CLOSED",
-            CashSession.has_conflict is True,
-            func.date(CashSession.closed_at) == today,
-        )
+    result = await db.execute(stmt_today)
+    today_sessions = result.scalars().all()
+    total_revenue = (
+        sum(s.total_sales for s in today_sessions) if today_sessions else Decimal("0.00")
     )
-    result = await db.execute(stmt_discrepancies)
-    discrepancies_count = result.scalar() or 0
-
-    # Pagination info
-    total_pages = (total_sessions + limit - 1) // limit
-    current_page = (skip // limit) + 1
 
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
             "sessions": sessions,
-            "active_sessions_count": active_sessions_count,
+            "active_sessions_count": active_count,
             "businesses_count": businesses_count,
-            "total_revenue": total_revenue,
-            "discrepancies_count": discrepancies_count,
-            "skip": skip,
-            "limit": limit,
-            "total_sessions": total_sessions,
-            "current_page": current_page,
+            "page": page,
             "total_pages": total_pages,
+            "total_sessions": total_sessions,
+            "total_revenue": total_revenue,
+            "discrepancies_count": 0,
         },
     )
 
 
+# Create session flow
 @router.get("/sessions/create", response_class=HTMLResponse)
 async def create_session_form(request: Request, db: AsyncSession = Depends(get_db)):
     """Form to create new cash session."""
-    stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
     result = await db.execute(stmt)
     businesses = list(result.scalars().all())
 
@@ -147,7 +127,7 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
         return RedirectResponse(url=f"/sessions/{session_obj.id}", status_code=303)
     except Exception as e:
         # Reload businesses for error case
-        stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
+        stmt = select(Business).where(Business.is_active).order_by(Business.name)
         result = await db.execute(stmt)
         businesses = list(result.scalars().all())
 
@@ -161,6 +141,7 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
         )
 
 
+# View session details
 @router.get("/sessions/{session_id}", response_class=HTMLResponse)
 async def view_session(
     request: Request,
@@ -188,6 +169,7 @@ async def view_session(
     )
 
 
+# Close session flow
 @router.get("/sessions/{session_id}/edit", response_class=HTMLResponse)
 async def edit_session_form(
     request: Request,

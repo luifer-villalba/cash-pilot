@@ -29,7 +29,8 @@ run dev:
 	@echo "🚀 Starting development environment..."
 	docker compose down --remove-orphans
 	docker compose up -d db app
-	@echo "➡️  App available at: http://127.0.0.1:8000/docs"
+	@echo "➡️  Dashboard available at: http://127.0.0.1:8000/"
+	@echo "➡️  Swagger docs available at: http://127.0.0.1:8000/docs"
 
 reload:
 	@echo "♻️  Forcing manual reload..."

@@ -54,13 +54,13 @@
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
                         <span class="text-sm opacity-70">Initial Cash</span>
-                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.initial_cash) }}</p>
+                       <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
                         <span class="text-sm opacity-70">Final Cash</span>
                         <p class="text-2xl font-bold">
                             {% if session.final_cash %}
-                                ₲ {{ "{:,.2f}".format(session.final_cash) }}
+                                ₲ {{ "{:,.0f}".format(session.final_cash) }}
                             {% else %}
                                 <span class="opacity-50">Pending</span>
                             {% endif %}
@@ -68,11 +68,11 @@
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
                         <span class="text-sm opacity-70">Envelope Amount</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.envelope_amount) }}</p>
+                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.envelope_amount) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-success">
                         <span class="text-sm opacity-70">Cash Sales</span>
-                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.cash_sales) }}</p>
+                        <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.cash_sales) }}</p>
                     </div>
                 </div>
 
@@ -83,19 +83,19 @@
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
                         <span class="text-sm opacity-70">Credit Card</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.credit_card_total) }}</p>
+                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.credit_card_total) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
                         <span class="text-sm opacity-70">Debit Card</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.debit_card_total) }}</p>
+                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.debit_card_total) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
                         <span class="text-sm opacity-70">Bank Transfer</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.bank_transfer_total) }}</p>
+                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.bank_transfer_total) }}</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-warning">
                         <span class="text-sm opacity-70">Expenses</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.2f}".format(session.expenses) }}</p>
+                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.expenses) }}</p>
                     </div>
                 </div>
 
@@ -106,12 +106,12 @@
                 <div class="grid grid-cols-1 gap-4">
                     <div class="bg-base-200 p-4 rounded border-l-4 border-info">
                         <h3 class="font-bold">Total Sales</h3>
-                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.total_sales) }}</p>
+                        <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.total_sales) }}</p>
                         <p class="text-sm mt-2 opacity-70">cash_sales + all payment methods</p>
                     </div>
                     <div class="bg-base-200 p-4 rounded border-l-4 border-success">
                         <h3 class="font-bold">Net Earnings</h3>
-                        <p class="text-2xl font-bold">₲ {{ "{:,.2f}".format(session.net_earnings) }}</p>
+                        <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.net_earnings) }}</p>
                         <p class="text-sm mt-2 opacity-70">total_sales - expenses</p>
                     </div>
                 </div>
