@@ -1,3 +1,5 @@
+# File: src/cashpilot/api/frontend.py (reordered by logical flow)
+
 """Frontend routes for HTML templates."""
 
 from datetime import datetime
@@ -20,6 +22,7 @@ templates = Jinja2Templates(directory="src/cashpilot/templates")
 router = APIRouter(tags=["frontend"])
 
 
+# Dashboard (list view)
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -53,7 +56,7 @@ async def dashboard(
     active_count = len(result.scalars().all())
 
     # Get businesses count
-    stmt_businesses = select(Business).where(Business.is_active == True)
+    stmt_businesses = select(Business).where(Business.is_active)
     result = await db.execute(stmt_businesses)
     businesses_count = len(result.scalars().all())
 
@@ -64,7 +67,9 @@ async def dashboard(
     )
     result = await db.execute(stmt_today)
     today_sessions = result.scalars().all()
-    total_revenue = sum(s.total_sales for s in today_sessions) if today_sessions else Decimal("0.00")
+    total_revenue = (
+        sum(s.total_sales for s in today_sessions) if today_sessions else Decimal("0.00")
+    )
 
     return templates.TemplateResponse(
         "index.html",
@@ -82,10 +87,11 @@ async def dashboard(
     )
 
 
+# Create session flow
 @router.get("/sessions/create", response_class=HTMLResponse)
 async def create_session_form(request: Request, db: AsyncSession = Depends(get_db)):
     """Form to create new cash session."""
-    stmt = select(Business).where(Business.is_active == True).order_by(Business.name)
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
     result = await db.execute(stmt)
     businesses = list(result.scalars().all())
 
@@ -107,7 +113,7 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
         session_obj = CashSession(
             business_id=UUID(form_data["business_id"]),
             cashier_name=form_data["cashier_name"],
-            initial_cash=Decimal(form_data["initial_cash"]),  # Already clean (no decimals)
+            initial_cash=Decimal(form_data["initial_cash"]),
             opened_at=(
                 datetime.fromisoformat(form_data["opened_at"])
                 if form_data.get("opened_at")
@@ -121,7 +127,7 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
         return RedirectResponse(url=f"/sessions/{session_obj.id}", status_code=303)
     except Exception as e:
         # Reload businesses for error case
-        stmt = select(Business).where(Business.is_active == True).order_by(Business.name)
+        stmt = select(Business).where(Business.is_active).order_by(Business.name)
         result = await db.execute(stmt)
         businesses = list(result.scalars().all())
 
@@ -135,6 +141,7 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
         )
 
 
+# View session details
 @router.get("/sessions/{session_id}", response_class=HTMLResponse)
 async def view_session(
     request: Request,
@@ -162,6 +169,7 @@ async def view_session(
     )
 
 
+# Close session flow
 @router.get("/sessions/{session_id}/edit", response_class=HTMLResponse)
 async def edit_session_form(
     request: Request,
