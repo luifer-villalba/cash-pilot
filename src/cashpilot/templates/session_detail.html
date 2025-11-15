@@ -32,14 +32,18 @@
                         </p>
                     </div>
                     <div>
+                        <span class="label-text-alt">{{ _('Session Date') }}</span>
+                        <p class="font-bold">{{ session.session_date.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                    <div>
                         <span class="label-text-alt">{{ _('Opened At') }}</span>
-                        <p class="font-bold">{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p class="font-bold">{{ session.opened_time.strftime('%H:%M') }}</p>
                     </div>
                     <div>
                         <span class="label-text-alt">{{ _('Closed At') }}</span>
                         <p class="font-bold">
-                            {% if session.closed_at %}
-                                {{ session.closed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% if session.closed_time %}
+                                {{ session.closed_time.strftime('%H:%M') }}
                             {% else %}
                                 <span class="opacity-50">-</span>
                             {% endif %}

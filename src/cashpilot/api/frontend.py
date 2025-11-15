@@ -108,7 +108,11 @@ async def dashboard(
     total_pages = (total_sessions + per_page - 1) // per_page
 
     # Get paginated results
-    stmt = stmt.order_by(CashSession.opened_at.desc()).offset(skip).limit(per_page)
+    stmt = (
+        stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
+        .offset(skip)
+        .limit(per_page)
+    )
     result = await db.execute(stmt)
     sessions = result.scalars().unique().all()
 
@@ -125,11 +129,9 @@ async def dashboard(
     # Get businesses count
     businesses_count = len(list(businesses))
 
-    # Calculate today's revenue
+    # Calculate today's revenue (sessions closed today by session_date)
     today = datetime.now().date()
-    stmt_today = select(CashSession).where(
-        CashSession.closed_at >= datetime.combine(today, datetime.min.time())
-    )
+    stmt_today = select(CashSession).where(CashSession.session_date == today)
     result = await db.execute(stmt_today)
     today_sessions = result.scalars().all()
     total_revenue = (
@@ -219,16 +221,15 @@ async def get_sessions_table(
 
     if from_date:
         try:
-            from_dt = datetime.fromisoformat(from_date)
-            stmt = stmt.where(CashSession.opened_at >= from_dt)
+            from_dt = datetime.fromisoformat(from_date).date()
+            stmt = stmt.where(CashSession.session_date >= from_dt)
         except ValueError:
             pass
 
     if to_date:
         try:
-            to_dt = datetime.fromisoformat(to_date)
-            to_dt = to_dt.replace(hour=23, minute=59, second=59)
-            stmt = stmt.where(CashSession.opened_at <= to_dt)
+            to_dt = datetime.fromisoformat(to_date).date()
+            stmt = stmt.where(CashSession.session_date <= to_dt)
         except ValueError:
             pass
 
@@ -248,7 +249,11 @@ async def get_sessions_table(
     total_pages = (total_sessions + per_page - 1) // per_page
 
     # Get paginated results
-    stmt = stmt.order_by(CashSession.opened_at.desc()).offset(skip).limit(per_page)
+    stmt = (
+        stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
+        .offset(skip)
+        .limit(per_page)
+    )
     result = await db.execute(stmt)
     sessions = result.scalars().unique().all()
 
@@ -355,24 +360,48 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    form_data = await request.form()
-
     try:
+        form_data = await request.form()
+
+        # Parse business_id
+        business_id = UUID(form_data["business_id"])
+
+        # Parse cashier name
+        cashier_name = form_data["cashier_name"].strip()
+
+        # Parse initial_cash (remove currency formatting)
+        initial_cash_str = form_data["initial_cash"].replace(".", "").replace(",", "")
+        initial_cash = Decimal(initial_cash_str)
+
+        # Parse session_date (optional, defaults to today)
+        session_date_str = form_data.get("session_date", "").strip()
+        if session_date_str:
+            session_date = datetime.fromisoformat(session_date_str).date()
+        else:
+            session_date = datetime.now().date()
+
+        # Parse opened_time (optional, defaults to now)
+        opened_time_str = form_data.get("opened_time", "").strip()
+        if opened_time_str:
+            opened_time = datetime.fromisoformat(f"2000-01-01T{opened_time_str}").time()
+        else:
+            opened_time = datetime.now().time()
+
+        # Create session
         session_obj = CashSession(
-            business_id=UUID(form_data["business_id"]),
-            cashier_name=form_data["cashier_name"],
-            initial_cash=Decimal(form_data["initial_cash"]),
-            opened_at=(
-                datetime.fromisoformat(form_data["opened_at"])
-                if form_data.get("opened_at")
-                else datetime.now()
-            ),
+            business_id=business_id,
+            cashier_name=cashier_name,
+            initial_cash=initial_cash,
+            session_date=session_date,
+            opened_time=opened_time,
         )
+
         db.add(session_obj)
         await db.commit()
         await db.refresh(session_obj)
 
         return RedirectResponse(url=f"/sessions/{session_obj.id}", status_code=303)
+
     except Exception as e:
         stmt = select(Business).where(Business.is_active).order_by(Business.name)
         result = await db.execute(stmt)
@@ -382,7 +411,7 @@ async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
             "create_session.html",
             {
                 "request": request,
-                "error": str(e),
+                "error": f"Failed to create session: {str(e)}",
                 "businesses": businesses,
                 "locale": locale,
                 "_": _,
@@ -416,15 +445,31 @@ async def close_session(
 
         # Update session
         session_obj.status = "CLOSED"
-        session_obj.final_cash = Decimal(form_data["final_cash"])
-        session_obj.envelope_amount = Decimal(form_data["envelope_amount"])
-        session_obj.credit_card_total = Decimal(form_data.get("credit_card_total", 0))
-        session_obj.debit_card_total = Decimal(form_data.get("debit_card_total", 0))
-        session_obj.bank_transfer_total = Decimal(form_data.get("bank_transfer_total", 0))
-        session_obj.expenses = Decimal(form_data.get("expenses", 0))
+        session_obj.final_cash = Decimal(form_data["final_cash"].replace(".", "").replace(",", ""))
+        session_obj.envelope_amount = Decimal(
+            form_data["envelope_amount"].replace(".", "").replace(",", "")
+        )
+        session_obj.credit_card_total = Decimal(
+            form_data.get("credit_card_total", "0").replace(".", "").replace(",", "")
+        )
+        session_obj.debit_card_total = Decimal(
+            form_data.get("debit_card_total", "0").replace(".", "").replace(",", "")
+        )
+        session_obj.bank_transfer_total = Decimal(
+            form_data.get("bank_transfer_total", "0").replace(".", "").replace(",", "")
+        )
+        session_obj.expenses = Decimal(
+            form_data.get("expenses", "0").replace(".", "").replace(",", "")
+        )
+
+        closed_time_str = form_data.get("closed_time", "").strip()
+        if closed_time_str:
+            session_obj.closed_time = datetime.fromisoformat(f"2000-01-01T{closed_time_str}").time()
+        else:
+            session_obj.closed_time = datetime.now().time()
+
         session_obj.closing_ticket = form_data.get("closing_ticket")
         session_obj.notes = form_data.get("notes")
-        session_obj.closed_at = datetime.now()
 
         db.add(session_obj)
         await db.commit()

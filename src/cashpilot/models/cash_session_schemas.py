@@ -1,6 +1,6 @@
 """Pydantic schemas for CashSession API."""
 
-from datetime import datetime
+from datetime import date, time
 from decimal import Decimal
 from uuid import UUID
 
@@ -13,9 +13,14 @@ class CashSessionCreate(BaseModel):
     business_id: UUID
     cashier_name: str = Field(..., min_length=2, max_length=100)
     initial_cash: Decimal = Field(..., ge=0, decimal_places=2)
-    expenses: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)  # ADD THIS
-    opened_at: datetime | None = Field(
-        None, description="Optional: override opened_at (default: now)"
+    expenses: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
+
+    # NEW: Split date/time (browser local time)
+    session_date: date | None = Field(
+        None, description="Optional: override session date (default: today)"
+    )
+    opened_time: time | None = Field(
+        None, description="Optional: override open time (default: now)"
     )
     allow_overlap: bool = Field(False, description="Override conflict check if true")
 
@@ -28,11 +33,12 @@ class CashSessionUpdate(BaseModel):
     credit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     debit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     bank_transfer_total: Decimal | None = Field(None, ge=0, decimal_places=2)
-    expenses: Decimal | None = Field(None, ge=0, decimal_places=2)  # ADD THIS
+    expenses: Decimal | None = Field(None, ge=0, decimal_places=2)
     closing_ticket: str | None = Field(None, max_length=50)
     notes: str | None = None
-    opened_at: datetime | None = None
-    closed_at: datetime | None = None
+
+    # NEW: Use closed_time instead of closed_at
+    closed_time: time | None = Field(None, description="Time session closed")
 
 
 class CashSessionRead(BaseModel):
@@ -42,8 +48,12 @@ class CashSessionRead(BaseModel):
     business_id: UUID
     status: str
     cashier_name: str
-    opened_at: datetime
-    closed_at: datetime | None
+
+    # NEW: Return date/time separately
+    session_date: date
+    opened_time: time
+    closed_time: time | None
+
     initial_cash: Decimal
     final_cash: Decimal | None
     envelope_amount: Decimal

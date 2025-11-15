@@ -1,5 +1,5 @@
 """
-Seed script for CashPilot demo data.
+Seed script for CashPilot demo data (date+time split version).
 
 Creates:
 - 3 pharmacy businesses
@@ -9,7 +9,7 @@ Creates:
 
 import asyncio
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -20,18 +20,13 @@ from cashpilot.models import Business, CashSession
 
 # Non-overlapping shift patterns (no conflicts)
 SHIFT_PATTERNS = [
-    {"start_hour": 7, "end_hour": 15, "name": "Turno Mañana"},
-    {"start_hour": 15, "end_hour": 23, "name": "Turno Tarde"},
+    {"start_time": time(7, 0), "end_time": time(15, 0), "name": "Turno Mañana"},
+    {"start_time": time(15, 0), "end_time": time(23, 0), "name": "Turno Tarde"},
 ]
 
 
 async def seed_businesses(db: AsyncSession) -> list[Business]:
-    """
-    Create 3 pharmacy businesses if they don't exist.
-
-    Idempotent: checks if businesses exist first.
-    """
-    # Check if any businesses exist
+    """Create 3 pharmacy businesses if they don't exist (idempotent)."""
     result = await db.execute(select(Business).limit(1))
     if result.scalar_one_or_none():
         print("ℹ️  Businesses already exist, skipping...")
@@ -64,27 +59,11 @@ async def seed_businesses(db: AsyncSession) -> list[Business]:
 
     await db.flush()
     print(f"✅ Created {len(businesses)} businesses")
-
     return businesses
 
 
 async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> list[CashSession]:
-    """
-    Generate 30 days of cash sessions for each business.
-
-    Shift patterns (non-overlapping):
-    - Morning: 7am-3pm
-    - Afternoon: 3pm-11pm
-
-    Reconciliation outcomes:
-    - 60% perfect match (difference = 0)
-    - 25% small shortage (-50k to -200k)
-    - 10% small surplus (+10k to +100k)
-    - 5% significant shortage (< -200k)
-
-    Idempotent: checks if sessions exist first.
-    """
-    # Check if any sessions exist
+    """Generate 30 days of cash sessions with date+time split."""
     result = await db.execute(select(CashSession).limit(1))
     if result.scalar_one_or_none():
         print("ℹ️  Cash sessions already exist, skipping...")
@@ -101,13 +80,13 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
     ]
 
     sessions = []
-    today = datetime.now()
+    today = datetime.now().date()
 
     for business in businesses:
         for days_ago in range(30, 0, -1):
             session_date = today - timedelta(days=days_ago)
 
-            # Skip some days randomly (not every business operates every day)
+            # Skip some days randomly
             if random.random() < 0.15:
                 continue
 
@@ -138,25 +117,16 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
                 else:  # 5% significant shortage
                     difference = Decimal(random.randint(-500_000, -200_001))
 
-                # Expected cash = initial_cash
-                # Vary final_cash to show reconciliation
                 final_cash = initial_cash + difference
 
                 # Determine if session is closed (last 2 days might be open)
                 is_open = days_ago <= 2 and random.random() < 0.3
 
-                # Create opened_at with structured shift time
-                opened_at = session_date.replace(
-                    hour=shift["start_hour"],
-                    minute=0,
-                    second=0,
-                    microsecond=0,
-                )
-
                 session = CashSession(
                     business_id=business.id,
                     cashier_name=random.choice(cashier_names),
-                    opened_at=opened_at,
+                    session_date=session_date,
+                    opened_time=shift["start_time"],
                     initial_cash=initial_cash,
                     envelope_amount=envelope_amount,
                     credit_card_total=credit_card_total,
@@ -167,7 +137,7 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
                 if not is_open:
                     session.status = "CLOSED"
                     session.final_cash = final_cash
-                    session.closed_at = opened_at.replace(hour=shift["end_hour"])
+                    session.closed_time = shift["end_time"]
 
                     # Add optional closing notes for problematic cases
                     if difference < -200_000:
@@ -180,7 +150,6 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
 
     await db.flush()
     print(f"✅ Created {len(sessions)} cash sessions")
-
     return sessions
 
 
@@ -190,19 +159,14 @@ async def main():
 
     async with AsyncSessionLocal() as db:
         try:
-            # Seed businesses
             businesses = await seed_businesses(db)
-
-            # Seed cash sessions
             sessions = await seed_cash_sessions(db, businesses)
 
-            # Commit transaction
             await db.commit()
 
             print("\n🎉 Seed complete!")
             print(f"   📊 Businesses: {len(businesses)}")
             print(f"   📊 Cash sessions: {len(sessions)}")
-            print("\n   💡 Tip: Check reconciliation outcomes via API or database")
 
         except Exception as e:
             await db.rollback()

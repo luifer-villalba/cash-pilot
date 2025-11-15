@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, time
 from typing import Any, Dict, Optional
 from uuid import UUID
 
@@ -11,28 +11,30 @@ from cashpilot.models import CashSession
 async def check_session_overlap(
     db: AsyncSession,
     business_id: UUID,
-    opened_at: datetime,
-    closed_at: datetime | None,
+    session_date: date,
+    opened_time: time,
+    closed_time: time | None,
     exclude_session_id: UUID | None = None,
 ) -> dict | None:
     """
-    Check if new session overlaps with existing sessions for same business.
+    Check if new session overlaps with existing sessions for same business on same date.
 
     Returns conflicting session details if overlap found, None if safe.
 
-    Overlap logic:
-    - Sessions conflict if: opened_at < other.closed_at AND closed_at > other.opened_at
-    - If closed_at is None (session still open), use datetime.now() for comparison
+    Overlap logic (same date only):
+    - Sessions conflict if: opened_time < other.closed_time AND closed_time > other.opened_time
+    - If closed_time is None (session still open), use 23:59:59 for comparison
     """
-    # Use now if session not closed
-    effective_closed_at = closed_at if closed_at else datetime.now()
+    # Use 23:59:59 if session not closed (open sessions block entire rest of day)
+    effective_closed_time = closed_time if closed_time else time(23, 59, 59)
 
-    # Find overlapping OPEN sessions (closed_at IS NULL, use current time)
+    # Find overlapping sessions on SAME DATE
     stmt = select(CashSession).where(
         and_(
             CashSession.business_id == business_id,
-            CashSession.opened_at < effective_closed_at,
-            CashSession.closed_at.is_(None) | (CashSession.closed_at > opened_at),
+            CashSession.session_date == session_date,  # Same day only
+            CashSession.opened_time < effective_closed_time,
+            CashSession.closed_time.is_(None) | (CashSession.closed_time > opened_time),
         )
     )
 
@@ -46,8 +48,9 @@ async def check_session_overlap(
     if conflicting:
         return {
             "cashier_name": conflicting.cashier_name,
-            "opened_at": conflicting.opened_at.isoformat(),
-            "closed_at": conflicting.closed_at.isoformat() if conflicting.closed_at else None,
+            "opened_time": conflicting.opened_time.isoformat(),
+            "closed_time": conflicting.closed_time.isoformat() if conflicting.closed_time else None,
+            "session_date": conflicting.session_date.isoformat(),
             "session_id": str(conflicting.id),
         }
 
@@ -55,36 +58,25 @@ async def check_session_overlap(
 
 
 async def validate_session_dates(
-    opened_at: datetime, closed_at: Optional[datetime] = None
+    session_date: date, opened_time: time, closed_time: time | None = None
 ) -> Optional[Dict[str, Any]]:
     """
-    Validate session dates. Returns error dict if invalid, None if valid.
+    Validate session times on same date. Returns error dict if invalid, None if valid.
 
     Rules:
-    - closed_at must be AFTER opened_at (not equal)
-    - Both must be same calendar day
-    - closed_at can be None (open session)
+    - closed_time must be AFTER opened_time (not equal)
+    - closed_time can be None (open session)
     """
-    if closed_at is None:
+    if closed_time is None:
         return None  # Valid: open session
 
     # Must be strictly after
-    if closed_at <= opened_at:
+    if closed_time <= opened_time:
         return {
             "message": "Closed time must be after open time",
             "details": {
-                "opened_at": opened_at.isoformat(),
-                "closed_at": closed_at.isoformat(),
-            },
-        }
-
-    # Must be same calendar day
-    if opened_at.date() != closed_at.date():
-        return {
-            "message": "Session must open and close on the same day",
-            "details": {
-                "opened_at": opened_at.date().isoformat(),
-                "closed_at": closed_at.date().isoformat(),
+                "opened_time": opened_time.isoformat(),
+                "closed_time": closed_time.isoformat(),
             },
         }
 
