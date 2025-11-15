@@ -1,15 +1,17 @@
+# File: src/cashpilot/api/frontend.py
 """Frontend routes for HTML templates with i18n support."""
 
 import gettext
+from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -58,53 +60,58 @@ def get_translation_function(locale: str):
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
-    page: int = 1,
-    from_date: str | None = None,
-    to_date: str | None = None,
-    cashier_name: str | None = None,
-    business_id: str | None = None,
+    page: int = Query(1, ge=1),
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    per_page = 50
+    per_page = 10
     skip = (page - 1) * per_page
 
     # Build filter query
     stmt = select(CashSession).options(joinedload(CashSession.business))
 
+    filters = []
+
     if from_date:
         try:
-            from_dt = datetime.fromisoformat(from_date)
-            stmt = stmt.where(CashSession.opened_at >= from_dt)
+            from_dt = datetime.fromisoformat(from_date).date()
+            filters.append(CashSession.session_date >= from_dt)
         except ValueError:
             pass
 
     if to_date:
         try:
-            to_dt = datetime.fromisoformat(to_date)
-            to_dt = to_dt.replace(hour=23, minute=59, second=59)
-            stmt = stmt.where(CashSession.opened_at <= to_dt)
+            to_dt = datetime.fromisoformat(to_date).date()
+            filters.append(CashSession.session_date <= to_dt)
         except ValueError:
             pass
 
     if cashier_name and cashier_name.strip():
-        stmt = stmt.where(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
+        filters.append(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
 
     if business_id and business_id.strip():
         try:
-            stmt = stmt.where(CashSession.business_id == UUID(business_id))
+            filters.append(CashSession.business_id == UUID(business_id))
         except ValueError:
             pass
 
+    # Apply filters to main query
+    for f in filters:
+        stmt = stmt.where(f)
+
     # Count total matching
-    count_stmt = select(CashSession).where(
-        stmt.whereclause if hasattr(stmt, "whereclause") else True
-    )
+    count_stmt = select(func.count(CashSession.id))
+    for f in filters:
+        count_stmt = count_stmt.where(f)
     count_result = await db.execute(count_stmt)
-    total_sessions = len(count_result.scalars().all())
+    total_sessions = count_result.scalar() or 0
     total_pages = (total_sessions + per_page - 1) // per_page
 
     # Get paginated results
@@ -117,26 +124,32 @@ async def dashboard(
     sessions = result.scalars().unique().all()
 
     # Get active sessions count
-    stmt_active = select(CashSession).where(CashSession.status == "OPEN")
-    result = await db.execute(stmt_active)
-    active_count = len(result.scalars().all())
+    stmt_active = select(func.count(CashSession.id)).where(CashSession.status == "OPEN")
+    result_active = await db.execute(stmt_active)
+    active_count = result_active.scalar() or 0
 
     # Get businesses for dropdown
     stmt_businesses = select(Business).where(Business.is_active).order_by(Business.name)
-    result = await db.execute(stmt_businesses)
-    businesses = result.scalars().all()
-
-    # Get businesses count
+    result_businesses = await db.execute(stmt_businesses)
+    businesses = result_businesses.scalars().all()
     businesses_count = len(list(businesses))
 
     # Calculate today's revenue (sessions closed today by session_date)
-    today = datetime.now().date()
-    stmt_today = select(CashSession).where(CashSession.session_date == today)
-    result = await db.execute(stmt_today)
-    today_sessions = result.scalars().all()
-    total_revenue = (
-        sum(s.total_sales for s in today_sessions) if today_sessions else Decimal("0.00")
-    )
+    from datetime import date as date_type
+
+    today = date_type.today()
+    stmt_today = select(
+        func.sum(
+            CashSession.final_cash
+            + CashSession.envelope_amount
+            + CashSession.credit_card_total
+            + CashSession.debit_card_total
+            + CashSession.bank_transfer_total
+            - CashSession.initial_cash
+        )
+    ).where(CashSession.session_date == today, CashSession.status == "CLOSED")
+    result_today = await db.execute(stmt_today)
+    total_revenue = result_today.scalar() or Decimal("0.00")
 
     # Build active filters display
     active_filters = {}
@@ -199,53 +212,124 @@ async def create_session_form(request: Request, db: AsyncSession = Depends(get_d
     )
 
 
-@router.get("/sessions/table", response_class=HTMLResponse)
-async def get_sessions_table(
+@router.post("/sessions", response_class=HTMLResponse)
+async def create_session_post(
     request: Request,
-    page: int = 1,
-    from_date: str | None = None,
-    to_date: str | None = None,
-    cashier_name: str | None = None,
-    business_id: str | None = None,
+    business_id: str = Form(...),
+    cashier_name: str = Form(...),
+    initial_cash: str = Form(...),
+    session_date: str | None = Form(None),
+    opened_time: str | None = Form(None),
+    allow_overlap: bool = Form(False),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return only the sessions table partial (for HTMX)."""
+    """Handle session creation form submission."""
+
+    from cashpilot.core.errors import ConflictError, InvalidStateError
+    from cashpilot.models import CashSessionCreate
+
+    try:
+        session_data = CashSessionCreate(
+            business_id=UUID(business_id),
+            cashier_name=cashier_name,
+            initial_cash=Decimal(initial_cash),
+            session_date=datetime.fromisoformat(session_date).date() if session_date else None,
+            opened_time=datetime.strptime(opened_time, "%H:%M").time() if opened_time else None,
+            allow_overlap=allow_overlap,
+        )
+
+        # Call API endpoint to create
+        from cashpilot.models import CashSession
+
+        # Create session directly
+        session_obj = CashSession(
+            business_id=session_data.business_id,
+            cashier_name=session_data.cashier_name,
+            initial_cash=session_data.initial_cash,
+            session_date=session_data.session_date or date_type.today(),
+            opened_time=session_data.opened_time or datetime.now().time(),
+        )
+        db.add(session_obj)
+        await db.flush()
+        await db.refresh(session_obj)
+
+        return RedirectResponse(url=f"/sessions/{session_obj.id}", status_code=302)
+    except (ConflictError, InvalidStateError) as e:
+        # Re-render form with error
+        locale = get_locale(request)
+        _ = get_translation_function(locale)
+        stmt = select(Business).where(Business.is_active).order_by(Business.name)
+        result = await db.execute(stmt)
+        businesses = list(result.scalars().all())
+
+        return templates.TemplateResponse(
+            "create_session.html",
+            {
+                "request": request,
+                "businesses": businesses,
+                "error": str(e),
+                "locale": locale,
+                "_": _,
+            },
+            status_code=400,
+        )
+
+
+@router.get("/sessions/table", response_class=HTMLResponse)
+async def sessions_table(
+    request: Request,
+    page: int = Query(1, ge=1),
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Render sessions table with filters and pagination."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    per_page = 50
+    per_page = 10
     skip = (page - 1) * per_page
 
     # Build filter query
     stmt = select(CashSession).options(joinedload(CashSession.business))
 
+    filters = []
+
     if from_date:
         try:
             from_dt = datetime.fromisoformat(from_date).date()
-            stmt = stmt.where(CashSession.session_date >= from_dt)
+            filters.append(CashSession.session_date >= from_dt)
         except ValueError:
             pass
 
     if to_date:
         try:
             to_dt = datetime.fromisoformat(to_date).date()
-            stmt = stmt.where(CashSession.session_date <= to_dt)
+            filters.append(CashSession.session_date <= to_dt)
         except ValueError:
             pass
 
     if cashier_name and cashier_name.strip():
-        stmt = stmt.where(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
+        filters.append(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
 
     if business_id and business_id.strip():
         try:
-            stmt = stmt.where(CashSession.business_id == UUID(business_id))
+            filters.append(CashSession.business_id == UUID(business_id))
         except ValueError:
             pass
 
+    # Apply filters to main query
+    for f in filters:
+        stmt = stmt.where(f)
+
     # Count total matching
-    count_stmt = stmt.with_only_columns(CashSession.id)
+    count_stmt = select(func.count(CashSession.id))
+    for f in filters:
+        count_stmt = count_stmt.where(f)
     count_result = await db.execute(count_stmt)
-    total_sessions = len(count_result.scalars().all())
+    total_sessions = count_result.scalar() or 0
     total_pages = (total_sessions + per_page - 1) // per_page
 
     # Get paginated results
@@ -277,9 +361,6 @@ async def get_sessions_table(
     )
 
 
-# PARAMETRIZED ROUTES (catch-all, goes last)
-
-
 @router.get("/sessions/{session_id}", response_class=HTMLResponse)
 async def view_session(
     request: Request,
@@ -290,25 +371,22 @@ async def view_session(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    try:
-        stmt = (
-            select(CashSession)
-            .options(joinedload(CashSession.business))
-            .where(CashSession.id == UUID(session_id))
-        )
-        result = await db.execute(stmt)
-        session_obj = result.scalar_one_or_none()
-    except ValueError:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    stmt = (
+        select(CashSession)
+        .options(joinedload(CashSession.business))
+        .where(CashSession.id == UUID(session_id))
+    )
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
 
-    if not session_obj:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    if not session:
+        return RedirectResponse(url="/", status_code=302)
 
     return templates.TemplateResponse(
         "session_detail.html",
         {
             "request": request,
-            "session": session_obj,
+            "session": session,
             "locale": locale,
             "_": _,
         },
@@ -321,27 +399,16 @@ async def edit_session_form(
     session_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Form to edit/close cash session."""
+    """Form to close/edit cash session."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    try:
-        stmt = (
-            select(CashSession)
-            .options(joinedload(CashSession.business))
-            .where(CashSession.id == UUID(session_id))
-        )
-        result = await db.execute(stmt)
-        session = result.scalar_one_or_none()
-    except ValueError:
-        return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
 
     if not session:
-        return templates.TemplateResponse(
-            "404.html",
-            {"request": request, "message": "Session not found"},
-            status_code=404,
-        )
+        return RedirectResponse(url="/", status_code=302)
 
     return templates.TemplateResponse(
         "edit_session.html",
@@ -354,143 +421,63 @@ async def edit_session_form(
     )
 
 
-@router.post("/sessions", response_class=HTMLResponse)
-async def create_session(request: Request, db: AsyncSession = Depends(get_db)):
-    """Handle session creation form submission."""
-    locale = get_locale(request)
-    _ = get_translation_function(locale)
-
-    try:
-        form_data = await request.form()
-
-        # Parse business_id
-        business_id = UUID(form_data["business_id"])
-
-        # Parse cashier name
-        cashier_name = form_data["cashier_name"].strip()
-
-        # Parse initial_cash (remove currency formatting)
-        initial_cash_str = form_data["initial_cash"].replace(".", "").replace(",", "")
-        initial_cash = Decimal(initial_cash_str)
-
-        # Parse session_date (optional, defaults to today)
-        session_date_str = form_data.get("session_date", "").strip()
-        if session_date_str:
-            session_date = datetime.fromisoformat(session_date_str).date()
-        else:
-            session_date = datetime.now().date()
-
-        # Parse opened_time (optional, defaults to now)
-        opened_time_str = form_data.get("opened_time", "").strip()
-        if opened_time_str:
-            opened_time = datetime.fromisoformat(f"2000-01-01T{opened_time_str}").time()
-        else:
-            opened_time = datetime.now().time()
-
-        # Create session
-        session_obj = CashSession(
-            business_id=business_id,
-            cashier_name=cashier_name,
-            initial_cash=initial_cash,
-            session_date=session_date,
-            opened_time=opened_time,
-        )
-
-        db.add(session_obj)
-        await db.commit()
-        await db.refresh(session_obj)
-
-        return RedirectResponse(url=f"/sessions/{session_obj.id}", status_code=303)
-
-    except Exception as e:
-        stmt = select(Business).where(Business.is_active).order_by(Business.name)
-        result = await db.execute(stmt)
-        businesses = list(result.scalars().all())
-
-        return templates.TemplateResponse(
-            "create_session.html",
-            {
-                "request": request,
-                "error": f"Failed to create session: {str(e)}",
-                "businesses": businesses,
-                "locale": locale,
-                "_": _,
-            },
-        )
-
-
 @router.post("/sessions/{session_id}", response_class=HTMLResponse)
-async def close_session(
+async def close_session_post(
     request: Request,
     session_id: str,
+    final_cash: str = Form(...),
+    envelope_amount: str = Form(...),
+    credit_card_total: str = Form(...),
+    debit_card_total: str = Form(...),
+    bank_transfer_total: str = Form(...),
+    expenses: str = Form("0.00"),
+    closed_time: str = Form(...),
+    closing_ticket: str | None = Form(None),
+    notes: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Handle session close form submission."""
-    locale = get_locale(request)
-    _ = get_translation_function(locale)
-
-    form_data = await request.form()
-
     try:
-        stmt = (
-            select(CashSession)
-            .options(joinedload(CashSession.business))
-            .where(CashSession.id == UUID(session_id))
-        )
+        stmt = select(CashSession).where(CashSession.id == UUID(session_id))
         result = await db.execute(stmt)
-        session_obj = result.scalar_one_or_none()
+        session = result.scalar_one_or_none()
 
-        if not session_obj:
-            return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+        if not session:
+            return RedirectResponse(url="/", status_code=302)
 
         # Update session
-        session_obj.status = "CLOSED"
-        session_obj.final_cash = Decimal(form_data["final_cash"].replace(".", "").replace(",", ""))
-        session_obj.envelope_amount = Decimal(
-            form_data["envelope_amount"].replace(".", "").replace(",", "")
-        )
-        session_obj.credit_card_total = Decimal(
-            form_data.get("credit_card_total", "0").replace(".", "").replace(",", "")
-        )
-        session_obj.debit_card_total = Decimal(
-            form_data.get("debit_card_total", "0").replace(".", "").replace(",", "")
-        )
-        session_obj.bank_transfer_total = Decimal(
-            form_data.get("bank_transfer_total", "0").replace(".", "").replace(",", "")
-        )
-        session_obj.expenses = Decimal(
-            form_data.get("expenses", "0").replace(".", "").replace(",", "")
-        )
+        session.final_cash = Decimal(final_cash)
+        session.envelope_amount = Decimal(envelope_amount)
+        session.credit_card_total = Decimal(credit_card_total)
+        session.debit_card_total = Decimal(debit_card_total)
+        session.bank_transfer_total = Decimal(bank_transfer_total)
+        session.expenses = Decimal(expenses)
+        session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
+        session.closing_ticket = closing_ticket
+        session.notes = notes
+        session.status = "CLOSED"
 
-        closed_time_str = form_data.get("closed_time", "").strip()
-        if closed_time_str:
-            session_obj.closed_time = datetime.fromisoformat(f"2000-01-01T{closed_time_str}").time()
-        else:
-            session_obj.closed_time = datetime.now().time()
-
-        session_obj.closing_ticket = form_data.get("closing_ticket")
-        session_obj.notes = form_data.get("notes")
-
-        db.add(session_obj)
+        db.add(session)
         await db.commit()
 
-        return RedirectResponse(url=f"/sessions/{session_id}", status_code=303)
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
     except Exception as e:
-        stmt = (
-            select(CashSession)
-            .options(joinedload(CashSession.business))
-            .where(CashSession.id == UUID(session_id))
-        )
+        # Re-render form with error
+        locale = get_locale(request)
+        _ = get_translation_function(locale)
+
+        stmt = select(CashSession).where(CashSession.id == UUID(session_id))
         result = await db.execute(stmt)
-        session_obj = result.scalar_one_or_none()
+        session = result.scalar_one_or_none()
 
         return templates.TemplateResponse(
             "edit_session.html",
             {
                 "request": request,
-                "session": session_obj,
+                "session": session,
                 "error": str(e),
                 "locale": locale,
                 "_": _,
             },
+            status_code=400,
         )

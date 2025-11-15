@@ -1,7 +1,7 @@
 <!-- File: src/cashpilot/templates/partials/sessions_table.html -->
 <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
-        <h2 class="card-title">{{ _('Cash Sessions') }} ({{ _('Page') }} {{ page }} {{ _('of') }} {{ total_pages }})</h2>
+        <h2 class="card-title">{{ _('Cash Sessions') }}</h2>
 
         {% if sessions %}
         <div class="overflow-x-auto">
@@ -47,7 +47,7 @@
         <!-- Pagination Controls -->
         <div class="flex justify-between items-center mt-6">
             <p class="text-sm opacity-70">
-                {{ _('Showing') }} {{ (page - 1) * 50 + 1 }}-{{ [page * 50, total_sessions] | min }} {{ _('of') }} {{ total_sessions }} {{ _('sessions') }}
+                {{ _('Showing') }} {{ (page - 1) * 10 + 1 }}-{{ [page * 10, total_sessions] | min }} {{ _('of') }} {{ total_sessions }} {{ _('sessions') }}
             </p>
 
             <div class="join">
