@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from cashpilot.models.business import Business
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime, time
 from decimal import Decimal
 
 from sqlalchemy import ForeignKey, Numeric, String, and_, select
@@ -47,11 +47,17 @@ class CashSession(Base):
 
     cashier_name: Mapped[str] = mapped_column(nullable=False)
 
-    opened_at: Mapped[datetime] = mapped_column(
+    session_date: Mapped[date] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now(),
+        default=lambda: datetime.now().date(),
     )
-    closed_at: Mapped[datetime | None] = mapped_column(nullable=True)
+
+    opened_time: Mapped[time] = mapped_column(
+        nullable=False,
+        default=lambda: datetime.now().time(),
+    )
+
+    closed_time: Mapped[time | None] = mapped_column(nullable=True)
 
     closing_ticket: Mapped[str | None] = mapped_column(nullable=True)
     notes: Mapped[str | None] = mapped_column(nullable=True)
@@ -80,6 +86,19 @@ class CashSession(Base):
     expenses: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=Decimal("0.00")
     )
+
+    # CALCULATED PROPERTIES (reconstructed from date + time)
+    @property
+    def opened_at(self) -> datetime:
+        """Reconstruct datetime from session_date + opened_time (naive, browser timezone)."""
+        return datetime.combine(self.session_date, self.opened_time)
+
+    @property
+    def closed_at(self) -> datetime | None:
+        """Reconstruct datetime from session_date + closed_time (naive, browser timezone)."""
+        if self.closed_time is None:
+            return None
+        return datetime.combine(self.session_date, self.closed_time)
 
     @property
     def cash_sales(self) -> Decimal:
@@ -112,9 +131,9 @@ class CashSession(Base):
         stmt = select(CashSession).where(
             and_(
                 CashSession.business_id == self.business_id,
-                CashSession.id != self.id,  # Exclude self
-                CashSession.opened_at < (self.closed_at or datetime.now()),
-                CashSession.closed_at.is_(None) | (CashSession.closed_at > self.opened_at),
+                CashSession.id != self.id,
+                CashSession.opened_time < (self.closed_time or datetime.now().time()),
+                CashSession.closed_time.is_(None) | (CashSession.closed_time > self.opened_time),
             )
         )
         result = await db.execute(stmt)
@@ -123,5 +142,5 @@ class CashSession(Base):
     def __repr__(self) -> str:
         return (
             f"<CashSession(id={self.id}, business_id={self.business_id}, "
-            f"opened_at={self.opened_at})>"
+            f"session_date={self.session_date}, opened_time={self.opened_time})>"
         )

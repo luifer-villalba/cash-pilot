@@ -1,8 +1,5 @@
-"""Tests for Conflict detection validation."""
-
-
 import pytest
-from datetime import datetime, timedelta
+from datetime import date, time
 from httpx import AsyncClient
 
 
@@ -17,45 +14,42 @@ class TestSessionConflicts:
     """Test overlap detection."""
 
     async def test_no_conflict_non_overlapping_shifts(self, client: AsyncClient, business_id: str):
-        """Test that non-overlapping shifts are allowed."""
-        now = datetime.now()
-
-        # Shift 1: 1 hour ago (so closed_at will be before shift 2 opens)
-        shift1_open = now - timedelta(hours=1)
-
+        """Test that non-overlapping shifts on same date are allowed."""
+        # Shift 1: 08:00-12:00
         resp1 = await client.post(
             "/cash-sessions",
             json={
                 "business_id": business_id,
                 "cashier_name": "Maria",
                 "initial_cash": 500000,
-                "opened_at": shift1_open.isoformat(),
+                "session_date": "2025-11-11",
+                "opened_time": "08:00:00",
             },
         )
         assert resp1.status_code == 201
         session1_id = resp1.json()["id"]
 
-        # Close shift 1 (closed_at = now)
+        # Close shift 1
         close_resp = await client.put(
             f"/cash-sessions/{session1_id}",
             json={
                 "final_cash": 1000000,
                 "envelope_amount": 100000,
                 "credit_card_total": 300000,
+                "closed_time": "12:00:00",
             },
         )
         assert close_resp.status_code == 200
 
-        # Shift 2: 1 hour in future (after shift 1 is closed)
-        shift2_open = now + timedelta(hours=1)
-
+        # Shift 2: 13:00-17:00 (1 hour gap, no conflict)
         response = await client.post(
             "/cash-sessions",
             json={
                 "business_id": business_id,
                 "cashier_name": "Juan",
                 "initial_cash": 500000,
-                "opened_at": shift2_open.isoformat(),
+                "session_date": "2025-11-11",
+                "opened_time": "13:00:00",
             },
         )
 
@@ -63,8 +57,6 @@ class TestSessionConflicts:
 
     async def test_conflict_same_time(self, client: AsyncClient, business_id: str):
         """Test that same-time shifts conflict."""
-        now = datetime.now()
-
         # Open shift 1
         resp1 = await client.post(
             "/cash-sessions",
@@ -72,7 +64,8 @@ class TestSessionConflicts:
                 "business_id": business_id,
                 "cashier_name": "Maria",
                 "initial_cash": 500000,
-                "opened_at": now.isoformat(),
+                "session_date": "2025-11-11",
+                "opened_time": "08:00:00",
             },
         )
         assert resp1.status_code == 201
@@ -84,7 +77,8 @@ class TestSessionConflicts:
                 "business_id": business_id,
                 "cashier_name": "Juan",
                 "initial_cash": 500000,
-                "opened_at": now.isoformat(),
+                "session_date": "2025-11-11",
+                "opened_time": "08:00:00",
             },
         )
 
@@ -94,8 +88,6 @@ class TestSessionConflicts:
 
     async def test_allow_overlap_checkbox(self, client: AsyncClient, business_id: str):
         """Test that allow_overlap=true bypasses conflict check."""
-        now = datetime.now()
-
         # Open shift 1
         await client.post(
             "/cash-sessions",
@@ -103,7 +95,8 @@ class TestSessionConflicts:
                 "business_id": business_id,
                 "cashier_name": "Maria",
                 "initial_cash": 500000,
-                "opened_at": now.isoformat(),
+                "session_date": "2025-11-11",
+                "opened_time": "08:00:00",
             },
         )
 
@@ -114,7 +107,8 @@ class TestSessionConflicts:
                 "business_id": business_id,
                 "cashier_name": "Juan",
                 "initial_cash": 500000,
-                "opened_at": now.isoformat(),
+                "session_date": "2025-11-11",
+                "opened_time": "08:00:00",
                 "allow_overlap": True,
             },
         )
@@ -122,7 +116,7 @@ class TestSessionConflicts:
         assert response.status_code == 201
 
     async def test_close_session_requires_fields(self, client: AsyncClient, business_id: str):
-        """Test that closing requires final_cash, envelope_amount, credit_card_total."""
+        """Test that closing requires final_cash, envelope_amount, credit_card_total, closed_time."""
         # Open a session
         resp = await client.post(
             "/cash-sessions",
@@ -150,37 +144,9 @@ class TestSessionConflicts:
                 "final_cash": 1000000,
                 "envelope_amount": 200000,
                 "credit_card_total": 500000,
+                "closed_time": "16:35:00",
             },
         )
 
         assert close_resp.status_code == 200
         assert close_resp.json()["status"] == "CLOSED"
-
-    async def test_conflict_detection_marks_has_conflict(self, client: AsyncClient, business_id: str):
-        """Test that overlapping sessions are marked with has_conflict."""
-        now = datetime.now()
-
-        # Create session 1
-        resp1 = await client.post(
-            "/cash-sessions",
-            json={
-                "business_id": business_id,
-                "cashier_name": "Maria",
-                "initial_cash": "500000.00",
-                "opened_at": now.isoformat(),
-            },
-        )
-        assert resp1.status_code == 201
-
-        # Create session 2 with overlap
-        resp2 = await client.post(
-            "/cash-sessions",
-            json={
-                "business_id": business_id,
-                "cashier_name": "Juan",
-                "initial_cash": "500000.00",
-                "opened_at": now.isoformat(),
-                "allow_overlap": True,
-            },
-        )
-        assert resp2.status_code == 201

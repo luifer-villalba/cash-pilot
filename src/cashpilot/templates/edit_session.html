@@ -83,6 +83,17 @@
                         </label>
                     </div>
 
+                    <!-- Closed Time (NEW) -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">{{ _('Closed At (Time)') }}</span>
+                        </label>
+                        <input type="time" name="closed_time" class="input input-bordered" id="closed-time"/>
+                        <label class="label">
+                            <span class="label-text-alt">{{ _('Leave blank for current time') }}</span>
+                        </label>
+                    </div>
+
                     <!-- Additional Info -->
                     <div class="divider">{{ _('Additional Info') }}</div>
 
@@ -127,8 +138,12 @@
                 <h3 class="card-title text-lg">{{ _('Opening Info') }}</h3>
                 <div class="space-y-2 text-sm">
                     <div>
+                        <span class="label-text-alt">{{ _('Session Date:') }}</span>
+                        <p class="font-semibold">{{ session.session_date.strftime('%Y-%m-%d') }}</p>
+                    </div>
+                    <div>
                         <span class="label-text-alt">{{ _('Opened At:') }}</span>
-                        <p class="font-semibold">{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p class="font-semibold">{{ session.opened_time.strftime('%H:%M') }}</p>
                     </div>
                     <div>
                         <span class="label-text-alt">{{ _('Initial Cash:') }}</span>
@@ -162,8 +177,20 @@
     </div>
 </div>
 
-<!-- Live Preview Script -->
+<!-- Auto-populate closed_time + live preview -->
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+
+    // Set closed_time to current time
+    const timeInput = document.getElementById('closed-time');
+    if (timeInput && !timeInput.value) {
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        timeInput.value = `${hours}:${minutes}`;
+    }
+});
+
 document.querySelectorAll('input[type="text"]').forEach(input => {
     input.addEventListener('input', updatePreview);
 });

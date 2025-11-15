@@ -49,12 +49,23 @@
                         </label>
                     </div>
 
-                    <!-- Optional: Opened At -->
+                    <!-- Session Date (NEW) -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Opened At (Optional)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Session Date') }}</span>
                         </label>
-                        <input type="datetime-local" name="opened_at" class="input input-bordered"/>
+                        <input type="date" name="session_date" class="input input-bordered" id="session-date"/>
+                        <label class="label">
+                            <span class="label-text-alt">{{ _('Leave blank for today') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Opened Time (NEW) -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">{{ _('Opened At (Time)') }}</span>
+                        </label>
+                        <input type="time" name="opened_time" class="input input-bordered" id="opened-time"/>
                         <label class="label">
                             <span class="label-text-alt">{{ _('Leave blank for current time') }}</span>
                         </label>
@@ -105,4 +116,25 @@
         </div>
     </div>
 </div>
+
+<!-- Auto-populate date/time from browser -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+
+    // Set date to today (ISO format)
+    const dateInput = document.getElementById('session-date');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = now.toISOString().split('T')[0];
+    }
+
+    // Set time to current time (HH:MM format)
+    const timeInput = document.getElementById('opened-time');
+    if (timeInput && !timeInput.value) {
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        timeInput.value = `${hours}:${minutes}`;
+    }
+});
+</script>
 {% endblock %}

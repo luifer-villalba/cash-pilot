@@ -1,6 +1,6 @@
 """CashSession API endpoints for shift management."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
@@ -39,7 +39,7 @@ async def list_shifts(
     if status_filter:
         stmt = stmt.where(CashSession.status == status_filter)
 
-    stmt = stmt.offset(skip).limit(limit).order_by(CashSession.opened_at.desc())
+    stmt = stmt.offset(skip).limit(limit).order_by(CashSession.opened_time.desc())
 
     result = await db.execute(stmt)
     return result.scalars().all()
@@ -59,16 +59,19 @@ async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_
     if not business.scalar_one_or_none():
         raise NotFoundError("Business", str(session.business_id))
 
-    # Use provided opened_at or now
-    opened_at = session.opened_at or datetime.now()
+    from datetime import date as date_type
+
+    session_date = session.session_date or date_type.today()
+    opened_time = session.opened_time or datetime.now().time()
 
     # Check for overlapping sessions
     if not session.allow_overlap:
         conflict = await check_session_overlap(
             db=db,
             business_id=session.business_id,
-            opened_at=opened_at,
-            closed_at=None,
+            session_date=session_date,
+            opened_time=opened_time,
+            closed_time=None,
         )
         if conflict:
             raise ConflictError(
@@ -80,7 +83,8 @@ async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_
         business_id=session.business_id,
         cashier_name=session.cashier_name,
         initial_cash=session.initial_cash,
-        opened_at=opened_at,
+        session_date=session_date,
+        opened_time=opened_time,
     )
     db.add(session_obj)
     await db.flush()
@@ -120,31 +124,27 @@ async def close_shift(
         session.final_cash is None
         or session.envelope_amount is None
         or session.credit_card_total is None
+        or session.closed_time is None  # NEW: require closed_time
     ):
         raise InvalidStateError(
-            "Cannot close session: final_cash, envelope_amount, and credit_card_total required"
+            "Cannot close session: final_cash, envelope_amount, credit_card_total, "
+            "and closed_time required"
         )
 
-    # Use provided dates or defaults
-    proposed_opened_at = session.opened_at or session_obj.opened_at
-    proposed_closed_at = session.closed_at or datetime.now()
-
-    # Ensure closed_at is strictly after opened_at
-    if proposed_closed_at <= proposed_opened_at:
-        proposed_closed_at = proposed_opened_at.replace(microsecond=0) + timedelta(seconds=1)
-
-    # Validate dates
-    date_error = await validate_session_dates(proposed_opened_at, proposed_closed_at)
+    # Validate closed_time is after opened_time (same date)
+    date_error = await validate_session_dates(
+        session_obj.session_date, session_obj.opened_time, session.closed_time
+    )
     if date_error:
         raise InvalidStateError(date_error["message"], details=date_error["details"])
 
-    session_obj.opened_at = proposed_opened_at
-    session_obj.closed_at = proposed_closed_at
+    # Update session
     session_obj.status = SessionStatus.CLOSED.value
+    session_obj.closed_time = session.closed_time
     session_obj.has_conflict = False
 
     # Apply other updates
-    update_data = session.model_dump(exclude_unset=True, exclude={"opened_at", "closed_at"})
+    update_data = session.model_dump(exclude_unset=True, exclude={"closed_time"})
     for key, value in update_data.items():
         setattr(session_obj, key, value)
 
