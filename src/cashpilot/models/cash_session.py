@@ -87,6 +87,10 @@ class CashSession(Base):
         Numeric(12, 2), nullable=False, default=Decimal("0.00")
     )
 
+    # AUDIT FIELDS
+    last_modified_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    last_modified_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
     # CALCULATED PROPERTIES (reconstructed from date + time)
     @property
     def opened_at(self) -> datetime:

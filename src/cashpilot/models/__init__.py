@@ -3,8 +3,11 @@
 from cashpilot.models.business import Business
 from cashpilot.models.business_schemas import BusinessCreate, BusinessRead, BusinessUpdate
 from cashpilot.models.cash_session import CashSession
+from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.cash_session_schemas import (
     CashSessionCreate,
+    CashSessionPatchClosed,
+    CashSessionPatchOpen,
     CashSessionRead,
     CashSessionUpdate,
 )
@@ -16,7 +19,10 @@ __all__ = [
     "BusinessRead",
     "BusinessUpdate",
     "CashSession",
+    "CashSessionAuditLog",
     "CashSessionCreate",
+    "CashSessionPatchClosed",
+    "CashSessionPatchOpen",
     "CashSessionRead",
     "CashSessionUpdate",
     "SessionStatus",
