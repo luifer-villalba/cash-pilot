@@ -1,4 +1,3 @@
-# File: src/cashpilot/api/frontend.py
 """Frontend routes for HTML templates with i18n support."""
 
 import gettext
@@ -19,7 +18,7 @@ from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 
 # Configure templates
-templates = Jinja2Templates(directory="src/cashpilot/templates")
+templates = Jinja2Templates(directory="templates")
 
 # Translations directory
 TRANSLATIONS_DIR = Path(__file__).parent.parent / "translations"
@@ -202,7 +201,7 @@ async def create_session_form(request: Request, db: AsyncSession = Depends(get_d
     businesses = list(result.scalars().all())
 
     return templates.TemplateResponse(
-        "create_session.html",
+        "sessions/create_session.html",
         {
             "request": request,
             "businesses": businesses,
@@ -383,7 +382,7 @@ async def view_session(
         return RedirectResponse(url="/", status_code=302)
 
     return templates.TemplateResponse(
-        "session_detail.html",
+        "sessions/session_detail.html",
         {
             "request": request,
             "session": session,
@@ -411,7 +410,7 @@ async def edit_session_form(
         return RedirectResponse(url="/", status_code=302)
 
     return templates.TemplateResponse(
-        "edit_session.html",
+        "sessions/edit_session.html",
         {
             "request": request,
             "session": session,
