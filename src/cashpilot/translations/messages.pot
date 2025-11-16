@@ -522,3 +522,12 @@ msgstr ""
 
 msgid "No edits yet"
 msgstr ""
+
+msgid "Modification History"
+msgstr ""
+
+msgid "Fields Changed"
+msgstr ""
+
+msgid "Failed to load edit history"
+msgstr ""

@@ -1,221 +1,312 @@
+<!-- File: src/cashpilot/templates/session_detail.html -->
 {% extends "base.html" %}
 
-{% block title %}{{ _('Session') }} - CashPilot{% endblock %}
+{% block title %}{{ _('Session Details') }} - CashPilot{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Main Content -->
-    <div class="lg:col-span-2">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="card-title">{{ _('Session Details') }}</h2>
-                    {% if session.status == 'OPEN' %}
-                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-sm">{{ _('Close Session') }}</a>
-                    {% endif %}
-                </div>
-
-                <!-- Session Info -->
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <span class="label-text-alt">{{ _('Cashier') }}</span>
-                        <p class="font-bold">{{ session.cashier_name }}</p>
-                    </div>
-                    <div>
-                        <span class="label-text-alt">{{ _('Status') }}</span>
-                        <p class="font-bold">
-                            {% if session.status == 'OPEN' %}
-                                <span class="badge badge-warning">{{ _('OPEN') }}</span>
-                            {% else %}
-                                <span class="badge badge-outline badge-ghost">{{ _('CLOSED') }}</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    {% if session.last_modified_at %}
-                    <div class="alert alert-info shadow-lg">
-                        <div>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <div>
-                                <h3 class="font-bold text-sm">{{ _('Edited') }}</h3>
-                                <div class="text-xs">
-                                    <p>{{ _('Last modified:') }} {{ session.last_modified_at.strftime('%Y-%m-%d %H:%M') }}</p>
-                                    {% if session.last_modified_by %}
-                                    <p>{{ _('By:') }} {{ session.last_modified_by }}</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div>
-                        <span class="label-text-alt">{{ _('Session Date') }}</span>
-                        <p class="font-bold">{{ session.session_date.strftime('%Y-%m-%d') }}</p>
-                    </div>
-                    <div>
-                        <span class="label-text-alt">{{ _('Opened At') }}</span>
-                        <p class="font-bold">{{ session.opened_time.strftime('%H:%M') }}</p>
-                    </div>
-                    <div>
-                        <span class="label-text-alt">{{ _('Closed At') }}</span>
-                        <p class="font-bold">
-                            {% if session.closed_time %}
-                                {{ session.closed_time.strftime('%H:%M') }}
-                            {% else %}
-                                <span class="opacity-50">-</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Divider -->
-                <div class="divider">{{ _('Cash Flow') }}</div>
-
-                <!-- Cash Register Section -->
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">{{ _('Initial Cash') }}</span>
-                       <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
-                    </div>
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">{{ _('Final Cash') }}</span>
-                        <p class="text-2xl font-bold">
-                            {% if session.final_cash %}
-                                ₲ {{ "{:,.0f}".format(session.final_cash) }}
-                            {% else %}
-                                <span class="opacity-50">{{ _('Pending') }}</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">{{ _('Envelope Amount') }}</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.envelope_amount) }}</p>
-                    </div>
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-success">
-                        <span class="text-sm opacity-70">{{ _('Cash Sales') }}</span>
-                        <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.cash_sales) }}</p>
-                    </div>
-                </div>
-
-                <!-- Divider -->
-                <div class="divider">{{ _('Payment Methods') }}</div>
-
-                <!-- Payment Methods Grid -->
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">{{ _('Credit Card') }}</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.credit_card_total) }}</p>
-                    </div>
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">{{ _('Debit Card') }}</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.debit_card_total) }}</p>
-                    </div>
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <span class="text-sm opacity-70">{{ _('Bank Transfer') }}</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.bank_transfer_total) }}</p>
-                    </div>
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-warning">
-                        <span class="text-sm opacity-70">{{ _('Expenses') }}</span>
-                        <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.expenses) }}</p>
-                    </div>
-                </div>
-
-                <!-- Divider -->
-                <div class="divider">{{ _('Reconciliation') }}</div>
-
-                <!-- Reconciliation Summary -->
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-info">
-                        <h3 class="font-bold">{{ _('Total Sales') }}</h3>
-                        <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.total_sales) }}</p>
-                        <p class="text-sm mt-2 opacity-70">{{ _('cash_sales + all payment methods') }}</p>
-                    </div>
-                    <div class="bg-base-200 p-4 rounded border-l-4 border-success">
-                        <h3 class="font-bold">{{ _('Net Earnings') }}</h3>
-                        <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.net_earnings) }}</p>
-                        <p class="text-sm mt-2 opacity-70">{{ _('total_sales - expenses') }}</p>
-                    </div>
-                </div>
-
-                <!-- Additional Info -->
-                {% if session.closing_ticket or session.notes %}
-                <div class="divider">{{ _('Additional Info') }}</div>
-
-                {% if session.closing_ticket %}
-                <div class="mb-4">
-                    <span class="label-text-alt">{{ _('Closing Ticket') }}</span>
-                    <p class="font-mono">{{ session.closing_ticket }}</p>
-                </div>
-                {% endif %}
-
-                {% if session.notes %}
-                <div>
-                    <span class="label-text-alt">{{ _('Notes') }}</span>
-                    <p class="text-sm whitespace-pre-wrap">{{ session.notes }}</p>
-                </div>
-                {% endif %}
-                {% endif %}
-            </div>
+<div class="container mx-auto px-4 py-8">
+    <!-- Header with back button -->
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <a href="/" class="btn btn-ghost btn-sm">← {{ _('Back to Dashboard') }}</a>
+            <h1 class="text-3xl font-bold mt-2">{{ _('Session Details') }}</h1>
+        </div>
+        <div class="flex gap-2">
+            {% if session.status == 'OPEN' %}
+            <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary">{{ _('Close Session') }}</a>
+            {% else %}
+            <a href="/sessions/{{ session.id }}/edit" class="btn btn-secondary btn-sm">{{ _('Edit') }}</a>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Sidebar: Quick Actions -->
-    <div class="lg:col-span-1 space-y-4">
-        <!-- Session Status Card -->
-        <div class="card {% if session.status == 'OPEN' %}bg-base-200 border-l-4 border-success{% else %}bg-base-100{% endif %} shadow-xl">
-            <div class="card-body">
-                <h3 class="card-title">{{ _('Status') }}</h3>
-                <p class="text-lg font-bold">
-                    {% if session.status == 'OPEN' %}
-                        <span class="text-success">✓ {{ _('Session Active') }}</span>
-                    {% else %}
-                        ✓ {{ _('Session Closed') }}
+    <!-- Main content grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main content: 2 columns -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Session Info Card -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title">{{ _('Session Information') }}</h2>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="label-text-alt">{{ _('Cashier') }}</span>
+                            <p class="font-bold text-lg">{{ session.cashier_name }}</p>
+                        </div>
+                        <div>
+                            <span class="label-text-alt">{{ _('Status') }}</span>
+                            <p class="font-bold text-lg">
+                                {% if session.status == 'OPEN' %}
+                                <span class="badge badge-success">{{ _('OPEN') }}</span>
+                                {% else %}
+                                <span class="badge badge-neutral">{{ _('CLOSED') }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <span class="label-text-alt">{{ _('Opened At') }}</span>
+                            <p class="font-bold">{{ session.session_date.strftime('%Y-%m-%d') }} {{ session.opened_time.strftime('%H:%M') }}</p>
+                        </div>
+                        <div>
+                            <span class="label-text-alt">{{ _('Closed At') }}</span>
+                            <p class="font-bold">
+                                {% if session.closed_time %}
+                                    {{ session.session_date.strftime('%Y-%m-%d') }} {{ session.closed_time.strftime('%H:%M') }}
+                                {% else %}
+                                    <span class="opacity-50">-</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="divider">{{ _('Cash Flow') }}</div>
+
+                    <!-- Cash Register Section -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                            <span class="text-sm opacity-70">{{ _('Initial Cash') }}</span>
+                            <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                            <span class="text-sm opacity-70">{{ _('Final Cash') }}</span>
+                            <p class="text-2xl font-bold">
+                                {% if session.final_cash %}
+                                    ₲ {{ "{:,.0f}".format(session.final_cash) }}
+                                {% else %}
+                                    <span class="opacity-50">{{ _('Pending') }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                            <span class="text-sm opacity-70">{{ _('Envelope Amount') }}</span>
+                            <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.envelope_amount) }}</p>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-success">
+                            <span class="text-sm opacity-70">{{ _('Cash Sales') }}</span>
+                            <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.cash_sales) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="divider">{{ _('Payment Methods') }}</div>
+
+                    <!-- Payment Methods Grid -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                            <span class="text-sm opacity-70">{{ _('Credit Card') }}</span>
+                            <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.credit_card_total) }}</p>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                            <span class="text-sm opacity-70">{{ _('Debit Card') }}</span>
+                            <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.debit_card_total) }}</p>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                            <span class="text-sm opacity-70">{{ _('Bank Transfer') }}</span>
+                            <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.bank_transfer_total) }}</p>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-warning">
+                            <span class="text-sm opacity-70">{{ _('Expenses') }}</span>
+                            <p class="text-xl font-bold">₲ {{ "{:,.0f}".format(session.expenses) }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="divider">{{ _('Reconciliation') }}</div>
+
+                    <!-- Reconciliation Summary -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-info">
+                            <h3 class="font-bold">{{ _('Total Sales') }}</h3>
+                            <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.total_sales) }}</p>
+                            <p class="text-sm mt-2 opacity-70">{{ _('cash_sales + all payment methods') }}</p>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded border-l-4 border-success">
+                            <h3 class="font-bold">{{ _('Net Earnings') }}</h3>
+                            <p class="text-2xl font-bold">₲ {{ "{:,.0f}".format(session.net_earnings) }}</p>
+                            <p class="text-sm mt-2 opacity-70">{{ _('total_sales - expenses') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Additional Info -->
+                    {% if session.closing_ticket or session.notes %}
+                    <div class="divider">{{ _('Additional Info') }}</div>
+
+                    {% if session.closing_ticket %}
+                    <div class="mb-4">
+                        <span class="label-text-alt">{{ _('Closing Ticket') }}</span>
+                        <p class="font-mono">{{ session.closing_ticket }}</p>
+                    </div>
                     {% endif %}
-                </p>
-            </div>
-        </div>
 
-        <!-- Business Info -->
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h3 class="card-title text-base">{{ _('Business') }}</h3>
-                <p class="text-sm">{{ session.business.name }}</p>
-                {% if session.business.address %}
-                <p class="text-xs opacity-70">{{ session.business.address }}</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h3 class="card-title text-base">{{ _('Actions') }}</h3>
-                <div class="space-y-2">
-                    <a href="/" class="btn btn-outline btn-block btn-sm">{{ _('Back to Dashboard') }}</a>
-                    {% if session.status == 'OPEN' %}
-                        <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-block btn-sm">{{ _('Close Session') }}</a>
-                    {% else %}
-                        <a href="/sessions/create" class="btn btn-outline btn-block btn-sm">{{ _('New Session') }}</a>
+                    {% if session.notes %}
+                    <div>
+                        <span class="label-text-alt">{{ _('Notes') }}</span>
+                        <p class="text-sm whitespace-pre-wrap">{{ session.notes }}</p>
+                    </div>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>
+
+            <!-- Edit History Panel -->
+            {% if session.status == 'CLOSED' and session.last_modified_at %}
+            <div class="divider mt-8">{{ _('Edit History') }}</div>
+
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title">{{ _('Modification History') }}</h3>
+                    <div class="overflow-x-auto">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ _('Modified At') }}</th>
+                                    <th>{{ _('Modified By') }}</th>
+                                    <th>{{ _('Action') }}</th>
+                                    <th>{{ _('Fields Changed') }}</th>
+                                    <th>{{ _('Reason') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-logs-table">
+                                <tr>
+                                    <td colspan="5" class="text-center opacity-50">{{ _('Loading...') }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+            // Load audit logs via AJAX
+            async function loadAuditLogs() {
+                try {
+                    const response = await fetch('/api/cash-sessions/{{ session.id }}/audit-logs?limit=10');
+                    if (!response.ok) throw new Error('Failed to load audit logs');
+
+                    const logs = await response.json();
+                    const tbody = document.getElementById('audit-logs-table');
+
+                    if (logs.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center opacity-50">{{ _("No edits yet") }}</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = logs.map(log => `
+                        <tr>
+                            <td class="text-sm">
+                                <time datetime="${log.changed_at}">
+                                    ${new Date(log.changed_at).toLocaleString()}
+                                </time>
+                            </td>
+                            <td class="text-sm font-mono">${log.changed_by || 'system'}</td>
+                            <td>
+                                <span class="badge ${log.action === 'EDIT_OPEN' ? 'badge-info' : 'badge-warning'}">
+                                    ${log.action}
+                                </span>
+                            </td>
+                            <td class="text-sm">
+                                <div class="flex flex-wrap gap-1">
+                                    ${log.changed_fields.map(f => `<span class="badge badge-ghost">${f}</span>`).join('')}
+                                </div>
+                            </td>
+                            <td class="text-sm opacity-75">${log.reason || '-'}</td>
+                        </tr>
+                    `).join('');
+                } catch (error) {
+                    console.error('Error loading audit logs:', error);
+                    document.getElementById('audit-logs-table').innerHTML =
+                        '<tr><td colspan="5" class="text-center text-error">{{ _("Failed to load edit history") }}</td></tr>';
+                }
+            }
+
+            // Load on page load
+            document.addEventListener('DOMContentLoaded', loadAuditLogs);
+            </script>
+            {% endif %}
         </div>
 
-        <!-- Formula Reference -->
-        <div class="card bg-base-200 border-l-4 border-accent shadow-xl">
-            <div class="card-body">
-                <h3 class="card-title text-sm">📋 {{ _('Formulas') }}</h3>
-                <div class="text-xs space-y-2">
+        <!-- Sidebar: Quick Actions -->
+        <div class="lg:col-span-1 space-y-4">
+            <!-- Session Status Card -->
+            <div class="card {% if session.status == 'OPEN' %}bg-base-200 border-l-4 border-success{% else %}bg-base-100{% endif %} shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title">{{ _('Status') }}</h3>
+                    <p class="text-lg font-bold">
+                        {% if session.status == 'OPEN' %}
+                            <span class="text-success">✓ {{ _('Session Active') }}</span>
+                        {% else %}
+                            ✓ {{ _('Session Closed') }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Edited Badge (if last_modified_at exists) -->
+            {% if session.last_modified_at %}
+            <div class="alert alert-info shadow-lg">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <div>
-                        <p><strong>{{ _('Cash Sales:') }}</strong></p>
-                        <p>(final - initial) + envelope</p>
+                        <h3 class="font-bold text-sm">{{ _('Edited') }}</h3>
+                        <div class="text-xs">
+                            <p>{{ _('Last modified:') }} {{ session.last_modified_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            {% if session.last_modified_by %}
+                            <p>{{ _('By:') }} {{ session.last_modified_by }}</p>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div>
-                        <p><strong>{{ _('Total Sales:') }}</strong></p>
-                        <p>cash + credit + debit + bank</p>
-                    </div>
-                    <div>
-                        <p><strong>{{ _('Net Earnings:') }}</strong></p>
-                        <p>total - expenses</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Business Info -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-base">{{ _('Business') }}</h3>
+                    <p class="font-semibold">{{ session.business.name }}</p>
+                    {% if session.business.address %}
+                    <p class="text-sm opacity-75">{{ session.business.address }}</p>
+                    {% endif %}
+                    {% if session.business.phone %}
+                    <p class="text-sm opacity-75">{{ session.business.phone }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h3 class="card-title text-base">{{ _('Quick Stats') }}</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>{{ _('Shift Duration:') }}</span>
+                            <span class="font-mono">
+                                {% if session.closed_time %}
+                                    {{ (session.closed_time.hour - session.opened_time.hour) % 24 }}h
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>{{ _('Payment Methods:') }}</span>
+                            <span class="font-mono">
+                                {% set methods_count = (session.credit_card_total > 0) + (session.debit_card_total > 0) + (session.bank_transfer_total > 0) + (session.cash_sales > 0) %}
+                                {{ methods_count }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>{{ _('Profit Margin:') }}</span>
+                            <span class="font-mono">
+                                {% if session.total_sales > 0 %}
+                                    {{ ((session.net_earnings / session.total_sales) * 100) | round(1) }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

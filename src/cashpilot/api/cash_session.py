@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +14,7 @@ from cashpilot.core.validation import check_session_overlap, validate_session_da
 from cashpilot.models import (
     Business,
     CashSession,
+    CashSessionAuditLog,
     CashSessionCreate,
     CashSessionPatchClosed,
     CashSessionPatchOpen,
@@ -317,10 +318,10 @@ async def edit_closed_session(
 
 @router.get("/{session_id}/audit-logs", response_model=list[dict])
 async def get_session_audit_logs(
-        session_id: str,
-        skip: int = Query(0, ge=0),
-        limit: int = Query(50, ge=1, le=250),
-        db: AsyncSession = Depends(get_db),
+    session_id: str,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=250),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get audit log history for a cash session.
 
