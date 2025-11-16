@@ -4,11 +4,13 @@ FastAPI application factory with frontend support + i18n.
 
 from contextlib import asynccontextmanager
 from datetime import datetime
+from pathlib import Path
 from typing import AsyncIterator
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
@@ -60,6 +62,10 @@ def create_app() -> FastAPI:
     from cashpilot.middleware.logging import RequestIDMiddleware
 
     app.add_middleware(RequestIDMiddleware)
+
+    static_dir = Path(__file__).parent / "static"
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
     # Include routers
     from cashpilot.api.health import router as health_router

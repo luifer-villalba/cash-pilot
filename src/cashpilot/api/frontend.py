@@ -17,8 +17,8 @@ from sqlalchemy.orm import joinedload
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 
-# Configure templates
-templates = Jinja2Templates(directory="templates")
+TEMPLATES_DIR = Path("/app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Translations directory
 TRANSLATIONS_DIR = Path(__file__).parent.parent / "translations"

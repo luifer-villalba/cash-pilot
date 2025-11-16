@@ -1,3 +1,4 @@
+# File: Dockerfile
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -16,6 +17,7 @@ COPY README.md /app/
 COPY src /app/src
 COPY alembic.ini .
 COPY alembic/ ./alembic/
+COPY templates/ ./templates/
 
 RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -e .
