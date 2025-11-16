@@ -6,19 +6,17 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
-# Read from environment, fallback to dev DB
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 # Railway provides postgres:// but asyncpg needs postgresql+asyncpg://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif not DATABASE_URL:
+    DATABASE_URL = "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev"
 
-# Create async engine
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=True,
-    future=True,
-)
+print(f"DEBUG: DATABASE_URL = {DATABASE_URL}")  # Add this
+
+engine = create_async_engine(DATABASE_URL)
 
 # Session factory
 AsyncSessionLocal = async_sessionmaker(
