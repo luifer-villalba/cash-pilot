@@ -8,13 +8,15 @@ from sqlalchemy.orm import declarative_base
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-# Railway provides postgres:// but asyncpg needs postgresql+asyncpg://
+# Railway provides postgres:// or postgresql:// but asyncpg needs postgresql+asyncpg://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 elif not DATABASE_URL:
     DATABASE_URL = "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev"
 
-print(f"DEBUG: DATABASE_URL = {DATABASE_URL}")  # Add this
+print(f"DEBUG: DATABASE_URL = {DATABASE_URL}")
 
 engine = create_async_engine(DATABASE_URL)
 
