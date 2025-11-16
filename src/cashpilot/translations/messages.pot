@@ -486,3 +486,48 @@ msgstr ""
 
 msgid "No sessions found."
 msgstr ""
+
+msgid "Edited"
+msgstr ""
+
+msgid "Last modified:"
+msgstr ""
+
+msgid "By:"
+msgstr ""
+
+msgid "Edit History"
+msgstr ""
+
+msgid "Change"
+msgstr ""
+
+msgid "Field"
+msgstr ""
+
+msgid "Old Value"
+msgstr ""
+
+msgid "New Value"
+msgstr ""
+
+msgid "Modified By"
+msgstr ""
+
+msgid "Modified At"
+msgstr ""
+
+msgid "Reason"
+msgstr ""
+
+msgid "No edits yet"
+msgstr ""
+
+msgid "Modification History"
+msgstr ""
+
+msgid "Fields Changed"
+msgstr ""
+
+msgid "Failed to load edit history"
+msgstr ""
