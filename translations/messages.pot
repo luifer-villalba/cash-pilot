@@ -531,3 +531,34 @@ msgstr ""
 
 msgid "Failed to load edit history"
 msgstr ""
+
+#: templates/sessions/edit_open_session.html
+msgid "Edit Open Cash Session"
+msgstr ""
+
+msgid "Who is handling this session?"
+msgstr ""
+
+msgid "Reason for Edit"
+msgstr ""
+
+msgid "Required for audit trail"
+msgstr ""
+
+msgid "Save Changes"
+msgstr ""
+
+msgid "Current Values"
+msgstr ""
+
+msgid "Audit Trail"
+msgstr ""
+
+msgid "💡 Quick Tip"
+msgstr ""
+
+msgid "All edits are logged with reason and timestamp for compliance."
+msgstr ""
+
+msgid "e.g., Corrected initial count, Name typo fix..."
+msgstr ""

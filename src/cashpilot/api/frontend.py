@@ -21,7 +21,7 @@ TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Translations directory
-TRANSLATIONS_DIR = Path(__file__).parent.parent / "translations"
+TRANSLATIONS_DIR = Path("/app/translations")
 
 router = APIRouter(tags=["frontend"])
 
@@ -418,6 +418,146 @@ async def edit_session_form(
             "_": _,
         },
     )
+
+
+@router.get("/sessions/{session_id}/edit-open", response_class=HTMLResponse)
+async def edit_open_session_form(
+    request: Request,
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Form to edit an OPEN cash session."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        return RedirectResponse(url="/", status_code=302)
+
+    if session.status != "OPEN":
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+
+    return templates.TemplateResponse(
+        "sessions/edit_open_session.html",
+        {
+            "request": request,
+            "session": session,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.post("/sessions/{session_id}/edit-open", response_class=HTMLResponse)
+async def edit_open_session_post(
+    request: Request,
+    session_id: str,
+    cashier_name: str | None = Form(None),
+    initial_cash: str | None = Form(None),
+    opened_time: str | None = Form(None),
+    expenses: str | None = Form(None),
+    reason: str | None = Form(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Handle edit open session form submission."""
+    try:
+        stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+        result = await db.execute(stmt)
+        session = result.scalar_one_or_none()
+
+        if not session:
+            return RedirectResponse(url="/", status_code=302)
+
+        if session.status != "OPEN":
+            return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+
+        # Prepare patch data
+        patch_data = {}
+        if cashier_name:
+            patch_data["cashier_name"] = cashier_name
+        if initial_cash:
+            patch_data["initial_cash"] = Decimal(initial_cash)
+        if opened_time:
+            patch_data["opened_time"] = datetime.strptime(opened_time, "%H:%M").time()
+        if expenses:
+            patch_data["expenses"] = Decimal(expenses)
+        if reason:
+            patch_data["reason"] = reason
+
+        # Call API via direct model update (or import from cash_session router)
+        from cashpilot.models import CashSessionPatchOpen
+
+        patch = CashSessionPatchOpen(**patch_data)
+
+        # Capture old values
+        old_values = {
+            "cashier_name": session.cashier_name,
+            "initial_cash": str(session.initial_cash),
+            "opened_time": session.opened_time.isoformat() if session.opened_time else None,
+            "expenses": str(session.expenses),
+        }
+
+        # Apply updates
+        if patch.cashier_name is not None:
+            session.cashier_name = patch.cashier_name
+        if patch.initial_cash is not None:
+            session.initial_cash = patch.initial_cash
+        if patch.opened_time is not None:
+            session.opened_time = patch.opened_time
+        if patch.expenses is not None:
+            session.expenses = patch.expenses
+
+        session.last_modified_at = datetime.now()
+        session.last_modified_by = "system"
+
+        # Capture new values
+        new_values = {
+            "cashier_name": session.cashier_name,
+            "initial_cash": str(session.initial_cash),
+            "opened_time": session.opened_time.isoformat() if session.opened_time else None,
+            "expenses": str(session.expenses),
+        }
+
+        # Log to audit trail
+        from cashpilot.core.audit import log_session_edit
+
+        await log_session_edit(
+            db,
+            session,
+            "system",
+            "EDIT_OPEN",
+            old_values,
+            new_values,
+            reason=patch.reason,
+        )
+
+        db.add(session)
+        await db.commit()
+
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+
+    except ValueError as e:
+        locale = get_locale(request)
+        _ = get_translation_function(locale)
+
+        stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+        result = await db.execute(stmt)
+        session = result.scalar_one_or_none()
+
+        return templates.TemplateResponse(
+            "sessions/edit_open_session.html",
+            {
+                "request": request,
+                "session": session,
+                "error": f"Invalid input: {str(e)}",
+                "locale": locale,
+                "_": _,
+            },
+            status_code=400,
+        )
 
 
 @router.post("/sessions/{session_id}", response_class=HTMLResponse)
