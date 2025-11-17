@@ -96,6 +96,13 @@ rebuild-quick:
 	docker compose build
 	@echo "✅ Quick rebuild complete."
 
+# ---------- User Management ----------
+createuser:
+	docker compose exec app python -m cashpilot.scripts.createuser
+
+list-users:
+	docker compose exec db psql -U cashpilot -d cashpilot_dev -c "SELECT id, email, is_active, created_at FROM users ORDER BY created_at DESC;"
+
 # ---------- Sync diagnostics ----------
 check-sync:
 	@echo "🔍 Verifying synced files inside the container..."

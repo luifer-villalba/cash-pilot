@@ -55,6 +55,14 @@ def get_translation_function(locale: str):
     return lambda x: x
 
 
+@router.get("/login", response_class=HTMLResponse)
+async def login_page():
+    """Render login page."""
+    template_path = Path("/app/templates/login.html")
+    with open(template_path, "r") as f:
+        return f.read()
+
+
 # Dashboard (list view)
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(

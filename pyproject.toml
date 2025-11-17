@@ -8,17 +8,30 @@ description = "CashPilot – backend base"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    # Core framework
     "fastapi==0.115.0",
     "uvicorn==0.30.6",
-    "watchfiles==0.22.0",
-    "alembic==1.13.3",
+    "starlette>=0.37.0",
+
+    # Database
     "sqlalchemy==2.0.35",
+    "alembic==1.13.3",
     "asyncpg==0.29.0",
     "psycopg2-binary==2.9.9",
-    "structlog==24.4.0",
-    "python-multipart>=0.0.6",
+
+    # Authentication & Security
+    "PyJWT==2.10.1",
+    "pwdlib[argon2]==0.2.1",
+    "itsdangerous==2.1.2",
+
+    # Frontend & Templates
     "jinja2>=3.1.0",
+    "python-multipart>=0.0.6",
+
+    # Utilities
+    "structlog==24.4.0",
     "babel==2.14.0",
+    "watchfiles==0.22.0",
 ]
 
 [project.optional-dependencies]

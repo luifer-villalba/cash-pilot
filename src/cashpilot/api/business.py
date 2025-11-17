@@ -6,9 +6,11 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import NotFoundError
 from cashpilot.models import Business, BusinessCreate, BusinessRead, BusinessUpdate
+from cashpilot.models.user import User
 
 router = APIRouter(prefix="/businesses", tags=["businesses"])
 
@@ -18,6 +20,7 @@ async def list_businesses(
     skip: int = 0,
     limit: int = 50,
     is_active: bool | None = None,
+    current_user: User = Depends(get_current_user),  # ADD THIS
     db: AsyncSession = Depends(get_db),
 ):
     """List all businesses with pagination and optional filtering."""
@@ -32,7 +35,11 @@ async def list_businesses(
 
 
 @router.post("", response_model=BusinessRead, status_code=status.HTTP_201_CREATED)
-async def create_business(business: BusinessCreate, db: AsyncSession = Depends(get_db)):
+async def create_business(
+    business: BusinessCreate,
+    current_user: User = Depends(get_current_user),  # ADD THIS
+    db: AsyncSession = Depends(get_db),
+):
     """Create a new business (pharmacy location)."""
     business_obj = Business(**business.model_dump())
     db.add(business_obj)
@@ -42,7 +49,11 @@ async def create_business(business: BusinessCreate, db: AsyncSession = Depends(g
 
 
 @router.get("/{business_id}", response_model=BusinessRead)
-async def get_business(business_id: str, db: AsyncSession = Depends(get_db)):
+async def get_business(
+    business_id: str,
+    current_user: User = Depends(get_current_user),  # ADD THIS
+    db: AsyncSession = Depends(get_db),
+):
     """Get business details by ID."""
     stmt = select(Business).where(Business.id == UUID(business_id))
     result = await db.execute(stmt)
@@ -56,7 +67,10 @@ async def get_business(business_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{business_id}", response_model=BusinessRead)
 async def update_business(
-    business_id: str, business: BusinessUpdate, db: AsyncSession = Depends(get_db)
+    business_id: str,
+    business: BusinessUpdate,
+    current_user: User = Depends(get_current_user),  # ADD THIS
+    db: AsyncSession = Depends(get_db),
 ):
     """Update business details."""
     stmt = select(Business).where(Business.id == UUID(business_id))
@@ -78,7 +92,11 @@ async def update_business(
 
 
 @router.delete("/{business_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_business(business_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_business(
+    business_id: str,
+    current_user: User = Depends(get_current_user),  # ADD THIS
+    db: AsyncSession = Depends(get_db),
+):
     """Soft-delete business (sets is_active=False)."""
     stmt = select(Business).where(Business.id == UUID(business_id))
     result = await db.execute(stmt)
@@ -88,5 +106,5 @@ async def delete_business(business_id: str, db: AsyncSession = Depends(get_db)):
         raise NotFoundError("Business", business_id)
 
     business_obj.is_active = False
+    db.add(business_obj)
     await db.commit()
-    return None

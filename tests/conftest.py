@@ -1,3 +1,4 @@
+# File: tests/conftest.py
 """Pytest configuration and fixtures."""
 
 import pytest_asyncio
@@ -10,6 +11,7 @@ from cashpilot.main import create_app
 # Import all models so they're registered with Base.metadata
 from cashpilot.models.business import Business  # noqa: F401
 from cashpilot.models.cash_session import CashSession  # noqa: F401
+from cashpilot.models.user import User  # noqa: F401
 
 TEST_DATABASE_URL = (
     "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_test"
@@ -44,13 +46,23 @@ async def db_session():
 @pytest_asyncio.fixture
 async def client(db_session):
     """Create async test client with overridden DB dependency."""
+    from cashpilot.api.auth import get_current_user
+    from tests.factories import UserFactory
+    
     app = create_app()
 
-    # Override get_db dependency
+    # Create a test user
+    test_user = await UserFactory.create(db_session)
+
+    # Override get_db and get_current_user dependencies
     async def override_get_db():
         yield db_session
 
+    async def override_get_current_user():
+        return test_user
+
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
 
     # Use httpx.AsyncClient for async requests
     async with AsyncClient(
