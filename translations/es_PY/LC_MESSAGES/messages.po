@@ -1,4 +1,4 @@
-# File: src/cashpilot/translations/es_PY/LC_MESSAGES/messages.po
+# File: translations/es_PY/LC_MESSAGES/messages.po
 # Spanish (Paraguay) translations for CashPilot
 # Copyright (C) 2025 ORGANIZATION
 # This file is distributed under the same license as the CashPilot project.
