@@ -1,3 +1,4 @@
+# File: tests/factories.py
 """Factory classes for creating test data."""
 
 from datetime import date, time
@@ -8,6 +9,7 @@ from uuid import uuid4
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models import Business, CashSession
+from cashpilot.models.user import User
 
 
 class BusinessFactory:
@@ -66,3 +68,24 @@ class CashSessionFactory:
         await db.commit()
         await db.refresh(session)
         return session
+
+
+class UserFactory:
+    """Factory for creating test User instances."""
+
+    @staticmethod
+    async def create(db: AsyncSession, **kwargs: Any) -> User:
+        """Create and persist a User."""
+        defaults = {
+            "id": uuid4(),
+            "email": f"user{uuid4().hex[:8]}@test.com",
+            "hashed_password": "hashed_password_placeholder",
+            "is_active": True,
+        }
+        defaults.update(kwargs)
+
+        user = User(**defaults)
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        return user

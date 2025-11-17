@@ -1,7 +1,7 @@
-"""
-FastAPI application factory with frontend support + i18n.
-"""
+# File: src/cashpilot/main.py
+"""FastAPI application factory with frontend support + i18n."""
 
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 
 from cashpilot.core.logging import configure_logging, get_logger
@@ -57,7 +58,17 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
 
-    # Add middleware
+    # Add SessionMiddleware BEFORE other middleware
+    session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=session_secret_key,
+        max_age=14 * 24 * 60 * 60,  # 14 days
+        https_only=os.getenv("ENVIRONMENT") == "production",
+        same_site="lax",
+    )
+
+    # Add other middleware
     app.add_middleware(AdminRedirectMiddleware)
     from cashpilot.middleware.logging import RequestIDMiddleware
 
@@ -79,6 +90,10 @@ def create_app() -> FastAPI:
     from cashpilot.api.cash_session import router as cash_session_router
 
     app.include_router(cash_session_router)
+
+    from cashpilot.api.auth import router as auth_router
+
+    app.include_router(auth_router)
 
     from cashpilot.api.frontend import router as frontend_router
 
