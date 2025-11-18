@@ -1,91 +1,137 @@
-# File: tests/factories.py
-"""Factory classes for creating test data."""
+"""Factory classes for creating test objects."""
 
-from datetime import date, time
+from datetime import date as date_type, time
 from decimal import Decimal
-from typing import Any
-from uuid import uuid4
+from typing import Optional
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 
-from cashpilot.models import Business, CashSession
+from cashpilot.core.security import hash_password
+from cashpilot.models.business import Business
+from cashpilot.models.cash_session import CashSession
 from cashpilot.models.user import User
 
 
-class BusinessFactory:
-    """Factory for creating test Business instances."""
+class UserFactory:
+    """Factory for creating User objects."""
 
     @staticmethod
-    async def create(db: AsyncSession, **kwargs: Any) -> Business:
-        """Create and persist a Business."""
-        defaults = {
-            "id": uuid4(),
-            "name": f"Test Pharmacy {uuid4().hex[:8]}",
-            "address": "123 Test St",
-            "phone": "555-0123",
-            "is_active": True,
-        }
-        defaults.update(kwargs)
+    async def create(
+        session: AsyncSession,
+        email: str = "test@example.com",
+        hashed_password: Optional[str] = None,
+        is_active: bool = True,
+        **kwargs,
+    ) -> User:
+        """Create a test user."""
+        if hashed_password is None:
+            hashed_password = hash_password("testpass123")
 
-        business = Business(**defaults)
-        db.add(business)
-        await db.commit()
-        await db.refresh(business)
+        user = User(
+            id=kwargs.get("id", uuid.uuid4()),
+            email=email,
+            hashed_password=hashed_password,
+            is_active=is_active,
+        )
+
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+
+        return user
+
+
+class BusinessFactory:
+    """Factory for creating Business objects."""
+
+    @staticmethod
+    async def create(
+        session: AsyncSession,
+        name: str = "Test Farmacia",
+        address: Optional[str] = "Test Address",
+        phone: Optional[str] = "+595 21 123-4567",
+        is_active: bool = True,
+        **kwargs,
+    ) -> Business:
+        """Create a test business."""
+        business = Business(
+            id=kwargs.get("id", uuid.uuid4()),
+            name=name,
+            address=address,
+            phone=phone,
+            is_active=is_active,
+        )
+
+        session.add(business)
+        await session.commit()
+        await session.refresh(business)
+
         return business
 
 
 class CashSessionFactory:
-    """Factory for creating test CashSession instances."""
+    """Factory for creating CashSession objects."""
 
     @staticmethod
-    async def create(db: AsyncSession, **kwargs: Any) -> CashSession:
-        """Create and persist a CashSession."""
-        defaults = {
-            "id": uuid4(),
-            "business_id": uuid4(),
-            "status": "OPEN",
-            "cashier_name": f"Cashier {uuid4().hex[:6]}",
-            "session_date": date.today(),
-            "opened_time": time(9, 0),
-            "closed_time": None,
-            "initial_cash": Decimal("1000.00"),
-            "final_cash": None,
-            "envelope_amount": Decimal("0.00"),
-            "credit_card_total": Decimal("0.00"),
-            "debit_card_total": Decimal("0.00"),
-            "bank_transfer_total": Decimal("0.00"),
-            "expenses": Decimal("0.00"),
-            "closing_ticket": None,
-            "notes": None,
-            "has_conflict": False,
-            "last_modified_at": None,
-            "last_modified_by": None,
-        }
-        defaults.update(kwargs)
+    async def create(
+        session: AsyncSession,
+        business_id: Optional[str] = None,
+        cashier_name: str = "Test Cashier",
+        initial_cash: Decimal = Decimal("1000000.00"),
+        session_date: Optional[date_type] = None,
+        opened_time: Optional[time] = None,
+        status: str = "OPEN",
+        final_cash: Optional[Decimal] = None,
+        envelope_amount: Decimal = Decimal("0.00"),
+        credit_card_total: Decimal = Decimal("0.00"),
+        debit_card_total: Decimal = Decimal("0.00"),
+        bank_transfer_total: Decimal = Decimal("0.00"),
+        expenses: Decimal = Decimal("0.00"),
+        closed_time: Optional[time] = None,
+        closing_ticket: Optional[str] = None,
+        notes: Optional[str] = None,
+        last_modified_at: Optional[str] = None,
+        last_modified_by: Optional[str] = None,
+        **kwargs,
+    ) -> CashSession:
+        """Create a test cash session."""
+        from datetime import datetime
 
-        session = CashSession(**defaults)
-        db.add(session)
-        await db.commit()
-        await db.refresh(session)
-        return session
+        if business_id is None:
+            business = await BusinessFactory.create(session)
+            business_id = business.id
 
+        if session_date is None:
+            session_date = date_type.today()
 
-class UserFactory:
-    """Factory for creating test User instances."""
+        if opened_time is None:
+            opened_time = time(9, 0)
 
-    @staticmethod
-    async def create(db: AsyncSession, **kwargs: Any) -> User:
-        """Create and persist a User."""
-        defaults = {
-            "id": uuid4(),
-            "email": f"user{uuid4().hex[:8]}@test.com",
-            "hashed_password": "hashed_password_placeholder",
-            "is_active": True,
-        }
-        defaults.update(kwargs)
+        cash_session = CashSession(
+            id=kwargs.get("id", uuid.uuid4()),
+            business_id=business_id,
+            cashier_name=cashier_name,
+            initial_cash=initial_cash,
+            session_date=session_date,
+            opened_time=opened_time,
+            status=status,
+            final_cash=final_cash,
+            envelope_amount=envelope_amount,
+            credit_card_total=credit_card_total,
+            debit_card_total=debit_card_total,
+            bank_transfer_total=bank_transfer_total,
+            expenses=expenses,
+            closed_time=closed_time,
+            closing_ticket=closing_ticket,
+            notes=notes,
+            last_modified_at=last_modified_at,
+            last_modified_by=last_modified_by,
+        )
 
-        user = User(**defaults)
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-        return user
+        session.add(cash_session)
+        await session.commit()
+        await session.refresh(cash_session)
+
+        return cash_session

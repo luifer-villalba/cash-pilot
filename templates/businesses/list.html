@@ -1,0 +1,68 @@
+<!-- File: templates/businesses/list.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Businesses') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-4xl font-bold">{{ _('Businesses') }}</h1>
+        <a href="/businesses/create" class="btn btn-primary">{{ _('+ New Business') }}</a>
+    </div>
+
+    <!-- Businesses Table -->
+    {% if businesses %}
+    <div class="card bg-base-100 shadow-xl">
+        <div class="card-body">
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Name') }}</th>
+                            <th>{{ _('Address') }}</th>
+                            <th>{{ _('Phone') }}</th>
+                            <th>{{ _('Status') }}</th>
+                            <th>{{ _('Actions') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for business in businesses %}
+                        <tr>
+                            <td class="font-semibold">{{ business.name }}</td>
+                            <td>{{ business.address or '-' }}</td>
+                            <td>{{ business.phone or '-' }}</td>
+                            <td>
+                                {% if business.is_active %}
+                                    <span class="badge badge-success">{{ _('Active') }}</span>
+                                {% else %}
+                                    <span class="badge badge-error">{{ _('Inactive') }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="flex gap-2">
+                                    <a href="/businesses/{{ business.id }}/edit" class="btn btn-sm btn-outline">
+                                        {{ _('Edit') }}
+                                    </a>
+                                    <a href="/businesses/{{ business.id }}" class="btn btn-sm btn-ghost">
+                                        {{ _('View') }}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info shadow-lg">
+        <div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>{{ _('No businesses yet.') }} <a href="/businesses/create" class="link link-hover">{{ _('Create one') }}</a></span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

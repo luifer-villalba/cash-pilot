@@ -1,5 +1,6 @@
+<!-- File: templates/base.html -->
 <!DOCTYPE html>
-<html lang="es" data-theme="light">
+<html lang="es" data-theme="light" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,15 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
     {% block extra_head %}{% endblock %}
+
+    <script>
+        // Initialize theme from localStorage on page load
+        function initTheme() {
+            const saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+        initTheme();
+    </script>
 </head>
 <body>
     <!-- Navbar -->
@@ -28,6 +38,25 @@
                 <li><a href="/sessions">{{ _('Sessions') }}</a></li>
                 <li><a href="/businesses">{{ _('Businesses') }}</a></li>
                 <li><a href="/docs" target="_blank">{{ _('API Docs') }}</a></li>
+                <!-- Theme Toggle -->
+                <li>
+                    <button id="theme-toggle" class="btn btn-ghost btn-sm gap-2" title="Toggle dark/light theme">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+                </li>
+                <!-- User Dropdown -->
+                {% if current_user %}
+                <li>
+                    <details>
+                        <summary class="btn btn-ghost btn-sm">
+                            👤 {{ current_user.email }}
+                        </summary>
+                        <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                            <li><a href="/logout" onclick="return confirm('Are you sure you want to logout?')">{{ _('Logout') }}</a></li>
+                        </ul>
+                    </details>
+                </li>
+                {% endif %}
             </ul>
         </div>
     </div>
@@ -44,6 +73,24 @@
         </div>
     </footer>
 
+    <!-- Theme Toggle Script -->
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+
+        toggleBtn.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            themeIcon.textContent = next === 'dark' ? '☀️' : '🌙';
+        });
+
+        // Set initial icon
+        const saved = localStorage.getItem('theme') || 'light';
+        themeIcon.textContent = saved === 'dark' ? '☀️' : '🌙';
+    </script>
+
     <!-- Currency Formatting Script -->
     <script>
         // Format Paraguay currency (no decimals, period as thousands separator)
@@ -54,30 +101,19 @@
 
         // Only target currency fields, NOT cashier_name
         document.querySelectorAll('input[type="text"][name="initial_cash"], input[type="text"][name="final_cash"], input[type="text"][name="envelope_amount"], input[type="text"][name="credit_card_total"], input[type="text"][name="debit_card_total"], input[type="text"][name="bank_transfer_total"], input[type="text"][name="expenses"]').forEach(input => {
-          input.addEventListener('blur', function() {
-            if (this.value) {
-              const num = parseInt(this.value.replace(/\D/g, '')) || 0;
-              this.value = formatterPY.format(num);
-            }
-          });
-
-          input.addEventListener('focus', function() {
-            this.value = this.value.replace(/\D/g, '');
-          });
-        });
-
-        // Parse on form submit
-        document.querySelectorAll('form').forEach(form => {
-          form.addEventListener('submit', function() {
-            form.querySelectorAll('input[type="text"][name="initial_cash"], input[type="text"][name="final_cash"], input[type="text"][name="envelope_amount"], input[type="text"][name="credit_card_total"], input[type="text"][name="debit_card_total"], input[type="text"][name="bank_transfer_total"], input[type="text"][name="expenses"]').forEach(input => {
-              if (input.value) {
-                input.value = input.value.replace(/\D/g, '');
-              }
+            // Format on blur
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    const num = parseInt(this.value.replace(/\D/g, '')) || 0;
+                    this.value = formatterPY.format(num);
+                }
             });
-          });
+
+            // Allow only numbers while typing
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '');
+            });
         });
     </script>
-
-    {% block extra_js %}{% endblock %}
 </body>
 </html>

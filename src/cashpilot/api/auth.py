@@ -40,7 +40,7 @@ async def get_current_user(
             detail="Invalid user session",
         )
 
-    stmt = select(User).where((User.id == user_uuid) & (User.is_active is True))
+    stmt = select(User).where((User.id == user_uuid) & (User.is_active))
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
@@ -60,38 +60,25 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
-    # form_data.username contains email
     stmt = select(User).where(User.email == form_data.username)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
     if not user or not verify_password(form_data.password, user.hashed_password):
-        logger.warning(
-            "auth.login_failed",
-            email=form_data.username,
-        )
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-        )
+        logger.warning("auth.login_failed", email=form_data.username)
+        return RedirectResponse(url="/login?error=1", status_code=302)
 
     if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User is inactive",
-        )
+        return RedirectResponse(url="/login?error=1", status_code=302)
 
     # Store user_id in session
     request.session["user_id"] = str(user.id)
-
     logger.info(
         "auth.login_success",
         email=user.email,
         user_id=str(user.id),
     )
-
-    # Redirect to dashboard
-    return RedirectResponse(url="/admin/cash-session/list", status_code=302)
+    return RedirectResponse(url="/", status_code=302)
 
 
 @router.post("/logout")

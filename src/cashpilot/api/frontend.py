@@ -14,8 +14,10 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
+from cashpilot.models.user import User
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -57,7 +59,7 @@ def get_translation_function(locale: str):
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page():
-    """Render login page."""
+    """Render login page (public)."""
     template_path = Path("/app/templates/login.html")
     with open(template_path, "r") as f:
         return f.read()
@@ -67,6 +69,7 @@ async def login_page():
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
+    current_user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     from_date: str | None = Query(None),
     to_date: str | None = Query(None),
@@ -142,8 +145,6 @@ async def dashboard(
     businesses_count = len(list(businesses))
 
     # Calculate today's revenue (sessions closed today by session_date)
-    from datetime import date as date_type
-
     today = date_type.today()
     stmt_today = select(
         func.sum(
@@ -173,6 +174,7 @@ async def dashboard(
         "index.html",
         {
             "request": request,
+            "current_user": current_user,
             "sessions": sessions,
             "active_sessions_count": active_count,
             "businesses_count": businesses_count,
@@ -199,7 +201,11 @@ async def dashboard(
 
 
 @router.get("/sessions/create", response_class=HTMLResponse)
-async def create_session_form(request: Request, db: AsyncSession = Depends(get_db)):
+async def create_session_form(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Form to create new cash session."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
@@ -212,6 +218,7 @@ async def create_session_form(request: Request, db: AsyncSession = Depends(get_d
         "sessions/create_session.html",
         {
             "request": request,
+            "current_user": current_user,
             "businesses": businesses,
             "locale": locale,
             "_": _,
@@ -222,6 +229,7 @@ async def create_session_form(request: Request, db: AsyncSession = Depends(get_d
 @router.post("/sessions", response_class=HTMLResponse)
 async def create_session_post(
     request: Request,
+    current_user: User = Depends(get_current_user),
     business_id: str = Form(...),
     cashier_name: str = Form(...),
     initial_cash: str = Form(...),
@@ -231,48 +239,41 @@ async def create_session_post(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle session creation form submission."""
-
-    from cashpilot.core.errors import ConflictError, InvalidStateError
-    from cashpilot.models import CashSessionCreate
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
 
     try:
-        session_data = CashSessionCreate(
+        initial_cash_val = Decimal(initial_cash.replace(",", ""))
+        session_date_val = (
+            datetime.fromisoformat(session_date).date() if session_date else date_type.today()
+        )
+        opened_time_val = (
+            datetime.strptime(opened_time, "%H:%M").time() if opened_time else datetime.now().time()
+        )
+
+        session = CashSession(
             business_id=UUID(business_id),
             cashier_name=cashier_name,
-            initial_cash=Decimal(initial_cash),
-            session_date=datetime.fromisoformat(session_date).date() if session_date else None,
-            opened_time=datetime.strptime(opened_time, "%H:%M").time() if opened_time else None,
-            allow_overlap=allow_overlap,
+            initial_cash=initial_cash_val,
+            session_date=session_date_val,
+            opened_time=opened_time_val,
         )
+        db.add(session)
+        await db.commit()
+        await db.refresh(session)
 
-        # Call API endpoint to create
-        from cashpilot.models import CashSession
+        return RedirectResponse(url=f"/sessions/{session.id}", status_code=302)
 
-        # Create session directly
-        session_obj = CashSession(
-            business_id=session_data.business_id,
-            cashier_name=session_data.cashier_name,
-            initial_cash=session_data.initial_cash,
-            session_date=session_data.session_date or date_type.today(),
-            opened_time=session_data.opened_time or datetime.now().time(),
-        )
-        db.add(session_obj)
-        await db.flush()
-        await db.refresh(session_obj)
-
-        return RedirectResponse(url=f"/sessions/{session_obj.id}", status_code=302)
-    except (ConflictError, InvalidStateError) as e:
-        # Re-render form with error
-        locale = get_locale(request)
-        _ = get_translation_function(locale)
+    except Exception as e:
         stmt = select(Business).where(Business.is_active).order_by(Business.name)
         result = await db.execute(stmt)
         businesses = list(result.scalars().all())
 
         return templates.TemplateResponse(
-            "create_session.html",
+            "sessions/create_session.html",
             {
                 "request": request,
+                "current_user": current_user,
                 "businesses": businesses,
                 "error": str(e),
                 "locale": locale,
@@ -282,99 +283,14 @@ async def create_session_post(
         )
 
 
-@router.get("/sessions/table", response_class=HTMLResponse)
-async def sessions_table(
-    request: Request,
-    page: int = Query(1, ge=1),
-    from_date: str | None = Query(None),
-    to_date: str | None = Query(None),
-    cashier_name: str | None = Query(None),
-    business_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
-):
-    """Render sessions table with filters and pagination."""
-    locale = get_locale(request)
-    _ = get_translation_function(locale)
-
-    per_page = 10
-    skip = (page - 1) * per_page
-
-    # Build filter query
-    stmt = select(CashSession).options(joinedload(CashSession.business))
-
-    filters = []
-
-    if from_date:
-        try:
-            from_dt = datetime.fromisoformat(from_date).date()
-            filters.append(CashSession.session_date >= from_dt)
-        except ValueError:
-            pass
-
-    if to_date:
-        try:
-            to_dt = datetime.fromisoformat(to_date).date()
-            filters.append(CashSession.session_date <= to_dt)
-        except ValueError:
-            pass
-
-    if cashier_name and cashier_name.strip():
-        filters.append(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
-
-    if business_id and business_id.strip():
-        try:
-            filters.append(CashSession.business_id == UUID(business_id))
-        except ValueError:
-            pass
-
-    # Apply filters to main query
-    for f in filters:
-        stmt = stmt.where(f)
-
-    # Count total matching
-    count_stmt = select(func.count(CashSession.id))
-    for f in filters:
-        count_stmt = count_stmt.where(f)
-    count_result = await db.execute(count_stmt)
-    total_sessions = count_result.scalar() or 0
-    total_pages = (total_sessions + per_page - 1) // per_page
-
-    # Get paginated results
-    stmt = (
-        stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
-        .offset(skip)
-        .limit(per_page)
-    )
-    result = await db.execute(stmt)
-    sessions = result.scalars().unique().all()
-
-    return templates.TemplateResponse(
-        "partials/sessions_table.html",
-        {
-            "request": request,
-            "sessions": sessions,
-            "page": page,
-            "total_pages": total_pages,
-            "total_sessions": total_sessions,
-            "current_filters": {
-                "from_date": from_date,
-                "to_date": to_date,
-                "cashier_name": cashier_name,
-                "business_id": business_id,
-            },
-            "locale": locale,
-            "_": _,
-        },
-    )
-
-
 @router.get("/sessions/{session_id}", response_class=HTMLResponse)
-async def view_session(
+async def session_detail(
     request: Request,
     session_id: str,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """View single session details."""
+    """Display single session details."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -393,6 +309,7 @@ async def view_session(
         "sessions/session_detail.html",
         {
             "request": request,
+            "current_user": current_user,
             "session": session,
             "locale": locale,
             "_": _,
@@ -404,6 +321,7 @@ async def view_session(
 async def edit_session_form(
     request: Request,
     session_id: str,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Form to close/edit cash session."""
@@ -421,6 +339,7 @@ async def edit_session_form(
         "sessions/edit_session.html",
         {
             "request": request,
+            "current_user": current_user,
             "session": session,
             "locale": locale,
             "_": _,
@@ -432,6 +351,7 @@ async def edit_session_form(
 async def edit_open_session_form(
     request: Request,
     session_id: str,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Form to edit an OPEN cash session."""
@@ -452,6 +372,7 @@ async def edit_open_session_form(
         "sessions/edit_open_session.html",
         {
             "request": request,
+            "current_user": current_user,
             "session": session,
             "locale": locale,
             "_": _,
@@ -463,6 +384,7 @@ async def edit_open_session_form(
 async def edit_open_session_post(
     request: Request,
     session_id: str,
+    current_user: User = Depends(get_current_user),
     cashier_name: str | None = Form(None),
     initial_cash: str | None = Form(None),
     opened_time: str | None = Form(None),
@@ -482,68 +404,64 @@ async def edit_open_session_post(
         if session.status != "OPEN":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
-        # Prepare patch data
-        patch_data = {}
-        if cashier_name:
-            patch_data["cashier_name"] = cashier_name
+        # Track changes for audit log
+        from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
+
+        changed_fields = []
+        old_values = {}
+        new_values = {}
+
+        # Update fields if provided
+        if cashier_name and cashier_name != session.cashier_name:
+            changed_fields.append("cashier_name")
+            old_values["cashier_name"] = session.cashier_name
+            new_values["cashier_name"] = cashier_name
+            session.cashier_name = cashier_name
+
         if initial_cash:
-            patch_data["initial_cash"] = Decimal(initial_cash)
+            initial_cash_val = Decimal(initial_cash.replace(",", ""))
+            if initial_cash_val != session.initial_cash:
+                changed_fields.append("initial_cash")
+                old_values["initial_cash"] = str(session.initial_cash)
+                new_values["initial_cash"] = str(initial_cash_val)
+                session.initial_cash = initial_cash_val
+
         if opened_time:
-            patch_data["opened_time"] = datetime.strptime(opened_time, "%H:%M").time()
+            opened_time_obj = datetime.strptime(opened_time, "%H:%M").time()
+            if opened_time_obj != session.opened_time:
+                changed_fields.append("opened_time")
+                old_values["opened_time"] = str(session.opened_time)
+                new_values["opened_time"] = str(opened_time_obj)
+                session.opened_time = opened_time_obj
+
         if expenses:
-            patch_data["expenses"] = Decimal(expenses)
-        if reason:
-            patch_data["reason"] = reason
+            expenses_val = Decimal(expenses.replace(",", ""))
+            if expenses_val != session.expenses:
+                changed_fields.append("expenses")
+                old_values["expenses"] = str(session.expenses)
+                new_values["expenses"] = str(expenses_val)
+                session.expenses = expenses_val
 
-        # Call API via direct model update (or import from cash_session router)
-        from cashpilot.models import CashSessionPatchOpen
-
-        patch = CashSessionPatchOpen(**patch_data)
-
-        # Capture old values
-        old_values = {
-            "cashier_name": session.cashier_name,
-            "initial_cash": str(session.initial_cash),
-            "opened_time": session.opened_time.isoformat() if session.opened_time else None,
-            "expenses": str(session.expenses),
-        }
-
-        # Apply updates
-        if patch.cashier_name is not None:
-            session.cashier_name = patch.cashier_name
-        if patch.initial_cash is not None:
-            session.initial_cash = patch.initial_cash
-        if patch.opened_time is not None:
-            session.opened_time = patch.opened_time
-        if patch.expenses is not None:
-            session.expenses = patch.expenses
-
+        # Set audit tracking fields
         session.last_modified_at = datetime.now()
         session.last_modified_by = "system"
 
-        # Capture new values
-        new_values = {
-            "cashier_name": session.cashier_name,
-            "initial_cash": str(session.initial_cash),
-            "opened_time": session.opened_time.isoformat() if session.opened_time else None,
-            "expenses": str(session.expenses),
-        }
-
-        # Log to audit trail
-        from cashpilot.core.audit import log_session_edit
-
-        await log_session_edit(
-            db,
-            session,
-            "system",
-            "EDIT_OPEN",
-            old_values,
-            new_values,
-            reason=patch.reason,
-        )
-
         db.add(session)
         await db.commit()
+
+        # Create audit log if changes were made
+        if changed_fields:
+            audit_log = CashSessionAuditLog(
+                session_id=session.id,
+                action="edit",
+                changed_fields=changed_fields,
+                old_values=old_values,
+                new_values=new_values,
+                changed_by="system",
+                reason=reason,
+            )
+            db.add(audit_log)
+            await db.commit()
 
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
@@ -559,6 +477,7 @@ async def edit_open_session_post(
             "sessions/edit_open_session.html",
             {
                 "request": request,
+                "current_user": current_user,
                 "session": session,
                 "error": f"Invalid input: {str(e)}",
                 "locale": locale,
@@ -572,12 +491,13 @@ async def edit_open_session_post(
 async def close_session_post(
     request: Request,
     session_id: str,
+    current_user: User = Depends(get_current_user),
     final_cash: str = Form(...),
     envelope_amount: str = Form(...),
     credit_card_total: str = Form(...),
     debit_card_total: str = Form(...),
     bank_transfer_total: str = Form(...),
-    expenses: str = Form("0.00"),
+    expenses: str = Form("0"),
     closed_time: str = Form(...),
     closing_ticket: str | None = Form(None),
     notes: str | None = Form(None),
@@ -592,13 +512,13 @@ async def close_session_post(
         if not session:
             return RedirectResponse(url="/", status_code=302)
 
-        # Update session
-        session.final_cash = Decimal(final_cash)
-        session.envelope_amount = Decimal(envelope_amount)
-        session.credit_card_total = Decimal(credit_card_total)
-        session.debit_card_total = Decimal(debit_card_total)
-        session.bank_transfer_total = Decimal(bank_transfer_total)
-        session.expenses = Decimal(expenses)
+        # Update session - FIX: keep decimal point, don't strip it
+        session.final_cash = Decimal(final_cash.replace(",", ""))
+        session.envelope_amount = Decimal(envelope_amount.replace(",", ""))
+        session.credit_card_total = Decimal(credit_card_total.replace(",", ""))
+        session.debit_card_total = Decimal(debit_card_total.replace(",", ""))
+        session.bank_transfer_total = Decimal(bank_transfer_total.replace(",", ""))
+        session.expenses = Decimal(expenses.replace(",", "") or "0")
         session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
         session.closing_ticket = closing_ticket
         session.notes = notes
@@ -618,10 +538,95 @@ async def close_session_post(
         session = result.scalar_one_or_none()
 
         return templates.TemplateResponse(
-            "edit_session.html",
+            "sessions/edit_session.html",
             {
                 "request": request,
+                "current_user": current_user,
                 "session": session,
+                "error": str(e),
+                "locale": locale,
+                "_": _,
+            },
+            status_code=400,
+        )
+
+
+@router.get("/businesses", response_class=HTMLResponse)
+async def businesses_list(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all businesses (pharmacy locations)."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
+    result = await db.execute(stmt)
+    businesses = result.scalars().all()
+
+    return templates.TemplateResponse(
+        "businesses/list.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "businesses": businesses,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.get("/businesses/create", response_class=HTMLResponse)
+async def create_business_form(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    """Form to create new business."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    return templates.TemplateResponse(
+        "businesses/create.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.post("/businesses", response_class=HTMLResponse)
+async def create_business_post(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    name: str = Form(...),
+    address: str | None = Form(None),
+    phone: str | None = Form(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Handle business creation."""
+    try:
+        business = Business(
+            name=name,
+            address=address,
+            phone=phone,
+            is_active=True,
+        )
+        db.add(business)
+        await db.commit()
+
+        return RedirectResponse(url="/businesses", status_code=302)
+    except Exception as e:
+        locale = get_locale(request)
+        _ = get_translation_function(locale)
+
+        return templates.TemplateResponse(
+            "businesses/create.html",
+            {
+                "request": request,
+                "current_user": current_user,
                 "error": str(e),
                 "locale": locale,
                 "_": _,
