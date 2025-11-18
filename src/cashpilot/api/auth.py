@@ -20,8 +20,8 @@ router = APIRouter(tags=["auth"])
 
 
 async def get_current_user(
-        request: Request,
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ) -> User:
     """Dependency to get current authenticated user from session."""
     user_id = request.session.get("user_id")

@@ -69,14 +69,14 @@ async def login_page():
 # Dashboard (list view)
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
-        request: Request,
-        current_user: User = Depends(get_current_user),
-        page: int = Query(1, ge=1),
-        from_date: str | None = Query(None),
-        to_date: str | None = Query(None),
-        cashier_name: str | None = Query(None),
-        business_id: str | None = Query(None),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    page: int = Query(1, ge=1),
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
     logger.info("dashboard.accessed", current_user_id=str(current_user.id))  # ADD THIS
@@ -247,8 +247,12 @@ async def create_session_post(
 
     try:
         initial_cash_val = Decimal(initial_cash.replace(",", "").replace(".", ""))
-        session_date_val = datetime.fromisoformat(session_date).date() if session_date else date_type.today()
-        opened_time_val = datetime.strptime(opened_time, "%H:%M").time() if opened_time else datetime.now().time()
+        session_date_val = (
+            datetime.fromisoformat(session_date).date() if session_date else date_type.today()
+        )
+        opened_time_val = (
+            datetime.strptime(opened_time, "%H:%M").time() if opened_time else datetime.now().time()
+        )
 
         session = CashSession(
             business_id=UUID(business_id),
@@ -503,6 +507,7 @@ async def close_session_post(
             status_code=400,
         )
 
+
 @router.get("/businesses", response_class=HTMLResponse)
 async def businesses_list(
     request: Request,
@@ -527,6 +532,7 @@ async def businesses_list(
             "_": _,
         },
     )
+
 
 @router.get("/businesses/create", response_class=HTMLResponse)
 async def create_business_form(
@@ -584,4 +590,3 @@ async def create_business_post(
             },
             status_code=400,
         )
-
