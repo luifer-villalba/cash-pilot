@@ -1,4 +1,3 @@
-# File: src/cashpilot/api/frontend.py
 """Frontend routes for HTML templates with i18n support."""
 
 import gettext
@@ -15,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from cashpilot.api.auth import get_current_user, logger
+from cashpilot.api.auth import get_current_user
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 from cashpilot.models.user import User
@@ -79,8 +78,6 @@ async def dashboard(
     db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
-    logger.info("dashboard.accessed", current_user_id=str(current_user.id))  # ADD THIS
-
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -246,7 +243,7 @@ async def create_session_post(
     _ = get_translation_function(locale)
 
     try:
-        initial_cash_val = Decimal(initial_cash.replace(",", "").replace(".", ""))
+        initial_cash_val = Decimal(initial_cash.replace(",", ""))
         session_date_val = (
             datetime.fromisoformat(session_date).date() if session_date else date_type.today()
         )
@@ -407,18 +404,64 @@ async def edit_open_session_post(
         if session.status != "OPEN":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
+        # Track changes for audit log
+        from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
+
+        changed_fields = []
+        old_values = {}
+        new_values = {}
+
         # Update fields if provided
-        if cashier_name:
+        if cashier_name and cashier_name != session.cashier_name:
+            changed_fields.append("cashier_name")
+            old_values["cashier_name"] = session.cashier_name
+            new_values["cashier_name"] = cashier_name
             session.cashier_name = cashier_name
+
         if initial_cash:
-            session.initial_cash = Decimal(initial_cash.replace(",", "").replace(".", ""))
+            initial_cash_val = Decimal(initial_cash.replace(",", ""))
+            if initial_cash_val != session.initial_cash:
+                changed_fields.append("initial_cash")
+                old_values["initial_cash"] = str(session.initial_cash)
+                new_values["initial_cash"] = str(initial_cash_val)
+                session.initial_cash = initial_cash_val
+
         if opened_time:
-            session.opened_time = datetime.strptime(opened_time, "%H:%M").time()
+            opened_time_obj = datetime.strptime(opened_time, "%H:%M").time()
+            if opened_time_obj != session.opened_time:
+                changed_fields.append("opened_time")
+                old_values["opened_time"] = str(session.opened_time)
+                new_values["opened_time"] = str(opened_time_obj)
+                session.opened_time = opened_time_obj
+
         if expenses:
-            session.expenses = Decimal(expenses.replace(",", "").replace(".", ""))
+            expenses_val = Decimal(expenses.replace(",", ""))
+            if expenses_val != session.expenses:
+                changed_fields.append("expenses")
+                old_values["expenses"] = str(session.expenses)
+                new_values["expenses"] = str(expenses_val)
+                session.expenses = expenses_val
+
+        # Set audit tracking fields
+        session.last_modified_at = datetime.now()
+        session.last_modified_by = "system"
 
         db.add(session)
         await db.commit()
+
+        # Create audit log if changes were made
+        if changed_fields:
+            audit_log = CashSessionAuditLog(
+                session_id=session.id,
+                action="edit",
+                changed_fields=changed_fields,
+                old_values=old_values,
+                new_values=new_values,
+                changed_by="system",
+                reason=reason,
+            )
+            db.add(audit_log)
+            await db.commit()
 
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
@@ -469,13 +512,13 @@ async def close_session_post(
         if not session:
             return RedirectResponse(url="/", status_code=302)
 
-        # Update session
-        session.final_cash = Decimal(final_cash.replace(",", "").replace(".", ""))
-        session.envelope_amount = Decimal(envelope_amount.replace(",", "").replace(".", ""))
-        session.credit_card_total = Decimal(credit_card_total.replace(",", "").replace(".", ""))
-        session.debit_card_total = Decimal(debit_card_total.replace(",", "").replace(".", ""))
-        session.bank_transfer_total = Decimal(bank_transfer_total.replace(",", "").replace(".", ""))
-        session.expenses = Decimal(expenses.replace(",", "").replace(".", "") or "0")
+        # Update session - FIX: keep decimal point, don't strip it
+        session.final_cash = Decimal(final_cash.replace(",", ""))
+        session.envelope_amount = Decimal(envelope_amount.replace(",", ""))
+        session.credit_card_total = Decimal(credit_card_total.replace(",", ""))
+        session.debit_card_total = Decimal(debit_card_total.replace(",", ""))
+        session.bank_transfer_total = Decimal(bank_transfer_total.replace(",", ""))
+        session.expenses = Decimal(expenses.replace(",", "") or "0")
         session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
         session.closing_ticket = closing_ticket
         session.notes = notes

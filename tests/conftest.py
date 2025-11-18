@@ -1,12 +1,16 @@
 # File: tests/conftest.py
 """Pytest configuration and fixtures."""
 
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from cashpilot.core.db import Base, get_db
 from cashpilot.main import create_app
+
+from tests.factories import UserFactory, BusinessFactory, CashSessionFactory
+from cashpilot.core.security import hash_password
 
 # Import all models so they're registered with Base.metadata
 from cashpilot.models.business import Business  # noqa: F401
@@ -69,3 +73,19 @@ async def client(db_session):
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         yield ac
+
+
+@pytest.fixture
+async def test_user(db_session: AsyncSession, request) -> User:
+    """Create a test user with proper password hashing."""
+    # Generate unique email per test
+    test_name = request.node.name
+    email = f"testuser_{test_name}@example.com"
+
+    user = await UserFactory.create(
+        db_session,
+        email=email,
+        hashed_password=hash_password("testpass123"),
+        is_active=True,
+    )
+    return user

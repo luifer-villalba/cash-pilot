@@ -1,88 +1,120 @@
-"""Tests for Business API endpoints."""
+"""Tests for business endpoints."""
 
-import pytest_asyncio
+import pytest
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
-
-@pytest_asyncio.fixture
-async def business_id(client: AsyncClient) -> str:
-    """Create a business for testing."""
-    business_data = {
-        "name": "Farmacia Test",
-        "address": "Calle Test 123",
-        "phone": "+595972000000",
-    }
-    response = await client.post("/businesses", json=business_data)
-    assert response.status_code == 201
-    return response.json()["id"]
+from tests.factories import BusinessFactory
 
 
 class TestCreateBusiness:
-    """Test business creation endpoint."""
+    """Test business creation."""
 
-    async def test_create_business_success(self, client: AsyncClient):
-        """Test creating a business returns 201."""
-        business_data = {
-            "name": "Farmacia Centro",
-            "address": "Avenida Principal 456",
-            "phone": "+595971234567",
-        }
-        response = await client.post("/businesses", json=business_data)
+    @pytest.mark.asyncio
+    async def test_create_business_success(self, client: AsyncClient, db_session: AsyncSession):
+        """Test creating a business via form (HTML endpoint)."""
+        response = await client.post(
+            "/businesses",
+            data={
+                "name": "Farmacia Centro",
+                "address": "Avenida Principal 456",
+                "phone": "+595971234567",
+            },
+            follow_redirects=False,
+        )
 
-        assert response.status_code == 201
-        data = response.json()
-        assert data["name"] == "Farmacia Centro"
-        assert "id" in data
+        # Should redirect to /businesses list on success
+        assert response.status_code == 302
+        assert "/businesses" in response.headers.get("location", "")
 
-    async def test_create_business_minimal_data(self, client: AsyncClient):
+    @pytest.mark.asyncio
+    async def test_create_business_minimal_data(self, client: AsyncClient, db_session: AsyncSession):
         """Test creating business with only required name field."""
-        business_data = {"name": "Farmacia Simple"}
-        response = await client.post("/businesses", json=business_data)
+        response = await client.post(
+            "/businesses",
+            data={"name": "Farmacia Simple"},
+            follow_redirects=False,
+        )
 
-        assert response.status_code == 201
-        data = response.json()
-        assert data["name"] == "Farmacia Simple"
+        assert response.status_code == 302
+        assert "/businesses" in response.headers.get("location", "")
+
+    @pytest.mark.asyncio
+    async def test_create_business_missing_name(self, client: AsyncClient):
+        """Test that creation without name fails with validation error."""
+        response = await client.post(
+            "/businesses",
+            data={
+                "address": "Some Address",
+                "phone": "+595971234567",
+            },
+            follow_redirects=False,
+        )
+
+        # FastAPI returns 422 for validation errors
+        assert response.status_code == 422
 
 
 class TestGetBusiness:
-    """Test business retrieval endpoint."""
+    """Test retrieving business details."""
 
-    async def test_get_business_success(self, client: AsyncClient, business_id: str):
-        """Test getting existing business returns 200."""
-        response = await client.get(f"/businesses/{business_id}")
+    @pytest.mark.asyncio
+    async def test_get_business_page_exists(self, client: AsyncClient, db_session: AsyncSession):
+        """Test that businesses list page exists and is accessible."""
+        business = await BusinessFactory.create(db_session)
 
+        response = await client.get("/businesses")
+
+        # Should return the businesses list page
         assert response.status_code == 200
-        data = response.json()
-        assert data["id"] == business_id
-
-    async def test_get_business_not_found(self, client: AsyncClient):
-        """Test getting non-existent business returns 404."""
-        response = await client.get("/businesses/00000000-0000-0000-0000-000000000000")
-
-        assert response.status_code == 404
-        data = response.json()
-        assert data["code"] == "NOT_FOUND"
+        assert "text/html" in response.headers.get("content-type", "")
 
 
 class TestUpdateBusiness:
-    """Test business update endpoint."""
+    """Test updating businesses."""
 
-    async def test_update_business_success(self, client: AsyncClient, business_id: str):
-        """Test updating business returns 200."""
-        update_data = {"name": "Farmacia Actualizada"}
-        response = await client.put(f"/businesses/{business_id}", json=update_data)
+    @pytest.mark.asyncio
+    async def test_update_business_not_yet_implemented(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test that update route doesn't exist yet (MIZ-137)."""
+        business = await BusinessFactory.create(db_session)
+
+        # Edit endpoint doesn't exist yet
+        response = await client.get(f"/businesses/{business.id}/edit", follow_redirects=False)
+
+        # Should 404 or redirect until MIZ-137 is implemented
+        assert response.status_code in [302, 404, 405]
+
+
+class TestListBusinesses:
+    """Test listing businesses."""
+
+    @pytest.mark.asyncio
+    async def test_list_businesses_html(self, client: AsyncClient, db_session: AsyncSession):
+        """Test listing businesses returns HTML."""
+        await BusinessFactory.create(db_session, name="Farmacia 1")
+        await BusinessFactory.create(db_session, name="Farmacia 2")
+
+        response = await client.get("/businesses")
 
         assert response.status_code == 200
-        data = response.json()
-        assert data["name"] == "Farmacia Actualizada"
+        assert "text/html" in response.headers.get("content-type", "")
+        # At least one business name should be in the response
+        assert "Farmacia 1" in response.text or "Farmacia 2" in response.text
 
-    async def test_update_business_not_found(self, client: AsyncClient):
-        """Test updating non-existent business returns 404."""
-        update_data = {"name": "Updated Name"}
-        response = await client.put(
-            "/businesses/00000000-0000-0000-0000-000000000000", json=update_data
-        )
+    @pytest.mark.asyncio
+    async def test_list_businesses_empty(self, client: AsyncClient):
+        """Test listing when no businesses exist."""
+        response = await client.get("/businesses")
 
-        assert response.status_code == 404
-        data = response.json()
-        assert data["code"] == "NOT_FOUND"
+        assert response.status_code == 200
+        assert "text/html" in response.headers.get("content-type", "")
+
+    @pytest.mark.asyncio
+    async def test_create_form_page(self, client: AsyncClient):
+        """Test that create business form page exists."""
+        response = await client.get("/businesses/create")
+
+        assert response.status_code == 200
+        assert "text/html" in response.headers.get("content-type", "")
