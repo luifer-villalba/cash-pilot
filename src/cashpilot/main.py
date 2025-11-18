@@ -60,11 +60,13 @@ def create_app() -> FastAPI:
 
     # Add SessionMiddleware BEFORE other middleware
     session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
+    environment = os.getenv("ENVIRONMENT", "development")
+
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
         max_age=14 * 24 * 60 * 60,  # 14 days
-        https_only=os.getenv("ENVIRONMENT") == "production",
+        https_only=environment == "production",
         same_site="lax",
     )
 
@@ -83,6 +85,10 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
 
+    from cashpilot.api.frontend import router as frontend_router
+
+    app.include_router(frontend_router)
+
     from cashpilot.api.business import router as business_router
 
     app.include_router(business_router)
@@ -94,10 +100,6 @@ def create_app() -> FastAPI:
     from cashpilot.api.auth import router as auth_router
 
     app.include_router(auth_router)
-
-    from cashpilot.api.frontend import router as frontend_router
-
-    app.include_router(frontend_router)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 
