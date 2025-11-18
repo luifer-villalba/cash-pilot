@@ -1,3 +1,4 @@
+# File: src/cashpilot/api/frontend.py
 """Frontend routes for HTML templates with i18n support."""
 
 import gettext
@@ -171,9 +172,9 @@ async def dashboard(
         active_filters["business_id"] = business_id
 
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
-            "request": request,
             "current_user": current_user,
             "sessions": sessions,
             "active_sessions_count": active_count,
@@ -215,9 +216,9 @@ async def create_session_form(
     businesses = list(result.scalars().all())
 
     return templates.TemplateResponse(
+        request,
         "sessions/create_session.html",
         {
-            "request": request,
             "current_user": current_user,
             "businesses": businesses,
             "locale": locale,
@@ -270,9 +271,9 @@ async def create_session_post(
         businesses = list(result.scalars().all())
 
         return templates.TemplateResponse(
+            request,
             "sessions/create_session.html",
             {
-                "request": request,
                 "current_user": current_user,
                 "businesses": businesses,
                 "error": str(e),
@@ -306,9 +307,9 @@ async def session_detail(
         return RedirectResponse(url="/", status_code=302)
 
     return templates.TemplateResponse(
+        request,
         "sessions/session_detail.html",
         {
-            "request": request,
             "current_user": current_user,
             "session": session,
             "locale": locale,
@@ -336,9 +337,9 @@ async def edit_session_form(
         return RedirectResponse(url="/", status_code=302)
 
     return templates.TemplateResponse(
+        request,
         "sessions/edit_session.html",
         {
-            "request": request,
             "current_user": current_user,
             "session": session,
             "locale": locale,
@@ -369,9 +370,9 @@ async def edit_open_session_form(
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
     return templates.TemplateResponse(
+        request,
         "sessions/edit_open_session.html",
         {
-            "request": request,
             "current_user": current_user,
             "session": session,
             "locale": locale,
@@ -474,9 +475,9 @@ async def edit_open_session_post(
         session = result.scalar_one_or_none()
 
         return templates.TemplateResponse(
+            request,
             "sessions/edit_open_session.html",
             {
-                "request": request,
                 "current_user": current_user,
                 "session": session,
                 "error": f"Invalid input: {str(e)}",
@@ -538,9 +539,9 @@ async def close_session_post(
         session = result.scalar_one_or_none()
 
         return templates.TemplateResponse(
+            request,
             "sessions/edit_session.html",
             {
-                "request": request,
                 "current_user": current_user,
                 "session": session,
                 "error": str(e),
@@ -566,9 +567,9 @@ async def businesses_list(
     businesses = result.scalars().all()
 
     return templates.TemplateResponse(
+        request,
         "businesses/list.html",
         {
-            "request": request,
             "current_user": current_user,
             "businesses": businesses,
             "locale": locale,
@@ -594,9 +595,9 @@ async def list_businesses(
     businesses = result.scalars().all()
 
     return templates.TemplateResponse(
+        request,
         "businesses/list.html",
         {
-            "request": request,
             "businesses": businesses,
             "locale": locale,
             "_": _,
@@ -611,9 +612,9 @@ async def create_business_form(request: Request):
     _ = get_translation_function(locale)
 
     return templates.TemplateResponse(
+        request,
         "businesses/create.html",
         {
-            "request": request,
             "locale": locale,
             "_": _,
         },
@@ -660,9 +661,9 @@ async def edit_business_form(
         return RedirectResponse(url="/businesses", status_code=302)
 
     return templates.TemplateResponse(
+        request,
         "businesses/edit.html",
         {
-            "request": request,
             "business": business,
             "locale": locale,
             "_": _,

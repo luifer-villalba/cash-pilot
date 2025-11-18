@@ -29,8 +29,9 @@ run dev:
 	@echo "🚀 Starting development environment..."
 	docker compose down --remove-orphans
 	docker compose up -d db app
-	@echo "➡️  Dashboard available at: http://127.0.0.1:8000/"
-	@echo "➡️  Swagger docs available at: http://127.0.0.1:8000/docs"
+	@echo "✅ Services started (detached mode)"
+	@echo "➡️  Dashboard: http://127.0.0.1:8000/"
+	@echo "➡️  Swagger docs: http://127.0.0.1:8000/docs"
 
 reload:
 	@echo "♻️  Forcing manual reload..."
@@ -44,6 +45,16 @@ down:
 
 logs:
 	docker compose logs -f app
+
+# ---------- Full Reset ----------
+reset:
+	@echo "🔥 Full reset: dropping everything, rebuilding, and starting..."
+	docker compose down -v
+	docker compose build --no-cache
+	docker compose up -d db app
+	@echo "✅ Reset complete"
+	@echo "➡️  Dashboard: http://127.0.0.1:8000/"
+	@echo "➡️  Swagger docs: http://127.0.0.1:8000/docs"
 
 # ---------- Compose Watch ----------
 watch:
