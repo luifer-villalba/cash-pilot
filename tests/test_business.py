@@ -75,17 +75,18 @@ class TestUpdateBusiness:
 
     @pytest.mark.asyncio
     async def test_update_business_not_yet_implemented(
-        self, client: AsyncClient, db_session: AsyncSession
+            self, client: AsyncClient, db_session: AsyncSession
     ):
-        """Test that update route doesn't exist yet (MIZ-137)."""
+        """Test that edit endpoint now exists (MIZ-XXX completed)."""
         business = await BusinessFactory.create(db_session)
 
-        # Edit endpoint doesn't exist yet
+        # Edit endpoint now exists!
         response = await client.get(f"/businesses/{business.id}/edit", follow_redirects=False)
 
-        # Should 404 or redirect until MIZ-137 is implemented
-        assert response.status_code in [302, 404, 405]
-
+        # Should render the edit form
+        assert response.status_code == 200
+        html = response.text
+        assert "Edit Business" in html
 
 class TestListBusinesses:
     """Test listing businesses."""
@@ -114,7 +115,7 @@ class TestListBusinesses:
     @pytest.mark.asyncio
     async def test_create_form_page(self, client: AsyncClient):
         """Test that create business form page exists."""
-        response = await client.get("/businesses/create")
+        response = await client.get("/businesses/new")
 
         assert response.status_code == 200
         assert "text/html" in response.headers.get("content-type", "")
