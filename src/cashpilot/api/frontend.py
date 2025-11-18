@@ -70,7 +70,6 @@ async def login_page():
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
-    current_user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     from_date: str | None = Query(None),
     to_date: str | None = Query(None),
@@ -79,6 +78,11 @@ async def dashboard(
     db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
+    # Redirect to login if not authenticated
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=302)
+
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -145,7 +149,7 @@ async def dashboard(
     businesses = result_businesses.scalars().all()
     businesses_count = len(list(businesses))
 
-    # Calculate today's revenue (sessions closed today by session_date)
+    # Calculate today's revenue
     today = date_type.today()
     stmt_today = select(
         func.sum(
@@ -172,10 +176,9 @@ async def dashboard(
         active_filters["business_id"] = business_id
 
     return templates.TemplateResponse(
-        request,
         "index.html",
         {
-            "current_user": current_user,
+            "request": request,
             "sessions": sessions,
             "active_sessions_count": active_count,
             "businesses_count": businesses_count,

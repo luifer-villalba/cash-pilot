@@ -52,7 +52,11 @@
                             👤 {{ current_user.email }}
                         </summary>
                         <ul class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                            <li><a href="/logout" onclick="return confirm('Are you sure you want to logout?')">{{ _('Logout') }}</a></li>
+                            <li>
+                                <form method="POST" action="/logout" style="display:inline;" onsubmit="return confirm('Are you sure you want to logout?')">
+                                    <button type="submit" class="btn btn-ghost btn-sm">{{ _('Logout') }}</button>
+                                </form>
+                            </li>
                         </ul>
                     </details>
                 </li>

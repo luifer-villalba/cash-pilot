@@ -85,7 +85,17 @@ async def login(
 async def logout(request: Request):
     """Logout endpoint - clears session."""
     user_id = request.session.get("user_id")
+    if user_id:
+        logger.info("auth.logout", user_id=user_id)
 
+    request.session.clear()
+    return RedirectResponse(url="/login", status_code=302)
+
+
+@router.get("/logout")
+async def logout_get(request: Request):
+    """Logout GET endpoint for browser compatibility."""
+    user_id = request.session.get("user_id")
     if user_id:
         logger.info("auth.logout", user_id=user_id)
 
