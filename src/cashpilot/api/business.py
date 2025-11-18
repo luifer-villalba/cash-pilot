@@ -117,7 +117,6 @@ async def delete_business(
 @router.get("/{business_id}/cashiers")
 async def get_cashiers(
     business_id: str,
-    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """

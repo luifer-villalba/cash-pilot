@@ -1,3 +1,4 @@
+<!-- File: src/cashpilot/templates/create_session.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Create Session') }} - CashPilot{% endblock %}
@@ -11,17 +12,13 @@
                 <h2 class="card-title">{{ _('Open New Cash Session') }}</h2>
 
                 <form method="POST" action="/sessions" class="space-y-4">
-                    <!-- Business Selection (with HTMX for cashier dropdown) -->
+                    <!-- Business Selection (with fetch for cashier dropdown) -->
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text font-semibold">{{ _('Business') }}</span>
                         </label>
-                        <select id="business-select" name="business_id" class="select select-bordered"
-                                hx-get="/api/businesses/{value}/cashiers"
-                                hx-target="#cashier-select"
-                                hx-swap="innerHTML"
-                                required>
-                            <option value="">{{ _('Select a business...') }}</option>
+                        <select id="business-select" name="business_id" class="select select-bordered" required>
+                            <option value="">{{ _('Select a business') }}</option>
                             {% for business in businesses %}
                                 <option value="{{ business.id }}">{{ business.name }}</option>
                             {% endfor %}
@@ -34,7 +31,7 @@
                             <span class="label-text font-semibold">{{ _('Cashier Name') }}</span>
                         </label>
                         <select id="cashier-select" name="cashier_name" class="select select-bordered" required>
-                            <option value="">{{ _('Select cashier...') }}</option>
+                            <option value="">{{ _('Select cashier') }}</option>
                         </select>
                         <label class="label">
                             <span class="label-text-alt">{{ _('Select business first') }}</span>
@@ -121,7 +118,7 @@
     </div>
 </div>
 
-<!-- Auto-populate date/time from browser -->
+<!-- Auto-populate date/time from browser + Cashier dropdown fetch -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const now = new Date();
@@ -139,6 +136,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const minutes = String(now.getMinutes()).padStart(2, '0');
         timeInput.value = `${hours}:${minutes}`;
     }
+
+    // Cashier dropdown fetch on business select change
+    document.getElementById('business-select').addEventListener('change', async (e) => {
+        const businessId = e.target.value;
+        if (!businessId) return;
+
+        const res = await fetch(`/businesses/${businessId}/cashiers`);
+        const data = await res.json();
+
+        const select = document.getElementById('cashier-select');
+        select.innerHTML = '<option value="">{{ _("Select cashier") }}</option>';
+        data.cashiers.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+    });
 });
-</script>
+</script>m
 {% endblock %}
