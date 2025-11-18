@@ -50,9 +50,9 @@ async def create_business(
 
 @router.get("/{business_id}", response_model=BusinessRead)
 async def get_business(
-        business_id: str,
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    business_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get business details by ID."""
     # Skip if it's a special route keyword
