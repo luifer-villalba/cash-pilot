@@ -1,6 +1,7 @@
 # File: tests/conftest.py
 """Pytest configuration and fixtures."""
 
+import asyncpg
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -12,7 +13,7 @@ from cashpilot.main import create_app
 from tests.factories import UserFactory, BusinessFactory, CashSessionFactory
 from cashpilot.core.security import hash_password
 
-# Import all models so they're registered with Base.metadata
+# Import all models
 from cashpilot.models.business import Business  # noqa: F401
 from cashpilot.models.cash_session import CashSession  # noqa: F401
 from cashpilot.models.user import User  # noqa: F401
@@ -21,11 +22,42 @@ TEST_DATABASE_URL = (
     "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_test"
 )
 
+DB_HOST = "db"
+DB_PORT = 5432
+DB_USER = "cashpilot"
+DB_PASSWORD = "dev_password_change_in_prod"
+DB_NAME = "cashpilot_test"
+
+
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def setup_test_database():
+    """Create test database using raw asyncpg connection."""
+    try:
+        # Connect to postgres database (always exists)
+        conn = await asyncpg.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            database="postgres",
+        )
+
+        # Create database if it doesn't exist
+        try:
+            await conn.execute(f'CREATE DATABASE {DB_NAME}')
+        except asyncpg.DuplicateDatabaseError:
+            pass  # Database already exists
+
+        await conn.close()
+    except Exception as e:
+        print(f"Warning: Could not create test database: {e}")
+
+    yield
+
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session():
     """Create fresh DB session for each test."""
-    # Create engine and session maker
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
     async_session_maker = async_sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
@@ -52,7 +84,7 @@ async def client(db_session):
     """Create async test client with overridden DB dependency."""
     from cashpilot.api.auth import get_current_user
     from tests.factories import UserFactory
-    
+
     app = create_app()
 
     # Create a test user
@@ -70,7 +102,7 @@ async def client(db_session):
 
     # Use httpx.AsyncClient for async requests
     async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
+            transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
         yield ac
 
