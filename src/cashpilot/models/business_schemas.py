@@ -12,6 +12,7 @@ class BusinessBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     address: str | None = Field(None, max_length=500)
     phone: str | None = Field(None, max_length=50)
+    cashiers: list[str] = Field(default_factory=list, description="List of cashier names")
 
 
 class BusinessCreate(BusinessBase):
@@ -26,6 +27,7 @@ class BusinessUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=200)
     address: str | None = Field(None, max_length=500)
     phone: str | None = Field(None, max_length=50)
+    cashiers: list[str] | None = Field(None, description="List of cashier names")
     is_active: bool | None = None
 
 

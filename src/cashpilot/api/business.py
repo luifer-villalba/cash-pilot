@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +20,7 @@ async def list_businesses(
     skip: int = 0,
     limit: int = 50,
     is_active: bool | None = None,
-    current_user: User = Depends(get_current_user),  # ADD THIS
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """List all businesses with pagination and optional filtering."""
@@ -37,7 +37,7 @@ async def list_businesses(
 @router.post("", response_model=BusinessRead, status_code=status.HTTP_201_CREATED)
 async def create_business(
     business: BusinessCreate,
-    current_user: User = Depends(get_current_user),  # ADD THIS
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new business (pharmacy location)."""
@@ -51,10 +51,14 @@ async def create_business(
 @router.get("/{business_id}", response_model=BusinessRead)
 async def get_business(
     business_id: str,
-    current_user: User = Depends(get_current_user),  # ADD THIS
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Get business details by ID."""
+    # Skip if it's a special route keyword
+    if business_id in ["create", "new", "list"]:
+        raise NotFoundError("Business", business_id)
+
     stmt = select(Business).where(Business.id == UUID(business_id))
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
@@ -69,7 +73,7 @@ async def get_business(
 async def update_business(
     business_id: str,
     business: BusinessUpdate,
-    current_user: User = Depends(get_current_user),  # ADD THIS
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Update business details."""
@@ -94,7 +98,7 @@ async def update_business(
 @router.delete("/{business_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_business(
     business_id: str,
-    current_user: User = Depends(get_current_user),  # ADD THIS
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Soft-delete business (sets is_active=False)."""
@@ -108,3 +112,82 @@ async def delete_business(
     business_obj.is_active = False
     db.add(business_obj)
     await db.commit()
+
+
+@router.get("/{business_id}/cashiers")
+async def get_cashiers(
+    business_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get cashier list for a business.
+
+    Returns JSON with cashiers array.
+    Used by HTMX to populate dropdown in session form.
+    """
+    stmt = select(Business).where(Business.id == UUID(business_id))
+    result = await db.execute(stmt)
+    business_obj = result.scalar_one_or_none()
+
+    if not business_obj:
+        raise NotFoundError("Business", business_id)
+
+    return {
+        "business_id": str(business_obj.id),
+        "business_name": business_obj.name,
+        "cashiers": business_obj.cashiers or [],
+    }
+
+
+@router.post("/{business_id}/cashiers", status_code=status.HTTP_200_OK)
+async def add_cashier(
+    business_id: str,
+    cashier_name: str = Query(...),  # Changed from json body
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Add a cashier to the business's cashier list."""
+    stmt = select(Business).where(Business.id == UUID(business_id))
+    result = await db.execute(stmt)
+    business_obj = result.scalar_one_or_none()
+
+    if not business_obj:
+        raise NotFoundError("Business", business_id)
+
+    if cashier_name.strip() not in business_obj.cashiers:
+        business_obj.cashiers.append(cashier_name.strip())
+        db.add(business_obj)
+        await db.commit()
+        await db.refresh(business_obj)
+
+    return {
+        "business_id": str(business_obj.id),
+        "cashiers": business_obj.cashiers,
+    }
+
+
+@router.delete("/{business_id}/cashiers/{cashier_name}", status_code=status.HTTP_200_OK)
+async def remove_cashier(
+    business_id: str,
+    cashier_name: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Remove a cashier from the business's cashier list."""
+    stmt = select(Business).where(Business.id == UUID(business_id))
+    result = await db.execute(stmt)
+    business_obj = result.scalar_one_or_none()
+
+    if not business_obj:
+        raise NotFoundError("Business", business_id)
+
+    if cashier_name in business_obj.cashiers:
+        business_obj.cashiers.remove(cashier_name)
+        db.add(business_obj)
+        await db.commit()
+        await db.refresh(business_obj)
+
+    return {
+        "business_id": str(business_obj.id),
+        "cashiers": business_obj.cashiers,
+    }

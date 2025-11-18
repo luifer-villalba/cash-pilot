@@ -2,7 +2,7 @@
 Seed script for CashPilot demo data (date+time split version).
 
 Creates:
-- 3 pharmacy businesses
+- 3 pharmacy businesses with cashier lists
 - 30 days of cash sessions with varied reconciliation outcomes
 - Non-overlapping shift patterns (7am-3pm, 3pm-11pm)
 """
@@ -24,9 +24,19 @@ SHIFT_PATTERNS = [
     {"start_time": time(15, 0), "end_time": time(23, 0), "name": "Turno Tarde"},
 ]
 
+# Cashier names for seed data
+CASHIER_POOL = [
+    "María González",
+    "Juan Pérez",
+    "Carmen Rodríguez",
+    "Luis Martínez",
+    "Ana Silva",
+    "Carlos Benítez",
+]
+
 
 async def seed_businesses(db: AsyncSession) -> list[Business]:
-    """Create 3 pharmacy businesses if they don't exist (idempotent)."""
+    """Create 3 pharmacy businesses with cashier lists (idempotent)."""
     result = await db.execute(select(Business).limit(1))
     if result.scalar_one_or_none():
         print("ℹ️  Businesses already exist, skipping...")
@@ -38,18 +48,21 @@ async def seed_businesses(db: AsyncSession) -> list[Business]:
             name="Farmacia Central",
             address="Av. Mariscal López 1234, Asunción",
             phone="+595 21 123-4567",
+            cashiers=["María González", "Juan Pérez", "Carmen Rodríguez"],
             is_active=True,
         ),
         Business(
             name="Farmacia San Lorenzo",
             address="Ruta 2 Km 15, San Lorenzo",
             phone="+595 21 234-5678",
+            cashiers=["Luis Martínez", "Ana Silva"],
             is_active=True,
         ),
         Business(
             name="Farmacia Villa Morra",
             address="Av. San Martín 890, Villa Morra",
             phone="+595 21 345-6789",
+            cashiers=["Carlos Benítez", "María González", "Juan Pérez"],
             is_active=True,
         ),
     ]
@@ -58,7 +71,7 @@ async def seed_businesses(db: AsyncSession) -> list[Business]:
         db.add(business)
 
     await db.flush()
-    print(f"✅ Created {len(businesses)} businesses")
+    print(f"✅ Created {len(businesses)} businesses with cashiers")
     return businesses
 
 
@@ -69,15 +82,6 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
         print("ℹ️  Cash sessions already exist, skipping...")
         result = await db.execute(select(CashSession))
         return list(result.scalars().all())
-
-    cashier_names = [
-        "María González",
-        "Juan Pérez",
-        "Carmen Rodríguez",
-        "Luis Martínez",
-        "Ana Silva",
-        "Carlos Benítez",
-    ]
 
     sessions = []
     today = datetime.now().date()
@@ -122,31 +126,26 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
                 # Determine if session is closed (last 2 days might be open)
                 is_open = days_ago <= 2 and random.random() < 0.3
 
+                # Select cashier from business's cashier list
+                cashier_name = random.choice(business.cashiers)
+
                 session = CashSession(
                     business_id=business.id,
-                    cashier_name=random.choice(cashier_names),
+                    cashier_name=cashier_name,
+                    status="OPEN" if is_open else "CLOSED",
                     session_date=session_date,
                     opened_time=shift["start_time"],
+                    closed_time=None if is_open else shift["end_time"],
                     initial_cash=initial_cash,
-                    envelope_amount=envelope_amount,
-                    credit_card_total=credit_card_total,
-                    debit_card_total=debit_card_total,
-                    bank_transfer_total=bank_transfer_total,
+                    final_cash=None if is_open else final_cash,
+                    envelope_amount=Decimal(0) if is_open else envelope_amount,
+                    credit_card_total=Decimal(0) if is_open else credit_card_total,
+                    debit_card_total=Decimal(0) if is_open else debit_card_total,
+                    bank_transfer_total=Decimal(0) if is_open else bank_transfer_total,
+                    expenses=Decimal(0),
                 )
-
-                if not is_open:
-                    session.status = "CLOSED"
-                    session.final_cash = final_cash
-                    session.closed_time = shift["end_time"]
-
-                    # Add optional closing notes for problematic cases
-                    if difference < -200_000:
-                        session.notes = "Verificar: diferencia significativa detectada"
-                    elif difference > 100_000:
-                        session.notes = "Revisar: excedente inusual"
-
-                db.add(session)
                 sessions.append(session)
+                db.add(session)
 
     await db.flush()
     print(f"✅ Created {len(sessions)} cash sessions")
@@ -154,24 +153,39 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
 
 
 async def main():
-    """Main seeding function."""
-    print("🌱 Starting CashPilot seed script...\n")
+    """Run seed script."""
+    print("🌱 Starting CashPilot seed script...")
+    print()
 
     async with AsyncSessionLocal() as db:
-        try:
-            businesses = await seed_businesses(db)
-            sessions = await seed_cash_sessions(db, businesses)
+        # Create businesses
+        businesses = await seed_businesses(db)
 
-            await db.commit()
+        # Create cash sessions
+        sessions = await seed_cash_sessions(db, businesses)
 
-            print("\n🎉 Seed complete!")
-            print(f"   📊 Businesses: {len(businesses)}")
-            print(f"   📊 Cash sessions: {len(sessions)}")
+        # Commit all changes
+        await db.commit()
 
-        except Exception as e:
-            await db.rollback()
-            print(f"❌ Seed failed: {e}")
-            raise
+    print()
+    print("🎉 Seed complete!")
+    print(f"   📊 Businesses: {len(businesses)}")
+    print(f"   📊 Cash sessions: {len(sessions)}")
+
+    if sessions:
+        closed_sessions = [s for s in sessions if s.status == "CLOSED"]
+        open_sessions = [s for s in sessions if s.status == "OPEN"]
+
+        shortages = sum(1 for s in closed_sessions if s.cash_sales < 0)
+        surpluses = sum(1 for s in closed_sessions if s.cash_sales > 0)
+        matches = len(closed_sessions) - shortages - surpluses
+
+        print()
+        print("   📈 Reconciliation outcomes:")
+        print(f"      ✓ Perfect matches: {matches}")
+        print(f"      ⚠ Shortages: {shortages}")
+        print(f"      📦 Surpluses: {surpluses}")
+        print(f"      📂 Open sessions: {len(open_sessions)}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Edit Business') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Form -->
+    <div class="lg:col-span-2">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title">{{ _('Edit Business') }}: {{ business.name }}</h2>
+
+                <!-- Business Details Form -->
+                <form method="POST" action="/businesses/{{ business.id }}" class="space-y-4">
+                    <!-- Name -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">{{ _('Name') }} *</span>
+                        </label>
+                        <input type="text" name="name" class="input input-bordered"
+                               value="{{ business.name }}"
+                               required minlength="1" maxlength="200" />
+                    </div>
+
+                    <!-- Address -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">{{ _('Address') }}</span>
+                        </label>
+                        <input type="text" name="address" class="input input-bordered"
+                               value="{{ business.address or '' }}"
+                               maxlength="500" />
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">{{ _('Phone') }}</span>
+                        </label>
+                        <input type="tel" name="phone" class="input input-bordered"
+                               value="{{ business.phone or '' }}"
+                               maxlength="50" />
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">{{ _('Active') }}</span>
+                        </label>
+                        <input type="checkbox" name="is_active" class="toggle toggle-primary"
+                               {% if business.is_active %}checked{% endif %} />
+                    </div>
+
+                    <!-- Save Button -->
+                    <button type="submit" class="btn btn-primary w-full">{{ _('Save Changes') }}</button>
+                </form>
+
+                <div class="divider"></div>
+
+                <!-- Manage Cashiers Section -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-bold">{{ _('Manage Cashiers') }}</h3>
+
+                    <!-- Add Cashier Form -->
+                    <form method="POST" action="/businesses/{{ business.id }}/cashiers/add"
+                          class="flex gap-2">
+                        <input type="text" name="cashier_name" class="input input-bordered flex-1"
+                               placeholder="{{ _('Enter cashier name') }}"
+                               minlength="2" maxlength="100" required />
+                        <button type="submit" class="btn btn-success">{{ _('Add') }}</button>
+                    </form>
+
+                    <!-- Cashiers List -->
+                    {% if business.cashiers %}
+                    <div class="space-y-2">
+                        {% for cashier in business.cashiers %}
+                        <div class="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+                            <span class="font-medium">{{ cashier }}</span>
+                            <form method="POST"
+                                  action="/businesses/{{ business.id }}/cashiers/remove"
+                                  style="display: inline;">
+                                <input type="hidden" name="cashier_name" value="{{ cashier }}" />
+                                <button type="submit" class="btn btn-sm btn-outline btn-error">
+                                    {{ _('Remove') }}
+                                </button>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <span>{{ _('No cashiers added yet.') }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Info Card -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-lg">{{ _('Business Info') }}</h3>
+                <div class="space-y-2 text-sm">
+                    <div>
+                        <p class="opacity-70">{{ _('Created') }}</p>
+                        <p class="font-semibold">{{ business.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                    <div>
+                        <p class="opacity-70">{{ _('Updated') }}</p>
+                        <p class="font-semibold">{{ business.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                    <div>
+                        <p class="opacity-70">{{ _('Cashiers Count') }}</p>
+                        <p class="font-semibold">{{ business.cashiers|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h3 class="card-title text-lg">{{ _('Actions') }}</h3>
+                <div class="space-y-2">
+                    <a href="/businesses" class="btn btn-outline w-full">{{ _('Back to Businesses') }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
