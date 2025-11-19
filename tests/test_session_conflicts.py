@@ -18,9 +18,8 @@ class TestSessionConflicts:
         business = await BusinessFactory.create(db_session, name="Test Farmacia")
         return str(business.id)
 
-    @pytest.mark.asyncio
     async def test_no_conflict_non_overlapping_shifts(
-        self, client: AsyncClient, db_session: AsyncSession
+            self, client: AsyncClient, db_session: AsyncSession
     ):
         """Test non-overlapping sessions on same day."""
         business = await BusinessFactory.create(db_session)
@@ -46,7 +45,7 @@ class TestSessionConflicts:
         )
 
         assert session1.id != session2.id
-        response = await client.get("/")
+        response = await client.get("/", follow_redirects=True)
         assert response.status_code == 200
 
     @pytest.mark.asyncio

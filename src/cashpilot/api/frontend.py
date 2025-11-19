@@ -58,14 +58,34 @@ def get_translation_function(locale: str):
     return lambda x: x
 
 
+# File: src/cashpilot/api/frontend.py
 def parse_currency(value: str | None) -> Decimal | None:
-    """Parse Paraguay currency format (5.000.000 → 5000000)."""
+    """Parse Paraguay currency format (5.000.000 → 5000000 or 750000.00 → 750000.00)."""
     if not value or not value.strip():
         return None
-    cleaned = value.strip().replace(".", "").replace(",", "")
-    if not cleaned:
+
+    value = value.strip()
+
+    # Handle decimal point: split on last dot
+    if '.' in value:
+        parts = value.rsplit('.', 1)
+        integer_part = parts[0].replace('.', '').replace(',', '')
+        decimal_part = parts[1].replace(',', '')
+
+        # If decimal part is 2 digits, it's a decimal; if 3+ it's thousands sep
+        if len(decimal_part) <= 2:
+            value = f"{integer_part}.{decimal_part}"
+        else:
+            # Last dot was thousands separator, remove all dots
+            value = value.replace('.', '').replace(',', '')
+    else:
+        # No dots, just remove commas
+        value = value.replace(',', '')
+
+    if not value or value == '.':
         return None
-    return Decimal(cleaned)
+
+    return Decimal(value)
 
 
 @router.get("/login", response_class=HTMLResponse)
