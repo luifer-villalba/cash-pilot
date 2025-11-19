@@ -58,6 +58,16 @@ def get_translation_function(locale: str):
     return lambda x: x
 
 
+def parse_currency(value: str | None) -> Decimal | None:
+    """Parse Paraguay currency format (5.000.000 → 5000000)."""
+    if not value or not value.strip():
+        return None
+    cleaned = value.strip().replace(".", "").replace(",", "")
+    if not cleaned:
+        return None
+    return Decimal(cleaned)
+
+
 @router.get("/login", response_class=HTMLResponse)
 async def login_page():
     """Render login page (public)."""
@@ -70,7 +80,6 @@ async def login_page():
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
-    current_user: User = Depends(get_current_user),
     page: int = Query(1, ge=1),
     from_date: str | None = Query(None),
     to_date: str | None = Query(None),
@@ -79,6 +88,11 @@ async def dashboard(
     db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
+    # Redirect to login if not authenticated
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=302)
+
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -145,7 +159,7 @@ async def dashboard(
     businesses = result_businesses.scalars().all()
     businesses_count = len(list(businesses))
 
-    # Calculate today's revenue (sessions closed today by session_date)
+    # Calculate today's revenue
     today = date_type.today()
     stmt_today = select(
         func.sum(
@@ -171,10 +185,18 @@ async def dashboard(
     if business_id:
         active_filters["business_id"] = business_id
 
+    # Fetch current user for navbar
+    current_user = None
+    user_id = request.session.get("user_id")
+    if user_id:
+        stmt_user = select(User).where(User.id == UUID(user_id))
+        result_user = await db.execute(stmt_user)
+        current_user = result_user.scalar_one_or_none()
+
     return templates.TemplateResponse(
-        request,
         "index.html",
         {
+            "request": request,
             "current_user": current_user,
             "sessions": sessions,
             "active_sessions_count": active_count,
@@ -244,7 +266,9 @@ async def create_session_post(
     _ = get_translation_function(locale)
 
     try:
-        initial_cash_val = Decimal(initial_cash.replace(",", ""))
+        initial_cash_val = parse_currency(initial_cash)
+        if not initial_cash_val:
+            raise ValueError("Initial cash required")
         session_date_val = (
             datetime.fromisoformat(session_date).date() if session_date else date_type.today()
         )
@@ -420,8 +444,8 @@ async def edit_open_session_post(
             session.cashier_name = cashier_name
 
         if initial_cash:
-            initial_cash_val = Decimal(initial_cash.replace(",", ""))
-            if initial_cash_val != session.initial_cash:
+            initial_cash_val = parse_currency(initial_cash)
+            if initial_cash_val and initial_cash_val != session.initial_cash:
                 changed_fields.append("initial_cash")
                 old_values["initial_cash"] = str(session.initial_cash)
                 new_values["initial_cash"] = str(initial_cash_val)
@@ -436,8 +460,8 @@ async def edit_open_session_post(
                 session.opened_time = opened_time_obj
 
         if expenses:
-            expenses_val = Decimal(expenses.replace(",", ""))
-            if expenses_val != session.expenses:
+            expenses_val = parse_currency(expenses)
+            if expenses_val and expenses_val != session.expenses:
                 changed_fields.append("expenses")
                 old_values["expenses"] = str(session.expenses)
                 new_values["expenses"] = str(expenses_val)
@@ -513,13 +537,12 @@ async def close_session_post(
         if not session:
             return RedirectResponse(url="/", status_code=302)
 
-        # Update session - FIX: keep decimal point, don't strip it
-        session.final_cash = Decimal(final_cash.replace(",", ""))
-        session.envelope_amount = Decimal(envelope_amount.replace(",", ""))
-        session.credit_card_total = Decimal(credit_card_total.replace(",", ""))
-        session.debit_card_total = Decimal(debit_card_total.replace(",", ""))
-        session.bank_transfer_total = Decimal(bank_transfer_total.replace(",", ""))
-        session.expenses = Decimal(expenses.replace(",", "") or "0")
+        session.final_cash = parse_currency(final_cash)
+        session.envelope_amount = parse_currency(envelope_amount) or Decimal("0")
+        session.credit_card_total = parse_currency(credit_card_total) or Decimal("0")
+        session.debit_card_total = parse_currency(debit_card_total) or Decimal("0")
+        session.bank_transfer_total = parse_currency(bank_transfer_total) or Decimal("0")
+        session.expenses = parse_currency(expenses) or Decimal("0")
         session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
         session.closing_ticket = closing_ticket
         session.notes = notes
