@@ -1,3 +1,4 @@
+<!-- File: templates/sessions/edit_session.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Close Session') }} - CashPilot{% endblock %}
@@ -23,6 +24,7 @@
                             <span class="label-text font-semibold">{{ _('Final Cash Count (₲)') }}</span>
                         </label>
                         <input type="text" name="final_cash" class="input input-bordered"
+                               value="{{ "{:,.0f}".format(session.final_cash) if session.final_cash else '' }}"
                                placeholder="1250000" inputmode="decimal" required/>
                         <label class="label">
                             <span class="label-text-alt">{{ _('Total counted in drawer') }}</span>
@@ -35,6 +37,7 @@
                             <span class="label-text font-semibold">{{ _('Envelope Amount (₲)') }}</span>
                         </label>
                         <input type="text" name="envelope_amount" class="input input-bordered"
+                               value="{{ "{:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0' }}"
                                placeholder="0" inputmode="decimal" required/>
                         <label class="label">
                             <span class="label-text-alt">{{ _('Cash removed from register (if any)') }}</span>
@@ -50,6 +53,7 @@
                             <span class="label-text font-semibold">{{ _('Credit Card Total (₲)') }}</span>
                         </label>
                         <input type="text" name="credit_card_total" class="input input-bordered"
+                               value="{{ "{:,.0f}".format(session.credit_card_total) if session.credit_card_total else '0' }}"
                                placeholder="0" inputmode="decimal" required/>
                     </div>
 
@@ -59,6 +63,7 @@
                             <span class="label-text font-semibold">{{ _('Debit Card Total (₲)') }}</span>
                         </label>
                         <input type="text" name="debit_card_total" class="input input-bordered"
+                               value="{{ "{:,.0f}".format(session.debit_card_total) if session.debit_card_total else '0' }}"
                                placeholder="0" inputmode="decimal"/>
                     </div>
 
@@ -68,6 +73,7 @@
                             <span class="label-text font-semibold">{{ _('Bank Transfer Total (₲)') }}</span>
                         </label>
                         <input type="text" name="bank_transfer_total" class="input input-bordered"
+                               value="{{ "{:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total else '0' }}"
                                placeholder="0" inputmode="decimal"/>
                     </div>
 
@@ -77,18 +83,20 @@
                             <span class="label-text font-semibold">{{ _('Expenses (₲)') }}</span>
                         </label>
                         <input type="text" name="expenses" class="input input-bordered"
+                               value="{{ "{:,.0f}".format(session.expenses) if session.expenses else '0' }}"
                                placeholder="0" inputmode="decimal"/>
                         <label class="label">
                             <span class="label-text-alt">{{ _('Business expenses during shift') }}</span>
                         </label>
                     </div>
 
-                    <!-- Closed Time (NEW) -->
+                    <!-- Closed Time -->
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text font-semibold">{{ _('Closed At (Time)') }}</span>
                         </label>
-                        <input type="time" name="closed_time" class="input input-bordered" id="closed-time"/>
+                        <input type="time" name="closed_time" class="input input-bordered" id="closed-time"
+                               value="{{ session.closed_time.strftime('%H:%M') if session.closed_time else '' }}"/>
                         <label class="label">
                             <span class="label-text-alt">{{ _('Leave blank for current time') }}</span>
                         </label>
@@ -103,6 +111,7 @@
                             <span class="label-text font-semibold">{{ _('Closing Ticket #') }}</span>
                         </label>
                         <input type="text" name="closing_ticket" class="input input-bordered"
+                               value="{{ session.closing_ticket or '' }}"
                                placeholder="{{ _('e.g., T-20251112-001') }}"/>
                         <label class="label">
                             <span class="label-text-alt">{{ _('Optional: POS ticket number') }}</span>
@@ -115,7 +124,7 @@
                             <span class="label-text font-semibold">{{ _('Notes') }}</span>
                         </label>
                         <textarea name="notes" class="textarea textarea-bordered h-24"
-                                  placeholder="{{ _('Any discrepancies or notes...') }}"></textarea>
+                                  placeholder="{{ _('Any discrepancies or notes...') }}">{{ session.notes or '' }}</textarea>
                     </div>
 
                     <!-- Action Buttons -->
@@ -182,7 +191,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const now = new Date();
 
-    // Set closed_time to current time
+    // Set closed_time to current time only if empty
     const timeInput = document.getElementById('closed-time');
     if (timeInput && !timeInput.value) {
         const hours = String(now.getHours()).padStart(2, '0');
