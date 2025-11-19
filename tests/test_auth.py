@@ -119,11 +119,10 @@ class TestAuthEndpoints:
 
     @pytest.mark.asyncio
     async def test_protected_route_requires_auth(
-        self,
-        client: AsyncClient,
+            self,
+            client: AsyncClient,
     ) -> None:
-        """Test protected routes return 401 when not authenticated."""
-        # Create a new async client without session to test unauthenticated access
+        """Test protected routes redirect to login (302)."""
         from fastapi.testclient import TestClient
         from cashpilot.main import create_app
 
@@ -131,8 +130,8 @@ class TestAuthEndpoints:
         test_client = TestClient(app)
 
         response = test_client.get("/", follow_redirects=False)
-        # Should return 401 (Unauthorized) not 302 (redirect) because of exception handler
-        assert response.status_code == 401
+        assert response.status_code == 302
+        assert "/login" in response.headers.get("location", "")
 
     @pytest.mark.asyncio
     async def test_session_persistence(

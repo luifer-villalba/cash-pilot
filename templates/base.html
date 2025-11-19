@@ -97,25 +97,32 @@
 
     <!-- Currency Formatting Script -->
     <script>
-        // Format Paraguay currency (no decimals, period as thousands separator)
         const formatterPY = new Intl.NumberFormat('es-PY', {
           minimumFractionDigits: 0,
           maximumFractionDigits: 0
         });
 
-        // Only target currency fields, NOT cashier_name
+        // Decimal-aware currency inputs (preserve digits + decimal point)
         document.querySelectorAll('input[type="text"][name="initial_cash"], input[type="text"][name="final_cash"], input[type="text"][name="envelope_amount"], input[type="text"][name="credit_card_total"], input[type="text"][name="debit_card_total"], input[type="text"][name="bank_transfer_total"], input[type="text"][name="expenses"]').forEach(input => {
-            // Format on blur
+            // On input: keep digits + single decimal point
+            input.addEventListener('input', function() {
+                let value = this.value;
+                const parts = value.split('.');
+                const digits = parts[0].replace(/\D/g, '');
+                if (parts.length > 1) {
+                    const decimals = parts.slice(1).join('').replace(/\D/g, '');
+                    this.value = decimals ? digits + '.' + decimals : digits;
+                } else {
+                    this.value = digits;
+                }
+            });
+
+            // On blur: format without decimals (Paraguay standard)
             input.addEventListener('blur', function() {
                 if (this.value) {
                     const num = parseInt(this.value.replace(/\D/g, '')) || 0;
                     this.value = formatterPY.format(num);
                 }
-            });
-
-            // Allow only numbers while typing
-            input.addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '');
             });
         });
     </script>
