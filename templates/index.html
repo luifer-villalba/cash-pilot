@@ -154,7 +154,11 @@
     </div>
 
     <!-- Sessions Table (HTMX TARGET - only this replaces) -->
-    <div id="sessions-table">
+    <div id="sessions-table"
+         hx-get="/sessions/table"
+         hx-include="#filter-form"
+         hx-trigger="load"
+         hx-swap="innerHTML">
         {% include "partials/sessions_table.html" %}
     </div>
 </div>

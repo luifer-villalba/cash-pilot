@@ -52,8 +52,16 @@
 
             <div class="join">
                 {% if page > 1 %}
-                    <a href="/sessions/table?page=1{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page=1{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">«</a>
-                    <a href="/sessions/table?page={{ page - 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ page - 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">‹</a>
+                    <a href="/sessions/table?page=1{{ query_string }}"
+                       hx-get="/sessions/table?page=1{{ query_string }}"
+                       hx-target="#sessions-table"
+                       hx-swap="innerHTML"
+                       class="join-item btn btn-sm">«</a>
+                    <a href="/sessions/table?page={{ page - 1 }}{{ query_string }}"
+                       hx-get="/sessions/table?page={{ page - 1 }}{{ query_string }}"
+                       hx-target="#sessions-table"
+                       hx-swap="innerHTML"
+                       class="join-item btn btn-sm">‹</a>
                 {% endif %}
 
                 {% set page_start = [1, page - 2] | max %}
@@ -62,13 +70,25 @@
                     {% if p == page %}
                         <button class="join-item btn btn-sm btn-active">{{ p }}</button>
                     {% else %}
-                        <a href="/sessions/table?page={{ p }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ p }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">{{ p }}</a>
+                        <a href="/sessions/table?page={{ p }}{{ query_string }}"
+                           hx-get="/sessions/table?page={{ p }}{{ query_string }}"
+                           hx-target="#sessions-table"
+                           hx-swap="innerHTML"
+                           class="join-item btn btn-sm">{{ p }}</a>
                     {% endif %}
                 {% endfor %}
 
                 {% if page < total_pages %}
-                    <a href="/sessions/table?page={{ page + 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ page + 1 }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">›</a>
-                    <a href="/sessions/table?page={{ total_pages }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-get="/sessions/table?page={{ total_pages }}{% if current_filters.from_date %}&from_date={{ current_filters.from_date }}{% endif %}{% if current_filters.to_date %}&to_date={{ current_filters.to_date }}{% endif %}{% if current_filters.cashier_name %}&cashier_name={{ current_filters.cashier_name }}{% endif %}{% if current_filters.business_id %}&business_id={{ current_filters.business_id }}{% endif %}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">»</a>
+                    <a href="/sessions/table?page={{ page + 1 }}{{ query_string }}"
+                       hx-get="/sessions/table?page={{ page + 1 }}{{ query_string }}"
+                       hx-target="#sessions-table"
+                       hx-swap="innerHTML"
+                       class="join-item btn btn-sm">›</a>
+                    <a href="/sessions/table?page={{ total_pages }}{{ query_string }}"
+                       hx-get="/sessions/table?page={{ total_pages }}{{ query_string }}"
+                       hx-target="#sessions-table"
+                       hx-swap="innerHTML"
+                       class="join-item btn btn-sm">»</a>
                 {% endif %}
             </div>
         </div>

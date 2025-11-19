@@ -87,17 +87,6 @@ def parse_currency(value: str | None) -> Decimal | None:
     return Decimal(value)
 
 
-# ========== DASHBOARD ==========
-
-
-@router.get("/login", response_class=HTMLResponse)
-async def login_page():
-    """Render login page (public)."""
-    template_path = Path("/app/templates/login.html")
-    with open(template_path, "r") as f:
-        return f.read()
-
-
 async def _build_session_filters(
     from_date: str | None,
     to_date: str | None,
@@ -133,6 +122,48 @@ async def _build_session_filters(
     return filters
 
 
+async def _get_paginated_sessions(
+    db: AsyncSession,
+    filters: list,
+    page: int = 1,
+    per_page: int = 10,
+) -> tuple[list, int, int]:
+    """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages)."""
+    skip = (page - 1) * per_page
+
+    stmt = select(CashSession).options(joinedload(CashSession.business))
+    count_stmt = select(func.count(CashSession.id))
+
+    for f in filters:
+        stmt = stmt.where(f)
+        count_stmt = count_stmt.where(f)
+
+    count_result = await db.execute(count_stmt)
+    total = count_result.scalar() or 0
+    total_pages = (total + per_page - 1) // per_page
+
+    stmt = (
+        stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
+        .offset(skip)
+        .limit(per_page)
+    )
+    result = await db.execute(stmt)
+    sessions = result.scalars().unique().all()
+
+    return list(sessions), total, total_pages
+
+
+# ========== DASHBOARD ==========
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def login_page():
+    """Render login page (publicly accessible)."""
+    template_path = Path("/app/templates/login.html")
+    with open(template_path, "r") as f:
+        return f.read()
+
+
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -151,31 +182,13 @@ async def dashboard(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    per_page = 10
-    skip = (page - 1) * per_page
-
     # Build filters
     filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
 
-    # Count + paginate
-    stmt = select(CashSession).options(joinedload(CashSession.business))
-    for f in filters:
-        stmt = stmt.where(f)
-
-    count_stmt = select(func.count(CashSession.id))
-    for f in filters:
-        count_stmt = count_stmt.where(f)
-    count_result = await db.execute(count_stmt)
-    total_sessions = count_result.scalar() or 0
-    total_pages = (total_sessions + per_page - 1) // per_page
-
-    stmt = (
-        stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
-        .offset(skip)
-        .limit(per_page)
+    # Get paginated sessions
+    sessions, total_sessions, total_pages = await _get_paginated_sessions(
+        db, filters, page=page, per_page=10
     )
-    result = await db.execute(stmt)
-    sessions = result.scalars().unique().all()
 
     # Get stats
     stmt_active = select(func.count(CashSession.id)).where(CashSession.status == "OPEN")
@@ -213,7 +226,6 @@ async def dashboard(
     }
 
     current_user = None
-    user_id = request.session.get("user_id")
     if user_id:
         stmt_user = select(User).where(User.id == UUID(user_id))
         result_user = await db.execute(stmt_user)
@@ -240,6 +252,64 @@ async def dashboard(
                 "cashier_name": cashier_name,
                 "business_id": business_id,
             },
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.get("/sessions/table", response_class=HTMLResponse)
+async def sessions_table(
+    request: Request,
+    page: int = Query(1, ge=1),
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Paginated sessions table partial (HTMX endpoint)."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    # Build filters
+    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
+
+    # Get paginated sessions
+    sessions, total_sessions, total_pages = await _get_paginated_sessions(
+        db, filters, page=page, per_page=10
+    )
+
+    # Build query string for pagination links
+    query_params = []
+    if from_date:
+        query_params.append(f"from_date={from_date}")
+    if to_date:
+        query_params.append(f"to_date={to_date}")
+    if cashier_name:
+        query_params.append(f"cashier_name={cashier_name}")
+    if business_id:
+        query_params.append(f"business_id={business_id}")
+
+    query_string = "&".join(query_params)
+    if query_string:
+        query_string = "&" + query_string
+
+    return templates.TemplateResponse(
+        "partials/sessions_table.html",
+        {
+            "request": request,
+            "sessions": sessions,
+            "page": page,
+            "total_pages": total_pages,
+            "total_sessions": total_sessions,
+            "current_filters": {
+                "from_date": from_date,
+                "to_date": to_date,
+                "cashier_name": cashier_name,
+                "business_id": business_id,
+            },
+            "query_string": query_string,
             "locale": locale,
             "_": _,
         },

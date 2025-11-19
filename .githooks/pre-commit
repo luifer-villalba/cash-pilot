@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
-# Hook de git que ejecuta linters dentro de Docker y bloquea el commit si fallan.
+echo "🔎 Running linters..."
+docker compose run --rm app bash -lc "ruff check src && black --check src && isort --check-only src" || exit 1
 
-echo "🔎 Running linters in Docker (ruff, black --check, isort --check-only)..."
-if ! make lint; then
-  echo ""
-  echo "❌ Pre-commit failed. Run 'make fmt' to auto-fix, then commit again."
-  exit 1
-fi
+echo "📏 Checking file lengths..."
+docker compose run --rm app python -c "
+import sys
+from pathlib import Path
+files = [f for f in Path('src/cashpilot').rglob('*.py') if not any(x in f.parts for x in {'.venv','__pycache__','.git','alembic'})]
+violations = [(f, sum(1 for _ in open(f))) for f in files if sum(1 for _ in open(f)) > 400]
+if violations:
+    print('❌ Files exceed 400 lines:')
+    for f, l in violations: print(f'  • {f}: {l} lines')
+    sys.exit(1)
+print('✅ All files under 400 lines!')
+" || exit 1
 
-echo "✅ Linters passed."
-exit 0
+echo "✅ All checks passed!"
