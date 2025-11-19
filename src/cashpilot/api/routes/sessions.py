@@ -208,6 +208,51 @@ async def edit_open_session_form(
     )
 
 
+async def _update_open_session_fields(
+    session: CashSession,
+    cashier_name: str | None,
+    initial_cash: str | None,
+    opened_time: str | None,
+    expenses: str | None,
+) -> tuple[list, dict, dict]:
+    """Update session fields and track changes. Returns (changed_fields, old_values, new_values)."""
+    changed_fields = []
+    old_values = {}
+    new_values = {}
+
+    if cashier_name and cashier_name != session.cashier_name:
+        changed_fields.append("cashier_name")
+        old_values["cashier_name"] = session.cashier_name
+        new_values["cashier_name"] = cashier_name
+        session.cashier_name = cashier_name
+
+    if initial_cash:
+        initial_cash_val = parse_currency(initial_cash)
+        if initial_cash_val and initial_cash_val != session.initial_cash:
+            changed_fields.append("initial_cash")
+            old_values["initial_cash"] = str(session.initial_cash)
+            new_values["initial_cash"] = str(initial_cash_val)
+            session.initial_cash = initial_cash_val
+
+    if opened_time:
+        opened_time_obj = datetime.strptime(opened_time, "%H:%M").time()
+        if opened_time_obj != session.opened_time:
+            changed_fields.append("opened_time")
+            old_values["opened_time"] = str(session.opened_time)
+            new_values["opened_time"] = str(opened_time_obj)
+            session.opened_time = opened_time_obj
+
+    if expenses:
+        expenses_val = parse_currency(expenses)
+        if expenses_val and expenses_val != session.expenses:
+            changed_fields.append("expenses")
+            old_values["expenses"] = str(session.expenses)
+            new_values["expenses"] = str(expenses_val)
+            session.expenses = expenses_val
+
+    return changed_fields, old_values, new_values
+
+
 @router.post("/{session_id}/edit-open", response_class=HTMLResponse)
 async def edit_open_session_post(
     request: Request,
@@ -232,50 +277,19 @@ async def edit_open_session_post(
         if session.status != "OPEN":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
-        # Track changes for audit log
-        changed_fields = []
-        old_values = {}
-        new_values = {}
+        # Update fields
+        changed_fields, old_values, new_values = await _update_open_session_fields(
+            session, cashier_name, initial_cash, opened_time, expenses
+        )
 
-        # Update fields if provided
-        if cashier_name and cashier_name != session.cashier_name:
-            changed_fields.append("cashier_name")
-            old_values["cashier_name"] = session.cashier_name
-            new_values["cashier_name"] = cashier_name
-            session.cashier_name = cashier_name
-
-        if initial_cash:
-            initial_cash_val = parse_currency(initial_cash)
-            if initial_cash_val and initial_cash_val != session.initial_cash:
-                changed_fields.append("initial_cash")
-                old_values["initial_cash"] = str(session.initial_cash)
-                new_values["initial_cash"] = str(initial_cash_val)
-                session.initial_cash = initial_cash_val
-
-        if opened_time:
-            opened_time_obj = datetime.strptime(opened_time, "%H:%M").time()
-            if opened_time_obj != session.opened_time:
-                changed_fields.append("opened_time")
-                old_values["opened_time"] = str(session.opened_time)
-                new_values["opened_time"] = str(opened_time_obj)
-                session.opened_time = opened_time_obj
-
-        if expenses:
-            expenses_val = parse_currency(expenses)
-            if expenses_val and expenses_val != session.expenses:
-                changed_fields.append("expenses")
-                old_values["expenses"] = str(session.expenses)
-                new_values["expenses"] = str(expenses_val)
-                session.expenses = expenses_val
-
-        # Set audit tracking fields
+        # Set audit tracking
         session.last_modified_at = datetime.now()
         session.last_modified_by = "system"
 
         db.add(session)
         await db.commit()
 
-        # Create audit log if changes were made
+        # Create audit log if changes
         if changed_fields:
             audit_log = CashSessionAuditLog(
                 session_id=session.id,
