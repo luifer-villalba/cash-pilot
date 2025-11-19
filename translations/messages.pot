@@ -1,14 +1,15 @@
-# Translations template for PROJECT.
+# File: translations/messages.pot
+# Translations template for CashPilot.
 # Copyright (C) 2025 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
+# This file is distributed under the same license as the CashPilot project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
+"Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-14 18:11+0000\n"
+"POT-Creation-Date: 2025-11-18 02:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,444 +18,91 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.14.0\n"
 
-#: src/cashpilot/templates/base.html:27 src/cashpilot/templates/index.html:4
-#: src/cashpilot/templates/index.html:10
-msgid "Dashboard"
+msgid "Action"
 msgstr ""
 
-#: src/cashpilot/templates/base.html:28
-msgid "Sessions"
-msgstr ""
-
-#: src/cashpilot/templates/base.html:29
-msgid "Businesses"
-msgstr ""
-
-#: src/cashpilot/templates/base.html:30
-msgid "API Docs"
-msgstr ""
-
-#: src/cashpilot/templates/base.html:43
-msgid "Business Cash Register Reconciliation System"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:3
-msgid "Create Session"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:11
-msgid "Open New Cash Session"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:17
-#: src/cashpilot/templates/index.html:45
-#: src/cashpilot/templates/session_detail.html:160
-msgid "Business"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:20
-msgid "Select a business..."
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:30
-msgid "Cashier Name"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:33
-msgid "e.g., María López"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:36
-msgid "Who is opening this session?"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:43
-msgid "Initial Cash (₲)"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:48
-msgid "Starting amount in drawer"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:55
-msgid "Opened At (Optional)"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:59
-msgid "Leave blank for current time"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:66
-msgid "Allow overlapping sessions?"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:70
-msgid "Check only if multiple cashiers on same shift"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:77
-msgid "Open Session"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:78
-#: src/cashpilot/templates/edit_session.html:114
-msgid "Cancel"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:90
-msgid "Quick Guide"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:92
-msgid "Cashier Name:"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:92
-msgid "Who's working this shift?"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:93
-#: src/cashpilot/templates/edit_session.html:134
-msgid "Initial Cash:"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:93
-msgid "Amount you start with"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:94
-msgid "Business:"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:94
-msgid "Which pharmacy location?"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:95
-msgid "Allow Overlap:"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:95
-msgid "Only if multiple cashiers"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:102
-msgid "Important"
-msgstr ""
-
-#: src/cashpilot/templates/create_session.html:103
-msgid ""
-"Once opened, only one session can be active per business unless overlap "
-"is enabled."
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:3
-#: src/cashpilot/templates/edit_session.html:113
-#: src/cashpilot/templates/session_detail.html:14
-#: src/cashpilot/templates/session_detail.html:175
-msgid "Close Session"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:11
-msgid "Close Cash Session"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:13
-msgid "Cashier:"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:14
-msgid "Status:"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:23
-msgid "Final Cash Count (₲)"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:28
-msgid "Total counted in drawer"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:35
-msgid "Envelope Amount (₲)"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:40
-msgid "Cash removed from register (if any)"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:45
-#: src/cashpilot/templates/session_detail.html:80
-msgid "Payment Methods"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:50
-msgid "Credit Card Total (₲)"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:59
-msgid "Debit Card Total (₲)"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:68
-msgid "Bank Transfer Total (₲)"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:77
-msgid "Expenses (₲)"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:82
-msgid "Business expenses during shift"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:87
-#: src/cashpilot/templates/session_detail.html:121
-msgid "Additional Info"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:92
-msgid "Closing Ticket #"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:95
-msgid "e.g., T-20251112-001"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:97
-msgid "Optional: POS ticket number"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:104
-#: src/cashpilot/templates/session_detail.html:132
-msgid "Notes"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:107
-msgid "Any discrepancies or notes..."
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:127
-msgid "Opening Info"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:130
-msgid "Opened At:"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:144
-msgid "Reconciliation Preview"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:146
-msgid "Fill form fields to see preview..."
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:154
-msgid "Formula"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:156
-#: src/cashpilot/templates/edit_session.html:191
-#: src/cashpilot/templates/session_detail.html:189
-msgid "Cash Sales:"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:157
-#: src/cashpilot/templates/edit_session.html:192
-#: src/cashpilot/templates/session_detail.html:193
-msgid "Total Sales:"
-msgstr ""
-
-#: src/cashpilot/templates/edit_session.html:158
-#: src/cashpilot/templates/edit_session.html:193
-#: src/cashpilot/templates/session_detail.html:197
-msgid "Net Earnings:"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:11
-msgid "+ New Session"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:17
-msgid "Active Sessions"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:21
-msgid "Total Businesses"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:25
-msgid "Today's Revenue"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:29
-msgid "Discrepancies"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:37
-msgid "Cash Sessions"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:37
-msgid "Page"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:37 src/cashpilot/templates/index.html:83
-msgid "of"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:44
-#: src/cashpilot/templates/session_detail.html:21
-msgid "Cashier"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:46
-#: src/cashpilot/templates/session_detail.html:25
-#: src/cashpilot/templates/session_detail.html:146
-msgid "Status"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:47
-#: src/cashpilot/templates/session_detail.html:35
-msgid "Opened At"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:48
-#: src/cashpilot/templates/session_detail.html:74
-msgid "Cash Sales"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:49
-#: src/cashpilot/templates/session_detail.html:108
-msgid "Total Sales"
-msgstr ""
-
-#: src/cashpilot/templates/index.html:50
-#: src/cashpilot/templates/session_detail.html:171
 msgid "Actions"
 msgstr ""
 
-#: src/cashpilot/templates/index.html:60
-#: src/cashpilot/templates/session_detail.html:28
-msgid "OPEN"
+msgid "Active"
 msgstr ""
 
-#: src/cashpilot/templates/index.html:62
-#: src/cashpilot/templates/session_detail.html:30
-msgid "CLOSED"
+msgid "Add"
 msgstr ""
 
-#: src/cashpilot/templates/index.html:69
-msgid "View"
+msgid "Add cashier names after creation"
 msgstr ""
 
-#: src/cashpilot/templates/index.html:71
-msgid "Close"
+msgid "Address"
 msgstr ""
 
-#: src/cashpilot/templates/index.html:83
-msgid "Showing"
+msgid "All edits are logged with reason and timestamp for compliance."
 msgstr ""
 
-#: src/cashpilot/templates/index.html:83
-msgid "sessions"
+msgid "Audit Trail"
 msgstr ""
 
-#: src/cashpilot/templates/index.html:111
-msgid "No sessions yet."
+msgid "Back to Businesses"
 msgstr ""
 
-#: src/cashpilot/templates/index.html:111
+msgid "Business Info"
+msgstr ""
+
+msgid "Business"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Cashiers"
+msgstr ""
+
+msgid "Cashiers Count"
+msgstr ""
+
+msgid "Create Business"
+msgstr ""
+
+msgid "Create New Business"
+msgstr ""
+
 msgid "Create one"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:3
-msgid "Session"
+msgid "Created"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:12
-msgid "Session Details"
+msgid "Current Values"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:39
-msgid "Closed At"
+msgid "Dashboard"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:51
-msgid "Cash Flow"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:56
-msgid "Initial Cash"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:60
-msgid "Final Cash"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:65
-msgid "Pending"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:70
-msgid "Envelope Amount"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:85
-msgid "Credit Card"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:89
 msgid "Debit Card"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:93
-msgid "Bank Transfer"
+msgid "Debit Card Total (₲)"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:97
-msgid "Expenses"
+msgid "Edit"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:103
-msgid "Reconciliation"
+msgid "Edit Business"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:110
-msgid "cash_sales + all payment methods"
+msgid "Edit History"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:113
-msgid "Net Earnings"
+msgid "Edit Open Cash Session"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:115
-msgid "total_sales - expenses"
+msgid "Enter cashier name"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:125
-msgid "Closing Ticket"
+msgid "Failed to load edit history"
 msgstr ""
 
-#: src/cashpilot/templates/session_detail.html:149
-msgid "Session Active"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:151
-msgid "Session Closed"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:173
-msgid "Back to Dashboard"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:177
-msgid "New Session"
-msgstr ""
-
-#: src/cashpilot/templates/session_detail.html:186
-msgid "Formulas"
+msgid "Fields Changed"
 msgstr ""
 
 msgid "Filters"
@@ -463,83 +111,82 @@ msgstr ""
 msgid "From Date"
 msgstr ""
 
-msgid "To Date"
-msgstr ""
-
-msgid "Search..."
-msgstr ""
-
-msgid "All Businesses"
-msgstr ""
-
-msgid "Clear Filters"
-msgstr ""
-
 msgid "From:"
 msgstr ""
 
-msgid "To:"
+msgid "Inactive"
 msgstr ""
 
-msgid "Cashier:"
+msgid "Invalid input"
 msgstr ""
 
-msgid "No sessions found."
+msgid "Loading..."
 msgstr ""
 
-msgid "Edited"
+msgid "Logout"
 msgstr ""
 
-msgid "Last modified:"
-msgstr ""
-
-msgid "By:"
-msgstr ""
-
-msgid "Edit History"
-msgstr ""
-
-msgid "Change"
-msgstr ""
-
-msgid "Field"
-msgstr ""
-
-msgid "Old Value"
-msgstr ""
-
-msgid "New Value"
-msgstr ""
-
-msgid "Modified By"
+msgid "Manage Cashiers"
 msgstr ""
 
 msgid "Modified At"
 msgstr ""
 
-msgid "Reason"
-msgstr ""
-
-msgid "No edits yet"
+msgid "Modified By"
 msgstr ""
 
 msgid "Modification History"
 msgstr ""
 
-msgid "Fields Changed"
+msgid "Name"
 msgstr ""
 
-msgid "Failed to load edit history"
+msgid "New Business"
 msgstr ""
 
-#: templates/sessions/edit_open_session.html
-msgid "Edit Open Cash Session"
+msgid "No businesses found."
 msgstr ""
 
-msgid "Who is handling this session?"
+msgid "No cashiers added yet."
+msgstr ""
+
+msgid "No edits yet"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Not authenticated"
+msgstr ""
+
+msgid "Optional: for reference only"
+msgstr ""
+
+msgid "Phone"
+msgstr ""
+
+msgid "Pharmacy location name"
+msgstr ""
+
+msgid "Profit Margin:"
+msgstr ""
+
+msgid "Quick Guide"
+msgstr ""
+
+msgid "Quick Stats"
+msgstr ""
+
+msgid "Quick Tip"
+msgstr ""
+
+msgid "Reason"
 msgstr ""
 
 msgid "Reason for Edit"
+msgstr ""
+
+msgid "Remove"
 msgstr ""
 
 msgid "Required for audit trail"
@@ -548,17 +195,38 @@ msgstr ""
 msgid "Save Changes"
 msgstr ""
 
-msgid "Current Values"
+msgid "Session Information"
 msgstr ""
 
-msgid "Audit Trail"
+msgid "Shift Duration:"
 msgstr ""
 
-msgid "💡 Quick Tip"
+msgid "Status"
 msgstr ""
 
-msgid "All edits are logged with reason and timestamp for compliance."
+msgid "To Date"
 msgstr ""
 
-msgid "e.g., Corrected initial count, Name typo fix..."
+msgid "To:"
+msgstr ""
+
+msgid "Updated"
+msgstr ""
+
+msgid "User not found or inactive"
+msgstr ""
+
+msgid "Who is handling this session?"
+msgstr ""
+
+msgid "Shift Duration:"
+msgstr ""
+
+msgid "Payment Methods:"
+msgstr ""
+
+msgid "Profit Margin:"
+msgstr ""
+
+msgid "Quick Stats"
 msgstr ""
