@@ -98,31 +98,13 @@ async def login_page():
         return f.read()
 
 
-@router.get("/", response_class=HTMLResponse)
-async def dashboard(
-    request: Request,
-    page: int = Query(1, ge=1),
-    from_date: str | None = Query(None),
-    to_date: str | None = Query(None),
-    cashier_name: str | None = Query(None),
-    business_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
-):
-    """Dashboard with paginated, filterable session list."""
-    # Redirect to login if not authenticated
-    user_id = request.session.get("user_id")
-    if not user_id:
-        return RedirectResponse(url="/login", status_code=302)
-
-    locale = get_locale(request)
-    _ = get_translation_function(locale)
-
-    per_page = 10
-    skip = (page - 1) * per_page
-
-    # Build filter query
-    stmt = select(CashSession).options(joinedload(CashSession.business))
-
+async def _build_session_filters(
+    from_date: str | None,
+    to_date: str | None,
+    cashier_name: str | None,
+    business_id: str | None,
+) -> list:
+    """Build SQLAlchemy filter list from query params."""
     filters = []
 
     if from_date:
@@ -148,11 +130,38 @@ async def dashboard(
         except ValueError:
             pass
 
-    # Apply filters to main query
+    return filters
+
+
+@router.get("/", response_class=HTMLResponse)
+async def dashboard(
+    request: Request,
+    page: int = Query(1, ge=1),
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Dashboard with paginated, filterable session list."""
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/login", status_code=302)
+
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    per_page = 10
+    skip = (page - 1) * per_page
+
+    # Build filters
+    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
+
+    # Count + paginate
+    stmt = select(CashSession).options(joinedload(CashSession.business))
     for f in filters:
         stmt = stmt.where(f)
 
-    # Count total matching
     count_stmt = select(func.count(CashSession.id))
     for f in filters:
         count_stmt = count_stmt.where(f)
@@ -160,7 +169,6 @@ async def dashboard(
     total_sessions = count_result.scalar() or 0
     total_pages = (total_sessions + per_page - 1) // per_page
 
-    # Get paginated results
     stmt = (
         stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
         .offset(skip)
@@ -169,18 +177,16 @@ async def dashboard(
     result = await db.execute(stmt)
     sessions = result.scalars().unique().all()
 
-    # Get active sessions count
+    # Get stats
     stmt_active = select(func.count(CashSession.id)).where(CashSession.status == "OPEN")
     result_active = await db.execute(stmt_active)
     active_count = result_active.scalar() or 0
 
-    # Get businesses for dropdown
     stmt_businesses = select(Business).where(Business.is_active).order_by(Business.name)
     result_businesses = await db.execute(stmt_businesses)
     businesses = result_businesses.scalars().all()
     businesses_count = len(list(businesses))
 
-    # Calculate today's revenue
     today = date_type.today()
     stmt_today = select(
         func.sum(
@@ -195,18 +201,17 @@ async def dashboard(
     result_today = await db.execute(stmt_today)
     total_revenue = result_today.scalar() or Decimal("0.00")
 
-    # Build active filters display
-    active_filters = {}
-    if from_date:
-        active_filters["from_date"] = from_date
-    if to_date:
-        active_filters["to_date"] = to_date
-    if cashier_name:
-        active_filters["cashier_name"] = cashier_name
-    if business_id:
-        active_filters["business_id"] = business_id
+    active_filters = {
+        k: v
+        for k, v in {
+            "from_date": from_date,
+            "to_date": to_date,
+            "cashier_name": cashier_name,
+            "business_id": business_id,
+        }.items()
+        if v
+    }
 
-    # Fetch current user for navbar
     current_user = None
     user_id = request.session.get("user_id")
     if user_id:
