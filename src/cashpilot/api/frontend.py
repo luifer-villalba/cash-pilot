@@ -67,22 +67,22 @@ def parse_currency(value: str | None) -> Decimal | None:
     value = value.strip()
 
     # Handle decimal point: split on last dot
-    if '.' in value:
-        parts = value.rsplit('.', 1)
-        integer_part = parts[0].replace('.', '').replace(',', '')
-        decimal_part = parts[1].replace(',', '')
+    if "." in value:
+        parts = value.rsplit(".", 1)
+        integer_part = parts[0].replace(".", "").replace(",", "")
+        decimal_part = parts[1].replace(",", "")
 
         # If decimal part is 2 digits, it's a decimal; if 3+ it's thousands sep
         if len(decimal_part) <= 2:
             value = f"{integer_part}.{decimal_part}"
         else:
             # Last dot was thousands separator, remove all dots
-            value = value.replace('.', '').replace(',', '')
+            value = value.replace(".", "").replace(",", "")
     else:
         # No dots, just remove commas
-        value = value.replace(',', '')
+        value = value.replace(",", "")
 
-    if not value or value == '.':
+    if not value or value == ".":
         return None
 
     return Decimal(value)
