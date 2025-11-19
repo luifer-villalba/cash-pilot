@@ -1,6 +1,7 @@
-.PHONY: fmt lint sh hook-install run dev restart up down logs watch dev-watch test \
-        migrate-create migrate-up migrate-current migrate-history migrate-downgrade \
-        check-db rebuild rebuild-quick check-sync fix-perms
+.PHONY: fmt lint sh hook-install run dev up down logs watch dev-watch test \
+        migrate-create migrate-upgrade migrate-current migrate-history migrate-downgrade \
+        check-db rebuild rebuild-quick fix-perms clean-branches seed seed-reset \
+        createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update
 
 # ---------- Code quality ----------
 fmt:
@@ -23,6 +24,10 @@ fix-perms:
 	sudo chown -R $$USER:$$USER src/
 	chmod -R u+w src/
 	@echo "✅ File permissions fixed in src/."
+
+# ---------- Git ----------
+clean-branches:
+	git branch -D $$(git branch | grep -v "main" | xargs)
 
 # ---------- Run ----------
 run dev:
@@ -113,15 +118,6 @@ createuser:
 
 list-users:
 	docker compose exec db psql -U cashpilot -d cashpilot_dev -c "SELECT id, email, is_active, created_at FROM users ORDER BY created_at DESC;"
-
-# ---------- Sync diagnostics ----------
-check-sync:
-	@echo "🔍 Verifying synced files inside the container..."
-	docker compose exec app ls -la /app/src/cashpilot/
-	@echo ""
-	@echo "👉 If files are missing: make rebuild"
-	@echo "👉 If everything looks good but app is stale: make restart"
-	@echo "✅ Sync check complete."
 
 # ---------- Seed Data ----------
 seed:
