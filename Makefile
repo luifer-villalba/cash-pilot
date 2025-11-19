@@ -21,9 +21,9 @@ hook-install:
 
 fix-perms:
 	@echo "🔧 Fixing file permissions in src/..."
-	sudo chown -R $$USER:$$USER src/
+	sudo chown -R $$USER:$$USER .
 	chmod -R u+w src/
-	@echo "✅ File permissions fixed in src/."
+	@echo "✅ File permissions fixed"
 
 # ---------- Git ----------
 clean-branches:
