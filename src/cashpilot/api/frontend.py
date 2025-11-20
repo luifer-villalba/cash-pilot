@@ -11,7 +11,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select, Numeric, and_
+from sqlalchemy import Numeric, and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -340,57 +340,76 @@ async def get_dashboard_stats(
         selected_businesses = result.scalar() or 0
 
     # Base stmt with filters
-    stmt = select(CashSession).where(and_(*filters)) if filters else select(CashSession)
+    select(CashSession).where(and_(*filters)) if filters else select(CashSession)
 
     # Stats queries
     active_sessions = await db.execute(
         select(func.count(CashSession.id)).where(
-            and_(CashSession.status == "OPEN", *filters) if filters else CashSession.status == "OPEN"
+            and_(CashSession.status == "OPEN", *filters)
+            if filters
+            else CashSession.status == "OPEN"
         )
     )
 
     # In each func.sum() call, add explicit type cast:
 
     cash_sales = await db.execute(
-        select(func.sum((CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash).cast(
-            Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+        select(
+            func.sum(
+                (
+                    CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash
+                ).cast(Numeric(12, 2))
+            )
+        ).where(
+            and_(CashSession.status == "CLOSED", *filters)
+            if filters
+            else CashSession.status == "CLOSED"
         )
     )
 
     credit_card = await db.execute(
         select(func.sum(CashSession.credit_card_total.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+            and_(CashSession.status == "CLOSED", *filters)
+            if filters
+            else CashSession.status == "CLOSED"
         )
     )
 
     debit_card = await db.execute(
         select(func.sum(CashSession.debit_card_total.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+            and_(CashSession.status == "CLOSED", *filters)
+            if filters
+            else CashSession.status == "CLOSED"
         )
     )
 
     bank_transfer = await db.execute(
         select(func.sum(CashSession.bank_transfer_total.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+            and_(CashSession.status == "CLOSED", *filters)
+            if filters
+            else CashSession.status == "CLOSED"
         )
     )
 
     expenses = await db.execute(
         select(func.sum(CashSession.expenses.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+            and_(CashSession.status == "CLOSED", *filters)
+            if filters
+            else CashSession.status == "CLOSED"
         )
     )
 
     flagged_count = await db.execute(
         select(func.count(CashSession.id)).where(
-            and_(CashSession.flagged == True, *filters) if filters else CashSession.flagged == True
+            and_(CashSession.flagged is True, *filters) if filters else CashSession.flagged is True
         )
     )
 
     envelope = await db.execute(
         select(func.sum(CashSession.envelope_amount.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+            and_(CashSession.status == "CLOSED", *filters)
+            if filters
+            else CashSession.status == "CLOSED"
         )
     )
 
