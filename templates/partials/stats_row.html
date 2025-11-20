@@ -1,0 +1,18 @@
+<div id="stats-row" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+        <div class="stat-title">{{ _('Businesses') }}</div>
+        <div class="stat-value text-gray">{{ selected_businesses }}</div>
+    </div>
+    <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+        <div class="stat-title">{{ _('Active Sessions') }}</div>
+        <div class="stat-value text-primary">{{ active_sessions }}</div>
+    </div>
+    <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+        <div class="stat-title">{{ _('Cash Sales') }}</div>
+        <div class="stat-value text-success">Gs {{ "{:,.0f}".format(cash_sales|float) }}</div>
+    </div>
+    <div class="stat bg-base-100 rounded-lg shadow text-base-content">
+        <div class="stat-title">{{ _('Discrepancies') }}</div>
+        <div class="stat-value {% if flagged_count > 0 %}text-error{% else %}text-warning{% endif %}">{{ flagged_count }}</div>
+    </div>
+</div>

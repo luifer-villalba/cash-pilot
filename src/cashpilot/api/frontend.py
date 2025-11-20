@@ -11,7 +11,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select
+from sqlalchemy import func, select, Numeric, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -312,5 +312,104 @@ async def sessions_table(
             "query_string": query_string,
             "locale": locale,
             "_": _,
+        },
+    )
+
+
+@router.get("/stats", response_class=HTMLResponse)
+async def get_dashboard_stats(
+    request: Request,
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return dashboard stats as HTML partial."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    # Build filters
+    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
+
+    # Count selected businesses
+    if business_id:
+        selected_businesses = 1
+    else:
+        result = await db.execute(select(func.count(Business.id)).where(Business.is_active))
+        selected_businesses = result.scalar() or 0
+
+    # Base stmt with filters
+    stmt = select(CashSession).where(and_(*filters)) if filters else select(CashSession)
+
+    # Stats queries
+    active_sessions = await db.execute(
+        select(func.count(CashSession.id)).where(
+            and_(CashSession.status == "OPEN", *filters) if filters else CashSession.status == "OPEN"
+        )
+    )
+
+    # In each func.sum() call, add explicit type cast:
+
+    cash_sales = await db.execute(
+        select(func.sum((CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash).cast(
+            Numeric(12, 2)))).where(
+            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+        )
+    )
+
+    credit_card = await db.execute(
+        select(func.sum(CashSession.credit_card_total.cast(Numeric(12, 2)))).where(
+            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+        )
+    )
+
+    debit_card = await db.execute(
+        select(func.sum(CashSession.debit_card_total.cast(Numeric(12, 2)))).where(
+            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+        )
+    )
+
+    bank_transfer = await db.execute(
+        select(func.sum(CashSession.bank_transfer_total.cast(Numeric(12, 2)))).where(
+            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+        )
+    )
+
+    expenses = await db.execute(
+        select(func.sum(CashSession.expenses.cast(Numeric(12, 2)))).where(
+            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+        )
+    )
+
+    flagged_count = await db.execute(
+        select(func.count(CashSession.id)).where(
+            and_(CashSession.flagged == True, *filters) if filters else CashSession.flagged == True
+        )
+    )
+
+    # Convert None to Decimal(0)
+    cash_sales_val = cash_sales.scalar() or Decimal("0.00")
+    credit_card_val = credit_card.scalar() or Decimal("0.00")
+    debit_card_val = debit_card.scalar() or Decimal("0.00")
+    bank_transfer_val = bank_transfer.scalar() or Decimal("0.00")
+    expenses_val = expenses.scalar() or Decimal("0.00")
+    total_ingresos = cash_sales_val + credit_card_val + debit_card_val + bank_transfer_val
+
+    return templates.TemplateResponse(
+        "partials/stats_row.html",
+        {
+            "request": request,
+            "selected_businesses": selected_businesses,
+            "active_sessions": active_sessions.scalar() or 0,
+            "cash_sales": cash_sales_val,
+            "credit_card_total": credit_card_val,
+            "debit_card_total": debit_card_val,
+            "bank_transfer_total": bank_transfer_val,
+            "expenses": expenses_val,
+            "total_ingresos": total_ingresos,
+            "flagged_count": flagged_count.scalar() or 0,
+            "locale": locale,
+            "_": _,  # ← ADD THIS
         },
     )
