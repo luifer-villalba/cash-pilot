@@ -3,11 +3,11 @@
 from datetime import datetime
 from uuid import UUID
 
-from cashpilot.api.auth import get_current_user
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
 from cashpilot.core.validation import check_session_overlap, validate_session_dates
@@ -16,7 +16,8 @@ from cashpilot.models import (
     CashSession,
     CashSessionCreate,
     CashSessionRead,
-    CashSessionUpdate, User,
+    CashSessionUpdate,
+    User,
 )
 from cashpilot.models.enums import SessionStatus
 
@@ -147,6 +148,7 @@ async def close_shift(
     await db.flush()
     await db.refresh(session_obj)
     return session_obj
+
 
 @router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_session(
