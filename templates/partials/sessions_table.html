@@ -1,4 +1,3 @@
-<!-- File: templates/partials/sessions_table.html -->
 <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
         <h2 class="card-title">{{ _('Cash Sessions') }}</h2>
@@ -9,16 +8,15 @@
                 <thead>
                     <tr>
                         <th>{{ _('Status') }}</th>
-                        <th>Cashier</th>
-                        <th>Business</th>
-                        <th>💰 Initial Cash</th>
-                        <th>💰 Final Cash</th>
-                        <th>Envelope Amount</th>
-                        <th>Cash Sales</th>
-                        <th>💳 Digital Payments</th>
-                        <th>⚠️ Expenses</th>
-                        <th>📊 Total Sales</th>
-                        <th>{{ _('Actions') }}</th>
+                        <th>{{ _('Cashier') }}</th>
+                        <th>{{ _('Business') }}</th>
+                        <th class="text-right">💵 {{ _('Initial') }}</th>
+                        <th class="text-right">💵 {{ _('Final') }}</th>
+                        <th class="text-right">💰 {{ _('Cash Sales') }}</th>
+                        <th class="text-right">🏦 {{ _('Bank Transfers') }}</th>
+                        <th class="text-right">💳 {{ _('Card Payments') }}</th>
+                        <th class="text-right">📊 {{ _('Net Earnings') }}</th>
+                        <th class="text-center">⚙️ {{ _('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -26,25 +24,50 @@
                     <tr>
                         <td>
                             {% if session.status == 'OPEN' %}
-                                <span class="badge badge-success">OPEN</span>
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/20 text-success font-semibold text-xs">
+                                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                                    {{ _('Open') }}
+                                </span>
+                            {% elif session.flagged %}
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error/20 text-error font-semibold text-xs">
+                                    <span class="w-2 h-2 rounded-full bg-error"></span>
+                                    {{ _('Review') }}
+                                </span>
                             {% else %}
-                                <span class="badge badge-ghost">CLOSED</span>
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral/20 text-neutral font-semibold text-xs">
+                                    <span class="w-2 h-2 rounded-full bg-neutral"></span>
+                                    {{ _('Closed') }}
+                                </span>
                             {% endif %}
                         </td>
                         <td class="font-semibold">{{ session.cashier_name }}</td>
                         <td>{{ session.business.name }}</td>
-                        <td>Gs {{ "{:,.0f}".format(session.initial_cash) }}</td>
-                        <td>Gs {{ "{:,.0f}".format(session.final_cash) if session.final_cash else '-' }}</td>
-                        <td>Gs {{ "{:,.0f}".format(session.envelope_amount) }}</td>
-                        <td class="font-semibold">Gs {{ "{:,.0f}".format(session.cash_sales) }}</td>
-                        <td>Gs {{ "{:,.0f}".format(session.credit_card_total + session.debit_card_total + session.bank_transfer_total) }}</td>
-                        <td>Gs {{ "{:,.0f}".format(session.expenses) }}</td>
-                        <td class="font-bold">Gs {{ "{:,.0f}".format(session.total_sales) }}</td>
-                        <td>
-                            <div class="flex flex-col gap-1">
-                                <a href="/sessions/{{ session.id|string }}" class="btn btn-xs btn-outline">{{ _('View') }}</a>
+                        <td class="text-right">Gs {{ "{:,.0f}".format(session.initial_cash) }}</td>
+                        <td class="text-right">Gs {{ "{:,.0f}".format(session.final_cash) if session.final_cash else '-' }}</td>
+                        <td class="text-right font-semibold">Gs {{ "{:,.0f}".format(session.cash_sales) }}</td>
+                        <td class="text-right">Gs {{ "{:,.0f}".format(session.bank_transfer_total) }}</td>
+                        <td class="text-right">Gs {{ "{:,.0f}".format(session.credit_card_total + session.debit_card_total) }}</td>
+                        <td class="text-right font-bold {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">Gs {{ "{:,.0f}".format(session.net_earnings) }}</td>
+                        <td class="text-center">
+                            <div class="flex gap-1 justify-center">
+                                <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs btn-circle hover:bg-base-200" title="{{ _('View details') }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
                                 {% if session.status == 'OPEN' %}
-                                    <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-xs btn-outline">{{ _('Close') }}</a>
+                                    <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-ghost btn-xs btn-circle hover:bg-warning" title="{{ _('Close session') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                        </svg>
+                                    </a>
+                                {% else %}
+                                    <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs btn-circle hover:bg-info" title="{{ _('Edit session') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </a>
                                 {% endif %}
                             </div>
                         </td>
@@ -55,7 +78,7 @@
         </div>
 
         <!-- Pagination -->
-        <div class="flex justify-between items-center mt-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
             <p class="text-sm opacity-70">
                 {{ _('Showing') }} {{ (page - 1) * 10 + 1 }}-{{ [page * 10, total_sessions] | min }} {{ _('of') }} {{ total_sessions }}
             </p>
