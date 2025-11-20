@@ -1,4 +1,3 @@
-# File: src/cashpilot/api/routes/businesses.py
 """Business management routes (HTML endpoints)."""
 
 from pathlib import Path
@@ -9,6 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import attributes
 
 from cashpilot.api.frontend import get_locale, get_translation_function
 from cashpilot.core.db import get_db
@@ -157,6 +157,7 @@ async def add_cashier_form(
     cashier_clean = cashier_name.strip()
     if cashier_clean and cashier_clean not in business.cashiers:
         business.cashiers.append(cashier_clean)
+        attributes.flag_modified(business, "cashiers")
         db.add(business)
         await db.commit()
 
@@ -180,6 +181,7 @@ async def remove_cashier_form(
 
     if cashier_name in business.cashiers:
         business.cashiers.remove(cashier_name)
+        attributes.flag_modified(business, "cashiers")  # ← ADD THIS
         db.add(business)
         await db.commit()
 

@@ -113,7 +113,7 @@ rebuild-quick:
 	@echo "✅ Quick rebuild complete."
 
 # ---------- User Management ----------
-createuser:
+create-user:
 	docker compose exec app python -m cashpilot.scripts.createuser
 
 list-users:
