@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.frontend import get_locale, get_translation_function, parse_currency
+from cashpilot.api.utils import get_locale, get_translation_function, parse_currency
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
