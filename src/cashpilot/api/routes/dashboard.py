@@ -28,6 +28,7 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 router = APIRouter(tags=["dashboard"])
 
 
+# File: src/cashpilot/api/frontend.py
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -45,6 +46,11 @@ async def dashboard(
 
     locale = get_locale(request)
     _ = get_translation_function(locale)
+
+    # Set defaults to today if not provided
+    today_iso = date_type.today().isoformat()
+    from_date = from_date or today_iso
+    to_date = to_date or today_iso
 
     filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
@@ -82,7 +88,7 @@ async def dashboard(
             "cashier_name": cashier_name,
             "business_id": business_id,
         }.items()
-        if v
+        if v and v != today_iso
     }
 
     current_user = None
@@ -270,6 +276,13 @@ async def get_dashboard_stats(
     expenses_val = expenses.scalar() or Decimal("0.00")
     total_ingresos = cash_sales_val + credit_card_val + debit_card_val + bank_transfer_val
 
+    # Calculate payment mix %
+    cash_pct = (cash_sales_val / total_ingresos * 100) if total_ingresos > 0 else 0
+    card_pct = (
+        ((credit_card_val + debit_card_val) / total_ingresos * 100) if total_ingresos > 0 else 0
+    )
+    bank_pct = (bank_transfer_val / total_ingresos * 100) if total_ingresos > 0 else 0
+
     return templates.TemplateResponse(
         "partials/stats_row.html",
         {
@@ -284,6 +297,9 @@ async def get_dashboard_stats(
             "expenses": expenses_val,
             "total_ingresos": total_ingresos,
             "flagged_count": flagged_count.scalar() or 0,
+            "cash_pct": cash_pct,
+            "card_pct": card_pct,
+            "bank_pct": bank_pct,
             "locale": locale,
             "_": _,
         },
