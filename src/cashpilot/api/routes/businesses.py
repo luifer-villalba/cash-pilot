@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import attributes
 
-from cashpilot.api.frontend import get_locale, get_translation_function
+from cashpilot.api.utils import get_locale, get_translation_function
 from cashpilot.core.db import get_db
 from cashpilot.models import Business
 

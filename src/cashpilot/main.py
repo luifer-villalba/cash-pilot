@@ -86,9 +86,11 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
 
-    from cashpilot.api.frontend import router as frontend_router
+    from cashpilot.api.routes.dashboard import router as dashboard_router
+    from cashpilot.api.utils import router as utils_router
 
-    app.include_router(frontend_router)
+    app.include_router(utils_router)
+    app.include_router(dashboard_router)
 
     from cashpilot.api.routes.sessions import router as sessions_router
 
@@ -102,9 +104,13 @@ def create_app() -> FastAPI:
 
     app.include_router(business_api_router)
 
-    from cashpilot.api.cash_session import router as cash_session_api_router
+    from cashpilot.api.cash_session import router as cash_session_router
+    from cashpilot.api.cash_session_audit import router as cash_session_audit_router
+    from cashpilot.api.cash_session_edit import router as cash_session_edit_router
 
-    app.include_router(cash_session_api_router)
+    app.include_router(cash_session_router)
+    app.include_router(cash_session_edit_router)
+    app.include_router(cash_session_audit_router)
 
     from cashpilot.api.auth import router as auth_router
 
