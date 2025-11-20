@@ -8,6 +8,7 @@ from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -144,3 +145,11 @@ async def _get_paginated_sessions(
     sessions = result.scalars().unique().all()
 
     return list(sessions), total, total_pages
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def login_page():
+    """Render login page (publicly accessible)."""
+    template_path = Path("/app/templates/login.html")
+    with open(template_path, "r") as f:
+        return f.read()
