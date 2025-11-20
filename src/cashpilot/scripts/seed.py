@@ -2,7 +2,7 @@
 Seed script for CashPilot demo data (date+time split version).
 
 Creates:
-- 3 pharmacy businesses with cashier lists
+- 5 FZ pharmacy branches with cashier lists
 - 30 days of cash sessions with varied reconciliation outcomes
 - Non-overlapping shift patterns (7am-3pm, 3pm-11pm)
 """
@@ -24,19 +24,9 @@ SHIFT_PATTERNS = [
     {"start_time": time(15, 0), "end_time": time(23, 0), "name": "Turno Tarde"},
 ]
 
-# Cashier names for seed data
-CASHIER_POOL = [
-    "María González",
-    "Juan Pérez",
-    "Carmen Rodríguez",
-    "Luis Martínez",
-    "Ana Silva",
-    "Carlos Benítez",
-]
-
 
 async def seed_businesses(db: AsyncSession) -> list[Business]:
-    """Create 3 pharmacy businesses with cashier lists (idempotent)."""
+    """Create 5 FZ pharmacy branches with cashier lists (idempotent)."""
     result = await db.execute(select(Business).limit(1))
     if result.scalar_one_or_none():
         print("ℹ️  Businesses already exist, skipping...")
@@ -45,24 +35,38 @@ async def seed_businesses(db: AsyncSession) -> list[Business]:
 
     businesses = [
         Business(
-            name="Farmacia Central",
-            address="Av. Mariscal López 1234, Asunción",
+            name="FZ - Sucursal 1",
+            address="Quinta Avenida c/ EEUU, Asunción",
             phone="+595 21 123-4567",
-            cashiers=["María González", "Juan Pérez", "Carmen Rodríguez"],
+            cashiers=["Felipa Peralta", "Fermina Cáceres"],
             is_active=True,
         ),
         Business(
-            name="Farmacia San Lorenzo",
-            address="Ruta 2 Km 15, San Lorenzo",
+            name="FZ - Sucursal 2",
+            address="Teodoro S. Mongelos Esq. Gral. Aquino, Asunción",
             phone="+595 21 234-5678",
-            cashiers=["Luis Martínez", "Ana Silva"],
+            cashiers=["María Samaniego", "Fernanda Samaniego"],
             is_active=True,
         ),
         Business(
-            name="Farmacia Villa Morra",
-            address="Av. San Martín 890, Villa Morra",
+            name="FZ - Sucursal 5",
+            address="Paolo Alberzoni 1267, Pilar",
             phone="+595 21 345-6789",
-            cashiers=["Carlos Benítez", "María González", "Juan Pérez"],
+            cashiers=["Gilda Quintana", "Nancy Pineda"],
+            is_active=True,
+        ),
+        Business(
+            name="FZ - Sucursal 6",
+            address="14 de Mayo 9042, Pilar",
+            phone="+595 21 456-7890",
+            cashiers=["Rocío Ponce", "Marissa Bordon"],
+            is_active=True,
+        ),
+        Business(
+            name="FZ - Plaza",
+            address="Bernardino Caballero esq. 14 de mayo, Pilar",
+            phone="+595 21 567-8901",
+            cashiers=["Sonia Borba", "Jessica Dure"],
             is_active=True,
         ),
     ]
