@@ -87,6 +87,16 @@ class CashSession(Base):
         Numeric(12, 2), nullable=False, default=Decimal("0.00")
     )
 
+    flagged: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+        index=True,
+    )
+
+    flag_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    flagged_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
     # AUDIT FIELDS
     last_modified_at: Mapped[datetime | None] = mapped_column(nullable=True)
     last_modified_by: Mapped[str | None] = mapped_column(String(100), nullable=True)

@@ -1,0 +1,33 @@
+<div id="stats-row" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Card 1: Overview -->
+    <div class="stat bg-base-100 rounded-lg shadow">
+        <div class="stat-title">{{ _('Businesses') }} / {{ _('Active') }}</div>
+        <div class="stat-value text-2xl">{{ selected_businesses }} / <span class="text-primary">{{ active_sessions }}</span></div>
+    </div>
+
+    <!-- Card 2: Cash Flow -->
+    <div class="stat bg-base-100 rounded-lg shadow">
+        <div class="stat-title">{{ _('Cash Sales') }}</div>
+        <div class="stat-value text-2xl text-success">Gs {{ "{:,.0f}".format(cash_sales) }}</div>
+        <div class="stat-desc text-xs">💼 {{ "{:,.0f}".format(envelope_total) }} envelope</div>
+    </div>
+
+    <!-- Card 3: Card Payments -->
+    <div class="stat bg-base-100 rounded-lg shadow">
+        <div class="stat-title">{{ _('Card Payments') }}</div>
+        <div class="stat-value text-2xl text-info">Gs {{ "{:,.0f}".format(credit_card_total + debit_card_total + bank_transfer_total) }}</div>
+        <div class="stat-desc text-xs">💳 {{ "{:,.0f}".format(credit_card_total) }} | 🏦 {{ "{:,.0f}".format(debit_card_total + bank_transfer_total) }}</div>
+    </div>
+
+    <!-- Card 4: Revenue & Expenses -->
+    <div class="stat bg-base-100 rounded-lg shadow">
+        <div class="stat-title">{{ _('Net') }}</div>
+        <div class="stat-value text-2xl {% if total_ingresos - expenses >= 0 %}text-success{% else %}text-error{% endif %}">
+            Gs {{ "{:,.0f}".format(total_ingresos - expenses) }}
+        </div>
+        <div class="stat-desc text-xs">💰 {{ "{:,.0f}".format(total_ingresos) }} | 📉 {{ "{:,.0f}".format(expenses) }}</div>
+        {% if flagged_count > 0 %}
+        <div class="stat-desc text-error">⚠️ {{ flagged_count }} flagged</div>
+        {% endif %}
+    </div>
+</div>

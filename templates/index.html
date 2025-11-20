@@ -10,23 +10,18 @@
         <a href="/sessions/create" class="btn btn-primary">{{ _('+ New Session') }}</a>
     </div>
 
-    <!-- Stats Row -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
-            <div class="stat-title">{{ _('Active Sessions') }}</div>
-            <div class="stat-value text-primary">{{ active_sessions_count }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
-            <div class="stat-title">{{ _('Total Businesses') }}</div>
-            <div class="stat-value text-info">{{ businesses_count }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
-            <div class="stat-title">{{ _("Today's Revenue") }}</div>
-            <div class="stat-value text-success">Gs {{ "{:,.0f}".format(total_revenue) }}</div>
-        </div>
-        <div class="stat bg-base-100 rounded-lg shadow text-base-content">
-            <div class="stat-title">{{ _('Discrepancies') }}</div>
-            <div class="stat-value text-warning">{{ discrepancies_count }}</div>
+    <!-- Stats Row (HTMX TARGET) -->
+    <div id="stats-row"
+         hx-get="/stats"
+         hx-include="#filter-form"
+         hx-trigger="load, #filter-form input changed delay:500ms, #filter-form select changed"
+         hx-swap="outerHTML">
+        <!-- Skeleton while loading -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="stat bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
+            <div class="stat bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
+            <div class="stat bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
+            <div class="stat bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
         </div>
     </div>
 
