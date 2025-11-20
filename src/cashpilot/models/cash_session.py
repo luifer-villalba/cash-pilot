@@ -73,6 +73,14 @@ class CashSession(Base):
         index=True,
     )
 
+    is_deleted: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+        index=True,
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    deleted_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
     # Payment method totals
     credit_card_total: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=Decimal("0.00")

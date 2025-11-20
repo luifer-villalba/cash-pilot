@@ -192,6 +192,7 @@ async def get_dashboard_stats(
     _ = get_translation_function(locale)
 
     filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
+    filters.append(CashSession.is_deleted == False)
 
     if business_id:
         selected_businesses = 1

@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-18 02:30+0000\n"
-"PO-Revision-Date: 2025-11-14 18:20+0000\n"
+"POT-Creation-Date: 2025-11-20 12:00+0000\n"
+"PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
 "Language-Team: es_PY <LL@li.org>\n"
@@ -37,10 +37,19 @@ msgstr "Añada nombres de cajeros después de la creación"
 msgid "Address"
 msgstr "Dirección"
 
+msgid "All Businesses"
+msgstr "Todos los Negocios"
+
 msgid "All edits are logged with reason and timestamp for compliance."
 msgstr ""
 "Todas las ediciones se registran con razón y marca de tiempo para "
 "cumplimiento."
+
+msgid "API Docs"
+msgstr "Documentación API"
+
+msgid "Are you sure you want to logout?"
+msgstr "¿Está seguro de que desea cerrar sesión?"
 
 msgid "Audit Trail"
 msgstr "Registro de Auditoría"
@@ -48,21 +57,65 @@ msgstr "Registro de Auditoría"
 msgid "Back to Businesses"
 msgstr "Volver a Negocios"
 
+msgid "Back to Dashboard"
+msgstr "Volver al Panel"
+
+msgid "Bank Transfers"
+msgstr "Transferencias"
+
+msgid "Business"
+msgstr "Negocio"
+
+msgid "Business Cash Register Reconciliation System"
+msgstr "Sistema de Reconciliación de Caja para Farmacias"
+
 msgid "Business Info"
 msgstr "Información del Negocio"
 
-#, fuzzy
-msgid "Business"
-msgstr "+ Nuevo Negocio"
+msgid "Businesses"
+msgstr "Negocios"
 
 msgid "Cancel"
 msgstr "Cancelar"
+
+msgid "Card Payments"
+msgstr "Tarjeta"
+
+msgid "Cash Sales"
+msgstr "Efectivo"
+
+msgid "Cash Sessions"
+msgstr "Sesiones de Caja"
+
+msgid "Cashier"
+msgstr "Cajero"
+
+msgid "Cashier Name"
+msgstr "Nombre del Cajero"
+
+msgid "Cashier:"
+msgstr "Cajero:"
 
 msgid "Cashiers"
 msgstr "Cajeros"
 
 msgid "Cashiers Count"
 msgstr "Cantidad de Cajeros"
+
+msgid "Clear Filters"
+msgstr "Limpiar Filtros"
+
+msgid "Close Session"
+msgstr "Cerrar Caja"
+
+msgid "Close session"
+msgstr "Cerrar caja"
+
+msgid "Closed At"
+msgstr "Cerrado en"
+
+msgid "Create"
+msgstr "Crear"
 
 msgid "Create Business"
 msgstr "Crear Negocio"
@@ -80,13 +133,13 @@ msgid "Current Values"
 msgstr "Valores Actuales"
 
 msgid "Dashboard"
-msgstr ""
+msgstr "Panel"
 
 msgid "Debit Card"
-msgstr ""
+msgstr "Tarjeta de Débito"
 
 msgid "Debit Card Total (Gs)"
-msgstr ""
+msgstr "Total Tarjeta de Débito (Gs)"
 
 msgid "Edit"
 msgstr "Editar"
@@ -100,6 +153,9 @@ msgstr "Historial de Ediciones"
 msgid "Edit Open Cash Session"
 msgstr "Editar Sesión de Caja Abierta"
 
+msgid "Edit Session"
+msgstr "Editar Sesión"
+
 msgid "Enter cashier name"
 msgstr "Ingrese el nombre del cajero"
 
@@ -110,13 +166,13 @@ msgid "Fields Changed"
 msgstr "Campos Cambiados"
 
 msgid "Filters"
-msgstr ""
+msgstr "Filtros"
 
 msgid "From Date"
-msgstr ""
+msgstr "Desde Fecha"
 
 msgid "From:"
-msgstr ""
+msgstr "Desde:"
 
 msgid "Inactive"
 msgstr "Inactivo"
@@ -145,8 +201,17 @@ msgstr "Historial de Modificaciones"
 msgid "Name"
 msgstr "Nombre"
 
+msgid "Net"
+msgstr "Neto"
+
 msgid "New Business"
+msgstr "Nuevo Negocio"
+
+msgid "+ New Business"
 msgstr "+ Nuevo Negocio"
+
+msgid "+ New Session"
+msgstr "+ Abrir Caja"
 
 msgid "No businesses found."
 msgstr "No se encontraron negocios."
@@ -166,6 +231,12 @@ msgstr "No autenticado"
 msgid "Optional: for reference only"
 msgstr "Opcional: solo para referencia"
 
+msgid "Payment Mix"
+msgstr "Mix de Pagos"
+
+msgid "Payment Methods"
+msgstr "Métodos de Pago"
+
 msgid "Phone"
 msgstr "Teléfono"
 
@@ -181,9 +252,8 @@ msgstr "Guía Rápida"
 msgid "Quick Stats"
 msgstr "Estadísticas Rápidas"
 
-#, fuzzy
 msgid "Quick Tip"
-msgstr "💡 Consejo Rápido"
+msgstr "Consejo Rápido"
 
 msgid "Reason"
 msgstr "Razón"
@@ -197,23 +267,35 @@ msgstr "Eliminar"
 msgid "Required for audit trail"
 msgstr "Requerido para el registro de auditoría"
 
+msgid "Revenue & Expenses"
+msgstr "Ingresos y Gastos"
+
 msgid "Save Changes"
 msgstr "Guardar Cambios"
+
+msgid "Search..."
+msgstr "Buscar..."
 
 msgid "Session Information"
 msgstr "Información de la Sesión"
 
+msgid "Sessions"
+msgstr "Sesiones"
+
 msgid "Shift Duration:"
 msgstr "Duración del Turno:"
+
+msgid "Showing"
+msgstr "Mostrando"
 
 msgid "Status"
 msgstr "Estado"
 
 msgid "To Date"
-msgstr ""
+msgstr "Hasta Fecha"
 
 msgid "To:"
-msgstr ""
+msgstr "Hasta:"
 
 msgid "Updated"
 msgstr "Actualizado"
@@ -221,32 +303,21 @@ msgstr "Actualizado"
 msgid "User not found or inactive"
 msgstr "Usuario no encontrado o inactivo"
 
+msgid "View details"
+msgstr "Ver detalles"
+
 msgid "Who is handling this session?"
 msgstr "¿Quién está manejando esta sesión?"
-
-msgid "Payment Methods:"
-msgstr "Métodos de Pago:"
-
-msgid "Businesses"
-msgstr "Negocios"
-
-msgid "Active"
-msgstr "Activos"
-
-msgid "Cash Sales"
-msgstr "Ventas en Efectivo"
-
-msgid "Card Payments"
-msgstr "Pagos con Tarjeta"
-
-msgid "Net"
-msgstr "Neto"
-
-msgid "Revenue & Expenses"
-msgstr "Ingresos y Gastos"
 
 msgid "envelope"
 msgstr "Sobre"
 
 msgid "flagged"
 msgstr "Marcado"
+
+msgid "of"
+msgstr "de"
+
+msgid "Net Earnings"
+msgstr "Neto"
+
