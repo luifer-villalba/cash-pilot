@@ -38,7 +38,7 @@
                     <!-- Initial Cash -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Initial Cash (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Initial Cash (Gs)') }}</span>
                         </label>
                         <input type="text" name="initial_cash" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.initial_cash) }}"
@@ -63,7 +63,7 @@
                     <!-- Expenses -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Expenses (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Expenses (Gs)') }}</span>
                         </label>
                         <input type="text" name="expenses" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.expenses) if session.expenses else '0' }}"
@@ -116,11 +116,11 @@
                     </div>
                     <div>
                         <span class="label-text-alt">{{ _('Initial Cash:') }}</span>
-                        <p class="font-mono font-bold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                        <p class="font-mono font-bold">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                     <div>
                         <span class="label-text-alt">{{ _('Expenses:') }}</span>
-                        <p class="font-mono">₲ {{ "{:,.0f}".format(session.expenses) }}</p>
+                        <p class="font-mono">Gs {{ "{:,.0f}".format(session.expenses) }}</p>
                     </div>
                 </div>
             </div>

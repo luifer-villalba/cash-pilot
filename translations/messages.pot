@@ -81,7 +81,7 @@ msgstr ""
 msgid "Debit Card"
 msgstr ""
 
-msgid "Debit Card Total (₲)"
+msgid "Debit Card Total (Gs)"
 msgstr ""
 
 msgid "Edit"

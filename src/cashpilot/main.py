@@ -58,20 +58,21 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
 
-    # Add SessionMiddleware BEFORE other middleware
     session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
     environment = os.getenv("ENVIRONMENT", "development")
 
+    # Add middleware in reverse order (last added = first executed)
+    # RequestIDMiddleware LAST so it runs FIRST
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
-        max_age=14 * 24 * 60 * 60,  # 14 days
+        max_age=14 * 24 * 60 * 60,
         https_only=environment == "production",
         same_site="lax",
     )
 
-    # Add other middleware
     app.add_middleware(AdminRedirectMiddleware)
+
     from cashpilot.middleware.logging import RequestIDMiddleware
 
     app.add_middleware(RequestIDMiddleware)
@@ -85,22 +86,18 @@ def create_app() -> FastAPI:
 
     app.include_router(health_router)
 
-    # Frontend (dashboard + helpers)
     from cashpilot.api.frontend import router as frontend_router
 
     app.include_router(frontend_router)
 
-    # Session routes (extracted from old frontend.py)
     from cashpilot.api.routes.sessions import router as sessions_router
 
     app.include_router(sessions_router)
 
-    # Business routes (extracted from old frontend.py)
     from cashpilot.api.routes.businesses import router as businesses_router
 
     app.include_router(businesses_router)
 
-    # API routers
     from cashpilot.api.business import router as business_api_router
 
     app.include_router(business_api_router)

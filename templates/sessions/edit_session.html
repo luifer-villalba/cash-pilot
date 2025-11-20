@@ -21,7 +21,7 @@
                     <!-- Final Cash -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Final Cash Count (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Final Cash Count (Gs)') }}</span>
                         </label>
                         <input type="text" name="final_cash" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.final_cash) if session.final_cash else '' }}"
@@ -34,7 +34,7 @@
                     <!-- Envelope Amount -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Envelope Amount (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Envelope Amount (Gs)') }}</span>
                         </label>
                         <input type="text" name="envelope_amount" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0' }}"
@@ -50,7 +50,7 @@
                     <!-- Credit Card -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Credit Card Total (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Credit Card Total (Gs)') }}</span>
                         </label>
                         <input type="text" name="credit_card_total" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.credit_card_total) if session.credit_card_total else '0' }}"
@@ -60,7 +60,7 @@
                     <!-- Debit Card -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Debit Card Total (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Debit Card Total (Gs)') }}</span>
                         </label>
                         <input type="text" name="debit_card_total" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.debit_card_total) if session.debit_card_total else '0' }}"
@@ -70,7 +70,7 @@
                     <!-- Bank Transfer -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Bank Transfer Total (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Bank Transfer Total (Gs)') }}</span>
                         </label>
                         <input type="text" name="bank_transfer_total" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total else '0' }}"
@@ -80,7 +80,7 @@
                     <!-- Expenses -->
                     <div class="form-control">
                         <label class="label">
-                            <span class="label-text font-semibold">{{ _('Expenses (₲)') }}</span>
+                            <span class="label-text font-semibold">{{ _('Expenses (Gs)') }}</span>
                         </label>
                         <input type="text" name="expenses" class="input input-bordered"
                                value="{{ "{:,.0f}".format(session.expenses) if session.expenses else '0' }}"
@@ -156,7 +156,7 @@
                     </div>
                     <div>
                         <span class="label-text-alt">{{ _('Initial Cash:') }}</span>
-                        <p class="font-semibold">₲ {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                        <p class="font-semibold">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                 </div>
             </div>
@@ -224,9 +224,9 @@ function updatePreview() {
 
     const preview = document.getElementById('preview');
     preview.innerHTML = `
-        <div><span>{{ _('Cash Sales:') }}</span> <p class="font-bold">₲ ${formatterPY.format(cashSales)}</p></div>
-        <div><span>{{ _('Total Sales:') }}</span> <p class="font-bold">₲ ${formatterPY.format(totalSales)}</p></div>
-        <div><span>{{ _('Net Earnings:') }}</span> <p class="font-bold">₲ ${formatterPY.format(netEarnings)}</p></div>
+        <div><span>{{ _('Cash Sales:') }}</span> <p class="font-bold">Gs ${formatterPY.format(cashSales)}</p></div>
+        <div><span>{{ _('Total Sales:') }}</span> <p class="font-bold">Gs ${formatterPY.format(totalSales)}</p></div>
+        <div><span>{{ _('Net Earnings:') }}</span> <p class="font-bold">Gs ${formatterPY.format(netEarnings)}</p></div>
     `;
 }
 

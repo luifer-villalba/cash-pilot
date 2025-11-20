@@ -30,8 +30,8 @@
                             {% endif %}
                         </td>
                         <td>{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td>₲ {{ "{:,.0f}".format(session.cash_sales) }}</td>
-                        <td>₲ {{ "{:,.0f}".format(session.total_sales) }}</td>
+                        <td>Gs {{ "{:,.0f}".format(session.cash_sales) }}</td>
+                        <td>Gs {{ "{:,.0f}".format(session.total_sales) }}</td>
                         <td>
                             <a href="/sessions/{{ session.id|string }}" class="btn btn-sm btn-outline">{{ _('View') }}</a>
                             {% if session.status == 'OPEN' %}
