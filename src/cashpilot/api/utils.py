@@ -128,6 +128,9 @@ async def _get_paginated_sessions(
     stmt = select(CashSession).options(joinedload(CashSession.business))
     count_stmt = select(func.count(CashSession.id))
 
+    # Add deleted filter
+    filters.append(~CashSession.is_deleted)
+
     for f in filters:
         stmt = stmt.where(f)
         count_stmt = count_stmt.where(f)

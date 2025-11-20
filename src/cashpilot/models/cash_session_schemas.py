@@ -87,6 +87,11 @@ class CashSessionRead(BaseModel):
     last_modified_at: datetime | None = None
     last_modified_by: str | None = None
 
+    # Soft delete fields
+    is_deleted: bool = False
+    deleted_at: datetime | None = None
+    deleted_by: str | None = None
+
     # Calculated properties
     cash_sales: Decimal = Field(...)
     cash_debit_transfer_sales: Decimal = Field(...)

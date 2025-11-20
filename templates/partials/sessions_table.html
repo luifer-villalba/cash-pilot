@@ -10,6 +10,7 @@
                         <th>{{ _('Status') }}</th>
                         <th>{{ _('Cashier') }}</th>
                         <th>{{ _('Business') }}</th>
+                        <th>{{ _('Date & Times') }}</th>
                         <th class="text-right">💵 {{ _('Initial') }}</th>
                         <th class="text-right">💵 {{ _('Final') }}</th>
                         <th class="text-right">💰 {{ _('Cash Sales') }}</th>
@@ -42,6 +43,17 @@
                         </td>
                         <td class="font-semibold">{{ session.cashier_name }}</td>
                         <td>{{ session.business.name }}</td>
+                        <td class="text-sm">
+                            <div class="font-mono text-xs">{{ session.session_date.strftime('%Y-%m-%d') }}</div>
+                            <div class="opacity-70 text-xs">
+                                {{ session.opened_time.strftime('%H:%M') }}
+                                {% if session.closed_time %}
+                                    → {{ session.closed_time.strftime('%H:%M') }}
+                                {% else %}
+                                    → <span class="text-warning">{{ _('Open') }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
                         <td class="text-right">Gs {{ "{:,.0f}".format(session.initial_cash) }}</td>
                         <td class="text-right">Gs {{ "{:,.0f}".format(session.final_cash) if session.final_cash else '-' }}</td>
                         <td class="text-right font-semibold">Gs {{ "{:,.0f}".format(session.cash_sales) }}</td>
@@ -57,19 +69,95 @@
                                     </svg>
                                 </a>
                                 {% if session.status == 'OPEN' %}
-                                    <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-ghost btn-xs btn-circle hover:bg-warning" title="{{ _('Close session') }}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                        </svg>
-                                    </a>
-                                {% else %}
                                     <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs btn-circle hover:bg-info" title="{{ _('Edit session') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
+                                    <button
+                                        onclick="document.getElementById('delete_modal_{{ session.id }}').showModal()"
+                                        class="btn btn-ghost btn-xs btn-circle hover:bg-error"
+                                        title="{{ _('Delete session') }}"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                {% elif not session.is_deleted %}
+                                    <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-ghost btn-xs btn-circle hover:bg-info" title="{{ _('Edit session') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </a>
+                                    <button
+                                        onclick="document.getElementById('delete_modal_{{ session.id }}').showModal()"
+                                        class="btn btn-ghost btn-xs btn-circle hover:bg-error"
+                                        title="{{ _('Delete session') }}"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                {% else %}
+                                    <button
+                                        onclick="document.getElementById('restore_modal_{{ session.id }}').showModal()"
+                                        class="btn btn-ghost btn-xs btn-circle hover:bg-warning"
+                                        title="{{ _('Restore session') }}"
+                                    >
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"></path>
+                                        </svg>
+                                    </button>
                                 {% endif %}
                             </div>
+
+                            <!-- Delete Modal (replace existing) -->
+                            {% if not session.is_deleted %}
+                            <dialog id="delete_modal_{{ session.id }}" class="modal">
+                                <div class="modal-box w-11/12 max-w-md">
+                                    <h3 class="font-bold text-lg">{{ _('Delete Session') }}</h3>
+                                    <p class="py-4 text-sm">{{ _('Cashier:') }} <strong>{{ session.cashier_name }}</strong></p>
+                                    <p class="text-sm">{{ _('Are you sure? This action can be reversed.') }}</p>
+
+                                    <div class="modal-action">
+                                        <button
+                                            hx-delete="/cash-sessions/{{ session.id }}"
+                                            hx-confirm="Delete this session?"
+                                            hx-target="#sessions-table"
+                                            hx-swap="innerHTML"
+                                            class="btn btn-error"
+                                        >{{ _('Delete') }}</button>
+                                        <button type="button" onclick="document.getElementById('delete_modal_{{ session.id }}').close()" class="btn btn-ghost">{{ _('Cancel') }}</button>
+                                    </div>
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button>Close</button>
+                                </form>
+                            </dialog>
+                            {% endif %}
+
+                            <!-- Restore Modal (replace existing) -->
+                            {% if session.is_deleted %}
+                            <dialog id="restore_modal_{{ session.id }}" class="modal">
+                                <div class="modal-box w-11/12 max-w-md">
+                                    <h3 class="font-bold text-lg">{{ _('Restore Session') }}</h3>
+                                    <p class="py-4 text-sm">{{ _('Restore this deleted session?') }}</p>
+
+                                    <div class="modal-action">
+                                        <button
+                                            hx-post="/cash-sessions/{{ session.id }}/restore"
+                                            hx-target="#sessions-table"
+                                            hx-swap="innerHTML"
+                                            class="btn btn-warning"
+                                        >{{ _('Restore') }}</button>
+                                        <button type="button" onclick="document.getElementById('restore_modal_{{ session.id }}').close()" class="btn btn-outline">{{ _('Cancel') }}</button>
+                                    </div>
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button>Close</button>
+                                </form>
+                            </dialog>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-18 02:30+0000\n"
+"POT-Creation-Date: 2025-11-20 12:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -36,7 +36,16 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
+msgid "All Businesses"
+msgstr ""
+
 msgid "All edits are logged with reason and timestamp for compliance."
+msgstr ""
+
+msgid "API Docs"
+msgstr ""
+
+msgid "Are you sure you want to logout?"
 msgstr ""
 
 msgid "Audit Trail"
@@ -45,19 +54,64 @@ msgstr ""
 msgid "Back to Businesses"
 msgstr ""
 
-msgid "Business Info"
+msgid "Back to Dashboard"
+msgstr ""
+
+msgid "Bank Transfers"
 msgstr ""
 
 msgid "Business"
 msgstr ""
 
+msgid "Business Cash Register Reconciliation System"
+msgstr ""
+
+msgid "Business Info"
+msgstr ""
+
+msgid "Businesses"
+msgstr ""
+
 msgid "Cancel"
+msgstr ""
+
+msgid "Card Payments"
+msgstr ""
+
+msgid "Cash Sales"
+msgstr ""
+
+msgid "Cash Sessions"
+msgstr ""
+
+msgid "Cashier"
+msgstr ""
+
+msgid "Cashier Name"
+msgstr ""
+
+msgid "Cashier:"
 msgstr ""
 
 msgid "Cashiers"
 msgstr ""
 
 msgid "Cashiers Count"
+msgstr ""
+
+msgid "Clear Filters"
+msgstr ""
+
+msgid "Close Session"
+msgstr ""
+
+msgid "Close session"
+msgstr ""
+
+msgid "Closed At"
+msgstr ""
+
+msgid "Create"
 msgstr ""
 
 msgid "Create Business"
@@ -94,6 +148,9 @@ msgid "Edit History"
 msgstr ""
 
 msgid "Edit Open Cash Session"
+msgstr ""
+
+msgid "Edit Session"
 msgstr ""
 
 msgid "Enter cashier name"
@@ -141,7 +198,16 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
+msgid "Net"
+msgstr ""
+
 msgid "New Business"
+msgstr ""
+
+msgid "+ New Business"
+msgstr ""
+
+msgid "+ New Session"
 msgstr ""
 
 msgid "No businesses found."
@@ -160,6 +226,12 @@ msgid "Not authenticated"
 msgstr ""
 
 msgid "Optional: for reference only"
+msgstr ""
+
+msgid "Payment Mix"
+msgstr ""
+
+msgid "Payment Methods"
 msgstr ""
 
 msgid "Phone"
@@ -192,13 +264,25 @@ msgstr ""
 msgid "Required for audit trail"
 msgstr ""
 
+msgid "Revenue & Expenses"
+msgstr ""
+
 msgid "Save Changes"
+msgstr ""
+
+msgid "Search..."
 msgstr ""
 
 msgid "Session Information"
 msgstr ""
 
+msgid "Sessions"
+msgstr ""
+
 msgid "Shift Duration:"
+msgstr ""
+
+msgid "Showing"
 msgstr ""
 
 msgid "Status"
@@ -216,41 +300,20 @@ msgstr ""
 msgid "User not found or inactive"
 msgstr ""
 
+msgid "View details"
+msgstr ""
+
 msgid "Who is handling this session?"
-msgstr ""
-
-msgid "Shift Duration:"
-msgstr ""
-
-msgid "Payment Methods:"
-msgstr ""
-
-msgid "Profit Margin:"
-msgstr ""
-
-msgid "Quick Stats"
-msgstr ""
-
-msgid "Businesses"
-msgstr ""
-
-msgid "Active"
-msgstr ""
-
-msgid "Cash Sales"
-msgstr ""
-
-msgid "Card Payments"
-msgstr ""
-
-msgid "Net"
-msgstr ""
-
-msgid "Revenue & Expenses"
 msgstr ""
 
 msgid "envelope"
 msgstr ""
 
 msgid "flagged"
+msgstr ""
+
+msgid "of"
+msgstr ""
+
+msgid "Net Earnings"
 msgstr ""

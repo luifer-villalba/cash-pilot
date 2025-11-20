@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
 from cashpilot.core.validation import check_session_overlap, validate_session_dates
@@ -16,6 +17,7 @@ from cashpilot.models import (
     CashSessionCreate,
     CashSessionRead,
     CashSessionUpdate,
+    User,
 )
 from cashpilot.models.enums import SessionStatus
 
@@ -146,3 +148,56 @@ async def close_shift(
     await db.flush()
     await db.refresh(session_obj)
     return session_obj
+
+
+@router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Soft delete a cash session."""
+    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise NotFoundError("CashSession", session_id)
+
+    if session.is_deleted:
+        raise InvalidStateError("Session already deleted")
+
+    session.is_deleted = True
+    session.deleted_at = datetime.now()
+    session.deleted_by = current_user.email
+
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+
+
+@router.post("/{session_id}/restore", response_model=CashSessionRead)
+async def restore_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Restore a soft-deleted session (admin only)."""
+    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise NotFoundError("CashSession", session_id)
+
+    if not session.is_deleted:
+        raise InvalidStateError("Session is not deleted")
+
+    session.is_deleted = False
+    session.deleted_at = None
+    session.deleted_by = None
+
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+    return session
