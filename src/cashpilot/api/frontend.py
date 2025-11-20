@@ -388,6 +388,12 @@ async def get_dashboard_stats(
         )
     )
 
+    envelope = await db.execute(
+        select(func.sum(CashSession.envelope_amount.cast(Numeric(12, 2)))).where(
+            and_(CashSession.status == "CLOSED", *filters) if filters else CashSession.status == "CLOSED"
+        )
+    )
+
     # Convert None to Decimal(0)
     cash_sales_val = cash_sales.scalar() or Decimal("0.00")
     credit_card_val = credit_card.scalar() or Decimal("0.00")
@@ -403,6 +409,7 @@ async def get_dashboard_stats(
             "selected_businesses": selected_businesses,
             "active_sessions": active_sessions.scalar() or 0,
             "cash_sales": cash_sales_val,
+            "envelope_total": envelope.scalar() or Decimal("0.00"),
             "credit_card_total": credit_card_val,
             "debit_card_total": debit_card_val,
             "bank_transfer_total": bank_transfer_val,
@@ -410,6 +417,6 @@ async def get_dashboard_stats(
             "total_ingresos": total_ingresos,
             "flagged_count": flagged_count.scalar() or 0,
             "locale": locale,
-            "_": _,  # ← ADD THIS
+            "_": _,
         },
     )

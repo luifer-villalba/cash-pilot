@@ -230,3 +230,27 @@ msgstr ""
 
 msgid "Quick Stats"
 msgstr ""
+
+msgid "Businesses"
+msgstr ""
+
+msgid "Active"
+msgstr ""
+
+msgid "Cash Sales"
+msgstr ""
+
+msgid "Card Payments"
+msgstr ""
+
+msgid "Net"
+msgstr ""
+
+msgid "Revenue & Expenses"
+msgstr ""
+
+msgid "envelope"
+msgstr ""
+
+msgid "flagged"
+msgstr ""

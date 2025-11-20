@@ -1,42 +1,52 @@
-<!-- File: src/cashpilot/templates/partials/sessions_table.html -->
+<!-- File: templates/partials/sessions_table.html -->
 <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
         <h2 class="card-title">{{ _('Cash Sessions') }}</h2>
 
         {% if sessions %}
         <div class="overflow-x-auto">
-            <table class="table table-zebra w-full">
+            <table class="table table-zebra w-full text-sm">
                 <thead>
                     <tr>
-                        <th>{{ _('Cashier') }}</th>
-                        <th>{{ _('Business') }}</th>
                         <th>{{ _('Status') }}</th>
-                        <th>{{ _('Opened At') }}</th>
-                        <th>{{ _('Cash Sales') }}</th>
-                        <th>{{ _('Total Sales') }}</th>
+                        <th>Cashier</th>
+                        <th>Business</th>
+                        <th>💰 Initial Cash</th>
+                        <th>💰 Final Cash</th>
+                        <th>Envelope Amount</th>
+                        <th>Cash Sales</th>
+                        <th>💳 Digital Payments</th>
+                        <th>⚠️ Expenses</th>
+                        <th>📊 Total Sales</th>
                         <th>{{ _('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for session in sessions %}
                     <tr>
-                        <td class="font-semibold">{{ session.cashier_name }}</td>
-                        <td>{{ session.business.name }}</td>
                         <td>
                             {% if session.status == 'OPEN' %}
-                                <span class="badge badge-warning">{{ _('OPEN') }}</span>
+                                <span class="badge badge-success">OPEN</span>
                             {% else %}
-                                <span class="badge badge-outline badge-ghost">{{ _('CLOSED') }}</span>
+                                <span class="badge badge-ghost">CLOSED</span>
                             {% endif %}
                         </td>
-                        <td>{{ session.opened_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td>Gs {{ "{:,.0f}".format(session.cash_sales) }}</td>
-                        <td>Gs {{ "{:,.0f}".format(session.total_sales) }}</td>
+                        <td class="font-semibold">{{ session.cashier_name }}</td>
+                        <td>{{ session.business.name }}</td>
+                        <td>Gs {{ "{:,.0f}".format(session.initial_cash) }}</td>
+                        <td>Gs {{ "{:,.0f}".format(session.final_cash) if session.final_cash else '-' }}</td>
+                        <td>Gs {{ "{:,.0f}".format(session.envelope_amount) }}</td>
+                        <td class="font-semibold">Gs {{ "{:,.0f}".format(session.cash_sales) }}</td>
+                        <td>Gs {{ "{:,.0f}".format(session.credit_card_total + session.debit_card_total + session.bank_transfer_total) }}</td>
+                        <td>Gs {{ "{:,.0f}".format(session.expenses) }}</td>
+                        <td class="font-bold">Gs {{ "{:,.0f}".format(session.total_sales) }}</td>
                         <td>
-                            <a href="/sessions/{{ session.id|string }}" class="btn btn-sm btn-outline">{{ _('View') }}</a>
-                            {% if session.status == 'OPEN' %}
-                                <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-sm btn-outline">{{ _('Close') }}</a>
-                            {% endif %}
+                            <div class="flex flex-col gap-1">
+                                <a href="/sessions/{{ session.id|string }}" class="btn btn-xs btn-outline">{{ _('View') }}</a>
+                                {% if session.status == 'OPEN' %}
+                                    <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-xs btn-outline">{{ _('Close') }}</a>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -44,57 +54,34 @@
             </table>
         </div>
 
-        <!-- Pagination Controls -->
+        <!-- Pagination -->
         <div class="flex justify-between items-center mt-6">
             <p class="text-sm opacity-70">
-                {{ _('Showing') }} {{ (page - 1) * 10 + 1 }}-{{ [page * 10, total_sessions] | min }} {{ _('of') }} {{ total_sessions }} {{ _('sessions') }}
+                {{ _('Showing') }} {{ (page - 1) * 10 + 1 }}-{{ [page * 10, total_sessions] | min }} {{ _('of') }} {{ total_sessions }}
             </p>
-
             <div class="join">
                 {% if page > 1 %}
-                    <a href="/sessions/table?page=1{{ query_string }}"
-                       hx-get="/sessions/table?page=1{{ query_string }}"
-                       hx-target="#sessions-table"
-                       hx-swap="innerHTML"
-                       class="join-item btn btn-sm">«</a>
-                    <a href="/sessions/table?page={{ page - 1 }}{{ query_string }}"
-                       hx-get="/sessions/table?page={{ page - 1 }}{{ query_string }}"
-                       hx-target="#sessions-table"
-                       hx-swap="innerHTML"
-                       class="join-item btn btn-sm">‹</a>
+                    <a href="/sessions/table?page=1{{ query_string }}" hx-get="/sessions/table?page=1{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">«</a>
+                    <a href="/sessions/table?page={{ page - 1 }}{{ query_string }}" hx-get="/sessions/table?page={{ page - 1 }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">‹</a>
                 {% endif %}
-
                 {% set page_start = [1, page - 2] | max %}
                 {% set page_end = [total_pages + 1, page + 3] | min %}
                 {% for p in range(page_start, page_end) %}
                     {% if p == page %}
                         <button class="join-item btn btn-sm btn-active">{{ p }}</button>
                     {% else %}
-                        <a href="/sessions/table?page={{ p }}{{ query_string }}"
-                           hx-get="/sessions/table?page={{ p }}{{ query_string }}"
-                           hx-target="#sessions-table"
-                           hx-swap="innerHTML"
-                           class="join-item btn btn-sm">{{ p }}</a>
+                        <a href="/sessions/table?page={{ p }}{{ query_string }}" hx-get="/sessions/table?page={{ p }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">{{ p }}</a>
                     {% endif %}
                 {% endfor %}
-
                 {% if page < total_pages %}
-                    <a href="/sessions/table?page={{ page + 1 }}{{ query_string }}"
-                       hx-get="/sessions/table?page={{ page + 1 }}{{ query_string }}"
-                       hx-target="#sessions-table"
-                       hx-swap="innerHTML"
-                       class="join-item btn btn-sm">›</a>
-                    <a href="/sessions/table?page={{ total_pages }}{{ query_string }}"
-                       hx-get="/sessions/table?page={{ total_pages }}{{ query_string }}"
-                       hx-target="#sessions-table"
-                       hx-swap="innerHTML"
-                       class="join-item btn btn-sm">»</a>
+                    <a href="/sessions/table?page={{ page + 1 }}{{ query_string }}" hx-get="/sessions/table?page={{ page + 1 }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">›</a>
+                    <a href="/sessions/table?page={{ total_pages }}{{ query_string }}" hx-get="/sessions/table?page={{ total_pages }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">»</a>
                 {% endif %}
             </div>
         </div>
 
         {% else %}
-        <div class="alert alert-info text-info-content">
+        <div class="alert alert-info">
             <span>{{ _('No sessions found.') }} <a href="/sessions/create" class="link link-hover">{{ _('Create one') }}</a></span>
         </div>
         {% endif %}

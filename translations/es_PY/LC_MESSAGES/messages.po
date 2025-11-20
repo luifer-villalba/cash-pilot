@@ -227,3 +227,26 @@ msgstr "¿Quién está manejando esta sesión?"
 msgid "Payment Methods:"
 msgstr "Métodos de Pago:"
 
+msgid "Businesses"
+msgstr "Negocios"
+
+msgid "Active"
+msgstr "Activos"
+
+msgid "Cash Sales"
+msgstr "Ventas en Efectivo"
+
+msgid "Card Payments"
+msgstr "Pagos con Tarjeta"
+
+msgid "Net"
+msgstr "Neto"
+
+msgid "Revenue & Expenses"
+msgstr "Ingresos y Gastos"
+
+msgid "envelope"
+msgstr "Sobre"
+
+msgid "flagged"
+msgstr "Marcado"
