@@ -1,3 +1,5 @@
+<!-- File: templates/index.html -->
+
 {% extends "base.html" %}
 
 {% block title %}{{ _('Dashboard') }} - CashPilot{% endblock %}
@@ -14,7 +16,7 @@
     <div id="stats-row"
          hx-get="/stats"
          hx-include="#filter-form"
-         hx-trigger="load, #filter-form input changed delay:500ms, #filter-form select changed"
+         hx-trigger="load"
          hx-swap="outerHTML">
         <!-- Skeleton while loading -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -25,7 +27,7 @@
         </div>
     </div>
 
-    <!-- Filters Section (OUTSIDE HTMX TARGET) -->
+    <!-- Filters Section -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
             <h3 class="card-title">{{ _('Filters') }}</h3>
@@ -46,6 +48,7 @@
                         hx-target="#sessions-table"
                         hx-swap="innerHTML"
                         hx-trigger="change"
+                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
                     />
                 </div>
 
@@ -64,6 +67,7 @@
                         hx-target="#sessions-table"
                         hx-swap="innerHTML"
                         hx-trigger="change"
+                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
                     />
                 </div>
 
@@ -83,6 +87,7 @@
                         hx-target="#sessions-table"
                         hx-swap="innerHTML"
                         hx-trigger="changed delay:500ms"
+                        hx-on="changed: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
                     />
                 </div>
 
@@ -99,6 +104,7 @@
                         hx-target="#sessions-table"
                         hx-swap="innerHTML"
                         hx-trigger="change"
+                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
                     >
                         <option value="">{{ _('All Businesses') }}</option>
                         {% for biz in businesses %}
@@ -148,7 +154,7 @@
         </div>
     </div>
 
-    <!-- Sessions Table (HTMX TARGET - only this replaces) -->
+    <!-- Sessions Table (HTMX TARGET) -->
     <div id="sessions-table"
          hx-get="/sessions/table"
          hx-include="#filter-form"
