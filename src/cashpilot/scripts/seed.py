@@ -221,12 +221,14 @@ async def seed_cash_sessions(db: AsyncSession, businesses: list[Business]) -> li
                     flagged=is_flagged,
                     flag_reason=flag_reason,
                     flagged_by="admin" if is_flagged else None,
-                    notes=random.choice([
-                        None,
-                        "Cierre de turno rutinario.",
-                        "Reembolso procesado.",
-                        "Sistema POS sin conexión por 5 min.",
-                    ]),
+                    notes=random.choice(
+                        [
+                            None,
+                            "Cierre de turno rutinario.",
+                            "Reembolso procesado.",
+                            "Sistema POS sin conexión por 5 min.",
+                        ]
+                    ),
                 )
                 sessions.append(session)
                 db.add(session)
@@ -270,13 +272,19 @@ async def main():
 
         print()
         print("   📅 TODAY:")
-        print(f"      ✓ Closed: {len(today_closed)} ({len(today_closed)/len(today_sessions)*100:.0f}%)")
+        print(
+            f"      ✓ Closed: {len(today_closed)} ({len(today_closed)
+                                                    /len(today_sessions)*100:.0f}%)"
+        )
         print(f"      ◯ Open: {len(today_open)} ({len(today_open)/len(today_sessions)*100:.0f}%)")
         print(f"      🚩 Flagged: {len(today_flagged)}")
         print()
         print("   📊 HISTORICAL (30 days):")
         print(f"      ✓ Closed: {len(hist_closed)}")
-        print(f"      🚩 Flagged: {len(hist_flagged)} ({len(hist_flagged)/len(hist_closed)*100:.0f}% of closed)")
+        print(
+            f"      🚩 Flagged: {len(hist_flagged)} ({len(hist_flagged)/len(hist_closed)*100:.0f}%"
+            f" of closed)"
+        )
 
 
 if __name__ == "__main__":
