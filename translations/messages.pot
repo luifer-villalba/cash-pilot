@@ -317,3 +317,15 @@ msgstr ""
 
 msgid "Net Earnings"
 msgstr ""
+
+msgid "Quick Presets"
+msgstr ""
+
+msgid "Today"
+msgstr ""
+
+msgid "This Week"
+msgstr ""
+
+msgid "This Month"
+msgstr ""

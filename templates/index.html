@@ -32,6 +32,24 @@
         <div class="card-body">
             <h3 class="card-title">{{ _('Filters') }}</h3>
 
+            <!-- Preset Buttons -->
+            <div class="form-control mb-4">
+                <label class="label">
+                    <span class="label-text text-sm font-semibold">{{ _('Quick Presets') }}</span>
+                </label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline" data-preset="today">
+                        {{ _('Today') }}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" data-preset="week">
+                        {{ _('This Week') }}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" data-preset="month">
+                        {{ _('This Month') }}
+                    </button>
+                </div>
+            </div>
+
             <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <!-- Date From -->
                 <div class="form-control">
@@ -40,6 +58,7 @@
                     </label>
                     <input
                         type="date"
+                        id="from_date"
                         name="from_date"
                         class="input input-bordered input-sm"
                         value="{{ current_filters.from_date }}"
@@ -59,6 +78,7 @@
                     </label>
                     <input
                         type="date"
+                        id="to_date"
                         name="to_date"
                         class="input input-bordered input-sm"
                         value="{{ current_filters.to_date }}"
@@ -163,4 +183,39 @@
         {% include "partials/sessions_table.html" %}
     </div>
 </div>
+
+<script>
+// Date preset logic
+document.querySelectorAll('[data-preset]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const preset = e.target.dataset.preset;
+        const today = new Date();
+        let fromDate, toDate;
+
+        if (preset === 'today') {
+            fromDate = toDate = today;
+        } else if (preset === 'week') {
+            // Monday to Sunday of current week
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            fromDate = new Date(today.setDate(diff));
+            toDate = new Date(fromDate);
+            toDate.setDate(toDate.getDate() + 6);
+        } else if (preset === 'month') {
+            // First to last day of current month
+            fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        }
+
+        // Set input values in YYYY-MM-DD format
+        document.getElementById('from_date').value = fromDate.toISOString().split('T')[0];
+        document.getElementById('to_date').value = toDate.toISOString().split('T')[0];
+
+        // Trigger both table and stats updates
+        htmx.ajax('GET', '/sessions/table?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target: '#sessions-table', swap: 'innerHTML'});
+        htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target: '#stats-row', swap: 'outerHTML'});
+    });
+});
+</script>
 {% endblock %}
