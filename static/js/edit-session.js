@@ -11,17 +11,12 @@ function updatePreview() {
     const totalSales = cashSales + creditCard + debitCard + bankTransfer;
     const netEarnings = totalSales - expenses;
 
-    const formatterPY = new Intl.NumberFormat('es-PY', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
-
     const preview = document.getElementById('preview');
     if (preview) {
         preview.innerHTML = `
-            <div><span>Cash Sales:</span> <p class="font-bold">Gs ${formatterPY.format(cashSales)}</p></div>
-            <div><span>Total Sales:</span> <p class="font-bold">Gs ${formatterPY.format(totalSales)}</p></div>
-            <div><span>Net Earnings:</span> <p class="font-bold">Gs ${formatterPY.format(netEarnings)}</p></div>
+            <div><span>Cash Sales:</span> <p class="font-bold">${currencyFormatter.format(cashSales)}</p></div>
+            <div><span>Total Sales:</span> <p class="font-bold">${currencyFormatter.format(totalSales)}</p></div>
+            <div><span>Net Earnings:</span> <p class="font-bold">${currencyFormatter.format(netEarnings)}</p></div>
         `;
     }
 }
