@@ -142,7 +142,7 @@
     <!-- Sidebar: Reconciliation Preview & Opening Info -->
     <div class="lg:col-span-1 space-y-4">
         <!-- Opening Summary -->
-        <div class="card bg-base-100 shadow-xl text-base-content">
+        <div class="card bg-base-100 shadow-xl text-base-content" data-initial-cash="{{ session.initial_cash }}">
             <div class="card-body">
                 <h3 class="card-title text-lg">{{ _('Opening Info') }}</h3>
                 <div class="space-y-2 text-sm">
@@ -186,51 +186,5 @@
     </div>
 </div>
 
-<!-- Auto-populate closed_time + live preview -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const now = new Date();
-
-    // Set closed_time to current time only if empty
-    const timeInput = document.getElementById('closed-time');
-    if (timeInput && !timeInput.value) {
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        timeInput.value = `${hours}:${minutes}`;
-    }
-});
-
-document.querySelectorAll('input[type="text"]').forEach(input => {
-    input.addEventListener('input', updatePreview);
-});
-
-function updatePreview() {
-    const finalCash = parseInt(document.querySelector('[name="final_cash"]').value?.replace(/\D/g, '')) || 0;
-    const initialCash = {{ session.initial_cash }};
-    const envelope = parseInt(document.querySelector('[name="envelope_amount"]').value?.replace(/\D/g, '')) || 0;
-    const creditCard = parseInt(document.querySelector('[name="credit_card_total"]').value?.replace(/\D/g, '')) || 0;
-    const debitCard = parseInt(document.querySelector('[name="debit_card_total"]').value?.replace(/\D/g, '')) || 0;
-    const bankTransfer = parseInt(document.querySelector('[name="bank_transfer_total"]').value?.replace(/\D/g, '')) || 0;
-    const expenses = parseInt(document.querySelector('[name="expenses"]').value?.replace(/\D/g, '')) || 0;
-
-    const cashSales = (finalCash - initialCash) + envelope;
-    const totalSales = cashSales + creditCard + debitCard + bankTransfer;
-    const netEarnings = totalSales - expenses;
-
-    const formatterPY = new Intl.NumberFormat('es-PY', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
-
-    const preview = document.getElementById('preview');
-    preview.innerHTML = `
-        <div><span>{{ _('Cash Sales:') }}</span> <p class="font-bold">Gs ${formatterPY.format(cashSales)}</p></div>
-        <div><span>{{ _('Total Sales:') }}</span> <p class="font-bold">Gs ${formatterPY.format(totalSales)}</p></div>
-        <div><span>{{ _('Net Earnings:') }}</span> <p class="font-bold">Gs ${formatterPY.format(netEarnings)}</p></div>
-    `;
-}
-
-// Initial preview
-updatePreview();
-</script>
+<script src="/static/js/edit-session.js"></script>
 {% endblock %}

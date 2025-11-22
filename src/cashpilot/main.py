@@ -77,9 +77,11 @@ def create_app() -> FastAPI:
 
     app.add_middleware(RequestIDMiddleware)
 
-    static_dir = Path(__file__).parent / "static"
+    static_dir = Path(os.getenv("STATIC_DIR", "static")).resolve()
     if static_dir.exists():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    else:
+        logger.warning(f"Static directory not found: {static_dir}")
 
     # Include routers
     from cashpilot.api.health import router as health_router
