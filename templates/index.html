@@ -31,13 +31,15 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="card-title">{{ _('Filters') }}</h3>
                 <button
-                    type="button"
-                    id="filter-toggle"
-                    class="btn btn-ghost btn-sm"
-                    aria-label="Toggle filters"
+                        type="button"
+                        id="filter-toggle"
+                        class="btn btn-ghost btn-sm"
+                        aria-label="Toggle filters"
                 >
-                    <svg id="filter-chevron" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    <svg id="filter-chevron" class="w-5 h-5 transition-transform duration-300" fill="none"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
                 </button>
             </div>
@@ -63,156 +65,171 @@
             <!-- Collapsible Form -->
             <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end transition-all duration-300">
                 <!-- Date From -->
-                <div class="form-control">
+                <div class="form-control relative">
                     <label class="label">
                         <span class="label-text text-sm">{{ _('From Date') }}</span>
                     </label>
-                    <input
-                        type="date"
-                        id="from_date"
-                        name="from_date"
-                        class="input input-bordered input-sm"
-                        value="{{ current_filters.from_date }}"
-                        hx-get="/sessions/table"
-                        hx-include="#filter-form"
-                        hx-target="#sessions-table"
-                        hx-swap="innerHTML"
-                        hx-trigger="change"
-                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
-                    />
+                    <div class="relative">
+                        <input
+                                type="date"
+                                id="from_date"
+                                name="from_date"
+                                class="input input-bordered input-sm w-full pr-8"
+                                value="{{ current_filters.from_date }}"
+                                hx-get="/sessions/table"
+                                hx-include="#filter-form"
+                                hx-target="#sessions-table"
+                                hx-swap="innerHTML"
+                                hx-trigger="change"
+                                hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
+                        />
+                        <button
+                                type="button"
+                                class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity"
+                                data-field="from_date"
+                                title="{{ _('Clear') }}"
+                        >
+                            ✕
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Date To -->
-                <div class="form-control">
+                <div class="form-control relative">
                     <label class="label">
                         <span class="label-text text-sm">{{ _('To Date') }}</span>
                     </label>
-                    <input
-                        type="date"
-                        id="to_date"
-                        name="to_date"
-                        class="input input-bordered input-sm"
-                        value="{{ current_filters.to_date }}"
-                        hx-get="/sessions/table"
-                        hx-include="#filter-form"
-                        hx-target="#sessions-table"
-                        hx-swap="innerHTML"
-                        hx-trigger="change"
-                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
-                    />
+                    <div class="relative">
+                        <input
+                                type="date"
+                                id="to_date"
+                                name="to_date"
+                                class="input input-bordered input-sm w-full pr-8"
+                                value="{{ current_filters.to_date }}"
+                                hx-get="/sessions/table"
+                                hx-include="#filter-form"
+                                hx-target="#sessions-table"
+                                hx-swap="innerHTML"
+                                hx-trigger="change"
+                                hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
+                        />
+                        <button
+                                type="button"
+                                class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity"
+                                data-field="to_date"
+                                title="{{ _('Clear') }}"
+                        >
+                            ✕
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Cashier Name -->
-                <div class="form-control">
+                <div class="form-control relative">
                     <label class="label">
                         <span class="label-text text-sm">{{ _('Cashier Name') }}</span>
                     </label>
-                    <input
-                        type="text"
-                        name="cashier_name"
-                        class="input input-bordered input-sm"
-                        placeholder="{{ _('Search...') }}"
-                        value="{{ current_filters.cashier_name or '' }}"
-                        hx-get="/sessions/table"
-                        hx-include="#filter-form"
-                        hx-target="#sessions-table"
-                        hx-swap="innerHTML"
-                        hx-trigger="changed delay:500ms"
-                        hx-on="changed: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
-                    />
+                    <div class="relative flex items-center">
+                        <input
+                                type="text"
+                                id="cashier_name"
+                                name="cashier_name"
+                                class="input input-bordered input-sm w-full pr-10"
+                                placeholder="{{ _('Search...') }}"
+                                value="{{ current_filters.cashier_name or '' }}"
+                                hx-get="/sessions/table"
+                                hx-include="#filter-form"
+                                hx-target="#sessions-table"
+                                hx-swap="innerHTML"
+                                hx-trigger="change, input delay:500ms"
+                        />
+                        <button
+                                type="button"
+                                class="clear-filter-btn absolute right-3 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity pointer-events-none"
+                                data-field="cashier_name"
+                                title="{{ _('Clear') }}"
+                                style="font-size: 1.25rem; line-height: 1;"
+                        >
+                            ✕
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Session Status -->
-                <div class="form-control">
+                <div class="form-control relative">
                     <label class="label">
                         <span class="label-text text-sm">{{ _('Status') }}</span>
                     </label>
-                    <select
-                        name="status"
-                        class="select select-bordered select-sm"
-                        hx-get="/sessions/table"
-                        hx-include="#filter-form"
-                        hx-target="#sessions-table"
-                        hx-swap="innerHTML"
-                        hx-trigger="change"
-                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
-                    >
-                        <option value="">{{ _('All Statuses') }}</option>
-                        <option value="OPEN" {% if current_filters.status == 'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
-                        <option value="CLOSED" {% if current_filters.status == 'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
-                    </select>
+                    <div class="relative">
+                        <select
+                                id="status"
+                                name="status"
+                                class="select select-bordered select-sm w-full pr-8"
+                                hx-get="/sessions/table"
+                                hx-include="#filter-form"
+                                hx-target="#sessions-table"
+                                hx-swap="innerHTML"
+                                hx-trigger="change"
+                                hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
+                        >
+                            <option value="">{{ _('All Statuses') }}</option>
+                            <option value="OPEN" {% if current_filters.status==
+                            'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
+                            <option value="CLOSED" {% if current_filters.status==
+                            'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
+                        </select>
+                        <button
+                                type="button"
+                                class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity"
+                                data-field="status"
+                                title="{{ _('Clear') }}"
+                        >
+                            ✕
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Business Dropdown -->
-                <div class="form-control">
+                <div class="form-control relative">
                     <label class="label">
                         <span class="label-text text-sm">{{ _('Business') }}</span>
                     </label>
-                    <select
-                        name="business_id"
-                        class="select select-bordered select-sm"
-                        hx-get="/sessions/table"
-                        hx-include="#filter-form"
-                        hx-target="#sessions-table"
-                        hx-swap="innerHTML"
-                        hx-trigger="change"
-                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
-                    >
-                        <option value="">{{ _('All Businesses') }}</option>
-                        {% for biz in businesses %}
-                            <option value="{{ biz.id }}" {% if current_filters.business_id == biz.id|string %}selected{% endif %}>
+                    <div class="relative">
+                        <select
+                                id="business_id"
+                                name="business_id"
+                                class="select select-bordered select-sm w-full pr-8"
+                                hx-get="/sessions/table"
+                                hx-include="#filter-form"
+                                hx-target="#sessions-table"
+                                hx-swap="innerHTML"
+                                hx-trigger="change"
+                                hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
+                        >
+                            <option value="">{{ _('All Businesses') }}</option>
+                            {% for biz in businesses %}
+                            <option value="{{ biz.id }}" {% if current_filters.business_id== biz.id|string %}selected{%
+                                    endif %}>
                                 {{ biz.name }}
                             </option>
-                        {% endfor %}
-                    </select>
+                            {% endfor %}
+                        </select>
+                        <button
+                                type="button"
+                                class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity"
+                                data-field="business_id"
+                                title="{{ _('Clear') }}"
+                        >
+                            ✕
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Clear Filters Button -->
+                <!-- Clear All Filters Button -->
                 <div class="form-control">
-                    <a href="/" class="btn btn-outline btn-sm">{{ _('Clear Filters') }}</a>
+                    <a href="/" class="btn btn-outline btn-sm">{{ _('Clear All') }}</a>
                 </div>
             </form>
-
-            <!-- Active Filters Chips -->
-            {% if active_filters.from_date or active_filters.to_date or active_filters.cashier_name or active_filters.business_id or active_filters.status %}
-            <div class="mt-4">
-                <div class="flex flex-wrap gap-2">
-                    {% if active_filters.from_date %}
-                        <div class="badge badge-primary gap-2">
-                            {{ _('From:') }} {{ active_filters.from_date }}
-                        </div>
-                    {% endif %}
-                    {% if active_filters.to_date %}
-                        <div class="badge badge-primary gap-2">
-                            {{ _('To:') }} {{ active_filters.to_date }}
-                        </div>
-                    {% endif %}
-                    {% if active_filters.cashier_name %}
-                        <div class="badge badge-primary gap-2">
-                            {{ _('Cashier:') }} {{ active_filters.cashier_name }}
-                        </div>
-                    {% endif %}
-                    {% if active_filters.business_id %}
-                        <div class="badge badge-primary gap-2">
-                            {{ _('Business:') }}
-                            {% for biz in businesses %}
-                                {% if biz.id|string == active_filters.business_id %}{{ biz.name }}{% endif %}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                    {% if active_filters.status %}
-                        <div class="badge badge-primary gap-2">
-                            {{ _('Status:') }}
-                            {% if active_filters.status == 'OPEN' %}
-                                {{ _('Open') }}
-                            {% elif active_filters.status == 'CLOSED' %}
-                                {{ _('Closed') }}
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 
@@ -227,60 +244,96 @@
 </div>
 
 <script>
-// Filter toggle with chevron rotation
-document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('filter-toggle');
-    const form = document.getElementById('filter-form');
-    const chevron = document.getElementById('filter-chevron');
-    const storageKey = 'cashPilot_filterCollapsed';
+    // Filter toggle with chevron rotation
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('filter-toggle');
+        const form = document.getElementById('filter-form');
+        const chevron = document.getElementById('filter-chevron');
+        const storageKey = 'cashPilot_filterCollapsed';
 
-    // Initialize from localStorage (default: hidden)
-    const isCollapsed = localStorage.getItem(storageKey) !== 'false';
-    if (isCollapsed) {
-        form.classList.add('hidden');
-        chevron.classList.add('rotate-180');
-    }
-
-    // Toggle handler
-    toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        form.classList.toggle('hidden');
-        chevron.classList.toggle('rotate-180');
-        localStorage.setItem(storageKey, form.classList.contains('hidden'));
-    });
-});
-
-// Date preset logic
-document.querySelectorAll('[data-preset]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const preset = e.target.dataset.preset;
-        const today = new Date();
-        let fromDate, toDate;
-
-        if (preset === 'today') {
-            fromDate = toDate = today;
-        } else if (preset === 'week') {
-            // Monday to Sunday of current week
-            const day = today.getDay();
-            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-            fromDate = new Date(today.setDate(diff));
-            toDate = new Date(fromDate);
-            toDate.setDate(toDate.getDate() + 6);
-        } else if (preset === 'month') {
-            // First to last day of current month
-            fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-            toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        // Initialize from localStorage (default: hidden)
+        const isCollapsed = localStorage.getItem(storageKey) !== 'false';
+        if (isCollapsed) {
+            form.classList.add('hidden');
+            chevron.classList.add('rotate-180');
         }
 
-        // Set input values in YYYY-MM-DD format
-        document.getElementById('from_date').value = fromDate.toISOString().split('T')[0];
-        document.getElementById('to_date').value = toDate.toISOString().split('T')[0];
+        // Toggle handler
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            form.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+            localStorage.setItem(storageKey, form.classList.contains('hidden'));
+        });
 
-        // Trigger both table and stats updates
-        htmx.ajax('GET', '/sessions/table?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target: '#sessions-table', swap: 'innerHTML'});
-        htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target: '#stats-row', swap: 'outerHTML'});
+        // Individual clear buttons - IMPROVED
+        document.querySelectorAll('.clear-filter-btn').forEach(btn => {
+            const field = btn.dataset.field;
+            const input = document.getElementById(field);
+
+            // Show button only if field has value
+            const toggleButton = () => {
+                btn.classList.toggle('opacity-0', !input.value);
+                btn.classList.toggle('pointer-events-none', !input.value);
+            };
+
+            // Check on load
+            toggleButton();
+
+            // Listen for changes
+            input.addEventListener('input', toggleButton);
+            input.addEventListener('change', toggleButton);
+
+            // Clear field on click
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                input.value = '';
+                toggleButton();
+
+                // Manually trigger HTMX for this input
+                htmx.trigger(input, 'change');
+            });
+        });
+
+        // Date preset logic
+        document.querySelectorAll('[data-preset]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const preset = e.target.dataset.preset;
+                const today = new Date();
+                let fromDate, toDate;
+
+                if (preset === 'today') {
+                    fromDate = toDate = today;
+                } else if (preset === 'week') {
+                    const day = today.getDay();
+                    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+                    fromDate = new Date(today.setDate(diff));
+                    toDate = new Date(fromDate);
+                    toDate.setDate(toDate.getDate() + 6);
+                } else if (preset === 'month') {
+                    fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                }
+
+                document.getElementById('from_date').value = fromDate.toISOString().split('T')[0];
+                document.getElementById('to_date').value = toDate.toISOString().split('T')[0];
+
+                // Re-toggle visibility of clear buttons for date fields
+                document.querySelectorAll('[data-field="from_date"], [data-field="to_date"]').forEach(clearBtn => {
+                    const fieldId = clearBtn.dataset.field;
+                    const fieldInput = document.getElementById(fieldId);
+                    clearBtn.classList.toggle('opacity-0', !fieldInput.value);
+                    clearBtn.classList.toggle('pointer-events-none', !fieldInput.value);
+                });
+
+                const formData = new FormData(document.getElementById('filter-form'));
+                const params = new URLSearchParams(formData).toString();
+                htmx.ajax('GET', '/sessions/table?' + params, {target: '#sessions-table', swap: 'innerHTML'});
+                htmx.ajax('GET', '/stats?' + params, {target: '#stats-row', swap: 'outerHTML'});
+            });
+        });
     });
-});
 </script>
 {% endblock %}
