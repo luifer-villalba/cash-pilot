@@ -28,7 +28,6 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 router = APIRouter(tags=["dashboard"])
 
 
-# File: src/cashpilot/api/frontend.py
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -37,6 +36,7 @@ async def dashboard(
     to_date: str | None = Query(None),
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
+    status: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
@@ -52,7 +52,7 @@ async def dashboard(
     from_date = from_date or today_iso
     to_date = to_date or today_iso
 
-    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
+    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id, status)
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
         db, filters, page=page, per_page=10
     )
@@ -80,16 +80,17 @@ async def dashboard(
     result_today = await db.execute(stmt_today)
     total_revenue = result_today.scalar() or Decimal("0.00")
 
-    active_filters = {
-        k: v
-        for k, v in {
-            "from_date": from_date,
-            "to_date": to_date,
-            "cashier_name": cashier_name,
-            "business_id": business_id,
-        }.items()
-        if v and v != today_iso
-    }
+    active_filters = {}
+    if from_date and from_date != today_iso:
+        active_filters["from_date"] = from_date
+    if to_date and to_date != today_iso:
+        active_filters["to_date"] = to_date
+    if cashier_name:
+        active_filters["cashier_name"] = cashier_name
+    if business_id:
+        active_filters["business_id"] = business_id
+    if status:
+        active_filters["status"] = status
 
     current_user = None
     if user_id:
@@ -117,6 +118,7 @@ async def dashboard(
                 "to_date": to_date,
                 "cashier_name": cashier_name,
                 "business_id": business_id,
+                "status": status,
             },
             "locale": locale,
             "_": _,
@@ -132,13 +134,14 @@ async def sessions_table(
     to_date: str | None = Query(None),
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
+    status: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Paginated sessions table partial (HTMX endpoint)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
+    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id, status)
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
         db, filters, page=page, per_page=10
     )
@@ -170,6 +173,7 @@ async def sessions_table(
                 "to_date": to_date,
                 "cashier_name": cashier_name,
                 "business_id": business_id,
+                "status": status,
             },
             "query_string": query_string,
             "locale": locale,
@@ -185,13 +189,14 @@ async def get_dashboard_stats(
     to_date: str | None = Query(None),
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
+    status: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     """Return dashboard stats as HTML partial."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id)
+    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id, status)
     filters.append(~CashSession.is_deleted)
 
     if business_id:

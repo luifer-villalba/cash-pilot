@@ -86,6 +86,7 @@ async def _build_session_filters(
     to_date: str | None,
     cashier_name: str | None,
     business_id: str | None,
+    status: str | None,
 ) -> list:
     """Build SQLAlchemy filter list from query params."""
     filters = []
@@ -112,6 +113,10 @@ async def _build_session_filters(
             filters.append(CashSession.business_id == UUID(business_id))
         except ValueError:
             pass
+
+    if status and status.strip():
+        if status in ("OPEN", "CLOSED"):  # Validate enum values
+            filters.append(CashSession.status == status)
 
     return filters
 

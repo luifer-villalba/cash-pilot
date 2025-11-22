@@ -329,3 +329,15 @@ msgstr ""
 
 msgid "This Month"
 msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "All Statuses"
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Closed"
+msgstr ""

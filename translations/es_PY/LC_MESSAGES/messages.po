@@ -332,3 +332,15 @@ msgstr "Esta Semana"
 
 msgid "This Month"
 msgstr "Este Mes"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "All Statuses"
+msgstr "Todos los estados"
+
+msgid "Open"
+msgstr "Abierto"
+
+msgid "Closed"
+msgstr "Cerrado"

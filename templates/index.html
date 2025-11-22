@@ -111,6 +111,27 @@
                     />
                 </div>
 
+                <!-- Session Status -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm">{{ _('Status') }}</span>
+                    </label>
+                    <select
+                        name="status"
+                        class="select select-bordered select-sm"
+                        hx-get="/sessions/table"
+                        hx-include="#filter-form"
+                        hx-target="#sessions-table"
+                        hx-swap="innerHTML"
+                        hx-trigger="change"
+                        hx-on="change: htmx.ajax('GET', '/stats?' + new URLSearchParams(new FormData(document.getElementById('filter-form'))).toString(), {target:'#stats-row', swap:'outerHTML'})"
+                    >
+                        <option value="">{{ _('All Statuses') }}</option>
+                        <option value="OPEN" {% if current_filters.status == 'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
+                        <option value="CLOSED" {% if current_filters.status == 'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
+                    </select>
+                </div>
+
                 <!-- Business Dropdown -->
                 <div class="form-control">
                     <label class="label">
@@ -142,7 +163,7 @@
             </form>
 
             <!-- Active Filters Chips -->
-            {% if active_filters %}
+            {% if active_filters.from_date or active_filters.to_date or active_filters.cashier_name or active_filters.business_id or active_filters.status %}
             <div class="mt-4">
                 <div class="flex flex-wrap gap-2">
                     {% if active_filters.from_date %}
@@ -166,6 +187,16 @@
                             {% for biz in businesses %}
                                 {% if biz.id|string == active_filters.business_id %}{{ biz.name }}{% endif %}
                             {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if active_filters.status %}
+                        <div class="badge badge-primary gap-2">
+                            {{ _('Status:') }}
+                            {% if active_filters.status == 'OPEN' %}
+                                {{ _('Open') }}
+                            {% elif active_filters.status == 'CLOSED' %}
+                                {{ _('Closed') }}
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
