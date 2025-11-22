@@ -1,42 +1,58 @@
-<div id="stats-row" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+<div id="stats-row" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
     <!-- Card 1: Payment Mix -->
-    <div class="stat bg-base-100 rounded-lg shadow">
-        <div class="stat-title">{{ _('Payment Mix') }}</div>
-        <div class="stat-value text-2xl text-base-content">💰 {{ "%.0f"|format(cash_pct) }}%</div>
-        <div class="stat-desc text-xs text-base-content/50">💳 {{ "%.0f"|format(card_pct) }}% | 🏦 {{ "%.0f"|format(bank_pct) }}%</div>
+    <div class="stat bg-base-100 rounded-lg shadow p-4 md:p-6">
+        <div class="stat-title text-sm md:text-base font-semibold">{{ _('Payment Mix') }}</div>
+        <div class="stat-value text-xl md:text-2xl text-base-content mt-2">💰 {{ "%.0f"|format(cash_pct) }}%</div>
+        <div class="stat-desc text-xs md:text-sm text-base-content/60 mt-1">
+            <span class="block md:inline">💳 {{ "%.0f"|format(card_pct) }}%</span>
+            <span class="hidden md:inline"> | </span>
+            <span class="block md:inline">🏦 {{ "%.0f"|format(bank_pct) }}%</span>
+        </div>
     </div>
 
     <!-- Card 2: Cash Sales -->
-    <div class="stat bg-base-100 rounded-lg shadow">
-        <div class="stat-title">{{ _('Cash Sales') }}</div>
-        <div class="stat-value text-2xl text-base-content">Gs {{ "{:,.0f}".format(cash_sales) }}</div>
-        <div class="stat-desc text-xs text-base-content/50">📦 {{ "{:,.0f}".format(cash_sales - envelope_total) }} • 📬 {{ "{:,.0f}".format(envelope_total) }}</div>
+    <div class="stat bg-base-100 rounded-lg shadow p-4 md:p-6">
+        <div class="stat-title text-sm md:text-base font-semibold">{{ _('Cash Sales') }}</div>
+        <div class="stat-value text-xl md:text-2xl text-base-content mt-2">Gs {{ "{:,.0f}".format(cash_sales) }}</div>
+        <div class="stat-desc text-xs md:text-sm text-base-content/60 mt-1">
+            <span class="block md:inline">📦 {{ "{:,.0f}".format(cash_sales - envelope_total) }}</span>
+            <span class="hidden md:inline"> • </span>
+            <span class="block md:inline">📬 {{ "{:,.0f}".format(envelope_total) }}</span>
+        </div>
     </div>
 
     <!-- Card 3: Bank Transfers -->
-    <div class="stat bg-base-100 rounded-lg shadow">
-        <div class="stat-title">{{ _('Bank Transfers') }}</div>
-        <div class="stat-value text-2xl text-base-content">Gs {{ "{:,.0f}".format(bank_transfer_total) }}</div>
-        <div class="stat-desc text-xs text-base-content/50">🏦 {{ _('Direct transfers') }}</div>
+    <div class="stat bg-base-100 rounded-lg shadow p-4 md:p-6">
+        <div class="stat-title text-sm md:text-base font-semibold">{{ _('Bank Transfers') }}</div>
+        <div class="stat-value text-xl md:text-2xl text-base-content mt-2">Gs {{ "{:,.0f}".format(bank_transfer_total) }}</div>
+        <div class="stat-desc text-xs md:text-sm text-base-content/60 mt-1">🏦 {{ _('Direct transfers') }}</div>
     </div>
 
     <!-- Card 4: Card Payments -->
-    <div class="stat bg-base-100 rounded-lg shadow">
-        <div class="stat-title">{{ _('Card Payments') }}</div>
-        <div class="stat-value text-2xl text-base-content">Gs {{ "{:,.0f}".format(credit_card_total + debit_card_total) }}</div>
-        <div class="stat-desc text-xs text-base-content/50">💳 {{ "{:,.0f}".format(credit_card_total) }} • ⚡ {{ "{:,.0f}".format(debit_card_total) }}</div>
+    <div class="stat bg-base-100 rounded-lg shadow p-4 md:p-6">
+        <div class="stat-title text-sm md:text-base font-semibold">{{ _('Card Payments') }}</div>
+        <div class="stat-value text-xl md:text-2xl text-base-content mt-2">Gs {{ "{:,.0f}".format(credit_card_total + debit_card_total) }}</div>
+        <div class="stat-desc text-xs md:text-sm text-base-content/60 mt-1">
+            <span class="block md:inline">💳 {{ "{:,.0f}".format(credit_card_total) }}</span>
+            <span class="hidden md:inline"> • </span>
+            <span class="block md:inline">⚡ {{ "{:,.0f}".format(debit_card_total) }}</span>
+        </div>
     </div>
 
     <!-- Card 5: Net Earnings -->
-    <div class="stat bg-base-100 rounded-lg shadow">
-        <div class="stat-title">{{ _('Net') }}</div>
+    <div class="stat bg-base-100 rounded-lg shadow p-4 md:p-6">
+        <div class="stat-title text-sm md:text-base font-semibold">{{ _('Net') }}</div>
         {% set net_value = total_ingresos - expenses %}
-        <div class="stat-value text-2xl {% if net_value >= 0 %}text-success{% else %}text-error{% endif %}">
+        <div class="stat-value text-xl md:text-2xl mt-2 {% if net_value >= 0 %}text-success{% else %}text-error{% endif %}">
             {% if net_value >= 0 %}+{% else %}-{% endif %} Gs {{ "{:,.0f}".format(net_value|abs) }}
         </div>
-        <div class="stat-desc text-xs text-base-content/50">💰 {{ "{:,.0f}".format(total_ingresos) }} • 📉 {{ "{:,.0f}".format(expenses) }}</div>
+        <div class="stat-desc text-xs md:text-sm text-base-content/60 mt-1">
+            <span class="block md:inline">💰 {{ "{:,.0f}".format(total_ingresos) }}</span>
+            <span class="hidden md:inline"> • </span>
+            <span class="block md:inline">📉 {{ "{:,.0f}".format(expenses) }}</span>
+        </div>
         {% if flagged_count > 0 %}
-        <div class="stat-desc text-error text-xs">⚠️ {{ flagged_count }} {{ _('flagged') }}</div>
+        <div class="badge badge-error badge-sm mt-2">⚠️ {{ flagged_count }} {{ _('flagged') }}</div>
         {% endif %}
     </div>
 </div>
