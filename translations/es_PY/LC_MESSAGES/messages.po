@@ -344,3 +344,18 @@ msgstr "Abierto"
 
 msgid "Closed"
 msgstr "Cerrado"
+
+msgid "Toggle filters"
+msgstr "Alternar filtros"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "This Week"
+msgstr "Esta Semana"
+
+msgid "This Month"
+msgstr "Este Mes"
+
+msgid "Quick Presets"
+msgstr "Filtros Rápidos"

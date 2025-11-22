@@ -341,3 +341,18 @@ msgstr ""
 
 msgid "Closed"
 msgstr ""
+
+msgid "Toggle filters"
+msgstr ""
+
+msgid "Today"
+msgstr ""
+
+msgid "This Week"
+msgstr ""
+
+msgid "This Month"
+msgstr ""
+
+msgid "Quick Presets"
+msgstr ""

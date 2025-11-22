@@ -1,5 +1,3 @@
-<!-- File: templates/index.html -->
-
 {% extends "base.html" %}
 
 {% block title %}{{ _('Dashboard') }} - CashPilot{% endblock %}
@@ -16,7 +14,7 @@
     <div id="stats-row"
          hx-get="/stats"
          hx-include="#filter-form"
-         hx-trigger="load"
+         hx-trigger="load, #filter-form input changed delay:500ms, #filter-form select changed"
          hx-swap="outerHTML">
         <!-- Skeleton while loading -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -27,12 +25,24 @@
         </div>
     </div>
 
-    <!-- Filters Section -->
+    <!-- Filters Section with Toggle -->
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-            <h3 class="card-title">{{ _('Filters') }}</h3>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="card-title">{{ _('Filters') }}</h3>
+                <button
+                    type="button"
+                    id="filter-toggle"
+                    class="btn btn-ghost btn-sm"
+                    aria-label="Toggle filters"
+                >
+                    <svg id="filter-chevron" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </button>
+            </div>
 
-            <!-- Preset Buttons -->
+            <!-- Preset Buttons (Always Visible) -->
             <div class="form-control mb-4">
                 <label class="label">
                     <span class="label-text text-sm font-semibold">{{ _('Quick Presets') }}</span>
@@ -50,7 +60,8 @@
                 </div>
             </div>
 
-            <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <!-- Collapsible Form -->
+            <form id="filter-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end transition-all duration-300">
                 <!-- Date From -->
                 <div class="form-control">
                     <label class="label">
@@ -216,6 +227,29 @@
 </div>
 
 <script>
+// Filter toggle with chevron rotation
+document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('filter-toggle');
+    const form = document.getElementById('filter-form');
+    const chevron = document.getElementById('filter-chevron');
+    const storageKey = 'cashPilot_filterCollapsed';
+
+    // Initialize from localStorage (default: hidden)
+    const isCollapsed = localStorage.getItem(storageKey) !== 'false';
+    if (isCollapsed) {
+        form.classList.add('hidden');
+        chevron.classList.add('rotate-180');
+    }
+
+    // Toggle handler
+    toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        form.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-180');
+        localStorage.setItem(storageKey, form.classList.contains('hidden'));
+    });
+});
+
 // Date preset logic
 document.querySelectorAll('[data-preset]').forEach(btn => {
     btn.addEventListener('click', (e) => {
