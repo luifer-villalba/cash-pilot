@@ -18,6 +18,7 @@ COPY src /app/src
 COPY alembic.ini .
 COPY alembic/ ./alembic/
 COPY templates/ ./templates/
+COPY static/ ./static/
 
 RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -e .

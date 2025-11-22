@@ -1,4 +1,3 @@
-# File: src/cashpilot/api/utils.py
 """Frontend routes - dashboard only. Session/business routes moved to routes/."""
 
 import gettext
@@ -17,8 +16,24 @@ from sqlalchemy.orm import joinedload
 from cashpilot.models import CashSession
 
 TEMPLATES_DIR = Path("/app/templates")
+
+
+# Define filter BEFORE templates initialization
+def format_currency_py(value):
+    """Format number as es-PY currency (dots for thousands, no decimals)."""
+    if value is None or value == 0:
+        return "0"
+
+    from babel.numbers import format_decimal
+
+    return format_decimal(value, locale="es_PY", group_separator=".")
+
+
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 TRANSLATIONS_DIR = Path("/app/translations")
+
+# Register custom Jinja2 filter
+templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(tags=["frontend"])
 

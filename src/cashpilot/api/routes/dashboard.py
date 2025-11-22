@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cashpilot.api.utils import (
     _build_session_filters,
     _get_paginated_sessions,
+    format_currency_py,
     get_locale,
     get_translation_function,
 )
@@ -24,6 +25,8 @@ from cashpilot.models.user import User
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(tags=["dashboard"])
 

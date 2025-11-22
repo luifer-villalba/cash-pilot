@@ -17,6 +17,30 @@
 
     {% block extra_head %}{% endblock %}
 
+    <!-- Locale Detection Script -->
+    <script>
+        // Auto-detect locale from browser + timezone
+        function detectLocale() {
+            const params = new URLSearchParams(window.location.search);
+            const queryLang = params.get('lang');
+
+            if (queryLang && ['es', 'en'].includes(queryLang)) {
+                return queryLang;
+            }
+
+            // Browser language preference
+            const browserLang = navigator.language.split('-')[0].toLowerCase();
+            if (browserLang === 'es') {
+                return 'es';
+            }
+
+            return 'en';
+        }
+
+        window.LOCALE = detectLocale();
+        window.CURRENCY_LOCALE = 'es-PY'; // Always PY currency format for pharmacy
+    </script>
+
     <script>
         // Initialize theme from localStorage on page load
         function initTheme() {
@@ -77,54 +101,7 @@
         </div>
     </footer>
 
-    <!-- Theme Toggle Script -->
-    <script>
-        const toggleBtn = document.getElementById('theme-toggle');
-        const themeIcon = document.getElementById('theme-icon');
-
-        toggleBtn.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('theme', next);
-            themeIcon.textContent = next === 'dark' ? '☀️' : '🌙';
-        });
-
-        // Set initial icon
-        const saved = localStorage.getItem('theme') || 'light';
-        themeIcon.textContent = saved === 'dark' ? '☀️' : '🌙';
-    </script>
-
-    <!-- Currency Formatting Script -->
-    <script>
-        const formatterPY = new Intl.NumberFormat('es-PY', {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 0
-        });
-
-        // Decimal-aware currency inputs (preserve digits + decimal point)
-        document.querySelectorAll('input[type="text"][name="initial_cash"], input[type="text"][name="final_cash"], input[type="text"][name="envelope_amount"], input[type="text"][name="credit_card_total"], input[type="text"][name="debit_card_total"], input[type="text"][name="bank_transfer_total"], input[type="text"][name="expenses"]').forEach(input => {
-            // On input: keep digits + single decimal point
-            input.addEventListener('input', function() {
-                let value = this.value;
-                const parts = value.split('.');
-                const digits = parts[0].replace(/\D/g, '');
-                if (parts.length > 1) {
-                    const decimals = parts.slice(1).join('').replace(/\D/g, '');
-                    this.value = decimals ? digits + '.' + decimals : digits;
-                } else {
-                    this.value = digits;
-                }
-            });
-
-            // On blur: format without decimals (Paraguay standard)
-            input.addEventListener('blur', function() {
-                if (this.value) {
-                    const num = parseInt(this.value.replace(/\D/g, '')) || 0;
-                    this.value = formatterPY.format(num);
-                }
-            });
-        });
-    </script>
+    <script src="/static/js/theme-toggle.js"></script>
+    <script src="/static/js/currency-formatter.js"></script>
 </body>
 </html>

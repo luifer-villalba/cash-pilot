@@ -14,7 +14,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.utils import get_locale, get_translation_function, parse_currency
+from cashpilot.api.utils import (
+    format_currency_py,
+    get_locale,
+    get_translation_function,
+    parse_currency,
+)
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
@@ -22,6 +27,9 @@ from cashpilot.models.user import User
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+# Register filter
+templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(prefix="/sessions", tags=["sessions-frontend"])
 

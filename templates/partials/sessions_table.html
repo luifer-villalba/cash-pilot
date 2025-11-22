@@ -55,12 +55,12 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="text-right">Gs {{ "{:,.0f}".format(session.initial_cash) }}</td>
-                        <td class="text-right">Gs {{ "{:,.0f}".format(session.final_cash) if session.final_cash else '-' }}</td>
-                        <td class="text-right font-semibold">Gs {{ "{:,.0f}".format(session.cash_sales) }}</td>
-                        <td class="text-right">Gs {{ "{:,.0f}".format(session.bank_transfer_total) }}</td>
-                        <td class="text-right">Gs {{ "{:,.0f}".format(session.credit_card_total + session.debit_card_total) }}</td>
-                        <td class="text-right font-bold {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">Gs {{ "{:,.0f}".format(session.net_earnings) }}</td>
+                        <td class="text-right">Gs {{ session.initial_cash | format_currency_py }}</td>
+                        <td class="text-right">Gs {{ session.final_cash | format_currency_py if session.final_cash else '-' }}</td>
+                        <td class="text-right font-semibold">Gs {{ session.cash_sales | format_currency_py }}</td>
+                        <td class="text-right">Gs {{ session.bank_transfer_total | format_currency_py }}</td>
+                        <td class="text-right">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</td>
+                        <td class="text-right font-bold {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">Gs {{ session.net_earnings | format_currency_py }}</td>
                         <td class="text-center">
                             <div class="flex gap-1 justify-center">
                                 <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs btn-circle hover:bg-base-200" title="{{ _('View details') }}">
@@ -126,20 +126,20 @@
                     <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
                         <div class="bg-base-100 p-2 rounded">
                             <p class="text-xs opacity-70">💰 {{ _('Cash') }}</p>
-                            <p class="font-bold text-sm">Gs {{ "{:,.0f}".format(session.cash_sales) }}</p>
+                            <p class="font-bold text-sm">Gs {{ session.cash_sales | format_currency_py }}</p>
                         </div>
                         <div class="bg-base-100 p-2 rounded">
                             <p class="text-xs opacity-70">💳 {{ _('Cards') }}</p>
-                            <p class="font-bold text-sm">Gs {{ "{:,.0f}".format(session.credit_card_total + session.debit_card_total) }}</p>
+                            <p class="font-bold text-sm">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</p>
                         </div>
                         <div class="bg-base-100 p-2 rounded">
                             <p class="text-xs opacity-70">🏦 {{ _('Bank') }}</p>
-                            <p class="font-bold text-sm">Gs {{ "{:,.0f}".format(session.bank_transfer_total) }}</p>
+                            <p class="font-bold text-sm">Gs {{ session.bank_transfer_total | format_currency_py }}</p>
                         </div>
                         <div class="bg-base-100 p-2 rounded">
                             <p class="text-xs opacity-70">📊 {{ _('Net') }}</p>
                             <p class="font-bold text-sm {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
-                                {% if session.net_earnings >= 0 %}+{% else %}-{% endif %}Gs {{ "{:,.0f}".format(session.net_earnings|abs) }}
+                                {% if session.net_earnings >= 0 %}+{% else %}-{% endif %}Gs {{ session.net_earnings|abs | format_currency_py }}
                             </p>
                         </div>
                     </div>
