@@ -205,8 +205,6 @@ async def get_dashboard_stats(
         result = await db.execute(select(func.count(Business.id)).where(Business.is_active))
         selected_businesses = result.scalar() or 0
 
-    select(CashSession).where(and_(*filters)) if filters else select(CashSession)
-
     active_sessions = await db.execute(
         select(func.count(CashSession.id)).where(
             and_(CashSession.status == "OPEN", *filters)

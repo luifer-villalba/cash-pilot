@@ -1,3 +1,4 @@
+<!-- File: templates/index.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Dashboard') }} - CashPilot{% endblock %}
@@ -15,7 +16,7 @@
          hx-get="/stats"
          hx-include="#filter-form"
          hx-trigger="load, #filter-form input changed delay:500ms, #filter-form select changed"
-         hx-swap="outerHTML">
+         hx-swap="innerHTML">
         <!-- Skeleton while loading -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="stat bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
@@ -29,7 +30,12 @@
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="card-title">{{ _('Filters') }}</h3>
+                <div class="flex items-center gap-3">
+                    <h3 class="card-title">{{ _('Filters') }}</h3>
+                    <span id="filter-badge" class="badge badge-primary hidden">
+                        <span id="filter-count">0</span>&nbsp;{{ _('active') }}
+                    </span>
+                </div>
                 <button
                         type="button"
                         id="filter-toggle"
@@ -244,12 +250,37 @@
 </div>
 
 <script>
+    // Count active filters and update badge
+    function updateFilterBadge() {
+        const filters = {
+            from_date: document.getElementById('from_date')?.value || '',
+            to_date: document.getElementById('to_date')?.value || '',
+            cashier_name: document.getElementById('cashier_name')?.value || '',
+            status: document.getElementById('status')?.value || '',
+            business_id: document.getElementById('business_id')?.value || '',
+        };
+
+        const activeCount = Object.values(filters).filter(v => v.trim() !== '').length;
+        const badge = document.getElementById('filter-badge');
+        const count = document.getElementById('filter-count');
+
+        count.textContent = activeCount;
+        if (activeCount > 0) {
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
     // Filter toggle with chevron rotation
     document.addEventListener('DOMContentLoaded', () => {
         const toggle = document.getElementById('filter-toggle');
         const form = document.getElementById('filter-form');
         const chevron = document.getElementById('filter-chevron');
         const storageKey = 'cashPilot_filterCollapsed';
+
+        // Initialize badge on load
+        updateFilterBadge();
 
         // Initialize from localStorage (default: hidden)
         const isCollapsed = localStorage.getItem(storageKey) !== 'false';
@@ -282,7 +313,10 @@
 
             // Listen for changes
             input.addEventListener('input', toggleButton);
-            input.addEventListener('change', toggleButton);
+            input.addEventListener('change', () => {
+                toggleButton();
+                updateFilterBadge();
+            });
 
             // Clear field on click
             btn.addEventListener('click', (e) => {
@@ -290,6 +324,7 @@
                 e.stopPropagation();
                 input.value = '';
                 toggleButton();
+                updateFilterBadge();
 
                 // Manually trigger HTMX for this input
                 htmx.trigger(input, 'change');
@@ -328,12 +363,17 @@
                     clearBtn.classList.toggle('pointer-events-none', !fieldInput.value);
                 });
 
+                updateFilterBadge();
+
                 const formData = new FormData(document.getElementById('filter-form'));
                 const params = new URLSearchParams(formData).toString();
                 htmx.ajax('GET', '/sessions/table?' + params, {target: '#sessions-table', swap: 'innerHTML'});
                 htmx.ajax('GET', '/stats?' + params, {target: '#stats-row', swap: 'outerHTML'});
             });
         });
+
+        // Watch for any filter changes via HTMX and update badge
+        htmx.on('htmx:afterSettle', updateFilterBadge);
     });
 </script>
 {% endblock %}

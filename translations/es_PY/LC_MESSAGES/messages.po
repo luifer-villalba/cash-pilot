@@ -359,3 +359,6 @@ msgstr "Este Mes"
 
 msgid "Quick Presets"
 msgstr "Filtros Rápidos"
+
+msgid "active"
+msgstr "activo"

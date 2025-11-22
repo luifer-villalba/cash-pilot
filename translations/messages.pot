@@ -356,3 +356,6 @@ msgstr ""
 
 msgid "Quick Presets"
 msgstr ""
+
+msgid "active"
+msgstr ""
