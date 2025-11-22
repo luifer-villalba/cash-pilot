@@ -3,7 +3,8 @@
         <h2 class="card-title">{{ _('Cash Sessions') }}</h2>
 
         {% if sessions %}
-        <div class="overflow-x-auto">
+        <!-- Desktop Table (hidden on mobile) -->
+        <div class="overflow-x-auto hidden md:block">
             <table class="table table-zebra w-full text-sm">
                 <thead>
                     <tr>
@@ -74,95 +75,89 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
-                                    <button
-                                        onclick="document.getElementById('delete_modal_{{ session.id }}').showModal()"
-                                        class="btn btn-ghost btn-xs btn-circle hover:bg-error"
-                                        title="{{ _('Delete session') }}"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                {% elif not session.is_deleted %}
-                                    <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-ghost btn-xs btn-circle hover:bg-info" title="{{ _('Edit session') }}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </a>
-                                    <button
-                                        onclick="document.getElementById('delete_modal_{{ session.id }}').showModal()"
-                                        class="btn btn-ghost btn-xs btn-circle hover:bg-error"
-                                        title="{{ _('Delete session') }}"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                {% else %}
-                                    <button
-                                        onclick="document.getElementById('restore_modal_{{ session.id }}').showModal()"
-                                        class="btn btn-ghost btn-xs btn-circle hover:bg-warning"
-                                        title="{{ _('Restore session') }}"
-                                    >
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"></path>
-                                        </svg>
-                                    </button>
                                 {% endif %}
                             </div>
-
-                            <!-- Delete Modal (replace existing) -->
-                            {% if not session.is_deleted %}
-                            <dialog id="delete_modal_{{ session.id }}" class="modal">
-                                <div class="modal-box w-11/12 max-w-md">
-                                    <h3 class="font-bold text-lg">{{ _('Delete Session') }}</h3>
-                                    <p class="py-4 text-sm">{{ _('Cashier:') }} <strong>{{ session.cashier_name }}</strong></p>
-                                    <p class="text-sm">{{ _('Are you sure? This action can be reversed.') }}</p>
-
-                                    <div class="modal-action">
-                                        <button
-                                            hx-delete="/cash-sessions/{{ session.id }}"
-                                            hx-confirm="Delete this session?"
-                                            hx-target="#sessions-table"
-                                            hx-swap="innerHTML"
-                                            class="btn btn-error"
-                                        >{{ _('Delete') }}</button>
-                                        <button type="button" onclick="document.getElementById('delete_modal_{{ session.id }}').close()" class="btn btn-ghost">{{ _('Cancel') }}</button>
-                                    </div>
-                                </div>
-                                <form method="dialog" class="modal-backdrop">
-                                    <button>Close</button>
-                                </form>
-                            </dialog>
-                            {% endif %}
-
-                            <!-- Restore Modal (replace existing) -->
-                            {% if session.is_deleted %}
-                            <dialog id="restore_modal_{{ session.id }}" class="modal">
-                                <div class="modal-box w-11/12 max-w-md">
-                                    <h3 class="font-bold text-lg">{{ _('Restore Session') }}</h3>
-                                    <p class="py-4 text-sm">{{ _('Restore this deleted session?') }}</p>
-
-                                    <div class="modal-action">
-                                        <button
-                                            hx-post="/cash-sessions/{{ session.id }}/restore"
-                                            hx-target="#sessions-table"
-                                            hx-swap="innerHTML"
-                                            class="btn btn-warning"
-                                        >{{ _('Restore') }}</button>
-                                        <button type="button" onclick="document.getElementById('restore_modal_{{ session.id }}').close()" class="btn btn-outline">{{ _('Cancel') }}</button>
-                                    </div>
-                                </div>
-                                <form method="dialog" class="modal-backdrop">
-                                    <button>Close</button>
-                                </form>
-                            </dialog>
-                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Card Layout (visible on mobile only) -->
+        <div class="md:hidden space-y-4">
+            {% for session in sessions %}
+            <div class="card bg-base-200 border border-base-300">
+                <div class="card-body p-4">
+                    <!-- Header: Status + Cashier -->
+                    <div class="flex justify-between items-start gap-2 mb-3">
+                        <div>
+                            <h3 class="font-bold text-base">{{ session.cashier_name }}</h3>
+                            <p class="text-xs opacity-70">{{ session.business.name }}</p>
+                        </div>
+                        <div>
+                            {% if session.status == 'OPEN' %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/20 text-success font-semibold text-xs">
+                                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                                    {{ _('Open') }}
+                                </span>
+                            {% elif session.flagged %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-error/20 text-error font-semibold text-xs">
+                                    <span class="w-2 h-2 rounded-full bg-error"></span>
+                                    {{ _('Review') }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral/20 text-neutral font-semibold text-xs">
+                                    <span class="w-2 h-2 rounded-full bg-neutral"></span>
+                                    {{ _('Closed') }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Date/Time -->
+                    <div class="text-xs opacity-70 mb-3">
+                        <span class="font-mono">{{ session.session_date.strftime('%Y-%m-%d') }}</span>
+                        <span class="mx-1">•</span>
+                        <span>{{ session.opened_time.strftime('%H:%M') }}{% if session.closed_time %} → {{ session.closed_time.strftime('%H:%M') }}{% endif %}</span>
+                    </div>
+
+                    <!-- Key Numbers Grid -->
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+                        <div class="bg-base-100 p-2 rounded">
+                            <p class="text-xs opacity-70">💰 {{ _('Cash') }}</p>
+                            <p class="font-bold text-sm">Gs {{ "{:,.0f}".format(session.cash_sales) }}</p>
+                        </div>
+                        <div class="bg-base-100 p-2 rounded">
+                            <p class="text-xs opacity-70">💳 {{ _('Cards') }}</p>
+                            <p class="font-bold text-sm">Gs {{ "{:,.0f}".format(session.credit_card_total + session.debit_card_total) }}</p>
+                        </div>
+                        <div class="bg-base-100 p-2 rounded">
+                            <p class="text-xs opacity-70">🏦 {{ _('Bank') }}</p>
+                            <p class="font-bold text-sm">Gs {{ "{:,.0f}".format(session.bank_transfer_total) }}</p>
+                        </div>
+                        <div class="bg-base-100 p-2 rounded">
+                            <p class="text-xs opacity-70">📊 {{ _('Net') }}</p>
+                            <p class="font-bold text-sm {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
+                                {% if session.net_earnings >= 0 %}+{% else %}-{% endif %}Gs {{ "{:,.0f}".format(session.net_earnings|abs) }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2 justify-end">
+                        <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs gap-1">
+                            👁️ {{ _('View') }}
+                        </a>
+                        {% if session.status == 'OPEN' %}
+                            <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-info btn-xs gap-1">
+                                ✏️ {{ _('Edit') }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
 
         <!-- Pagination -->

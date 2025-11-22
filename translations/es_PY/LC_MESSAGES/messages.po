@@ -321,3 +321,44 @@ msgstr "de"
 msgid "Net Earnings"
 msgstr "Neto"
 
+msgid "Quick Presets"
+msgstr "Filtros Rápidos"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "This Week"
+msgstr "Esta Semana"
+
+msgid "This Month"
+msgstr "Este Mes"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "All Statuses"
+msgstr "Todos los estados"
+
+msgid "Open"
+msgstr "Abierto"
+
+msgid "Closed"
+msgstr "Cerrado"
+
+msgid "Toggle filters"
+msgstr "Alternar filtros"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "This Week"
+msgstr "Esta Semana"
+
+msgid "This Month"
+msgstr "Este Mes"
+
+msgid "Quick Presets"
+msgstr "Filtros Rápidos"
+
+msgid "active"
+msgstr "activo"

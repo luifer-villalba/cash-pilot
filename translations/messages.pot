@@ -317,3 +317,45 @@ msgstr ""
 
 msgid "Net Earnings"
 msgstr ""
+
+msgid "Quick Presets"
+msgstr ""
+
+msgid "Today"
+msgstr ""
+
+msgid "This Week"
+msgstr ""
+
+msgid "This Month"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "All Statuses"
+msgstr ""
+
+msgid "Open"
+msgstr ""
+
+msgid "Closed"
+msgstr ""
+
+msgid "Toggle filters"
+msgstr ""
+
+msgid "Today"
+msgstr ""
+
+msgid "This Week"
+msgstr ""
+
+msgid "This Month"
+msgstr ""
+
+msgid "Quick Presets"
+msgstr ""
+
+msgid "active"
+msgstr ""
