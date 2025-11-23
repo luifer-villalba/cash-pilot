@@ -37,13 +37,17 @@ msgstr "Añada nombres de cajeros después de la creación"
 msgid "Address"
 msgstr "Dirección"
 
+msgid "Additional Info"
+msgstr "Información Adicional"
+
 msgid "All Businesses"
 msgstr "Todos los Negocios"
 
 msgid "All edits are logged with reason and timestamp for compliance."
-msgstr ""
-"Todas las ediciones se registran con razón y marca de tiempo para "
-"cumplimiento."
+msgstr "Todas las ediciones se registran con razón y marca de tiempo para cumplimiento."
+
+msgid "All Statuses"
+msgstr "Todos los Estados"
 
 msgid "API Docs"
 msgstr "Documentación API"
@@ -72,6 +76,9 @@ msgstr "Sistema de Reconciliación de Caja para Farmacias"
 msgid "Business Info"
 msgstr "Información del Negocio"
 
+msgid "Business expenses during shift"
+msgstr "Gastos del negocio durante el turno"
+
 msgid "Businesses"
 msgstr "Negocios"
 
@@ -80,6 +87,12 @@ msgstr "Cancelar"
 
 msgid "Card Payments"
 msgstr "Tarjeta"
+
+msgid "Card Sales"
+msgstr "Ventas con Tarjeta"
+
+msgid "Cash Profit"
+msgstr "Ganancia en Efectivo"
 
 msgid "Cash Sales"
 msgstr "Efectivo"
@@ -102,8 +115,17 @@ msgstr "Cajeros"
 msgid "Cashiers Count"
 msgstr "Cantidad de Cajeros"
 
+msgid "Clear"
+msgstr "Limpiar"
+
+msgid "Clear All"
+msgstr "Limpiar Todo"
+
 msgid "Clear Filters"
 msgstr "Limpiar Filtros"
+
+msgid "Close"
+msgstr "Cerrar"
 
 msgid "Close Session"
 msgstr "Cerrar Caja"
@@ -111,8 +133,14 @@ msgstr "Cerrar Caja"
 msgid "Close session"
 msgstr "Cerrar caja"
 
+msgid "Closed"
+msgstr "Cerrado"
+
 msgid "Closed At"
 msgstr "Cerrado en"
+
+msgid "Closing Ticket"
+msgstr "Ticket de Cierre"
 
 msgid "Create"
 msgstr "Crear"
@@ -141,6 +169,9 @@ msgstr "Tarjeta de Débito"
 msgid "Debit Card Total (Gs)"
 msgstr "Total Tarjeta de Débito (Gs)"
 
+msgid "Direct transfers"
+msgstr "Transferencias directas"
+
 msgid "Edit"
 msgstr "Editar"
 
@@ -156,6 +187,21 @@ msgstr "Editar Sesión de Caja Abierta"
 msgid "Edit Session"
 msgstr "Editar Sesión"
 
+msgid "Editing this session"
+msgstr "Editando esta sesión"
+
+msgid "EDIT_OPEN"
+msgstr "Edición Abierta"
+
+msgid "EDIT_CLOSED"
+msgstr "Edición Cerrada"
+
+msgid "Envelope"
+msgstr "Sobre"
+
+msgid "Expenses"
+msgstr "Gastos"
+
 msgid "Enter cashier name"
 msgstr "Ingrese el nombre del cajero"
 
@@ -167,6 +213,12 @@ msgstr "Campos Cambiados"
 
 msgid "Filters"
 msgstr "Filtros"
+
+msgid "Fill form fields to see preview..."
+msgstr "Rellene los campos del formulario para ver la vista previa..."
+
+msgid "Formula"
+msgstr "Fórmula"
 
 msgid "From Date"
 msgstr "Desde Fecha"
@@ -204,6 +256,12 @@ msgstr "Nombre"
 msgid "Net"
 msgstr "Neto"
 
+msgid "Net Earnings"
+msgstr "Neto"
+
+msgid "Net Profit"
+msgstr "Ganancia Neta"
+
 msgid "New Business"
 msgstr "Nuevo Negocio"
 
@@ -231,6 +289,9 @@ msgstr "No autenticado"
 msgid "Optional: for reference only"
 msgstr "Opcional: solo para referencia"
 
+msgid "Open"
+msgstr "Abierto"
+
 msgid "Payment Mix"
 msgstr "Mix de Pagos"
 
@@ -249,6 +310,9 @@ msgstr "Margen de Ganancia:"
 msgid "Quick Guide"
 msgstr "Guía Rápida"
 
+msgid "Quick Presets"
+msgstr "Filtros Rápidos"
+
 msgid "Quick Stats"
 msgstr "Estadísticas Rápidas"
 
@@ -261,20 +325,38 @@ msgstr "Razón"
 msgid "Reason for Edit"
 msgstr "Razón de la Edición"
 
+msgid "Reconciliation"
+msgstr "Reconciliación"
+
+msgid "Reconciliation Preview"
+msgstr "Vista Previa de Reconciliación"
+
 msgid "Remove"
 msgstr "Eliminar"
 
 msgid "Required for audit trail"
 msgstr "Requerido para el registro de auditoría"
 
+msgid "Revenue"
+msgstr "Ingresos"
+
 msgid "Revenue & Expenses"
 msgstr "Ingresos y Gastos"
+
+msgid "Review"
+msgstr "Revisar"
 
 msgid "Save Changes"
 msgstr "Guardar Cambios"
 
 msgid "Search..."
 msgstr "Buscar..."
+
+msgid "Session Active"
+msgstr "Sesión Activa"
+
+msgid "Session Closed"
+msgstr "Sesión Cerrada"
 
 msgid "Session Information"
 msgstr "Información de la Sesión"
@@ -288,8 +370,17 @@ msgstr "Duración del Turno:"
 msgid "Showing"
 msgstr "Mostrando"
 
+msgid "Starting amount in drawer"
+msgstr "Cantidad inicial en el cajón"
+
 msgid "Status"
 msgstr "Estado"
+
+msgid "This Month"
+msgstr "Este Mes"
+
+msgid "This Week"
+msgstr "Esta Semana"
 
 msgid "To Date"
 msgstr "Hasta Fecha"
@@ -297,11 +388,26 @@ msgstr "Hasta Fecha"
 msgid "To:"
 msgstr "Hasta:"
 
+msgid "Today"
+msgstr "Hoy"
+
+msgid "Toggle dark/light theme"
+msgstr "Alternar tema oscuro/claro"
+
+msgid "Toggle filters"
+msgstr "Alternar filtros"
+
+msgid "Total counted in drawer"
+msgstr "Total contado en el cajón"
+
 msgid "Updated"
 msgstr "Actualizado"
 
 msgid "User not found or inactive"
 msgstr "Usuario no encontrado o inactivo"
+
+msgid "View"
+msgstr "Ver"
 
 msgid "View details"
 msgstr "Ver detalles"
@@ -309,56 +415,212 @@ msgstr "Ver detalles"
 msgid "Who is handling this session?"
 msgstr "¿Quién está manejando esta sesión?"
 
-msgid "envelope"
-msgstr "Sobre"
+msgid "Who's working this shift?"
+msgstr "¿Quién está trabajando este turno?"
 
-msgid "flagged"
-msgstr "Marcado"
+msgid "active"
+msgstr "activo"
 
 msgid "of"
 msgstr "de"
 
-msgid "Net Earnings"
-msgstr "Neto"
+msgid "flagged"
+msgstr "Marcado"
 
-msgid "Quick Presets"
-msgstr "Filtros Rápidos"
+msgid "envelope"
+msgstr "Sobre"
 
-msgid "Today"
-msgstr "Hoy"
+msgid "e.g., María López"
+msgstr "p.ej., María López"
 
-msgid "This Week"
-msgstr "Esta Semana"
+msgid "e.g., Corrected initial count, Name typo fix..."
+msgstr "p.ej., Conteo inicial corregido, Corrección de nombre..."
 
-msgid "This Month"
-msgstr "Este Mes"
+msgid "e.g., T-20251112-001"
+msgstr "p.ej., T-20251112-001"
 
-msgid "Status"
-msgstr "Estado"
+msgid "e.g., High discrepancy, needs manager review..."
+msgstr "p.ej., Discrepancia alta, requiere revisión del gerente..."
 
-msgid "All Statuses"
-msgstr "Todos los estados"
+msgid "Any discrepancies or notes..."
+msgstr "Cualquier discrepancia o notas..."
 
-msgid "Open"
+msgid "+595 21 123456"
+msgstr "+595 21 123456"
+
+msgid "+595 981234567"
+msgstr "+595 981234567"
+
+msgid "Initial Cash (Gs)"
+msgstr "Efectivo Inicial (Gs)"
+
+msgid "Final Cash Count (Gs)"
+msgstr "Conteo Final de Efectivo (Gs)"
+
+msgid "Envelope Amount (Gs)"
+msgstr "Cantidad del Sobre (Gs)"
+
+msgid "Credit Card Total (Gs)"
+msgstr "Total Tarjeta de Crédito (Gs)"
+
+msgid "Debit Card Total (Gs)"
+msgstr "Total Tarjeta de Débito (Gs)"
+
+msgid "Bank Transfer Total (Gs)"
+msgstr "Total Transferencias (Gs)"
+
+msgid "Expenses (Gs)"
+msgstr "Gastos (Gs)"
+
+msgid "Amount you start with"
+msgstr "Cantidad con la que comienza"
+
+msgid "Which pharmacy location?"
+msgstr "¿Cuál ubicación de farmacia?"
+
+msgid "Only if multiple cashiers"
+msgstr "Solo si hay múltiples cajeros"
+
+msgid "Check only if multiple cashiers on same shift"
+msgstr "Marque solo si hay múltiples cajeros en el mismo turno"
+
+msgid "Allow overlapping sessions?"
+msgstr "¿Permitir sesiones superpuestas?"
+
+msgid "Once opened, only one session can be active per business unless overlap is enabled."
+msgstr "Una vez abierto, solo una sesión puede estar activa por negocio a menos que se habilite la superposición."
+
+msgid "Opening Info"
+msgstr "Información de Apertura"
+
+msgid "Opened At:"
+msgstr "Abierto en:"
+
+msgid "Opened At (Time)"
+msgstr "Abierto en (Hora)"
+
+msgid "Time session was opened"
+msgstr "Hora en que se abrió la sesión"
+
+msgid "Closed At (Time)"
+msgstr "Cerrado en (Hora)"
+
+msgid "Leave blank for current time"
+msgstr "Dejar en blanco para la hora actual"
+
+msgid "Leave blank for today"
+msgstr "Dejar en blanco para hoy"
+
+msgid "Optional: POS ticket number"
+msgstr "Opcional: número de ticket POS"
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "Session Date:"
+msgstr "Fecha de Sesión:"
+
+msgid "Initial Cash:"
+msgstr "Efectivo Inicial:"
+
+msgid "Session Date"
+msgstr "Fecha de la Sesión"
+
+msgid "Opened"
 msgstr "Abierto"
 
-msgid "Closed"
-msgstr "Cerrado"
+msgid "Opened At"
+msgstr "Abierto en"
 
-msgid "Toggle filters"
-msgstr "Alternar filtros"
+msgid "Expected:"
+msgstr "Esperado:"
 
-msgid "Today"
-msgstr "Hoy"
+msgid "Actual:"
+msgstr "Real:"
 
-msgid "This Week"
-msgstr "Esta Semana"
+msgid "Difference"
+msgstr "Diferencia"
 
-msgid "This Month"
-msgstr "Este Mes"
+msgid "Flag Session"
+msgstr "Marcar Sesión"
 
-msgid "Quick Presets"
-msgstr "Filtros Rápidos"
+msgid "Clear Flag"
+msgstr "Limpiar Marca"
 
-msgid "active"
-msgstr "activo"
+msgid "Remove flag from this session?"
+msgstr "¿Remover marca de esta sesión?"
+
+msgid "Session Flagged"
+msgstr "Sesión Marcada"
+
+msgid "Flagged by:"
+msgstr "Marcado por:"
+
+msgid "Open Session"
+msgstr "Abrir Sesión"
+
+msgid "Session Details"
+msgstr "Detalles de la Sesión"
+
+msgid "Important"
+msgstr "Importante"
+
+msgid "Cash Sales:"
+msgstr "Ventas en Efectivo:"
+
+msgid "Final Cash"
+msgstr "Efectivo Final"
+
+msgid "Bank Transfer"
+msgstr "Transferencia Bancaria"
+
+msgid "Total Sales"
+msgstr "Ventas Totales"
+
+msgid "Closing Ticket #"
+msgstr "Número de Ticket de Cierre"
+
+msgid "(final - initial) + envelope"
+msgstr "(final - inicial) + sobre"
+
+msgid "cash + card methods"
+msgstr "efectivo + métodos de tarjeta"
+
+msgid "total - expenses"
+msgstr "total - gastos"
+
+msgid "💡 Quick Tip"
+msgstr "💡 Consejo Rápido"
+
+msgid "Edit session"
+msgstr "Editar sesión"
+
+msgid "Edit details"
+msgstr "Editar detalles"
+
+msgid "💰 Cash"
+msgstr "💰 Efectivo"
+
+msgid "💳 Cards"
+msgstr "💳 Tarjetas"
+
+msgid "🏦 Bank"
+msgstr "🏦 Banco"
+
+msgid "📊 Net"
+msgstr "📊 Neto"
+
+msgid "No sessions found."
+msgstr "No se encontraron sesiones de cajas."
+
+msgid "Payment Methods:"
+msgstr "Métodos de pago:"
+
+msgid "Cashier Name:"
+msgstr "Cajero:"
+
+msgid "Business:"
+msgstr "Negocio/Sucursal:"
+
+msgid "Allow Overlap:"
+msgstr "Sesiones superpuestas:"
