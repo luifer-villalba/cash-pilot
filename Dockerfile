@@ -19,9 +19,13 @@ COPY alembic.ini .
 COPY alembic/ ./alembic/
 COPY templates/ ./templates/
 COPY static/ ./static/
+COPY translations/ ./translations/
 
 RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -e .
 RUN pip install --no-cache-dir .[dev]
+
+# Compile translations for production
+RUN pybabel compile -d translations
 
 CMD sh -c "alembic upgrade head && uvicorn cashpilot.main:create_app --factory --host 0.0.0.0 --port 8000"
