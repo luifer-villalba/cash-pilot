@@ -36,10 +36,16 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
+msgid "Additional Info"
+msgstr ""
+
 msgid "All Businesses"
 msgstr ""
 
 msgid "All edits are logged with reason and timestamp for compliance."
+msgstr ""
+
+msgid "All Statuses"
 msgstr ""
 
 msgid "API Docs"
@@ -69,6 +75,9 @@ msgstr ""
 msgid "Business Info"
 msgstr ""
 
+msgid "Business expenses during shift"
+msgstr ""
+
 msgid "Businesses"
 msgstr ""
 
@@ -76,6 +85,12 @@ msgid "Cancel"
 msgstr ""
 
 msgid "Card Payments"
+msgstr ""
+
+msgid "Card Sales"
+msgstr ""
+
+msgid "Cash Profit"
 msgstr ""
 
 msgid "Cash Sales"
@@ -99,7 +114,16 @@ msgstr ""
 msgid "Cashiers Count"
 msgstr ""
 
+msgid "Clear"
+msgstr ""
+
+msgid "Clear All"
+msgstr ""
+
 msgid "Clear Filters"
+msgstr ""
+
+msgid "Close"
 msgstr ""
 
 msgid "Close Session"
@@ -108,7 +132,13 @@ msgstr ""
 msgid "Close session"
 msgstr ""
 
+msgid "Closed"
+msgstr ""
+
 msgid "Closed At"
+msgstr ""
+
+msgid "Closing Ticket"
 msgstr ""
 
 msgid "Create"
@@ -138,6 +168,9 @@ msgstr ""
 msgid "Debit Card Total (Gs)"
 msgstr ""
 
+msgid "Direct transfers"
+msgstr ""
+
 msgid "Edit"
 msgstr ""
 
@@ -153,6 +186,21 @@ msgstr ""
 msgid "Edit Session"
 msgstr ""
 
+msgid "Editing this session"
+msgstr ""
+
+msgid "EDIT_OPEN"
+msgstr ""
+
+msgid "EDIT_CLOSED"
+msgstr ""
+
+msgid "Envelope"
+msgstr ""
+
+msgid "Expenses"
+msgstr ""
+
 msgid "Enter cashier name"
 msgstr ""
 
@@ -163,6 +211,12 @@ msgid "Fields Changed"
 msgstr ""
 
 msgid "Filters"
+msgstr ""
+
+msgid "Fill form fields to see preview..."
+msgstr ""
+
+msgid "Formula"
 msgstr ""
 
 msgid "From Date"
@@ -201,6 +255,12 @@ msgstr ""
 msgid "Net"
 msgstr ""
 
+msgid "Net Earnings"
+msgstr ""
+
+msgid "Net Profit"
+msgstr ""
+
 msgid "New Business"
 msgstr ""
 
@@ -228,6 +288,9 @@ msgstr ""
 msgid "Optional: for reference only"
 msgstr ""
 
+msgid "Open"
+msgstr ""
+
 msgid "Payment Mix"
 msgstr ""
 
@@ -246,6 +309,9 @@ msgstr ""
 msgid "Quick Guide"
 msgstr ""
 
+msgid "Quick Presets"
+msgstr ""
+
 msgid "Quick Stats"
 msgstr ""
 
@@ -258,19 +324,37 @@ msgstr ""
 msgid "Reason for Edit"
 msgstr ""
 
+msgid "Reconciliation"
+msgstr ""
+
+msgid "Reconciliation Preview"
+msgstr ""
+
 msgid "Remove"
 msgstr ""
 
 msgid "Required for audit trail"
 msgstr ""
 
+msgid "Revenue"
+msgstr ""
+
 msgid "Revenue & Expenses"
+msgstr ""
+
+msgid "Review"
 msgstr ""
 
 msgid "Save Changes"
 msgstr ""
 
 msgid "Search..."
+msgstr ""
+
+msgid "Session Active"
+msgstr ""
+
+msgid "Session Closed"
 msgstr ""
 
 msgid "Session Information"
@@ -285,7 +369,16 @@ msgstr ""
 msgid "Showing"
 msgstr ""
 
+msgid "Starting amount in drawer"
+msgstr ""
+
 msgid "Status"
+msgstr ""
+
+msgid "This Month"
+msgstr ""
+
+msgid "This Week"
 msgstr ""
 
 msgid "To Date"
@@ -294,10 +387,25 @@ msgstr ""
 msgid "To:"
 msgstr ""
 
+msgid "Today"
+msgstr ""
+
+msgid "Toggle dark/light theme"
+msgstr ""
+
+msgid "Toggle filters"
+msgstr ""
+
+msgid "Total counted in drawer"
+msgstr ""
+
 msgid "Updated"
 msgstr ""
 
 msgid "User not found or inactive"
+msgstr ""
+
+msgid "View"
 msgstr ""
 
 msgid "View details"
@@ -306,56 +414,230 @@ msgstr ""
 msgid "Who is handling this session?"
 msgstr ""
 
-msgid "envelope"
+msgid "Who's working this shift?"
 msgstr ""
 
-msgid "flagged"
+msgid "active"
 msgstr ""
 
 msgid "of"
 msgstr ""
 
-msgid "Net Earnings"
+msgid "flagged"
 msgstr ""
 
-msgid "Quick Presets"
+msgid "envelope"
 msgstr ""
 
-msgid "Today"
+msgid "e.g., María López"
 msgstr ""
 
-msgid "This Week"
+msgid "e.g., Corrected initial count, Name typo fix..."
 msgstr ""
 
-msgid "This Month"
+msgid "e.g., T-20251112-001"
 msgstr ""
 
-msgid "Status"
+msgid "e.g., High discrepancy, needs manager review..."
 msgstr ""
 
-msgid "All Statuses"
+msgid "Any discrepancies or notes..."
 msgstr ""
 
-msgid "Open"
+msgid "+595 21 123456"
 msgstr ""
 
-msgid "Closed"
+msgid "+595 981234567"
 msgstr ""
 
-msgid "Toggle filters"
+msgid "Initial Cash (Gs)"
 msgstr ""
 
-msgid "Today"
+msgid "Final Cash Count (Gs)"
 msgstr ""
 
-msgid "This Week"
+msgid "Envelope Amount (Gs)"
 msgstr ""
 
-msgid "This Month"
+msgid "Credit Card Total (Gs)"
 msgstr ""
 
-msgid "Quick Presets"
+msgid "Debit Card Total (Gs)"
 msgstr ""
 
-msgid "active"
+msgid "Bank Transfer Total (Gs)"
+msgstr ""
+
+msgid "Expenses (Gs)"
+msgstr ""
+
+msgid "Amount you start with"
+msgstr ""
+
+msgid "Which pharmacy location?"
+msgstr ""
+
+msgid "Only if multiple cashiers"
+msgstr ""
+
+msgid "Check only if multiple cashiers on same shift"
+msgstr ""
+
+msgid "Allow overlapping sessions?"
+msgstr ""
+
+msgid "Once opened, only one session can be active per business unless overlap is enabled."
+msgstr ""
+
+msgid "Opening Info"
+msgstr ""
+
+msgid "Opened At:"
+msgstr ""
+
+msgid "Opened At (Time)"
+msgstr ""
+
+msgid "Time session was opened"
+msgstr ""
+
+msgid "Closed At (Time)"
+msgstr ""
+
+msgid "Leave blank for current time"
+msgstr ""
+
+msgid "Leave blank for today"
+msgstr ""
+
+msgid "Leave blank for current time"
+msgstr ""
+
+msgid "Optional: POS ticket number"
+msgstr ""
+
+msgid "Notes"
+msgstr ""
+
+msgid "Session Date:"
+msgstr ""
+
+msgid "Initial Cash:"
+msgstr ""
+
+msgid "Session Date"
+msgstr ""
+
+msgid "Opened"
+msgstr ""
+
+msgid "Opened At"
+msgstr ""
+
+msgid "Expected:"
+msgstr ""
+
+msgid "Actual:"
+msgstr ""
+
+msgid "Difference"
+msgstr ""
+
+msgid "Reason"
+msgstr ""
+
+msgid "Flag Session"
+msgstr ""
+
+msgid "Clear Flag"
+msgstr ""
+
+msgid "Remove flag from this session?"
+msgstr ""
+
+msgid "Session Flagged"
+msgstr ""
+
+msgid "Flagged by:"
+msgstr ""
+
+msgid "Open Session"
+msgstr ""
+
+msgid "Back to Dashboard"
+msgstr ""
+
+msgid "Session Details"
+msgstr ""
+
+msgid "Important"
+msgstr ""
+
+msgid "Cash Sales:"
+msgstr ""
+
+msgid "Final Cash"
+msgstr ""
+
+msgid "Bank Transfer"
+msgstr ""
+
+msgid "Total Sales"
+msgstr ""
+
+msgid "Closing Ticket #"
+msgstr ""
+
+msgid "Session Active"
+msgstr ""
+
+msgid "Session Closed"
+msgstr ""
+
+msgid "Session Flagged"
+msgstr ""
+
+msgid "(final - initial) + envelope"
+msgstr ""
+
+msgid "cash + card methods"
+msgstr ""
+
+msgid "total - expenses"
+msgstr ""
+
+msgid "💡 Quick Tip"
+msgstr ""
+
+msgid "Edit session"
+msgstr ""
+
+msgid "Edit details"
+msgstr ""
+
+msgid "💰 Cash"
+msgstr ""
+
+msgid "💳 Cards"
+msgstr ""
+
+msgid "🏦 Bank"
+msgstr ""
+
+msgid "📊 Net"
+msgstr ""
+
+msgid "No sessions found."
+msgstr ""
+
+msgid "Payment Methods:"
+msgstr ""
+
+msgid "Cashier Name:"
+msgstr ""
+
+msgid "Business:"
+msgstr ""
+
+msgid "Allow Overlap:"
 msgstr ""
