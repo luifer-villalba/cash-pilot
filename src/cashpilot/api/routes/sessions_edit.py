@@ -1,0 +1,323 @@
+"""Session edit routes (edit-open, edit-closed)."""
+
+from datetime import datetime
+from decimal import Decimal
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from cashpilot.api.auth import get_current_user
+from cashpilot.api.utils import (
+    get_locale,
+    get_session_or_redirect,
+    get_translation_function,
+    parse_currency,
+    update_open_session_fields,
+)
+from cashpilot.core.db import get_db
+from cashpilot.models import CashSession
+from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
+from cashpilot.models.user import User
+
+TEMPLATES_DIR = Path("/app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+router = APIRouter(prefix="/sessions", tags=["sessions-edit"])
+
+
+# ─────── EDIT OPEN SESSION ────────
+
+
+@router.get("/{session_id}/edit-open", response_class=HTMLResponse)
+async def edit_open_session_form(
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Form to edit an OPEN cash session."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    session = await get_session_or_redirect(session_id, db)
+    if not session or session.status != "OPEN":
+        return RedirectResponse(url=f"/sessions/{session_id}" if session else "/", status_code=302)
+
+    return templates.TemplateResponse(
+        request,
+        "sessions/edit_open_session.html",
+        {"current_user": current_user, "session": session, "locale": locale, "_": _},
+    )
+
+
+@router.post("/{session_id}/edit-open", response_class=HTMLResponse)
+async def edit_open_session_post(
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    cashier_name: str | None = Form(None),
+    initial_cash: str | None = Form(None),
+    opened_time: str | None = Form(None),
+    expenses: str | None = Form(None),
+    reason: str | None = Form(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Handle edit open session form submission."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    try:
+        session = await get_session_or_redirect(session_id, db)
+        if not session or session.status != "OPEN":
+            return RedirectResponse(
+                url=f"/sessions/{session_id}" if session else "/", status_code=302
+            )
+
+        changed_fields, old_values, new_values = await update_open_session_fields(
+            session, cashier_name, initial_cash, opened_time, expenses
+        )
+
+        session.last_modified_at = datetime.now()
+        session.last_modified_by = "system"
+        db.add(session)
+        await db.commit()
+
+        if changed_fields:
+            audit_log = CashSessionAuditLog(
+                session_id=session.id,
+                action="edit",
+                changed_fields=changed_fields,
+                old_values=old_values,
+                new_values=new_values,
+                changed_by="system",
+                reason=reason,
+            )
+            db.add(audit_log)
+            await db.commit()
+
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+
+    except ValueError as e:
+        session = await get_session_or_redirect(session_id, db)
+        return templates.TemplateResponse(
+            request,
+            "sessions/edit_open_session.html",
+            {
+                "current_user": current_user,
+                "session": session,
+                "error": f"Invalid input: {str(e)}",
+                "locale": locale,
+                "_": _,
+            },
+            status_code=400,
+        )
+
+
+# ─────── EDIT CLOSED SESSION ────────
+
+
+@router.get("/{session_id}/edit-closed", response_class=HTMLResponse)
+async def edit_closed_session_form(
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Form to edit a CLOSED cash session."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    session = await get_session_or_redirect(session_id, db)
+    if not session or session.status != "CLOSED":
+        return RedirectResponse(url=f"/sessions/{session_id}" if session else "/", status_code=302)
+
+    return templates.TemplateResponse(
+        request,
+        "sessions/edit_closed_session.html",
+        {"current_user": current_user, "session": session, "locale": locale, "_": _},
+    )
+
+
+def _update_field(
+    session: CashSession,
+    field_name: str,
+    new_value: Decimal | str | None,
+    current_value: Decimal | str | None,
+    changed_fields: list[str],
+    old_values: dict,
+    new_values: dict,
+) -> None:
+    """Update a single field and track changes."""
+    if new_value is None:
+        return
+
+    new_val_str = str(new_value) if new_value else None
+    current_val_str = str(current_value) if current_value else None
+
+    if new_val_str != current_val_str:
+        changed_fields.append(field_name)
+        old_values[field_name] = current_val_str
+        new_values[field_name] = new_val_str
+        setattr(session, field_name, new_value)
+
+
+async def update_closed_session_fields(
+    session: CashSession,
+    final_cash: str | None = None,
+    envelope_amount: str | None = None,
+    credit_card_total: str | None = None,
+    debit_card_total: str | None = None,
+    bank_transfer_total: str | None = None,
+    expenses: str | None = None,
+    closing_ticket: str | None = None,
+    notes: str | None = None,
+) -> tuple[list[str], dict, dict]:
+    """Track field changes for closed session edit."""
+    changed_fields = []
+    old_values = {}
+    new_values = {}
+
+    _update_field(
+        session,
+        "final_cash",
+        parse_currency(final_cash),
+        session.final_cash,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "envelope_amount",
+        parse_currency(envelope_amount) or Decimal("0"),
+        session.envelope_amount,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "credit_card_total",
+        parse_currency(credit_card_total) or Decimal("0"),
+        session.credit_card_total,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "debit_card_total",
+        parse_currency(debit_card_total) or Decimal("0"),
+        session.debit_card_total,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "bank_transfer_total",
+        parse_currency(bank_transfer_total) or Decimal("0"),
+        session.bank_transfer_total,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "expenses",
+        parse_currency(expenses) or Decimal("0"),
+        session.expenses,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "closing_ticket",
+        closing_ticket,
+        session.closing_ticket,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(session, "notes", notes, session.notes, changed_fields, old_values, new_values)
+
+    return changed_fields, old_values, new_values
+
+
+@router.post("/{session_id}/edit-closed", response_class=HTMLResponse)
+async def edit_closed_session_post(
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    final_cash: str | None = Form(None),
+    envelope_amount: str | None = Form(None),
+    credit_card_total: str | None = Form(None),
+    debit_card_total: str | None = Form(None),
+    bank_transfer_total: str | None = Form(None),
+    expenses: str | None = Form(None),
+    closing_ticket: str | None = Form(None),
+    notes: str | None = Form(None),
+    reason: str | None = Form(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """Handle edit closed session form submission."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    try:
+        session = await get_session_or_redirect(session_id, db)
+        if not session or session.status != "CLOSED":
+            return RedirectResponse(
+                url=f"/sessions/{session_id}" if session else "/", status_code=302
+            )
+
+        changed_fields, old_values, new_values = await update_closed_session_fields(
+            session,
+            final_cash,
+            envelope_amount,
+            credit_card_total,
+            debit_card_total,
+            bank_transfer_total,
+            expenses,
+            closing_ticket,
+            notes,
+        )
+
+        session.last_modified_at = datetime.now()
+        session.last_modified_by = "system"
+        db.add(session)
+        await db.commit()
+
+        if changed_fields:
+            audit_log = CashSessionAuditLog(
+                session_id=session.id,
+                action="edit",
+                changed_fields=changed_fields,
+                old_values=old_values,
+                new_values=new_values,
+                changed_by="system",
+                reason=reason,
+            )
+            db.add(audit_log)
+            await db.commit()
+
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+
+    except ValueError as e:
+        session = await get_session_or_redirect(session_id, db)
+        return templates.TemplateResponse(
+            request,
+            "sessions/edit_closed_session.html",
+            {
+                "current_user": current_user,
+                "session": session,
+                "error": f"Invalid input: {str(e)}",
+                "locale": locale,
+                "_": _,
+            },
+            status_code=400,
+        )

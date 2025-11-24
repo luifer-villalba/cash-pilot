@@ -1,0 +1,266 @@
+<!-- File: templates/sessions/edit_closed_session.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Edit Closed Cash Session') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Edit Closed Cash Session') }}</h1>
+        <p class="text-sm text-base-content/60 mt-2">
+            👤 <strong>{{ session.cashier_name }}</strong>
+            <span class="mx-2">•</span>
+            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-base-300/50 text-base-content/70 text-xs font-semibold">
+                <span class="w-2 h-2 rounded-full bg-base-content/70"></span>
+                {{ _('Closed') }}
+            </span>
+        </p>
+    </div>
+
+    {% if error %}
+    <div class="bg-error/10 border-l-4 border-error rounded-lg p-4">
+        <p class="text-sm text-error font-semibold">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form (Main) -->
+        <div class="lg:col-span-2">
+            <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
+                <form method="POST" action="/sessions/{{ session.id }}/edit-closed" class="space-y-6">
+                    <!-- Final Cash -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Final Cash') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="final_cash"
+                                class="input input-sm input-bordered w-full font-mono"
+                                value="{{ " {:,.0f}".format(session.final_cash) if session.final_cash else '' }}"
+                        placeholder="0"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Amount counted from cash') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Payment Methods Section -->
+                    <div class="divider my-4"></div>
+                    <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70 mb-4">💳 {{ _('Payment
+                        Method Totals') }}</h3>
+
+                    <!-- Envelope Amount -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Envelope Amount') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="envelope_amount"
+                                class="input input-sm input-bordered w-full font-mono"
+                                value="{{ " {:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0'
+                        }}"
+                        placeholder="0"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Cash in envelope') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Credit Card Total -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Credit Card Total') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="credit_card_total"
+                                class="input input-sm input-bordered w-full font-mono"
+                                value="{{ " {:,.0f}".format(session.credit_card_total) if session.credit_card_total else
+                        '0' }}"
+                        placeholder="0"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Total credit card sales') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Debit Card Total -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Debit Card Total') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="debit_card_total"
+                                class="input input-sm input-bordered w-full font-mono"
+                                value="{{ " {:,.0f}".format(session.debit_card_total) if session.debit_card_total else
+                        '0' }}"
+                        placeholder="0"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Total debit card sales') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Bank Transfer Total -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Bank Transfer Total') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="bank_transfer_total"
+                                class="input input-sm input-bordered w-full font-mono"
+                                value="{{ " {:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total
+                        else '0' }}"
+                        placeholder="0"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Direct bank transfers') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Expenses -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Expenses') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="expenses"
+                                class="input input-sm input-bordered w-full font-mono"
+                                value="{{ " {:,.0f}".format(session.expenses) if session.expenses else '0' }}"
+                        placeholder="0"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Session expenses') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Documentation Section -->
+                    <div class="divider my-4"></div>
+                    <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70 mb-4">📋 {{
+                        _('Documentation') }}</h3>
+
+                    <!-- Closing Ticket -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Closing Ticket') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="closing_ticket"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ session.closing_ticket or '' }}"
+                                placeholder="{{ _('e.g., 123456789') }}"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Register or POS ticket number') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Notes') }}</span>
+                        </label>
+                        <textarea
+                                name="notes"
+                                class="textarea textarea-sm textarea-bordered w-full h-20"
+                                placeholder="{{ _('Any discrepancies or notes...') }}"
+                        >{{ session.notes or '' }}</textarea>
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Document any differences or issues') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Reason for Edit -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Reason for Edit') }}</span>
+                        </label>
+                        <textarea
+                                name="reason"
+                                class="textarea textarea-sm textarea-bordered w-full h-20"
+                                placeholder="{{ _('e.g., Corrected final count, Card total verification...') }}"
+                        ></textarea>
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Required for audit trail') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="divider my-4"></div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        <button type="submit" class="btn btn-success btn-sm flex-1 gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5 13l4 4L19 7"/>
+                            </svg>
+                            {{ _('Save Changes') }}
+                        </button>
+                        <a href="/sessions/{{ session.id }}" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar: Current Values & Tip -->
+        <div class="lg:col-span-1 space-y-4">
+            <!-- Current Values -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Current Values')
+                    }}</h3>
+                <div class="space-y-2 text-xs">
+                    <div>
+                        <p class="text-base-content/60">{{ _('Session Date') }}</p>
+                        <p class="font-mono font-semibold">{{ session.session_date.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Final Cash') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.final_cash) if
+                            session.final_cash else '0' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Envelope') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.envelope_amount) if
+                            session.envelope_amount else '0' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Credit Card') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.credit_card_total) if
+                            session.credit_card_total else '0' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Debit Card') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.debit_card_total) if
+                            session.debit_card_total else '0' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Bank Transfer') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.bank_transfer_total) if
+                            session.bank_transfer_total else '0' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Expenses') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.expenses) if session.expenses
+                            else '0' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tip -->
+            <div class="bg-info/10 border-l-4 border-info rounded-lg p-4">
+                <p class="font-bold text-sm text-info">💡 {{ _('Quick Tip') }}</p>
+                <p class="text-xs text-base-content/70 mt-2">{{ _('All edits are logged with reason and timestamp for
+                    compliance.') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
