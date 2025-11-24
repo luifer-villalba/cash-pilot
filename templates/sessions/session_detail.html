@@ -11,8 +11,9 @@
                 <div class="flex items-center gap-3">
                     <a href="/" class="btn btn-ghost btn-sm no-animation">← {{ _('Back') }}</a>
                     <div>
-                        <h1 class="text-2xl font-semibold">💰 {{ _('Shift') }} @ {{ session.business.name }} ({{
-                            session.cashier_name }})</h1>
+                        <h1 class="text-2xl font-semibold">
+                            💰 {{ _('Shift') }} @ {{ session.business.name }} ({{ session.cashier_name }})
+                        </h1>
                         <p class="text-xs text-base-content/50">📅 {{ session.session_date.strftime('%d/%m/%Y') }}</p>
                     </div>
                 </div>
@@ -59,13 +60,15 @@
                     <div class="bg-white rounded-lg border border-base-200 shadow p-6 space-y-4">
                         <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{
-                                    _('Cashier') }}</p>
+                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
+                                    {{ _('Cashier') }}
+                                </p>
                                 <p class="text-base font-semibold mt-2">{{ session.cashier_name }}</p>
                             </div>
                             <div>
-                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{
-                                    _('Status') }}</p>
+                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
+                                    {{ _('Status') }}
+                                </p>
                                 <div class="mt-2">
                                     {% if session.status == 'OPEN' %}
                                     <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
@@ -81,14 +84,17 @@
                                 </div>
                             </div>
                             <div>
-                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{
-                                    _('Opened') }}</p>
-                                <p class="text-base font-semibold mt-2">🕐 {{ session.opened_time.strftime('%H:%M')
-                                    }}</p>
+                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
+                                    {{ _('Opened') }}
+                                </p>
+                                <p class="text-base font-semibold mt-2">
+                                    🕐 {{ session.opened_time.strftime('%H:%M') }}
+                                </p>
                             </div>
                             <div>
-                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{
-                                    _('Closed') }}</p>
+                                <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
+                                    {{ _('Closed') }}
+                                </p>
                                 <p class="text-base font-semibold mt-2">
                                     {% if session.closed_time %}🕐 {{ session.closed_time.strftime('%H:%M') }}{% else
                                     %}—{% endif %}
@@ -106,8 +112,9 @@
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Efectivo Inicial -->
                         <div class="bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200 shadow p-4">
-                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">{{ _('Initial Cash')
-                                }}</p>
+                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">
+                                {{ _('Initial Cash') }}
+                            </p>
                             <p class="text-2xl font-bold mt-2 text-blue-900">Gs {{ session.initial_cash |
                                 format_currency_py }}</p>
                             <p class="text-xs text-blue-600/70 mt-1">💳 {{ _('Opening amount') }}</p>
@@ -115,8 +122,9 @@
 
                         <!-- Efectivo Final -->
                         <div class="bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200 shadow p-4">
-                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">{{ _('Final Cash')
-                                }}</p>
+                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">
+                                {{ _('Final Cash') }}
+                            </p>
                             <p class="text-2xl font-bold mt-2 text-blue-900">
                                 {% if session.final_cash %}Gs {{ session.final_cash | format_currency_py }}{% else %}—{%
                                 endif %}
@@ -126,8 +134,8 @@
 
                         <!-- Sobre -->
                         <div class="bg-gradient-to-br from-purple-50 to-white rounded-lg border border-purple-200 shadow p-4">
-                            <p class="text-xs text-purple-700 uppercase tracking-wider font-semibold">{{ _('Envelope
-                                Amount') }}</p>
+                            <p class="text-xs text-purple-700 uppercase tracking-wider font-semibold">
+                                {{ _('Envelope Amount') }}</p>
                             <p class="text-2xl font-bold mt-2 text-purple-900">
                                 {% if session.envelope_amount %}Gs {{ session.envelope_amount | format_currency_py }}{%
                                 else %}—{% endif %}
@@ -137,8 +145,9 @@
 
                         <!-- Transferencia Bancaria -->
                         <div class="bg-gradient-to-br from-amber-50 to-white rounded-lg border border-amber-200 shadow p-4">
-                            <p class="text-xs text-amber-700 uppercase tracking-wider font-semibold">{{ _('Bank
-                                Transfer') }}</p>
+                            <p class="text-xs text-amber-700 uppercase tracking-wider font-semibold">
+                                {{ _('Bank Transfer') }}
+                            </p>
                             <p class="text-2xl font-bold mt-2 text-amber-900">
                                 {% if session.bank_transfer_total %}Gs {{ session.bank_transfer_total |
                                 format_currency_py }}{% else %}—{% endif %}
@@ -216,7 +225,8 @@
                             <p class="text-xs {% if cash_profit >= 0 %}text-emerald-700{% else %}text-red-700{% endif %} uppercase tracking-wider font-semibold">
                                 {{ _('Cash Profit') }}</p>
                             <p class="text-2xl sm:text-3xl font-bold mt-2 {% if cash_profit >= 0 %}text-emerald-900{% else %}text-red-900{% endif %}">
-                                {% if cash_profit >= 0 %}+{% endif %}Gs {{ (net_cash_movement - session.expenses) | format_currency_py }}
+                                {% if cash_profit >= 0 %}+{% endif %}Gs {{ (net_cash_movement - session.expenses) |
+                                format_currency_py }}
                             </p>
                             <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/70{% else %}text-red-600/70{% endif %} mt-3">
                                 💵 {{ _('Cash only') }}</p>
@@ -226,11 +236,12 @@
 
                         <!-- Digital -->
                         <div class="bg-gradient-to-br from-sky-50 to-white rounded-lg border border-sky-200 shadow p-3 md:p-4">
-                            <p class="text-xs text-sky-700 uppercase tracking-wider font-semibold">{{ _('Credit/Debit')
-                                }}</p>
-                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-sky-900">+Gs {{
-                                (session.credit_card_total + session.debit_card_total) |
-                                format_currency_py }}</p>
+                            <p class="text-xs text-sky-700 uppercase tracking-wider font-semibold">
+                                {{ _('Credit/Debit') }}</p>
+                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-sky-900">
+                                +Gs {{ (session.credit_card_total + session.debit_card_total) |
+                                format_currency_py }}
+                            </p>
                             <p class="text-xs text-sky-600/70 mt-3">📱 {{ _('Cards') }}</p>
                             <p class="text-xs text-sky-600/50 mt-2 font-mono break-words">
                                 {{ _('Credit') }} + {{ _('Debit') }}
@@ -271,8 +282,9 @@
                         {% endif %}
                         {% if session.notes %}
                         <div>
-                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">📄 {{
-                                _('Notes') }}</p>
+                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
+                                📄 {{ _('Notes') }}
+                            </p>
                             <p class="text-sm mt-2 whitespace-pre-wrap text-base-content/70 bg-base-100 p-3 rounded border-l-4 border-primary">
                                 {{ session.notes }}</p>
                         </div>
