@@ -13,7 +13,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from cashpilot.models import CashSession
+from cashpilot.models import Business, CashSession
 
 TEMPLATES_DIR = Path("/app/templates")
 
@@ -176,3 +176,83 @@ async def login_page():
     template_path = Path("/app/templates/login.html")
     with open(template_path, "r") as f:
         return f.read()
+
+
+async def get_session_or_redirect(session_id: str, db: AsyncSession):
+    """Fetch session or return None (caller handles redirect)."""
+    stmt = (
+        select(CashSession)
+        .options(joinedload(CashSession.business))
+        .where(CashSession.id == UUID(session_id))
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
+
+
+def _get_session_calculations(session: CashSession) -> dict:
+    """Calculate session financials."""
+    final_cash = session.final_cash or Decimal("0")
+    envelope = session.envelope_amount or Decimal("0")
+    bank = session.bank_transfer_total or Decimal("0")
+    expenses = session.expenses or Decimal("0")
+    return {
+        "net_cash_movement": final_cash - session.initial_cash + envelope + bank,
+        "net_earnings": (final_cash - session.initial_cash + envelope + bank) - expenses,
+        "cash_profit": (final_cash - session.initial_cash + envelope) - expenses,
+    }
+
+
+async def get_active_businesses(db: AsyncSession) -> list:
+    """Fetch active businesses sorted by name."""
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
+# File: src/cashpilot/api/utils.py (add this function)
+
+
+async def update_open_session_fields(
+    session: CashSession,
+    cashier_name: str | None,
+    initial_cash: str | None,
+    opened_time: str | None,
+    expenses: str | None,
+) -> tuple[list[str], dict, dict]:
+    from datetime import datetime
+    from decimal import Decimal
+
+    changed_fields = []
+    old_values, new_values = {}, {}
+
+    if cashier_name and cashier_name.strip() != session.cashier_name:
+        old_values["cashier_name"] = session.cashier_name
+        new_values["cashier_name"] = cashier_name.strip()
+        session.cashier_name = cashier_name.strip()
+        changed_fields.append("cashier_name")
+
+    if initial_cash:
+        initial_cash_val = parse_currency(initial_cash)
+        if initial_cash_val != session.initial_cash:
+            old_values["initial_cash"] = str(session.initial_cash)
+            new_values["initial_cash"] = str(initial_cash_val)
+            session.initial_cash = initial_cash_val
+            changed_fields.append("initial_cash")
+
+    if opened_time:
+        opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
+        if opened_time_val != session.opened_time:
+            old_values["opened_time"] = session.opened_time.isoformat()
+            new_values["opened_time"] = opened_time_val.isoformat()
+            session.opened_time = opened_time_val
+            changed_fields.append("opened_time")
+
+    if expenses is not None:
+        expenses_val = parse_currency(expenses) if expenses else Decimal("0")
+        if expenses_val != (session.expenses or Decimal("0")):
+            old_values["expenses"] = str(session.expenses or "0")
+            new_values["expenses"] = str(expenses_val)
+            session.expenses = expenses_val
+            changed_fields.append("expenses")
+
+    return changed_fields, old_values, new_values
