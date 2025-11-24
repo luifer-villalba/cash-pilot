@@ -72,11 +72,9 @@
                                 type="text"
                                 name="credit_card_total"
                                 class="input input-sm input-bordered w-full"
-                                value="{{ " {:,.0f}".format(session.credit_card_total) if session.credit_card_total else
-                        '0' }}"
-                        placeholder="0"
-                        inputmode="decimal"
-                        required
+                                value="{% if session.credit_card_total and session.credit_card_total > 0 %}{{ '{:,.0f}'.format(session.credit_card_total) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                     </div>
 
@@ -89,10 +87,9 @@
                                 type="text"
                                 name="debit_card_total"
                                 class="input input-sm input-bordered w-full"
-                                value="{{ " {:,.0f}".format(session.debit_card_total) if session.debit_card_total else
-                        '0' }}"
-                        placeholder="0"
-                        inputmode="decimal"
+                                value="{% if session.debit_card_total and session.debit_card_total > 0 %}{{ '{:,.0f}'.format(session.debit_card_total) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                     </div>
 
@@ -105,10 +102,9 @@
                                 type="text"
                                 name="bank_transfer_total"
                                 class="input input-sm input-bordered w-full"
-                                value="{{ " {:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total
-                        else '0' }}"
-                        placeholder="0"
-                        inputmode="decimal"
+                                value="{% if session.bank_transfer_total and session.bank_transfer_total > 0 %}{{ '{:,.0f}'.format(session.bank_transfer_total) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                     </div>
 
@@ -121,9 +117,9 @@
                                 type="text"
                                 name="expenses"
                                 class="input input-sm input-bordered w-full"
-                                value="{{ " {:,.0f}".format(session.expenses) if session.expenses else '0' }}"
-                        placeholder="0"
-                        inputmode="decimal"
+                                value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
@@ -241,7 +237,7 @@
     </div>
 </div>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const closedTimeInput = document.getElementById('closed-time');
 
         // Prefill with current time if empty
@@ -253,4 +249,5 @@
         }
     });
 </script>
+<script src="/static/js/close-session.js"></script>
 {% endblock %}
