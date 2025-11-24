@@ -824,3 +824,6 @@ msgstr ""
 
 msgid "Shift"
 msgstr ""
+
+msgid "All edits are logged with reason and timestamp for compliance."
+msgstr ""

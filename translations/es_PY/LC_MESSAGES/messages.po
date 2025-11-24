@@ -810,3 +810,6 @@ msgstr "Dinero retirado de la caja (si hubiese)"
 
 msgid "Shift"
 msgstr "Turno"
+
+msgid "All edits are logged with reason and timestamp for compliance."
+msgstr "Todas las ediciones se registran con motivo y marca de tiempo para cumplimiento."

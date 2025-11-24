@@ -95,8 +95,10 @@ def create_app() -> FastAPI:
     app.include_router(dashboard_router)
 
     from cashpilot.api.routes.sessions import router as sessions_router
+    from cashpilot.api.routes.sessions_edit import router as sessions_edit_router
 
     app.include_router(sessions_router)
+    app.include_router(sessions_edit_router)
 
     from cashpilot.api.routes.businesses import router as businesses_router
 

@@ -22,11 +22,9 @@ from cashpilot.api.utils import (
     get_session_or_redirect,
     get_translation_function,
     parse_currency,
-    update_open_session_fields,
 )
 from cashpilot.core.db import get_db
 from cashpilot.models import CashSession
-from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.user import User
 
 TEMPLATES_DIR = Path("/app/templates")
@@ -110,9 +108,6 @@ async def create_session_post(
             },
             status_code=400,
         )
-
-
-# ─────── SESSION DETAIL ────────
 
 
 @router.get("/{session_id}", response_class=HTMLResponse)
@@ -212,94 +207,6 @@ async def close_session_post(
                 "current_user": current_user,
                 "session": session,
                 "error": str(e),
-                "locale": locale,
-                "_": _,
-            },
-            status_code=400,
-        )
-
-
-# ─────── EDIT OPEN SESSION ────────
-
-
-@router.get("/{session_id}/edit-open", response_class=HTMLResponse)
-async def edit_open_session_form(
-    request: Request,
-    session_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Form to edit an OPEN cash session."""
-    locale = get_locale(request)
-    _ = get_translation_function(locale)
-
-    session = await get_session_or_redirect(session_id, db)
-    if not session or session.status != "OPEN":
-        return RedirectResponse(url=f"/sessions/{session_id}" if session else "/", status_code=302)
-
-    return templates.TemplateResponse(
-        request,
-        "sessions/edit_open_session.html",
-        {"current_user": current_user, "session": session, "locale": locale, "_": _},
-    )
-
-
-@router.post("/{session_id}/edit-open", response_class=HTMLResponse)
-async def edit_open_session_post(
-    request: Request,
-    session_id: str,
-    current_user: User = Depends(get_current_user),
-    cashier_name: str | None = Form(None),
-    initial_cash: str | None = Form(None),
-    opened_time: str | None = Form(None),
-    expenses: str | None = Form(None),
-    reason: str | None = Form(None),
-    db: AsyncSession = Depends(get_db),
-):
-    """Handle edit open session form submission."""
-    locale = get_locale(request)
-    _ = get_translation_function(locale)
-
-    try:
-        session = await get_session_or_redirect(session_id, db)
-        if not session or session.status != "OPEN":
-            return RedirectResponse(
-                url=f"/sessions/{session_id}" if session else "/", status_code=302
-            )
-
-        changed_fields, old_values, new_values = await update_open_session_fields(
-            session, cashier_name, initial_cash, opened_time, expenses
-        )
-
-        session.last_modified_at = datetime.now()
-        session.last_modified_by = "system"
-        db.add(session)
-        await db.commit()
-
-        if changed_fields:
-            audit_log = CashSessionAuditLog(
-                session_id=session.id,
-                action="edit",
-                changed_fields=changed_fields,
-                old_values=old_values,
-                new_values=new_values,
-                changed_by="system",
-                reason=reason,
-            )
-            db.add(audit_log)
-            await db.commit()
-
-        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
-
-    except ValueError as e:
-        session = await get_session_or_redirect(session_id, db)
-        return templates.TemplateResponse(
-            request,
-            "sessions/edit_open_session.html",
-            {
-                "current_user": current_user,
-                "session": session,
-                "error": f"Invalid input: {str(e)}",
                 "locale": locale,
                 "_": _,
             },
