@@ -1,14 +1,21 @@
-<!-- File: templates/index.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Dashboard') }} - CashPilot{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 gap-6 px-4 md:px-6">
+<div class="space-y-8">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <h1 class="text-3xl md:text-4xl font-bold">{{ _('Dashboard') }}</h1>
-        <a href="/sessions/create" class="btn btn-primary btn-sm md:btn-md w-full sm:w-auto">{{ _('+ New Session') }}</a>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Dashboard') }}</h1>
+            <p class="text-sm text-base-content/60 mt-1">{{ _('Monitor cash sessions and reconciliation') }}</p>
+        </div>
+        <a href="/sessions/create" class="btn btn-primary gap-2 w-full sm:w-auto">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {{ _('New Session') }}
+        </a>
     </div>
 
     <!-- Stats Row (HTMX TARGET) -->
@@ -17,34 +24,38 @@
          hx-include="#filter-form"
          hx-trigger="load, #filter-form input changed delay:500ms, #filter-form select changed"
          hx-swap="outerHTML">
-        <!-- Skeleton while loading -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-            <div class="bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
-            <div class="bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
-            <div class="bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
-            <div class="bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
-            <div class="bg-base-100 rounded-lg shadow animate-pulse h-24"></div>
+        <!-- Skeleton: 5 metric cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+            <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+            <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+            <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+            <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
         </div>
     </div>
 
     <!-- Filters Section -->
-    <div class="card bg-base-100 shadow-xl">
-        <div class="card-body p-4 md:p-6">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow">
+        <div class="p-4 md:p-6 space-y-6">
             <!-- Filter Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="flex items-center gap-3">
-                    <h3 class="card-title text-lg">{{ _('Filters') }}</h3>
-                    <span id="filter-badge" class="badge badge-primary badge-sm hidden">
-                        <span id="filter-count">0</span>&nbsp;{{ _('active') }}
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 flex items-center gap-2">
+                        <span>🔍</span>
+                        {{ _('Filter Sessions') }}
+                    </h2>
+                    <span id="filter-badge" class="badge badge-sm badge-primary hidden">
+                        <span id="filter-count">0</span> {{ _('active') }}
                     </span>
                 </div>
                 <button
-                    type="button"
-                    id="filter-toggle"
-                    class="btn btn-ghost btn-sm"
-                    aria-label="Toggle filters"
+                        type="button"
+                        id="filter-toggle"
+                        class="btn btn-ghost btn-sm gap-2"
+                        aria-label="Toggle filters"
                 >
-                    <svg id="filter-chevron" class="w-5 h-5 transition-transform duration-300" fill="none"
+                    <span>{{ _('More Options') }}</span>
+                    <svg id="filter-chevron" class="w-4 h-4 transition-transform duration-300" fill="none"
                          stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
@@ -52,181 +63,132 @@
                 </button>
             </div>
 
-            <!-- Preset Buttons -->
-            <div class="form-control mb-4">
-                <label class="label pb-2">
-                    <span class="label-text text-sm font-semibold">{{ _('Quick Presets') }}</span>
-                </label>
-                <div class="flex flex-wrap gap-2">
-                    <button type="button" class="btn btn-sm btn-outline" data-preset="today">
-                        {{ _('Today') }}
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline" data-preset="week">
-                        {{ _('This Week') }}
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline" data-preset="month">
-                        {{ _('This Month') }}
-                    </button>
-                </div>
+            <!-- Preset Buttons (Always Visible) -->
+            <div class="flex flex-wrap gap-2 pb-4 border-b border-base-200">
+                <button type="button" class="btn btn-sm btn-outline gap-1" data-preset="today">
+                    <span>📅</span>
+                    <span>{{ _('Today') }}</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline gap-1" data-preset="week">
+                    <span>📆</span>
+                    <span>{{ _('This Week') }}</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline gap-1" data-preset="month">
+                    <span>📊</span>
+                    <span>{{ _('This Month') }}</span>
+                </button>
             </div>
 
             <!-- Collapsible Filter Form -->
-            <form id="filter-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end transition-all duration-300">
-                <!-- Date From -->
-                <div class="form-control relative">
-                    <label class="label pb-2">
-                        <span class="label-text text-sm font-medium">{{ _('From Date') }}</span>
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="date"
-                            id="from_date"
-                            name="from_date"
-                            class="input input-bordered input-sm w-full pr-10"
-                            value="{{ current_filters.from_date }}"
-                            hx-get="/sessions/table"
-                            hx-include="#filter-form"
-                            hx-target="#sessions-table"
-                            hx-swap="innerHTML"
-                            hx-trigger="change"
-                        />
-                        <button
-                            type="button"
-                            class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity pointer-events-none"
-                            data-field="from_date"
-                            title="{{ _('Clear') }}"
-                        >
-                            ✕
-                        </button>
+            <form id="filter-form" class="space-y-4 transition-all duration-300">
+                <!-- Date & Status Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- From Date -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('From Date') }}</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                    type="date"
+                                    id="from_date"
+                                    name="from_date"
+                                    class="input input-sm input-bordered w-full pr-10"
+                                    value="{{ current_filters.from_date }}"
+                            />
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="from_date">✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- To Date -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('To Date') }}</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                    type="date"
+                                    id="to_date"
+                                    name="to_date"
+                                    class="input input-sm input-bordered w-full pr-10"
+                                    value="{{ current_filters.to_date }}"
+                            />
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="to_date">✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Status') }}</span>
+                        </label>
+                        <div class="relative">
+                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10">
+                                <option value="">{{ _('All') }}</option>
+                                <option value="OPEN" {% if current_filters.status==
+                                'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
+                                <option value="CLOSED" {% if current_filters.status==
+                                'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
+                            </select>
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="status">✕
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Business -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+                        </label>
+                        <div class="relative">
+                            <select id="business_id" name="business_id"
+                                    class="select select-sm select-bordered w-full pr-10">
+                                <option value="">{{ _('All') }}</option>
+                                {% for biz in businesses %}
+                                <option value="{{ biz.id }}" {% if current_filters.business_id== biz.id|string
+                                        %}selected{% endif %}>{{ biz.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="business_id">✕
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Date To -->
-                <div class="form-control relative">
-                    <label class="label pb-2">
-                        <span class="label-text text-sm font-medium">{{ _('To Date') }}</span>
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="date"
-                            id="to_date"
-                            name="to_date"
-                            class="input input-bordered input-sm w-full pr-10"
-                            value="{{ current_filters.to_date }}"
-                            hx-get="/sessions/table"
-                            hx-include="#filter-form"
-                            hx-target="#sessions-table"
-                            hx-swap="innerHTML"
-                            hx-trigger="change"
-                        />
-                        <button
-                            type="button"
-                            class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity pointer-events-none"
-                            data-field="to_date"
-                            title="{{ _('Clear') }}"
-                        >
-                            ✕
-                        </button>
+                <!-- Cashier Name Row -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier Name') }}</span>
+                        </label>
+                        <div class="relative">
+                            <input
+                                    type="text"
+                                    id="cashier_name"
+                                    name="cashier_name"
+                                    class="input input-sm input-bordered w-full pr-10"
+                                    placeholder="{{ _('Search...') }}"
+                                    value="{{ current_filters.cashier_name or '' }}"
+                            />
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="cashier_name">✕
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Cashier Name -->
-                <div class="form-control relative">
-                    <label class="label pb-2">
-                        <span class="label-text text-sm font-medium">{{ _('Cashier Name') }}</span>
-                    </label>
-                    <div class="relative">
-                        <input
-                            type="text"
-                            id="cashier_name"
-                            name="cashier_name"
-                            class="input input-bordered input-sm w-full pr-10"
-                            placeholder="{{ _('Search...') }}"
-                            value="{{ current_filters.cashier_name or '' }}"
-                            hx-get="/sessions/table"
-                            hx-include="#filter-form"
-                            hx-target="#sessions-table"
-                            hx-swap="innerHTML"
-                            hx-trigger="change, input delay:500ms"
-                        />
-                        <button
-                            type="button"
-                            class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity pointer-events-none"
-                            data-field="cashier_name"
-                            title="{{ _('Clear') }}"
-                        >
-                            ✕
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Status -->
-                <div class="form-control relative">
-                    <label class="label pb-2">
-                        <span class="label-text text-sm font-medium">{{ _('Status') }}</span>
-                    </label>
-                    <div class="relative">
-                        <select
-                            id="status"
-                            name="status"
-                            class="select select-bordered select-sm w-full pr-10"
-                            hx-get="/sessions/table"
-                            hx-include="#filter-form"
-                            hx-target="#sessions-table"
-                            hx-swap="innerHTML"
-                            hx-trigger="change"
-                        >
-                            <option value="">{{ _('All Statuses') }}</option>
-                            <option value="OPEN" {% if current_filters.status == 'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
-                            <option value="CLOSED" {% if current_filters.status == 'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
-                        </select>
-                        <button
-                            type="button"
-                            class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity pointer-events-none"
-                            data-field="status"
-                            title="{{ _('Clear') }}"
-                        >
-                            ✕
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Business -->
-                <div class="form-control relative">
-                    <label class="label pb-2">
-                        <span class="label-text text-sm font-medium">{{ _('Business') }}</span>
-                    </label>
-                    <div class="relative">
-                        <select
-                            id="business_id"
-                            name="business_id"
-                            class="select select-bordered select-sm w-full pr-10"
-                            hx-get="/sessions/table"
-                            hx-include="#filter-form"
-                            hx-target="#sessions-table"
-                            hx-swap="innerHTML"
-                            hx-trigger="change"
-                        >
-                            <option value="">{{ _('All Businesses') }}</option>
-                            {% for biz in businesses %}
-                            <option value="{{ biz.id }}" {% if current_filters.business_id == biz.id|string %}selected{% endif %}>
-                                {{ biz.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <button
-                            type="button"
-                            class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 opacity-0 transition-opacity pointer-events-none"
-                            data-field="business_id"
-                            title="{{ _('Clear') }}"
-                        >
-                            ✕
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Clear All -->
-                <div class="form-control">
+                    <!-- Clear All Button -->
                     <a href="/" class="btn btn-outline btn-sm w-full">{{ _('Clear All') }}</a>
                 </div>
             </form>
@@ -243,5 +205,73 @@
     </div>
 </div>
 
-<script src="/static/js/dashboard.js"></script>
+<script>
+    // Helper to trigger both stats and table updates
+    function applyFilters() {
+        const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
+        const queryString = '?' + params.toString();
+
+        // Update stats
+        htmx.ajax('GET', '/stats' + queryString, '#stats-row');
+
+        // Update table
+        htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
+    }
+
+    // Preset button handlers
+    document.querySelectorAll('[data-preset]').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const preset = this.dataset.preset;
+            const today = new Date();
+            let startDate, endDate = today;
+
+            switch (preset) {
+                case 'today':
+                    startDate = today;
+                    break;
+                case 'week':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - today.getDay());
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    break;
+            }
+
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            document.getElementById('from_date').value = formatDate(startDate);
+            document.getElementById('to_date').value = formatDate(endDate);
+
+            applyFilters();
+        });
+    });
+
+    // Filter form change handler
+    document.getElementById('filter-form').addEventListener('change', applyFilters);
+
+    // Filter field clear handlers
+    document.querySelectorAll('.clear-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const field = this.dataset.field;
+            document.getElementById(field).value = '';
+            applyFilters();
+        });
+    });
+
+    // Show clear button on input
+    document.querySelectorAll('#filter-form input, #filter-form select').forEach(input => {
+        input.addEventListener('focus', function () {
+            if (this.value) {
+                this.parentElement.querySelector('.clear-filter-btn')?.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        });
+        input.addEventListener('blur', function () {
+            if (!this.value) {
+                this.parentElement.querySelector('.clear-filter-btn')?.classList.add('opacity-0', 'pointer-events-none');
+            }
+        });
+    });
+</script>
 {% endblock %}

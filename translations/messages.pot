@@ -641,3 +641,186 @@ msgstr ""
 
 msgid "Allow Overlap:"
 msgstr ""
+
+msgid "Cash & Transfer"
+msgstr ""
+
+msgid "Initial Cash"
+msgstr ""
+
+msgid "Envelope Amount"
+msgstr ""
+
+msgid "Credit Card"
+msgstr ""
+
+msgid "Opening amount"
+msgstr ""
+
+msgid "Closing amount"
+msgstr ""
+
+msgid "Set aside"
+msgstr ""
+
+msgid "Net cash movement"
+msgstr ""
+
+msgid "Visa/Mastercard"
+msgstr ""
+
+msgid "Debit only"
+msgstr ""
+
+msgid "Transfers"
+msgstr ""
+
+msgid "Outflows"
+msgstr ""
+
+msgid "Expenses Impact"
+msgstr ""
+
+msgid "All sales"
+msgstr ""
+
+msgid "Cash only"
+msgstr ""
+
+msgid "Cards+Transfer"
+msgstr ""
+
+msgid "After expenses"
+msgstr ""
+
+msgid "All revenue"
+msgstr ""
+
+msgid "Bottom line"
+msgstr ""
+
+msgid "Cash & Transfer Profit"
+msgstr ""
+
+msgid "Net After Expenses"
+msgstr ""
+
+msgid "CASH SALES & BANK TRANSFER"
+msgstr ""
+
+msgid "Cards"
+msgstr ""
+
+msgid "Transfer"
+msgstr ""
+
+msgid "Digital"
+msgstr ""
+
+msgid "Margin"
+msgstr ""
+
+msgid "Still running"
+msgstr ""
+
+msgid "Session complete"
+msgstr ""
+
+msgid "Mark for review"
+msgstr ""
+
+msgid "FLAGGED"
+msgstr ""
+
+msgid "Active Shift"
+msgstr ""
+
+msgid "When"
+msgstr ""
+
+msgid "Who"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "Fields"
+msgstr ""
+
+msgid "By"
+msgstr ""
+
+msgid "Failed to load"
+msgstr ""
+
+msgid "Final"
+msgstr ""
+
+msgid "Initial"
+msgstr ""
+
+msgid "Monitor cash sessions and reconciliation"
+msgstr ""
+
+msgid "Filter Sessions"
+msgstr ""
+
+msgid "More Options"
+msgstr ""
+
+msgid "Date & Time"
+msgstr ""
+
+msgid "Register"
+msgstr ""
+
+msgid "Direct account transfers"
+msgstr ""
+
+msgid "Credit"
+msgstr ""
+
+msgid "Debit"
+msgstr ""
+
+msgid "Total Income"
+msgstr ""
+
+msgid "sessions flagged"
+msgstr ""
+
+msgid "Toggle theme"
+msgstr ""
+
+msgid "Profile"
+msgstr ""
+
+msgid "Are you sure?"
+msgstr ""
+
+msgid "First page"
+msgstr ""
+
+msgid "Previous page"
+msgstr ""
+
+msgid "Next page"
+msgstr ""
+
+msgid "Last page"
+msgstr ""
+
+msgid "Close Cash Session"
+msgstr ""
+
+msgid "(final − initial) + envelope"
+msgstr ""
+
+msgid "credit + debit + bank"
+msgstr ""
+
+msgid "total − expenses"
+msgstr ""
+
+msgid "Cash removed from register (if any)"
+msgstr ""

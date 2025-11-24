@@ -1,136 +1,171 @@
 {% extends "base.html" %}
 
-{% block title %}{{ _('Edit Session') }} - CashPilot{% endblock %}
+{% block title %}{{ _('Edit Open Cash Session') }} - CashPilot{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Main Form -->
-    <div class="lg:col-span-2">
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h2 class="card-title">{{ _('Edit Open Cash Session') }}</h2>
-                <p class="text-sm text-base-content opacity-75 mb-4">
-                    {{ _('Cashier:') }} <strong>{{ session.cashier_name }}</strong> |
-                    {{ _('Status:') }} <span class="badge badge-success">{{ _('OPEN') }}</span>
-                </p>
+<div class="space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Edit Open Cash Session') }}</h1>
+        <p class="text-sm text-base-content/60 mt-2">
+            👤 <strong>{{ session.cashier_name }}</strong>
+            <span class="mx-2">•</span>
+            <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
+                <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                {{ _('Open') }}
+            </span>
+        </p>
+    </div>
 
-                {% if error %}
-                <div class="alert alert-error mb-4">
-                    <span>{{ error }}</span>
-                </div>
-                {% endif %}
+    {% if error %}
+    <div class="bg-error/10 border-l-4 border-error rounded-lg p-4">
+        <p class="text-sm text-error font-semibold">{{ error }}</p>
+    </div>
+    {% endif %}
 
-                <form method="POST" action="/sessions/{{ session.id }}/edit-open" class="space-y-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form (Main) -->
+        <div class="lg:col-span-2">
+            <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
+                <form method="POST" action="/sessions/{{ session.id }}/edit-open" class="space-y-6">
                     <!-- Cashier Name -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Cashier Name') }}</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier Name') }}</span>
                         </label>
-                        <input type="text" name="cashier_name" class="input input-bordered"
-                               value="{{ session.cashier_name }}"
-                               placeholder="{{ _('e.g., María López') }}"
-                               minlength="2" maxlength="100" />
-                        <label class="label">
-                            <span class="label-text-alt">{{ _('Who is handling this session?') }}</span>
+                        <input
+                                type="text"
+                                name="cashier_name"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ session.cashier_name }}"
+                                placeholder="{{ _('e.g., María López') }}"
+                                minlength="2"
+                                maxlength="100"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Who is handling this session?') }}</span>
                         </label>
                     </div>
 
                     <!-- Initial Cash -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Initial Cash (Gs)') }}</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Initial Cash (Gs)') }}</span>
                         </label>
-                        <input type="text" name="initial_cash" class="input input-bordered"
-                               value="{{ "{:,.0f}".format(session.initial_cash) }}"
-                               placeholder="500000" inputmode="decimal" />
-                        <label class="label">
-                            <span class="label-text-alt">{{ _('Starting amount in drawer') }}</span>
+                        <input
+                                type="text"
+                                name="initial_cash"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.initial_cash) }}"
+                        placeholder="500.000"
+                        inputmode="decimal"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
                         </label>
                     </div>
 
                     <!-- Opened Time -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Opened At (Time)') }}</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Opened At (Time)') }}</span>
                         </label>
-                        <input type="time" name="opened_time" class="input input-bordered"
-                               value="{{ session.opened_time.strftime('%H:%M') if session.opened_time else '' }}" />
-                        <label class="label">
-                            <span class="label-text-alt">{{ _('Time session was opened') }}</span>
+                        <input
+                                type="time"
+                                name="opened_time"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ session.opened_time.strftime('%H:%M') if session.opened_time else '' }}"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Time session was opened') }}</span>
                         </label>
                     </div>
 
                     <!-- Expenses -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Expenses (Gs)') }}</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Expenses (Gs)') }}</span>
                         </label>
-                        <input type="text" name="expenses" class="input input-bordered"
-                               value="{{ "{:,.0f}".format(session.expenses) if session.expenses else '0' }}"
-                               placeholder="0" inputmode="decimal" />
-                        <label class="label">
-                            <span class="label-text-alt">{{ _('Business expenses during shift') }}</span>
+                        <input
+                                type="text"
+                                name="expenses"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.expenses) if session.expenses else '0' }}"
+                        placeholder="0"
+                        inputmode="decimal"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
                         </label>
                     </div>
 
-                    <!-- Reason/Notes for Audit Trail -->
-                    <div class="divider">{{ _('Audit Trail') }}</div>
+                    <!-- Divider: Audit Trail -->
+                    <div class="divider my-4">{{ _('Audit Trail') }}</div>
 
+                    <!-- Reason for Edit -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Reason for Edit') }}</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Reason for Edit') }}</span>
                         </label>
-                        <textarea name="reason" class="textarea textarea-bordered h-20"
-                                  placeholder="{{ _('e.g., Corrected initial count, Name typo fix...') }}"></textarea>
-                        <label class="label">
-                            <span class="label-text-alt">{{ _('Required for audit trail') }}</span>
+                        <textarea
+                                name="reason"
+                                class="textarea textarea-sm textarea-bordered w-full h-20"
+                                placeholder="{{ _('e.g., Corrected initial count, Name typo fix...') }}"
+                        ></textarea>
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Required for audit trail') }}</span>
                         </label>
                     </div>
+
+                    <!-- Divider -->
+                    <div class="divider my-4"></div>
 
                     <!-- Action Buttons -->
-                    <div class="form-control mt-6">
-                        <div class="flex gap-2">
-                            <button type="submit" class="btn btn-success flex-1">{{ _('Save Changes') }}</button>
-                            <a href="/sessions/{{ session.id }}" class="btn btn-outline flex-1">{{ _('Cancel') }}</a>
-                        </div>
+                    <div class="flex gap-3">
+                        <button type="submit" class="btn btn-success flex-1 gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5 13l4 4L19 7"/>
+                            </svg>
+                            {{ _('Save Changes') }}
+                        </button>
+                        <a href="/sessions/{{ session.id }}" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- Sidebar: Session Summary -->
-    <div class="lg:col-span-1 space-y-4">
-        <!-- Current Values -->
-        <div class="card bg-base-100 shadow-xl">
-            <div class="card-body">
-                <h3 class="card-title text-lg">{{ _('Current Values') }}</h3>
-                <div class="space-y-3 text-sm">
+        <!-- Sidebar: Current Values & Tip -->
+        <div class="lg:col-span-1 space-y-4">
+            <!-- Current Values -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Current Values')
+                    }}</h3>
+                <div class="space-y-2 text-xs">
                     <div>
-                        <span class="label-text-alt">{{ _('Session Date:') }}</span>
-                        <p class="font-mono">{{ session.session_date.strftime('%Y-%m-%d') }}</p>
+                        <p class="text-base-content/60">{{ _('Session Date') }}</p>
+                        <p class="font-mono font-semibold">{{ session.session_date.strftime('%d/%m/%Y') }}</p>
                     </div>
                     <div>
-                        <span class="label-text-alt">{{ _('Opened:') }}</span>
-                        <p class="font-mono">{{ session.opened_time.strftime('%H:%M') }}</p>
+                        <p class="text-base-content/60">{{ _('Opened At') }}</p>
+                        <p class="font-mono font-semibold">{{ session.opened_time.strftime('%H:%M') }}</p>
                     </div>
                     <div>
-                        <span class="label-text-alt">{{ _('Initial Cash:') }}</span>
-                        <p class="font-mono font-bold">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                        <p class="text-base-content/60">{{ _('Initial Cash') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                     <div>
-                        <span class="label-text-alt">{{ _('Expenses:') }}</span>
-                        <p class="font-mono">Gs {{ "{:,.0f}".format(session.expenses) }}</p>
+                        <p class="text-base-content/60">{{ _('Expenses') }}</p>
+                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.expenses) }}</p>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Edit Tip -->
-        <div class="alert alert-info">
-            <div class="text-sm">
-                <p class="font-semibold">{{ _('💡 Quick Tip') }}</p>
-                <p class="text-xs mt-1">{{ _('All edits are logged with reason and timestamp for compliance.') }}</p>
+            <!-- Tip -->
+            <div class="bg-info/10 border-l-4 border-info rounded-lg p-4">
+                <p class="font-bold text-sm text-info">💡 {{ _('Quick Tip') }}</p>
+                <p class="text-xs text-base-content/70 mt-2">{{ _('All edits are logged with reason and timestamp for
+                    compliance.') }}</p>
             </div>
         </div>
     </div>

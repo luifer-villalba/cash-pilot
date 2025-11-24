@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Close Cash Session') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Close Cash Session') }}</h1>
+        <p class="text-sm text-base-content/60 mt-2">
+            👤 <strong>{{ session.cashier_name }}</strong>
+            <span class="mx-2">•</span>
+            <span class="font-mono text-xs">{{ session.session_date.strftime('%d/%m/%Y') }}</span>
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form (Main) -->
+        <div class="lg:col-span-2">
+            <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
+                <form method="POST" action="/sessions/{{ session.id }}" class="space-y-6">
+                    <input type="hidden" name="_method" value="PUT"/>
+
+                    <!-- Final Cash Count -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Final Cash Count (Gs)') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="final_cash"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.final_cash) if session.final_cash else '' }}"
+                        placeholder="1.250.000"
+                        inputmode="decimal"
+                        required
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Total counted in drawer') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Envelope Amount -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Envelope Amount (Gs)') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="envelope_amount"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0'
+                        }}"
+                        placeholder="0"
+                        inputmode="decimal"
+                        required
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Cash removed from register (if any)') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Divider: Payment Methods -->
+                    <div class="divider my-4">{{ _('Payment Methods') }}</div>
+
+                    <!-- Credit Card -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💳 {{ _('Credit Card Total (Gs)') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="credit_card_total"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.credit_card_total) if session.credit_card_total else
+                        '0' }}"
+                        placeholder="0"
+                        inputmode="decimal"
+                        required
+                        />
+                    </div>
+
+                    <!-- Debit Card -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">⚡ {{ _('Debit Card Total (Gs)') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="debit_card_total"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.debit_card_total) if session.debit_card_total else
+                        '0' }}"
+                        placeholder="0"
+                        inputmode="decimal"
+                        />
+                    </div>
+
+                    <!-- Bank Transfer -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🏦 {{ _('Bank Transfer Total (Gs)') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="bank_transfer_total"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total
+                        else '0' }}"
+                        placeholder="0"
+                        inputmode="decimal"
+                        />
+                    </div>
+
+                    <!-- Expenses -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">📉 {{ _('Expenses (Gs)') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="expenses"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.expenses) if session.expenses else '0' }}"
+                        placeholder="0"
+                        inputmode="decimal"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Closed Time -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Closed At (Time)') }}</span>
+                        </label>
+                        <input
+                                type="time"
+                                name="closed_time"
+                                class="input input-sm input-bordered w-full"
+                                id="closed-time"
+                                value="{{ session.closed_time.strftime('%H:%M') if session.closed_time else '' }}"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for current time') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Divider: Additional Info -->
+                    <div class="divider my-4">{{ _('Additional Info') }}</div>
+
+                    <!-- Closing Ticket -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Closing Ticket #') }}</span>
+                        </label>
+                        <input
+                                type="text"
+                                name="closing_ticket"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ session.closing_ticket or '' }}"
+                                placeholder="{{ _('e.g., T-20251112-001') }}"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: POS ticket number') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Notes') }}</span>
+                        </label>
+                        <textarea
+                                name="notes"
+                                class="textarea textarea-sm textarea-bordered w-full h-24"
+                                placeholder="{{ _('Any discrepancies or notes...') }}"
+                        >{{ session.notes or '' }}</textarea>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="divider my-4"></div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        <button type="submit" class="btn btn-error btn-sm flex-1 gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            {{ _('Close Session') }}
+                        </button>
+                        <a href="/sessions/{{ session.id }}" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar: Opening Info & Reconciliation Preview -->
+        <div class="lg:col-span-1 space-y-4">
+            <!-- Opening Summary -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Opening Info')
+                    }}</h3>
+                <div class="space-y-2 text-xs">
+                    <div>
+                        <p class="text-base-content/60">{{ _('Session Date') }}</p>
+                        <p class="font-mono font-semibold">{{ session.session_date.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Opened At') }}</p>
+                        <p class="font-mono font-semibold">{{ session.opened_time.strftime('%H:%M') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base-content/60">{{ _('Initial Cash') }}</p>
+                        <p class="font-mono font-bold text-lg">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reconciliation Preview -->
+            <div class="bg-success/10 border-l-4 border-success rounded-lg p-4 space-y-2">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-success">📊 {{ _('Reconciliation Preview')
+                    }}</h3>
+                <div class="space-y-1 text-xs text-base-content/70" id="preview">
+                    <p>{{ _('Fill form fields to see preview...') }}</p>
+                </div>
+            </div>
+
+            <!-- Formula Reference -->
+            <div class="bg-accent/10 border-l-4 border-accent rounded-lg p-4 space-y-2">
+                <h3 class="font-bold text-sm uppercase tracking-wider text-accent">🧮 {{ _('Formula') }}</h3>
+                <ul class="space-y-1 text-xs text-base-content/70 font-mono">
+                    <li><strong>💰</strong> {{ _('(final − initial) + envelope') }}</li>
+                    <li><strong>💳</strong> {{ _('credit + debit + bank') }}</li>
+                    <li><strong>📊</strong> {{ _('total − expenses') }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const closedTimeInput = document.getElementById('closed-time');
+
+        // Prefill with current time if empty
+        if (!closedTimeInput.value) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            closedTimeInput.value = `${hours}:${minutes}`;
+        }
+    });
+</script>
+{% endblock %}

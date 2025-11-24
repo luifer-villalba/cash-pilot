@@ -364,8 +364,8 @@ msgstr "Información de la Sesión"
 msgid "Sessions"
 msgstr "Sesiones"
 
-msgid "Shift Duration:"
-msgstr "Duración del Turno:"
+msgid "Shift Duration"
+msgstr "Duración del Turno"
 
 msgid "Showing"
 msgstr "Mostrando"
@@ -624,3 +624,186 @@ msgstr "Negocio/Sucursal:"
 
 msgid "Allow Overlap:"
 msgstr "Sesiones superpuestas:"
+
+msgid "Cash & Transfer"
+msgstr "Efectivo y Transferencia"
+
+msgid "Initial Cash"
+msgstr "Efectivo Inicial"
+
+msgid "Envelope Amount"
+msgstr "Monto del Sobre"
+
+msgid "Credit Card"
+msgstr "Tarjeta de Crédito"
+
+msgid "Opening amount"
+msgstr "Monto de apertura"
+
+msgid "Closing amount"
+msgstr "Monto de cierre"
+
+msgid "Set aside"
+msgstr "Apartado"
+
+msgid "Net cash movement"
+msgstr "Movimiento neto de efectivo"
+
+msgid "Visa/Mastercard"
+msgstr "Visa/Mastercard"
+
+msgid "Debit only"
+msgstr "Solo débito"
+
+msgid "Transfers"
+msgstr "Transferencias"
+
+msgid "Outflows"
+msgstr "Salidas"
+
+msgid "Expenses Impact"
+msgstr "Impacto de Gastos"
+
+msgid "All sales"
+msgstr "Todas las ventas"
+
+msgid "Cash only"
+msgstr "Solo efectivo"
+
+msgid "Cards+Transfer"
+msgstr "Tarjetas+Transferencia"
+
+msgid "After expenses"
+msgstr "Después de gastos"
+
+msgid "All revenue"
+msgstr "Todos los ingresos"
+
+msgid "Bottom line"
+msgstr "Resultado final"
+
+msgid "Cash & Transfer Profit"
+msgstr "Ganancia Efectivo y Transferencia"
+
+msgid "Net After Expenses"
+msgstr "Neto Después de Gastos"
+
+msgid "CASH SALES & BANK TRANSFER"
+msgstr "EFECTIVO Y TRANSFERENCIA BANCARIA"
+
+msgid "Cards"
+msgstr "Tarjetas"
+
+msgid "Transfer"
+msgstr "Transferencia"
+
+msgid "Digital"
+msgstr "Digital"
+
+msgid "Margin"
+msgstr "Margen"
+
+msgid "Still running"
+msgstr "Aún en ejecución"
+
+msgid "Session complete"
+msgstr "Sesión completada"
+
+msgid "Mark for review"
+msgstr "Marcar para revisión"
+
+msgid "FLAGGED"
+msgstr "MARCADO"
+
+msgid "Active Shift"
+msgstr "Turno Activo"
+
+msgid "When"
+msgstr "Cuándo"
+
+msgid "Who"
+msgstr "Quién"
+
+msgid "Action"
+msgstr "Acción"
+
+msgid "Fields"
+msgstr "Campos"
+
+msgid "By"
+msgstr "Por"
+
+msgid "Failed to load"
+msgstr "Error al cargar"
+
+msgid "Final"
+msgstr "Final"
+
+msgid "Initial"
+msgstr "Inicial"
+
+msgid "Monitor cash sessions and reconciliation"
+msgstr "Monitorear sesiones de caja y reconciliación"
+
+msgid "Filter Sessions"
+msgstr "Filtrar Sesiones"
+
+msgid "More Options"
+msgstr "Más Opciones"
+
+msgid "Date & Time"
+msgstr "Fecha y Hora"
+
+msgid "Register"
+msgstr "Caja"
+
+msgid "Direct account transfers"
+msgstr "Transferencias directas a cuenta"
+
+msgid "Credit"
+msgstr "Crédito"
+
+msgid "Debit"
+msgstr "Débito"
+
+msgid "Total Income"
+msgstr "Ingreso Total"
+
+msgid "sessions flagged"
+msgstr "sesiones marcadas"
+
+msgid "Toggle theme"
+msgstr "Cambiar tema"
+
+msgid "Profile"
+msgstr "Perfil"
+
+msgid "Are you sure?"
+msgstr "¿Estás seguro?"
+
+msgid "First page"
+msgstr "Primera página"
+
+msgid "Previous page"
+msgstr "Página anterior"
+
+msgid "Next page"
+msgstr "Siguiente página"
+
+msgid "Last page"
+msgstr "Última página"
+
+msgid "Close Cash Session"
+msgstr "Cerrar caja"
+
+msgid "(final − initial) + envelope"
+msgstr "(caja final - caja inicial) + sobre"
+
+msgid "credit + debit + bank"
+msgstr "TC + TD + transferencias"
+
+msgid "total − expenses"
+msgstr "total - gastos"
+
+msgid "Dinero retirado de la caja (si hubiese)"
+msgstr ""
