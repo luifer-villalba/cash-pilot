@@ -28,7 +28,8 @@
         <!-- Form (Main) -->
         <div class="lg:col-span-2">
             <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
-                <form method="POST" action="/sessions/{{ session.id }}/edit-closed" class="space-y-6">
+                <form method="POST" action="/sessions/{{ session.id }}/edit-closed" class="space-y-6"
+                      data-initial-cash="{{ session.initial_cash }}">
                     <!-- Final Cash -->
                     <div class="form-control">
                         <label class="label pb-2">
@@ -78,10 +79,10 @@
                         <input
                                 type="text"
                                 name="credit_card_total"
-                                class="input input-sm input-bordered w-full font-mono"
-                                value="{{ " {:,.0f}".format(session.credit_card_total) if session.credit_card_total else
-                        '0' }}"
-                        placeholder="0"
+                                class="input input-sm input-bordered w-full"
+                                value="{% if session.credit_card_total and session.credit_card_total > 0 %}{{ '{:,.0f}'.format(session.credit_card_total) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Total credit card sales') }}</span>
@@ -96,10 +97,10 @@
                         <input
                                 type="text"
                                 name="debit_card_total"
-                                class="input input-sm input-bordered w-full font-mono"
-                                value="{{ " {:,.0f}".format(session.debit_card_total) if session.debit_card_total else
-                        '0' }}"
-                        placeholder="0"
+                                class="input input-sm input-bordered w-full"
+                                value="{% if session.debit_card_total and session.debit_card_total > 0 %}{{ '{:,.0f}'.format(session.debit_card_total) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Total debit card sales') }}</span>
@@ -114,10 +115,10 @@
                         <input
                                 type="text"
                                 name="bank_transfer_total"
-                                class="input input-sm input-bordered w-full font-mono"
-                                value="{{ " {:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total
-                        else '0' }}"
-                        placeholder="0"
+                                class="input input-sm input-bordered w-full"
+                                value="{% if session.bank_transfer_total and session.bank_transfer_total > 0 %}{{ '{:,.0f}'.format(session.bank_transfer_total) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Direct bank transfers') }}</span>
@@ -132,9 +133,10 @@
                         <input
                                 type="text"
                                 name="expenses"
-                                class="input input-sm input-bordered w-full font-mono"
-                                value="{{ " {:,.0f}".format(session.expenses) if session.expenses else '0' }}"
-                        placeholder="0"
+                                class="input input-sm input-bordered w-full"
+                                value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Session expenses') }}</span>
@@ -265,4 +267,5 @@
         </div>
     </div>
 </div>
+<script src="/static/js/edit-session.js"></script>
 {% endblock %}

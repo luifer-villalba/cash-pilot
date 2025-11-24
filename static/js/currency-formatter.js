@@ -1,3 +1,5 @@
+// File: static/js/currency-formatter.js
+
 /**
  * Locale-aware currency formatter for CashPilot
  * Supports multiple locales but maintains es-PY currency always
@@ -60,6 +62,15 @@ console.log('🌍 Locale Detection:', {
  * Handles formatting for: initial_cash, final_cash, envelope_amount, etc.
  */
 function initializeCurrencyInputs() {
+    // Fields that support calculator (exclude from auto-formatting)
+    // Line 70
+    const calculatorFields = new Set([
+        'credit_card_total',
+        'debit_card_total',
+        'bank_transfer_total',
+        'expenses'
+    ]);
+
     const currencyFieldNames = [
         'initial_cash',
         'final_cash',
@@ -71,10 +82,16 @@ function initializeCurrencyInputs() {
     ];
 
     currencyFieldNames.forEach(fieldName => {
+        // Skip calculator-enabled fields completely
+        if (calculatorFields.has(fieldName)) {
+            console.log(`⚠️ Skipping currency formatter for calculator field: ${fieldName}`);
+            return;
+        }
+
         const inputs = document.querySelectorAll(`input[type="text"][name="${fieldName}"], input[type="number"][name="${fieldName}"]`);
         inputs.forEach(input => {
             // On input: keep digits + single decimal point
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function () {
                 let value = this.value;
                 const parts = value.split('.');
                 const digits = parts[0].replace(/\D/g, '');
@@ -87,7 +104,7 @@ function initializeCurrencyInputs() {
             });
 
             // On blur: format without decimals (Paraguay standard)
-            input.addEventListener('blur', function() {
+            input.addEventListener('blur', function () {
                 if (this.value) {
                     const num = parseInt(this.value.replace(/\D/g, '')) || 0;
                     this.value = currencyFormatter.formatForLocale(num);

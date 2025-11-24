@@ -90,9 +90,9 @@
                                 type="text"
                                 name="expenses"
                                 class="input input-sm input-bordered w-full"
-                                value="{{ " {:,.0f}".format(session.expenses) if session.expenses else '0' }}"
-                        placeholder="0"
-                        inputmode="decimal"
+                                value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
@@ -171,4 +171,5 @@
         </div>
     </div>
 </div>
+<script src="/static/js/edit-session.js"></script>
 {% endblock %}
