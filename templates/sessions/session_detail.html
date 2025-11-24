@@ -11,16 +11,35 @@
                 <div class="flex items-center gap-3">
                     <a href="/" class="btn btn-ghost btn-sm no-animation">← {{ _('Back') }}</a>
                     <div>
-                        <h1 class="text-2xl font-semibold">💰 {{ session.cashier_name }}'s Shift @ {{ session.business.name }}</h1>
+                        <h1 class="text-2xl font-semibold">💰 {{ session.cashier_name }}'s Shift @ {{
+                            session.business.name }}</h1>
                         <p class="text-xs text-base-content/50">📅 {{ session.session_date.strftime('%d/%m/%Y') }}</p>
                     </div>
                 </div>
                 <div class="flex gap-2">
                     {% if session.status == 'OPEN' %}
-                    <a href="/sessions/{{ session.id }}/edit-open" class="btn btn-outline btn-sm">✏️ {{ _('Edit') }}</a>
-                    <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-sm">🔒 {{ _('Close') }}</a>
+                    <a href="/sessions/{{ session.id }}/edit-open" class="btn btn-outline btn-sm gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        {{ _('Edit') }}
+                    </a>
+                    <a href="/sessions/{{ session.id }}/edit" class="btn btn-primary btn-sm gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        {{ _('Close') }}
+                    </a>
                     {% else %}
-                    <a href="/sessions/{{ session.id }}/edit" class="btn btn-outline btn-sm">✏️ {{ _('Edit') }}</a>
+                    <a href="/sessions/{{ session.id }}/edit-open" class="btn btn-outline btn-sm gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        {{ _('Edit') }}
+                    </a>
                     {% endif %}
                 </div>
             </div>
@@ -130,7 +149,8 @@
                     </h2>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-white rounded-lg border border-base-200 shadow p-4">
-                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{ _('Credit Card') }}</p>
+                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{ _('Credit
+                                Card') }}</p>
                             <p class="text-2xl font-bold mt-2 text-base-content/80">
                                 {% if session.status == 'CLOSED' %}Gs {{ session.credit_card_total | format_currency_py
                                 }}{% else %}—{% endif %}
@@ -138,7 +158,8 @@
                             <p class="text-xs text-base-content/50 mt-1">🏦 Visa/Mastercard</p>
                         </div>
                         <div class="bg-white rounded-lg border border-base-200 shadow p-4">
-                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{ _('Debit Card') }}</p>
+                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{ _('Debit
+                                Card') }}</p>
                             <p class="text-2xl font-bold mt-2 text-base-content/80">
                                 {% if session.status == 'CLOSED' %}Gs {{ session.debit_card_total | format_currency_py
                                 }}{% else %}—{% endif %}
@@ -146,7 +167,8 @@
                             <p class="text-xs text-base-content/50 mt-1">💳 {{ _('Debit only') }}</p>
                         </div>
                         <div class="bg-white rounded-lg border border-base-200 shadow p-4">
-                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{ _('Bank Transfer') }}</p>
+                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{ _('Bank
+                                Transfer') }}</p>
                             <p class="text-2xl font-bold mt-2 text-base-content/80">
                                 {% if session.status == 'CLOSED' %}Gs {{ session.bank_transfer_total |
                                 format_currency_py }}{% else %}—{% endif %}
@@ -154,7 +176,8 @@
                             <p class="text-xs text-base-content/50 mt-1">🏧 {{ _('Transfers') }}</p>
                         </div>
                         <div class="bg-gradient-to-br from-red-50 to-white rounded-lg border border-red-200 shadow p-4">
-                            <p class="text-xs text-red-700 uppercase tracking-wider font-semibold">{{ _('Expenses') }}</p>
+                            <p class="text-xs text-red-700 uppercase tracking-wider font-semibold">{{ _('Expenses')
+                                }}</p>
                             <p class="text-2xl font-bold mt-2 text-red-900">
                                 {% if session.expenses > 0 %}−Gs {{ session.expenses | format_currency_py }}{% else
                                 %}—{% endif %}
@@ -182,16 +205,6 @@
                         </div>
                         <p class="text-xs text-base-content/60 mt-3">🧮 {{ _('Final Cash') }} − {{ _('Initial') }} + {{
                             _('Envelope') }} + {{ _('Bank Transfer') }}</p>
-                        <div class="mt-4 p-3 bg-primary/5 rounded-md">
-                            <p class="text-sm font-semibold">
-                                {% if session.total_sales > 0 %}
-                                📈 {{ ((session.net_earnings / session.total_sales) * 100) | round(1) }}% {{ _('margin')
-                                }}
-                                {% else %}
-                                —
-                                {% endif %}
-                            </p>
-                        </div>
                     </div>
 
                     <!-- Secondary Stats (3-column grid) -->
@@ -318,16 +331,13 @@
                                         ⚙️ {{ _('Action') }}
                                     </th>
                                     <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
-                                        🔄 {{ _('Fields') }}
-                                    </th>
-                                    <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
-                                        💬 {{ _('Reason') }}
+                                        🔄 {{ _('Changed') }}
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody id="audit-logs-table" class="divide-y divide-base-200">
                                 <tr>
-                                    <td colspan="5" class="px-4 py-6 text-center text-sm text-base-content/50">{{
+                                    <td colspan="4" class="px-4 py-6 text-center text-sm text-base-content/50">{{
                                         _('Loading...') }}
                                     </td>
                                 </tr>
@@ -347,35 +357,50 @@
                             const tbody = document.getElementById('audit-logs-table');
 
                             if (logs.length === 0) {
-                                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-6 text-center text-sm text-base-content/50">{{ _("No edits yet") }}</td></tr>';
+                                tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-sm text-base-content/50">{{ _("No edits yet") }}</td></tr>';
                                 return;
                             }
 
-                            tbody.innerHTML = logs.map(log => `
-                            <tr class="hover:bg-base-50">
-                                <td class="px-4 py-3 text-sm text-base-content/70">
-                                    <time datetime="${log.changed_at}">
-                                        ⏰ ${new Date(log.changed_at).toLocaleString()}
-                                    </time>
-                                </td>
-                                <td class="px-4 py-3 text-sm font-mono text-base-content/70">👤 ${log.changed_by || 'system'}</td>
-                                <td class="px-4 py-3">
-                                    <span class="badge badge-sm ${log.action === 'EDIT_OPEN' ? 'badge-info' : 'badge-warning'}">
-                                        ${log.action === 'EDIT_OPEN' ? '✏️' : '🔒'} ${log.action}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-base-content/70">
-                                    ${log.changed_fields.map(f => `<span class="badge badge-ghost badge-sm">🔄 ${f}</span>`).join(' ')}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-base-content/50">💬 ${log.reason || '—'}</td>
-                            </tr>
-                        `).join('');
+                            const actionConfig = {
+                                'EDIT_OPEN': {label: 'Edited (Open)', color: 'badge-info', icon: '✏️'},
+                                'CLOSE': {label: 'Closed', color: 'badge-error', icon: '🔒'},
+                                'FLAG_SESSION': {label: 'Flagged', color: 'badge-warning', icon: '🚩'}
+                            };
+
+                            tbody.innerHTML = logs.map(log => {
+                                const config = actionConfig[log.action] || {
+                                    label: log.action,
+                                    color: 'badge-ghost',
+                                    icon: '•'
+                                };
+                                const reasonText = log.reason ? `<br><span class="text-xs text-base-content/50">💬 ${log.reason}</span>` : '';
+                                return `
+                                    <tr class="hover:bg-base-50">
+                                        <td class="px-4 py-3 text-sm text-base-content/70 whitespace-nowrap">
+                                            <time datetime="${log.changed_at}">
+                                                ${new Date(log.changed_at).toLocaleString()}
+                                            </time>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm font-mono text-base-content/70">${log.changed_by || 'system'}</td>
+                                        <td class="px-4 py-3">
+                                            <span class="badge badge-sm ${config.color}">
+                                                ${config.icon} ${config.label}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-sm text-base-content/70">
+                                            ${log.changed_fields.map(f => `<span class="badge badge-ghost badge-sm">${f}</span>`).join(' ')}
+                                            ${reasonText}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('');
                         } catch (error) {
                             console.error('Error loading audit logs:', error);
                             document.getElementById('audit-logs-table').innerHTML =
-                                '<tr><td colspan="5" class="px-4 py-6 text-center text-sm text-error">❌ {{ _("Failed to load") }}</td></tr>';
+                                '<tr><td colspan="4" class="px-4 py-6 text-center text-sm text-error">❌ {{ _("Failed to load") }}</td></tr>';
                         }
                     }
+
 
                     document.addEventListener('DOMContentLoaded', loadAuditLogs);
                 </script>
@@ -408,9 +433,13 @@
                 <div class="bg-white rounded-lg border border-base-200 shadow p-4">
                     <button
                             onclick="document.getElementById('flag_modal').showModal()"
-                            class="btn btn-outline btn-error btn-sm w-full text-xs"
+                            class="btn btn-outline btn-error btn-sm w-full gap-1"
                     >
-                        🚩 {{ _('Flag Session') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-7 7 7 7H12.5l-1-1H5a2 2 0 00-2 2zm5-10h6"/>
+                        </svg>
+                        {{ _('Flag Session') }}
                     </button>
                     <p class="text-xs text-base-content/50 mt-2 text-center">{{ _('Mark for review') }}</p>
                 </div>

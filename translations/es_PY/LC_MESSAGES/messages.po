@@ -793,3 +793,17 @@ msgstr "Siguiente página"
 msgid "Last page"
 msgstr "Última página"
 
+msgid "Close Cash Session"
+msgstr "Cerrar caja"
+
+msgid "(final − initial) + envelope"
+msgstr "(caja final - caja inicial) + sobre"
+
+msgid "credit + debit + bank"
+msgstr "TC + TD + transferencias"
+
+msgid "total − expenses"
+msgstr "total - gastos"
+
+msgid "Dinero retirado de la caja (si hubiese)"
+msgstr ""

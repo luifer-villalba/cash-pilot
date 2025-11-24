@@ -34,13 +34,13 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier Name') }}</span>
                         </label>
                         <input
-                            type="text"
-                            name="cashier_name"
-                            class="input input-sm input-bordered w-full"
-                            value="{{ session.cashier_name }}"
-                            placeholder="{{ _('e.g., María López') }}"
-                            minlength="2"
-                            maxlength="100"
+                                type="text"
+                                name="cashier_name"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ session.cashier_name }}"
+                                placeholder="{{ _('e.g., María López') }}"
+                                minlength="2"
+                                maxlength="100"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Who is handling this session?') }}</span>
@@ -53,12 +53,12 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Initial Cash (Gs)') }}</span>
                         </label>
                         <input
-                            type="text"
-                            name="initial_cash"
-                            class="input input-sm input-bordered w-full"
-                            value="{{ "{:,.0f}".format(session.initial_cash) }}"
-                            placeholder="500.000"
-                            inputmode="decimal"
+                                type="text"
+                                name="initial_cash"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.initial_cash) }}"
+                        placeholder="500.000"
+                        inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
@@ -71,10 +71,10 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Opened At (Time)') }}</span>
                         </label>
                         <input
-                            type="time"
-                            name="opened_time"
-                            class="input input-sm input-bordered w-full"
-                            value="{{ session.opened_time.strftime('%H:%M') if session.opened_time else '' }}"
+                                type="time"
+                                name="opened_time"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ session.opened_time.strftime('%H:%M') if session.opened_time else '' }}"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Time session was opened') }}</span>
@@ -87,12 +87,12 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Expenses (Gs)') }}</span>
                         </label>
                         <input
-                            type="text"
-                            name="expenses"
-                            class="input input-sm input-bordered w-full"
-                            value="{{ "{:,.0f}".format(session.expenses) if session.expenses else '0' }}"
-                            placeholder="0"
-                            inputmode="decimal"
+                                type="text"
+                                name="expenses"
+                                class="input input-sm input-bordered w-full"
+                                value="{{ " {:,.0f}".format(session.expenses) if session.expenses else '0' }}"
+                        placeholder="0"
+                        inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
@@ -108,9 +108,9 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Reason for Edit') }}</span>
                         </label>
                         <textarea
-                            name="reason"
-                            class="textarea textarea-sm textarea-bordered w-full h-20"
-                            placeholder="{{ _('e.g., Corrected initial count, Name typo fix...') }}"
+                                name="reason"
+                                class="textarea textarea-sm textarea-bordered w-full h-20"
+                                placeholder="{{ _('e.g., Corrected initial count, Name typo fix...') }}"
                         ></textarea>
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Required for audit trail') }}</span>
@@ -122,9 +122,12 @@
 
                     <!-- Action Buttons -->
                     <div class="flex gap-3">
-                        <button type="submit" class="btn btn-success btn-sm flex-1 gap-2">
-                            <span>💾</span>
-                            <span>{{ _('Save Changes') }}</span>
+                        <button type="submit" class="btn btn-success flex-1 gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M5 13l4 4L19 7"/>
+                            </svg>
+                            {{ _('Save Changes') }}
                         </button>
                         <a href="/sessions/{{ session.id }}" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
                     </div>
@@ -136,7 +139,8 @@
         <div class="lg:col-span-1 space-y-4">
             <!-- Current Values -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
-                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Current Values') }}</h3>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Current Values')
+                    }}</h3>
                 <div class="space-y-2 text-xs">
                     <div>
                         <p class="text-base-content/60">{{ _('Session Date') }}</p>
@@ -160,7 +164,8 @@
             <!-- Tip -->
             <div class="bg-info/10 border-l-4 border-info rounded-lg p-4">
                 <p class="font-bold text-sm text-info">💡 {{ _('Quick Tip') }}</p>
-                <p class="text-xs text-base-content/70 mt-2">{{ _('All edits are logged with reason and timestamp for compliance.') }}</p>
+                <p class="text-xs text-base-content/70 mt-2">{{ _('All edits are logged with reason and timestamp for
+                    compliance.') }}</p>
             </div>
         </div>
     </div>

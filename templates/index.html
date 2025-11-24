@@ -11,8 +11,10 @@
             <p class="text-sm text-base-content/60 mt-1">{{ _('Monitor cash sessions and reconciliation') }}</p>
         </div>
         <a href="/sessions/create" class="btn btn-primary gap-2 w-full sm:w-auto">
-            <span>➕</span>
-            <span>{{ _('New Session') }}</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {{ _('New Session') }}
         </a>
     </div>
 
@@ -47,14 +49,16 @@
                     </span>
                 </div>
                 <button
-                    type="button"
-                    id="filter-toggle"
-                    class="btn btn-ghost btn-sm gap-2"
-                    aria-label="Toggle filters"
+                        type="button"
+                        id="filter-toggle"
+                        class="btn btn-ghost btn-sm gap-2"
+                        aria-label="Toggle filters"
                 >
                     <span>{{ _('More Options') }}</span>
-                    <svg id="filter-chevron" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                    <svg id="filter-chevron" class="w-4 h-4 transition-transform duration-300" fill="none"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                     </svg>
                 </button>
             </div>
@@ -86,18 +90,16 @@
                         </label>
                         <div class="relative">
                             <input
-                                type="date"
-                                id="from_date"
-                                name="from_date"
-                                class="input input-sm input-bordered w-full pr-10"
-                                value="{{ current_filters.from_date }}"
-                                hx-get="/sessions/table"
-                                hx-include="#filter-form"
-                                hx-target="#sessions-table"
-                                hx-swap="innerHTML"
-                                hx-trigger="change"
+                                    type="date"
+                                    id="from_date"
+                                    name="from_date"
+                                    class="input input-sm input-bordered w-full pr-10"
+                                    value="{{ current_filters.from_date }}"
                             />
-                            <button type="button" class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none" data-field="from_date">✕</button>
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="from_date">✕
+                            </button>
                         </div>
                     </div>
 
@@ -108,18 +110,16 @@
                         </label>
                         <div class="relative">
                             <input
-                                type="date"
-                                id="to_date"
-                                name="to_date"
-                                class="input input-sm input-bordered w-full pr-10"
-                                value="{{ current_filters.to_date }}"
-                                hx-get="/sessions/table"
-                                hx-include="#filter-form"
-                                hx-target="#sessions-table"
-                                hx-swap="innerHTML"
-                                hx-trigger="change"
+                                    type="date"
+                                    id="to_date"
+                                    name="to_date"
+                                    class="input input-sm input-bordered w-full pr-10"
+                                    value="{{ current_filters.to_date }}"
                             />
-                            <button type="button" class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none" data-field="to_date">✕</button>
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="to_date">✕
+                            </button>
                         </div>
                     </div>
 
@@ -129,13 +129,17 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Status') }}</span>
                         </label>
                         <div class="relative">
-                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10"
-                                hx-get="/sessions/table" hx-include="#filter-form" hx-target="#sessions-table" hx-swap="innerHTML" hx-trigger="change">
+                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10">
                                 <option value="">{{ _('All') }}</option>
-                                <option value="OPEN" {% if current_filters.status == 'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
-                                <option value="CLOSED" {% if current_filters.status == 'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
+                                <option value="OPEN" {% if current_filters.status==
+                                'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
+                                <option value="CLOSED" {% if current_filters.status==
+                                'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
                             </select>
-                            <button type="button" class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none" data-field="status">✕</button>
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="status">✕
+                            </button>
                         </div>
                     </div>
 
@@ -145,14 +149,19 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
                         </label>
                         <div class="relative">
-                            <select id="business_id" name="business_id" class="select select-sm select-bordered w-full pr-10"
-                                hx-get="/sessions/table" hx-include="#filter-form" hx-target="#sessions-table" hx-swap="innerHTML" hx-trigger="change">
+                            <select id="business_id" name="business_id"
+                                    class="select select-sm select-bordered w-full pr-10">
                                 <option value="">{{ _('All') }}</option>
                                 {% for biz in businesses %}
-                                <option value="{{ biz.id }}" {% if current_filters.business_id == biz.id|string %}selected{% endif %}>{{ biz.name }}</option>
+                                <option value="{{ biz.id }}" {% if current_filters.business_id== biz.id|string
+                                        %}selected{% endif %}>{{ biz.name }}
+                                </option>
                                 {% endfor %}
                             </select>
-                            <button type="button" class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none" data-field="business_id">✕</button>
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="business_id">✕
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -165,19 +174,17 @@
                         </label>
                         <div class="relative">
                             <input
-                                type="text"
-                                id="cashier_name"
-                                name="cashier_name"
-                                class="input input-sm input-bordered w-full pr-10"
-                                placeholder="{{ _('Search...') }}"
-                                value="{{ current_filters.cashier_name or '' }}"
-                                hx-get="/sessions/table"
-                                hx-include="#filter-form"
-                                hx-target="#sessions-table"
-                                hx-swap="innerHTML"
-                                hx-trigger="change, input delay:500ms"
+                                    type="text"
+                                    id="cashier_name"
+                                    name="cashier_name"
+                                    class="input input-sm input-bordered w-full pr-10"
+                                    placeholder="{{ _('Search...') }}"
+                                    value="{{ current_filters.cashier_name or '' }}"
                             />
-                            <button type="button" class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none" data-field="cashier_name">✕</button>
+                            <button type="button"
+                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    data-field="cashier_name">✕
+                            </button>
                         </div>
                     </div>
 
@@ -198,5 +205,73 @@
     </div>
 </div>
 
-<script src="/static/js/dashboard.js"></script>
+<script>
+    // Helper to trigger both stats and table updates
+    function applyFilters() {
+        const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
+        const queryString = '?' + params.toString();
+
+        // Update stats
+        htmx.ajax('GET', '/stats' + queryString, '#stats-row');
+
+        // Update table
+        htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
+    }
+
+    // Preset button handlers
+    document.querySelectorAll('[data-preset]').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const preset = this.dataset.preset;
+            const today = new Date();
+            let startDate, endDate = today;
+
+            switch (preset) {
+                case 'today':
+                    startDate = today;
+                    break;
+                case 'week':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - today.getDay());
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    break;
+            }
+
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            document.getElementById('from_date').value = formatDate(startDate);
+            document.getElementById('to_date').value = formatDate(endDate);
+
+            applyFilters();
+        });
+    });
+
+    // Filter form change handler
+    document.getElementById('filter-form').addEventListener('change', applyFilters);
+
+    // Filter field clear handlers
+    document.querySelectorAll('.clear-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const field = this.dataset.field;
+            document.getElementById(field).value = '';
+            applyFilters();
+        });
+    });
+
+    // Show clear button on input
+    document.querySelectorAll('#filter-form input, #filter-form select').forEach(input => {
+        input.addEventListener('focus', function () {
+            if (this.value) {
+                this.parentElement.querySelector('.clear-filter-btn')?.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        });
+        input.addEventListener('blur', function () {
+            if (!this.value) {
+                this.parentElement.querySelector('.clear-filter-btn')?.classList.add('opacity-0', 'pointer-events-none');
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -809,3 +809,18 @@ msgstr ""
 
 msgid "Last page"
 msgstr ""
+
+msgid "Close Cash Session"
+msgstr ""
+
+msgid "(final − initial) + envelope"
+msgstr ""
+
+msgid "credit + debit + bank"
+msgstr ""
+
+msgid "total − expenses"
+msgstr ""
+
+msgid "Cash removed from register (if any)"
+msgstr ""

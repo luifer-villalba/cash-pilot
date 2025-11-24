@@ -121,10 +121,10 @@ async def create_session_post(
 
 @router.get("/{session_id}", response_class=HTMLResponse)
 async def session_detail(
-        request: Request,
-        session_id: str,
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Display single session details."""
     locale = get_locale(request)
@@ -186,7 +186,7 @@ async def edit_session_form(
 
     return templates.TemplateResponse(
         request,
-        "sessions/edit_session.html",
+        "sessions/close_session.html",
         {
             "current_user": current_user,
             "session": session,
@@ -403,7 +403,7 @@ async def close_session_post(
 
         return templates.TemplateResponse(
             request,
-            "sessions/edit_session.html",
+            "sessions/close_session.html",
             {
                 "current_user": current_user,
                 "session": session,
