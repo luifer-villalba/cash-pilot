@@ -741,9 +741,6 @@ msgstr ""
 msgid "Who"
 msgstr ""
 
-msgid "Action"
-msgstr ""
-
 msgid "Fields"
 msgstr ""
 
@@ -823,4 +820,7 @@ msgid "total − expenses"
 msgstr ""
 
 msgid "Cash removed from register (if any)"
+msgstr ""
+
+msgid "Shift"
 msgstr ""

@@ -805,5 +805,8 @@ msgstr "TC + TD + transferencias"
 msgid "total − expenses"
 msgstr "total - gastos"
 
-msgid "Dinero retirado de la caja (si hubiese)"
-msgstr ""
+msgid "Cash removed from register (if any)"
+msgstr "Dinero retirado de la caja (si hubiese)"
+
+msgid "Shift"
+msgstr "Turno"
