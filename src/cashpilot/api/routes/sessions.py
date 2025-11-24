@@ -121,10 +121,10 @@ async def create_session_post(
 
 @router.get("/{session_id}", response_class=HTMLResponse)
 async def session_detail(
-    request: Request,
-    session_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+        request: Request,
+        session_id: str,
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
 ):
     """Display single session details."""
     locale = get_locale(request)
@@ -141,12 +141,25 @@ async def session_detail(
     if not session:
         return RedirectResponse(url="/", status_code=302)
 
+    # Safe calculations (all values default to 0 if None)
+    final_cash = session.final_cash or Decimal("0")
+    envelope = session.envelope_amount or Decimal("0")
+    bank = session.bank_transfer_total or Decimal("0")
+    expenses = session.expenses or Decimal("0")
+
+    net_cash_movement = final_cash - session.initial_cash + envelope + bank
+    net_earnings = net_cash_movement - expenses
+    cash_profit = (final_cash - session.initial_cash + envelope) - expenses
+
     return templates.TemplateResponse(
         request,
         "sessions/session_detail.html",
         {
             "current_user": current_user,
             "session": session,
+            "net_cash_movement": net_cash_movement,
+            "net_earnings": net_earnings,
+            "cash_profit": cash_profit,
             "locale": locale,
             "_": _,
         },
@@ -222,41 +235,45 @@ async def _update_open_session_fields(
     initial_cash: str | None,
     opened_time: str | None,
     expenses: str | None,
-) -> tuple[list, dict, dict]:
-    """Update session fields and track changes. Returns (changed_fields, old_values, new_values)."""
+) -> tuple[list[str], dict, dict]:
+    """Update open session fields and track changes."""
     changed_fields = []
     old_values = {}
     new_values = {}
 
-    if cashier_name and cashier_name != session.cashier_name:
-        changed_fields.append("cashier_name")
+    # Cashier name
+    if cashier_name and cashier_name.strip() != session.cashier_name:
         old_values["cashier_name"] = session.cashier_name
-        new_values["cashier_name"] = cashier_name
-        session.cashier_name = cashier_name
+        new_values["cashier_name"] = cashier_name.strip()
+        session.cashier_name = cashier_name.strip()
+        changed_fields.append("cashier_name")
 
+    # Initial cash
     if initial_cash:
         initial_cash_val = parse_currency(initial_cash)
-        if initial_cash_val and initial_cash_val != session.initial_cash:
-            changed_fields.append("initial_cash")
+        if initial_cash_val != session.initial_cash:
             old_values["initial_cash"] = str(session.initial_cash)
             new_values["initial_cash"] = str(initial_cash_val)
             session.initial_cash = initial_cash_val
+            changed_fields.append("initial_cash")
 
+    # Opened time
     if opened_time:
-        opened_time_obj = datetime.strptime(opened_time, "%H:%M").time()
-        if opened_time_obj != session.opened_time:
+        opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
+        if opened_time_val != session.opened_time:
+            old_values["opened_time"] = session.opened_time.isoformat()
+            new_values["opened_time"] = opened_time_val.isoformat()
+            session.opened_time = opened_time_val
             changed_fields.append("opened_time")
-            old_values["opened_time"] = str(session.opened_time)
-            new_values["opened_time"] = str(opened_time_obj)
-            session.opened_time = opened_time_obj
 
-    if expenses:
-        expenses_val = parse_currency(expenses)
-        if expenses_val and expenses_val != session.expenses:
-            changed_fields.append("expenses")
-            old_values["expenses"] = str(session.expenses)
+    # Expenses (ADD THIS)
+    if expenses is not None:
+        expenses_val = parse_currency(expenses) if expenses else Decimal("0")
+        if expenses_val != (session.expenses or Decimal("0")):
+            old_values["expenses"] = str(session.expenses or "0")
             new_values["expenses"] = str(expenses_val)
             session.expenses = expenses_val
+            changed_fields.append("expenses")
 
     return changed_fields, old_values, new_values
 

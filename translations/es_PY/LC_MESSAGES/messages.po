@@ -364,8 +364,8 @@ msgstr "Información de la Sesión"
 msgid "Sessions"
 msgstr "Sesiones"
 
-msgid "Shift Duration:"
-msgstr "Duración del Turno:"
+msgid "Shift Duration"
+msgstr "Duración del Turno"
 
 msgid "Showing"
 msgstr "Mostrando"
@@ -700,8 +700,8 @@ msgstr "Transferencia"
 msgid "Digital"
 msgstr "Digital"
 
-msgid "margin"
-msgstr "margen"
+msgid "Margin"
+msgstr "Margen"
 
 msgid "Still running"
 msgstr "Aún en ejecución"
@@ -741,3 +741,55 @@ msgstr "Final"
 
 msgid "Initial"
 msgstr "Inicial"
+
+msgid "Monitor cash sessions and reconciliation"
+msgstr "Monitorear sesiones de caja y reconciliación"
+
+msgid "Filter Sessions"
+msgstr "Filtrar Sesiones"
+
+msgid "More Options"
+msgstr "Más Opciones"
+
+msgid "Date & Time"
+msgstr "Fecha y Hora"
+
+msgid "Register"
+msgstr "Caja"
+
+msgid "Direct account transfers"
+msgstr "Transferencias directas a cuenta"
+
+msgid "Credit"
+msgstr "Crédito"
+
+msgid "Debit"
+msgstr "Débito"
+
+msgid "Total Income"
+msgstr "Ingreso Total"
+
+msgid "sessions flagged"
+msgstr "sesiones marcadas"
+
+msgid "Toggle theme"
+msgstr "Cambiar tema"
+
+msgid "Profile"
+msgstr "Perfil"
+
+msgid "Are you sure?"
+msgstr "¿Estás seguro?"
+
+msgid "First page"
+msgstr "Primera página"
+
+msgid "Previous page"
+msgstr "Página anterior"
+
+msgid "Next page"
+msgstr "Siguiente página"
+
+msgid "Last page"
+msgstr "Última página"
+

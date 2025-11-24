@@ -717,7 +717,7 @@ msgstr ""
 msgid "Digital"
 msgstr ""
 
-msgid "margin"
+msgid "Margin"
 msgstr ""
 
 msgid "Still running"
@@ -757,4 +757,55 @@ msgid "Final"
 msgstr ""
 
 msgid "Initial"
+msgstr ""
+
+msgid "Monitor cash sessions and reconciliation"
+msgstr ""
+
+msgid "Filter Sessions"
+msgstr ""
+
+msgid "More Options"
+msgstr ""
+
+msgid "Date & Time"
+msgstr ""
+
+msgid "Register"
+msgstr ""
+
+msgid "Direct account transfers"
+msgstr ""
+
+msgid "Credit"
+msgstr ""
+
+msgid "Debit"
+msgstr ""
+
+msgid "Total Income"
+msgstr ""
+
+msgid "sessions flagged"
+msgstr ""
+
+msgid "Toggle theme"
+msgstr ""
+
+msgid "Profile"
+msgstr ""
+
+msgid "Are you sure?"
+msgstr ""
+
+msgid "First page"
+msgstr ""
+
+msgid "Previous page"
+msgstr ""
+
+msgid "Next page"
+msgstr ""
+
+msgid "Last page"
 msgstr ""

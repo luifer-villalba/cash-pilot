@@ -1,52 +1,56 @@
-<div class="card bg-base-100 shadow-xl">
-    <div class="card-body">
-        <h2 class="card-title">{{ _('Cash Sessions') }}</h2>
+<div class="bg-base-100 border border-base-300 rounded-lg shadow">
+    <div class="p-4 md:p-6">
+        <!-- Header -->
+        <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-6 flex items-center gap-2">
+            <span>📋</span>
+            {{ _('Cash Sessions') }}
+        </h2>
 
         {% if sessions %}
         <!-- Desktop Table (hidden on mobile) -->
         <div class="overflow-x-auto hidden md:block">
-            <table class="table table-zebra w-full text-sm">
+            <table class="table table-sm w-full">
                 <thead>
-                    <tr>
-                        <th>{{ _('Status') }}</th>
-                        <th>{{ _('Cashier') }}</th>
-                        <th>{{ _('Business') }}</th>
-                        <th>{{ _('Date & Times') }}</th>
-                        <th class="text-right">💵 {{ _('Initial') }}</th>
-                        <th class="text-right">💵 {{ _('Final') }}</th>
-                        <th class="text-right">💰 {{ _('Cash Sales') }}</th>
-                        <th class="text-right">🏦 {{ _('Bank Transfers') }}</th>
-                        <th class="text-right">💳 {{ _('Card Payments') }}</th>
-                        <th class="text-right">📊 {{ _('Net Earnings') }}</th>
-                        <th class="text-center">⚙️ {{ _('Actions') }}</th>
+                    <tr class="border-b border-base-300">
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Status') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cashier') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Business') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Date & Time') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💵 {{ _('Initial') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💵 {{ _('Final') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💰 {{ _('Cash') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💳 {{ _('Cards') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">🏦 {{ _('Bank') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">📊 {{ _('Net') }}</th>
+                        <th class="text-center text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Actions') }}</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-base-200">
                     {% for session in sessions %}
-                    <tr>
+                    <tr class="hover:bg-base-50 transition-colors">
                         <td>
                             {% if session.status == 'OPEN' %}
-                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/20 text-success font-semibold text-xs">
+                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
                                     <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                                     {{ _('Open') }}
                                 </span>
                             {% elif session.flagged %}
-                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error/20 text-error font-semibold text-xs">
+                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-error/15 text-error text-xs font-semibold">
                                     <span class="w-2 h-2 rounded-full bg-error"></span>
                                     {{ _('Review') }}
                                 </span>
                             {% else %}
-                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral/20 text-neutral font-semibold text-xs">
-                                    <span class="w-2 h-2 rounded-full bg-neutral"></span>
+                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-base-300/50 text-base-content/70 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-base-content/70"></span>
                                     {{ _('Closed') }}
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="font-semibold">{{ session.cashier_name }}</td>
-                        <td>{{ session.business.name }}</td>
-                        <td class="text-sm">
-                            <div class="font-mono text-xs">{{ session.session_date.strftime('%Y-%m-%d') }}</div>
-                            <div class="opacity-70 text-xs">
+                        <td class="font-semibold text-sm">{{ session.cashier_name }}</td>
+                        <td class="text-sm">{{ session.business.name }}</td>
+                        <td class="text-xs text-base-content/70 font-mono">
+                            <div>{{ session.session_date.strftime('%d/%m/%Y') }}</div>
+                            <div class="opacity-80">
                                 {{ session.opened_time.strftime('%H:%M') }}
                                 {% if session.closed_time %}
                                     → {{ session.closed_time.strftime('%H:%M') }}
@@ -55,22 +59,24 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="text-right">Gs {{ session.initial_cash | format_currency_py }}</td>
-                        <td class="text-right">Gs {{ session.final_cash | format_currency_py if session.final_cash else '-' }}</td>
-                        <td class="text-right font-semibold">Gs {{ session.cash_sales | format_currency_py }}</td>
-                        <td class="text-right">Gs {{ session.bank_transfer_total | format_currency_py }}</td>
-                        <td class="text-right">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</td>
-                        <td class="text-right font-bold {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">Gs {{ session.net_earnings | format_currency_py }}</td>
+                        <td class="text-right text-sm text-base-content/80">Gs {{ session.initial_cash | format_currency_py }}</td>
+                        <td class="text-right text-sm text-base-content/80">Gs {{ session.final_cash | format_currency_py if session.final_cash else '—' }}</td>
+                        <td class="text-right text-sm font-semibold">Gs {{ session.cash_sales | format_currency_py }}</td>
+                        <td class="text-right text-sm font-semibold">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</td>
+                        <td class="text-right text-sm font-semibold">Gs {{ session.bank_transfer_total | format_currency_py }}</td>
+                        <td class="text-right text-sm font-bold {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
+                            {% if session.net_earnings >= 0 %}+{% endif %}Gs {{ session.net_earnings | format_currency_py }}
+                        </td>
                         <td class="text-center">
                             <div class="flex gap-1 justify-center">
-                                <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs btn-circle hover:bg-base-200" title="{{ _('View details') }}">
+                                <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs btn-circle" title="{{ _('View details') }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                     </svg>
                                 </a>
                                 {% if session.status == 'OPEN' %}
-                                    <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs btn-circle hover:bg-info" title="{{ _('Edit session') }}">
+                                    <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs btn-circle hover:bg-info/20" title="{{ _('Edit session') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
@@ -87,108 +93,113 @@
         <!-- Mobile Card Layout (visible on mobile only) -->
         <div class="md:hidden space-y-4">
             {% for session in sessions %}
-            <div class="card bg-base-200 border border-base-300">
-                <div class="card-body p-4">
-                    <!-- Header: Status + Cashier -->
-                    <div class="flex justify-between items-start gap-2 mb-3">
-                        <div>
-                            <h3 class="font-bold text-base">{{ session.cashier_name }}</h3>
-                            <p class="text-xs opacity-70">{{ session.business.name }}</p>
-                        </div>
-                        <div>
-                            {% if session.status == 'OPEN' %}
-                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/20 text-success font-semibold text-xs">
-                                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-                                    {{ _('Open') }}
-                                </span>
-                            {% elif session.flagged %}
-                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-error/20 text-error font-semibold text-xs">
-                                    <span class="w-2 h-2 rounded-full bg-error"></span>
-                                    {{ _('Review') }}
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-neutral/20 text-neutral font-semibold text-xs">
-                                    <span class="w-2 h-2 rounded-full bg-neutral"></span>
-                                    {{ _('Closed') }}
-                                </span>
-                            {% endif %}
-                        </div>
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
+                <!-- Header: Cashier + Status -->
+                <div class="flex justify-between items-start gap-3">
+                    <div>
+                        <h3 class="font-bold text-sm">{{ session.cashier_name }}</h3>
+                        <p class="text-xs text-base-content/60">{{ session.business.name }}</p>
                     </div>
+                    {% if session.status == 'OPEN' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                            {{ _('Open') }}
+                        </span>
+                    {% elif session.flagged %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error/15 text-error text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-error"></span>
+                            {{ _('Review') }}
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-base-300/50 text-base-content/70 text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-base-content/70"></span>
+                            {{ _('Closed') }}
+                        </span>
+                    {% endif %}
+                </div>
 
-                    <!-- Date/Time -->
-                    <div class="text-xs opacity-70 mb-3">
-                        <span class="font-mono">{{ session.session_date.strftime('%Y-%m-%d') }}</span>
-                        <span class="mx-1">•</span>
-                        <span>{{ session.opened_time.strftime('%H:%M') }}{% if session.closed_time %} → {{ session.closed_time.strftime('%H:%M') }}{% endif %}</span>
-                    </div>
-
-                    <!-- Key Numbers Grid -->
-                    <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
-                        <div class="bg-base-100 p-2 rounded">
-                            <p class="text-xs opacity-70">💰 {{ _('Cash') }}</p>
-                            <p class="font-bold text-sm">Gs {{ session.cash_sales | format_currency_py }}</p>
-                        </div>
-                        <div class="bg-base-100 p-2 rounded">
-                            <p class="text-xs opacity-70">💳 {{ _('Cards') }}</p>
-                            <p class="font-bold text-sm">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</p>
-                        </div>
-                        <div class="bg-base-100 p-2 rounded">
-                            <p class="text-xs opacity-70">🏦 {{ _('Bank') }}</p>
-                            <p class="font-bold text-sm">Gs {{ session.bank_transfer_total | format_currency_py }}</p>
-                        </div>
-                        <div class="bg-base-100 p-2 rounded">
-                            <p class="text-xs opacity-70">📊 {{ _('Net') }}</p>
-                            <p class="font-bold text-sm {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
-                                {% if session.net_earnings >= 0 %}+{% else %}-{% endif %}Gs {{ session.net_earnings|abs | format_currency_py }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex gap-2 justify-end">
-                        <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs gap-1">
-                            👁️ {{ _('View') }}
-                        </a>
-                        {% if session.status == 'OPEN' %}
-                            <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-info btn-xs gap-1">
-                                ✏️ {{ _('Edit') }}
-                            </a>
+                <!-- Date/Time -->
+                <div class="text-xs text-base-content/60 font-mono flex gap-2">
+                    <span>{{ session.session_date.strftime('%d/%m/%Y') }}</span>
+                    <span>•</span>
+                    <span>
+                        {{ session.opened_time.strftime('%H:%M') }}
+                        {% if session.closed_time %}
+                            → {{ session.closed_time.strftime('%H:%M') }}
+                        {% else %}
+                            → <span class="text-warning">{{ _('Open') }}</span>
                         {% endif %}
+                    </span>
+                </div>
+
+                <!-- Key Numbers Grid -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-base-50 p-2.5 rounded-md">
+                        <p class="text-xs text-base-content/60 mb-1">💰 {{ _('Cash') }}</p>
+                        <p class="font-bold text-sm">Gs {{ session.cash_sales | format_currency_py }}</p>
                     </div>
+                    <div class="bg-base-50 p-2.5 rounded-md">
+                        <p class="text-xs text-base-content/60 mb-1">💳 {{ _('Cards') }}</p>
+                        <p class="font-bold text-sm">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</p>
+                    </div>
+                    <div class="bg-base-50 p-2.5 rounded-md">
+                        <p class="text-xs text-base-content/60 mb-1">🏦 {{ _('Bank') }}</p>
+                        <p class="font-bold text-sm">Gs {{ session.bank_transfer_total | format_currency_py }}</p>
+                    </div>
+                    <div class="bg-base-50 p-2.5 rounded-md">
+                        <p class="text-xs text-base-content/60 mb-1">📊 {{ _('Net') }}</p>
+                        <p class="font-bold text-sm {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
+                            {% if session.net_earnings >= 0 %}+{% endif %}Gs {{ session.net_earnings | format_currency_py }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-2 justify-end pt-2 border-t border-base-200">
+                    <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs gap-1 text-xs">
+                        👁️ {{ _('View') }}
+                    </a>
+                    {% if session.status == 'OPEN' %}
+                        <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-info btn-xs gap-1 text-xs">
+                            ✏️ {{ _('Edit') }}
+                        </a>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}
         </div>
 
         <!-- Pagination -->
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
-            <p class="text-sm opacity-70">
-                {{ _('Showing') }} {{ (page - 1) * 10 + 1 }}-{{ [page * 10, total_sessions] | min }} {{ _('of') }} {{ total_sessions }}
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-6 border-t border-base-300">
+            <p class="text-xs text-base-content/60">
+                {{ _('Showing') }} <span class="font-semibold">{{ (page - 1) * 10 + 1 }}-{{ [page * 10, total_sessions] | min }}</span> {{ _('of') }} <span class="font-semibold">{{ total_sessions }}</span>
             </p>
             <div class="join">
                 {% if page > 1 %}
-                    <a href="/sessions/table?page=1{{ query_string }}" hx-get="/sessions/table?page=1{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">«</a>
-                    <a href="/sessions/table?page={{ page - 1 }}{{ query_string }}" hx-get="/sessions/table?page={{ page - 1 }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">‹</a>
+                    <a href="/sessions/table?page=1{{ query_string }}" hx-get="/sessions/table?page=1{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm btn-ghost" title="{{ _('First page') }}">«</a>
+                    <a href="/sessions/table?page={{ page - 1 }}{{ query_string }}" hx-get="/sessions/table?page={{ page - 1 }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm btn-ghost" title="{{ _('Previous page') }}">‹</a>
                 {% endif %}
                 {% set page_start = [1, page - 2] | max %}
                 {% set page_end = [total_pages + 1, page + 3] | min %}
                 {% for p in range(page_start, page_end) %}
                     {% if p == page %}
-                        <button class="join-item btn btn-sm btn-active">{{ p }}</button>
+                        <button class="join-item btn btn-sm btn-primary">{{ p }}</button>
                     {% else %}
-                        <a href="/sessions/table?page={{ p }}{{ query_string }}" hx-get="/sessions/table?page={{ p }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">{{ p }}</a>
+                        <a href="/sessions/table?page={{ p }}{{ query_string }}" hx-get="/sessions/table?page={{ p }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm btn-ghost">{{ p }}</a>
                     {% endif %}
                 {% endfor %}
                 {% if page < total_pages %}
-                    <a href="/sessions/table?page={{ page + 1 }}{{ query_string }}" hx-get="/sessions/table?page={{ page + 1 }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">›</a>
-                    <a href="/sessions/table?page={{ total_pages }}{{ query_string }}" hx-get="/sessions/table?page={{ total_pages }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm">»</a>
+                    <a href="/sessions/table?page={{ page + 1 }}{{ query_string }}" hx-get="/sessions/table?page={{ page + 1 }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm btn-ghost" title="{{ _('Next page') }}">›</a>
+                    <a href="/sessions/table?page={{ total_pages }}{{ query_string }}" hx-get="/sessions/table?page={{ total_pages }}{{ query_string }}" hx-target="#sessions-table" hx-swap="innerHTML" class="join-item btn btn-sm btn-ghost" title="{{ _('Last page') }}">»</a>
                 {% endif %}
             </div>
         </div>
 
         {% else %}
-        <div class="alert alert-info">
-            <span>{{ _('No sessions found.') }} <a href="/sessions/create" class="link link-hover">{{ _('Create one') }}</a></span>
+        <div class="bg-base-50 border-l-4 border-info p-4 rounded-md">
+            <p class="text-sm text-base-content/70">
+                {{ _('No sessions found.') }} <a href="/sessions/create" class="link link-primary font-semibold">{{ _('Create one') }}</a>
+            </p>
         </div>
         {% endif %}
     </div>
