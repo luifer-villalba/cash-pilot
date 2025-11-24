@@ -134,7 +134,7 @@ seed-reset:
 # ---------- i18n / Translations ----------
 i18n-extract:
 	@echo "🌍 Extracting translatable strings..."
-	docker compose exec app pybabel extract -F babel.cfg -o translations/messages.pot src/
+	docker compose exec app pybabel extract -F babel.cfg -o translations/messages.pot /app/
 
 i18n-init-es:
 	@echo "🌍 Initializing Spanish translations..."

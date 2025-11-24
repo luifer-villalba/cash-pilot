@@ -171,11 +171,22 @@ async def _get_paginated_sessions(
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def login_page():
-    """Render login page (publicly accessible)."""
-    template_path = Path("/app/templates/login.html")
-    with open(template_path, "r") as f:
-        return f.read()
+async def login_page(request: Request):
+    """Render login page with i18n support."""
+    locale = get_locale(request)
+    gettext_func = get_translation_function(locale)
+
+    error = request.query_params.get("error")
+
+    # Render template with translation function
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "_": gettext_func,
+            "error": error,
+        },
+    )
 
 
 async def get_session_or_redirect(session_id: str, db: AsyncSession):
