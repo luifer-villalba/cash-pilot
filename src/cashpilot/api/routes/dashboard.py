@@ -50,11 +50,7 @@ async def dashboard(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    # Set defaults to today if not provided
-    today_iso = date_type.today().isoformat()
-    from_date = from_date or today_iso
-    to_date = to_date or today_iso
-
+    # NO server defaults - client handles timezone
     filters = await _build_session_filters(from_date, to_date, cashier_name, business_id, status)
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
         db, filters, page=page, per_page=10
@@ -84,9 +80,9 @@ async def dashboard(
     total_revenue = result_today.scalar() or Decimal("0.00")
 
     active_filters = {}
-    if from_date and from_date != today_iso:
+    if from_date:
         active_filters["from_date"] = from_date
-    if to_date and to_date != today_iso:
+    if to_date:
         active_filters["to_date"] = to_date
     if cashier_name:
         active_filters["cashier_name"] = cashier_name

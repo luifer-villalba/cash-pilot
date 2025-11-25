@@ -27,6 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const chevron = document.getElementById('filter-chevron');
     const storageKey = 'cashPilot_filterCollapsed';
 
+    const today = new Date().toISOString().split('T')[0];
+    const fromInput = document.getElementById('from_date');
+    const toInput = document.getElementById('to_date');
+    if (fromInput && !fromInput.value) fromInput.value = today;
+    if (toInput && !toInput.value) toInput.value = today;
+
     updateFilterBadge();
 
     const isCollapsed = localStorage.getItem(storageKey) !== 'false';

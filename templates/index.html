@@ -206,15 +206,36 @@
 </div>
 
 <script>
+    // Get local date (not UTC)
+    function getLocalDateString() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // CRITICAL: Set client dates and redirect if missing
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasFromDate = urlParams.has('from_date');
+    const hasToDate = urlParams.has('to_date');
+
+    if (!hasFromDate || !hasToDate) {
+        const today = getLocalDateString();
+        urlParams.set('from_date', today);
+        urlParams.set('to_date', today);
+        window.location.search = urlParams.toString();
+    }
+
     // Helper to trigger both stats and table updates
     function applyFilters() {
         const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
         const queryString = '?' + params.toString();
 
-        // Update stats
-        htmx.ajax('GET', '/stats' + queryString, '#stats-row');
+        // Update browser URL without reload
+        window.history.pushState({}, '', queryString);
 
-        // Update table
+        htmx.ajax('GET', '/stats' + queryString, '#stats-row');
         htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
     }
 
@@ -223,25 +244,31 @@
         btn.addEventListener('click', function (e) {
             e.preventDefault();
             const preset = this.dataset.preset;
-            const today = new Date();
-            let startDate, endDate = today;
+            const now = new Date();
+            let startDate, endDate;
 
-            switch (preset) {
-                case 'today':
-                    startDate = today;
-                    break;
-                case 'week':
-                    startDate = new Date(today);
-                    startDate.setDate(today.getDate() - today.getDay());
-                    break;
-                case 'month':
-                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                    break;
+            if (preset === 'today') {
+                startDate = endDate = now;
+            } else if (preset === 'week') {
+                const day = now.getDay();
+                const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+                startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+                endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 6);
+            } else if (preset === 'month') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             }
 
-            const formatDate = (d) => d.toISOString().split('T')[0];
-            document.getElementById('from_date').value = formatDate(startDate);
-            document.getElementById('to_date').value = formatDate(endDate);
+            function formatLocalDate(d) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            document.getElementById('from_date').value = formatLocalDate(startDate);
+            document.getElementById('to_date').value = formatLocalDate(endDate);
 
             applyFilters();
         });
