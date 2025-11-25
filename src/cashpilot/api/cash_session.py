@@ -8,8 +8,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
+from cashpilot.api.auth_helpers import require_own_session
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
+from cashpilot.core.logging import get_logger
 from cashpilot.core.validation import check_session_overlap, validate_session_dates
 from cashpilot.models import (
     Business,
@@ -20,6 +22,9 @@ from cashpilot.models import (
     User,
 )
 from cashpilot.models.enums import SessionStatus
+from cashpilot.models.user import UserRole
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
 
@@ -30,10 +35,19 @@ async def list_shifts(
     status_filter: str | None = None,
     skip: int = 0,
     limit: int = 50,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List cash sessions with optional filtering."""
+    """List cash sessions with optional filtering.
+
+    Admin: sees all sessions
+    Cashier: sees only own sessions
+    """
     stmt = select(CashSession)
+
+    # Cashier filter: own sessions
+    if current_user.role == UserRole.CASHIER:
+        stmt = stmt.where(CashSession.created_by == current_user.id)
 
     if business_id:
         stmt = stmt.where(CashSession.business_id == UUID(business_id))
@@ -49,79 +63,92 @@ async def list_shifts(
 
 
 @router.post("", response_model=CashSessionRead, status_code=status.HTTP_201_CREATED)
-async def open_shift(session: CashSessionCreate, db: AsyncSession = Depends(get_db)):
-    """Open a new cash session (shift)."""
+async def open_shift(
+    session: CashSessionCreate,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Open a new cash session (shift).
+
+    Cashier creates session for themselves.
+    Admin can create for any cashier.
+    """
     # Verify business exists
-    business = await db.execute(select(Business).where(Business.id == session.business_id))
-    if not business.scalar_one_or_none():
+    stmt = select(Business).where(Business.id == session.business_id)
+    result = await db.execute(stmt)
+    business = result.scalar_one_or_none()
+
+    if not business:
         raise NotFoundError("Business", str(session.business_id))
 
-    from datetime import date as date_type
-
-    session_date = session.session_date or date_type.today()
-    opened_time = session.opened_time or datetime.now().time()
-
-    # Check for overlapping sessions
+    # Check overlap
     if not session.allow_overlap:
-        conflict = await check_session_overlap(
-            db=db,
-            business_id=session.business_id,
-            session_date=session_date,
-            opened_time=opened_time,
-            closed_time=None,
-        )
-        if conflict:
-            raise ConflictError(
-                f"Session overlaps with {conflict['cashier_name']}'s shift",
-                details=conflict,
-            )
+        overlap_error = await check_session_overlap(session.business_id, session.session_date, db)
+        if overlap_error:
+            raise ConflictError(overlap_error)
 
-    session_obj = CashSession(
+    # Validate dates
+    date_error = await validate_session_dates(
+        session.session_date,
+        session.opened_time,
+        None,
+    )
+    if date_error:
+        raise InvalidStateError(date_error["message"], details=date_error["details"])
+
+    # Create session with current user as creator
+    new_session = CashSession(
         business_id=session.business_id,
         cashier_name=session.cashier_name,
         initial_cash=session.initial_cash,
-        session_date=session_date,
-        opened_time=opened_time,
+        expenses=session.expenses,
+        session_date=session.session_date,
+        opened_time=session.opened_time,
+        created_by=current_user.id,  # SET CREATOR
     )
-    db.add(session_obj)
+
+    db.add(new_session)
     await db.flush()
-    await db.refresh(session_obj)
-    return session_obj
+    await db.refresh(new_session)
+
+    logger.info(
+        "session.opened",
+        session_id=str(new_session.id),
+        business_id=str(session.business_id),
+        created_by=str(current_user.id),
+    )
+
+    return new_session
 
 
 @router.get("/{session_id}", response_model=CashSessionRead)
-async def get_shift(session_id: str, db: AsyncSession = Depends(get_db)):
+async def get_session(
+    session_id: str,
+    session: CashSession = Depends(require_own_session),
+):
     """Get cash session details."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
-    result = await db.execute(stmt)
-    session_obj = result.scalar_one_or_none()
-
-    if not session_obj:
-        raise NotFoundError("CashSession", session_id)
-
-    return session_obj
+    return session
 
 
 @router.put("/{session_id}", response_model=CashSessionRead)
 async def close_shift(
-    session_id: str, session: CashSessionUpdate, db: AsyncSession = Depends(get_db)
+    session_id: str,
+    session_update: CashSessionUpdate,
+    session: CashSession = Depends(require_own_session),
+    db: AsyncSession = Depends(get_db),
 ):
     """Close a cash session."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
-    result = await db.execute(stmt)
-    session_obj = result.scalar_one_or_none()
-
-    if not session_obj:
-        raise NotFoundError("CashSession", session_id)
-
-    if session_obj.status != SessionStatus.OPEN.value:
-        raise InvalidStateError("Session is not open", details={"status": session_obj.status})
+    if session.status != SessionStatus.OPEN.value:
+        raise InvalidStateError(
+            "Session is not open",
+            details={"status": session.status},
+        )
 
     if (
-        session.final_cash is None
-        or session.envelope_amount is None
-        or session.credit_card_total is None
-        or session.closed_time is None
+        session_update.final_cash is None
+        or session_update.envelope_amount is None
+        or session_update.credit_card_total is None
+        or session_update.closed_time is None
     ):
         raise InvalidStateError(
             "Cannot close session: final_cash, envelope_amount, credit_card_total, "
@@ -130,75 +157,51 @@ async def close_shift(
 
     # Validate closed_time is after opened_time
     date_error = await validate_session_dates(
-        session_obj.session_date, session_obj.opened_time, session.closed_time
+        session.session_date, session.opened_time, session_update.closed_time
     )
     if date_error:
         raise InvalidStateError(date_error["message"], details=date_error["details"])
 
     # Update session
-    session_obj.status = SessionStatus.CLOSED.value
-    session_obj.closed_time = session.closed_time
-    session_obj.has_conflict = False
+    session.status = SessionStatus.CLOSED.value
+    session.closed_time = session_update.closed_time
+    session.has_conflict = False
 
     # Apply other updates
-    update_data = session.model_dump(exclude_unset=True, exclude={"closed_time"})
+    update_data = session_update.model_dump(exclude_unset=True, exclude={"closed_time"})
     for key, value in update_data.items():
-        setattr(session_obj, key, value)
+        setattr(session, key, value)
 
-    db.add(session_obj)
+    db.add(session)
     await db.flush()
-    await db.refresh(session_obj)
-    return session_obj
+    await db.refresh(session)
+
+    logger.info(
+        "session.closed",
+        session_id=str(session.id),
+        created_by=str(session.created_by),
+    )
+
+    return session
 
 
 @router.delete("/{session_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_session(
     session_id: str,
     current_user: User = Depends(get_current_user),
+    session: CashSession = Depends(require_own_session),
     db: AsyncSession = Depends(get_db),
 ):
     """Soft delete a cash session."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
-    result = await db.execute(stmt)
-    session = result.scalar_one_or_none()
-
-    if not session:
-        raise NotFoundError("CashSession", session_id)
-
-    if session.is_deleted:
-        raise InvalidStateError("Session already deleted")
-
     session.is_deleted = True
     session.deleted_at = datetime.now()
-    session.deleted_by = current_user.email
+    session.deleted_by = current_user.display_name
 
     db.add(session)
     await db.commit()
-    await db.refresh(session)
 
-
-@router.post("/{session_id}/restore", response_model=CashSessionRead)
-async def restore_session(
-    session_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Restore a soft-deleted session (admin only)."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
-    result = await db.execute(stmt)
-    session = result.scalar_one_or_none()
-
-    if not session:
-        raise NotFoundError("CashSession", session_id)
-
-    if not session.is_deleted:
-        raise InvalidStateError("Session is not deleted")
-
-    session.is_deleted = False
-    session.deleted_at = None
-    session.deleted_by = None
-
-    db.add(session)
-    await db.commit()
-    await db.refresh(session)
-    return session
+    logger.info(
+        "session.deleted",
+        session_id=str(session.id),
+        deleted_by=str(current_user.id),
+    )

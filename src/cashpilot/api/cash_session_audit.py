@@ -46,7 +46,7 @@ async def flag_session(
 
     # Update flag status
     session.flagged = flagged
-    session.flagged_by = current_user.email if flagged else None
+    session.flagged_by = current_user.display_name_email if flagged else None
     session.flag_reason = flag_reason.strip() if flagged and flag_reason else None
 
     db.add(session)

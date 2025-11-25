@@ -1,3 +1,4 @@
+# File: tests/test_cash_session.py
 """Tests for cash session endpoints."""
 
 import pytest
@@ -33,6 +34,7 @@ class TestListCashSessions:
             db_session,
             business_id=business.id,
             cashier_name="María",
+            created_by=client.test_user.id,
         )
 
         response = await client.get("/")
@@ -112,19 +114,20 @@ class TestGetCashSession:
     """Test retrieving session details."""
 
     @pytest.mark.asyncio
-    async def test_get_session_success(
-        self, client: AsyncClient, db_session: AsyncSession
-    ):
-        """Test retrieving a session."""
+    async def test_get_session_success(self, client: AsyncClient, db_session: AsyncSession):
+        """Test retrieving a cash session details."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
             db_session,
             business_id=business.id,
-            status="OPEN",
+            created_by=client.test_user.id,
         )
 
-        response = await client.get(f"/sessions/{session.id}")
+        response = await client.get(f"/cash-sessions/{session.id}")
+
         assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(session.id)
 
 
 class TestCloseCashSession:
@@ -141,6 +144,7 @@ class TestCloseCashSession:
             business_id=business.id,
             status="OPEN",
             initial_cash=Decimal("500000.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -168,6 +172,7 @@ class TestCloseCashSession:
             db_session,
             business_id=business.id,
             status="OPEN",
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -196,6 +201,7 @@ class TestCloseCashSession:
             business_id=business.id,
             status="CLOSED",
             final_cash=Decimal("1000000.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -223,6 +229,7 @@ class TestCloseCashSession:
             db_session,
             business_id=business.id,
             status="OPEN",
+            created_by=client.test_user.id,
         )
 
         response = await client.post(

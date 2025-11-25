@@ -83,18 +83,19 @@ async def db_session():
 async def client(db_session):
     """Create async test client with overridden DB dependency."""
     from cashpilot.api.auth import get_current_user
-    from tests.factories import UserFactory
 
     app = create_app()
 
     # Create a test user
     test_user = await UserFactory.create(
         db_session,
+        email="testclient@example.com",
         first_name="Test",
-        last_name="User",
+        last_name="Client",
+        hashed_password=hash_password("testpass123"),
     )
 
-    # Override get_db and get_current_user dependencies
+    # Override dependencies
     async def override_get_db():
         yield db_session
 
@@ -104,10 +105,14 @@ async def client(db_session):
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_current_user] = override_get_current_user
 
-    # Use httpx.AsyncClient for async requests
+    # Create client
     async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
+        transport=ASGITransport(app=app),
+        base_url="http://test"
     ) as ac:
+        # Attach test_user to client for test access
+        ac.test_user = test_user
+        ac.db_session = db_session
         yield ac
 
 
