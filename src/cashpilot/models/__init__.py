@@ -12,7 +12,8 @@ from cashpilot.models.cash_session_schemas import (
     CashSessionUpdate,
 )
 from cashpilot.models.enums import SessionStatus
-from cashpilot.models.user import User
+from cashpilot.models.user import User, UserRole
+from cashpilot.models.user_schemas import UserCreate, UserResponse
 
 __all__ = [
     "Business",
@@ -28,4 +29,7 @@ __all__ = [
     "CashSessionUpdate",
     "SessionStatus",
     "User",
+    "UserCreate",
+    "UserResponse",
+    "UserRole",
 ]

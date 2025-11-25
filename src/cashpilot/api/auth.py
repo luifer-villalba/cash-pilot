@@ -71,12 +71,15 @@ async def login(
     if not user.is_active:
         return RedirectResponse(url="/login?error=1", status_code=302)
 
-    # Store user_id in session
+    # Store user_id and role in session
     request.session["user_id"] = str(user.id)
+    request.session["user_role"] = user.role  # role is already a string
+    request.session["user_display_name"] = user.display_name
     logger.info(
         "auth.login_success",
         email=user.email,
         user_id=str(user.id),
+        role=user.role,
     )
     return RedirectResponse(url="/", status_code=302)
 
@@ -95,9 +98,4 @@ async def logout(request: Request):
 @router.get("/logout")
 async def logout_get(request: Request):
     """Logout GET endpoint for browser compatibility."""
-    user_id = request.session.get("user_id")
-    if user_id:
-        logger.info("auth.logout", user_id=user_id)
-
-    request.session.clear()
-    return RedirectResponse(url="/login", status_code=302)
+    return await logout(request)
