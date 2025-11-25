@@ -76,22 +76,38 @@
                                     </svg>
                                 </a>
                                 {% if session.status == 'OPEN' %}
-                                    <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs btn-circle hover:bg-info/20" title="{{ _('Edit session') }}">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </a>
+                                    {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
+                                        <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs btn-circle hover:bg-info/20" title="{{ _('Edit session') }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </a>
+                                    {% else %}
+                                        <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can edit') }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                        </button>
+                                    {% endif %}
                                 {% endif %}
-                                <button
-                                    hx-delete="/cash-sessions/{{ session.id|string }}"
-                                    hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
-                                    hx-on="htmx:afterRequest: if(event.detail.successful) window.location.reload()"
-                                    class="btn btn-ghost btn-xs btn-circle hover:bg-error/20"
-                                    title="{{ _('Delete session') }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
+                                {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
+                                    <button
+                                        hx-delete="/cash-sessions/{{ session.id|string }}"
+                                        hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
+                                        hx-on="htmx:afterRequest: if(event.detail.successful) window.location.reload()"
+                                        class="btn btn-ghost btn-xs btn-circle hover:bg-error/20"
+                                        title="{{ _('Delete session') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                {% else %}
+                                    <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can delete') }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -170,9 +186,15 @@
                         👁️ {{ _('View') }}
                     </a>
                     {% if session.status == 'OPEN' %}
-                        <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-info btn-xs gap-1 text-xs">
-                            ✏️ {{ _('Edit') }}
-                        </a>
+                        {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
+                            <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-info btn-xs gap-1 text-xs">
+                                ✏️ {{ _('Edit') }}
+                            </a>
+                        {% else %}
+                            <button disabled class="btn btn-info btn-xs gap-1 text-xs opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can edit') }}">
+                                ✏️ {{ _('Edit') }}
+                            </button>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

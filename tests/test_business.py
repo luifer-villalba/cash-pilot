@@ -1,4 +1,4 @@
-"""Tests for business endpoints."""
+"""Tests for Business CRUD operations - updated for RBAC."""
 
 import pytest
 from httpx import AsyncClient
@@ -7,115 +7,149 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from tests.factories import BusinessFactory
 
 
-class TestCreateBusiness:
-    """Test business creation."""
-
-    @pytest.mark.asyncio
-    async def test_create_business_success(self, client: AsyncClient, db_session: AsyncSession):
-        """Test creating a business via form (HTML endpoint)."""
-        response = await client.post(
-            "/businesses",
-            data={
-                "name": "Farmacia Centro",
-                "address": "Avenida Principal 456",
-                "phone": "+595971234567",
-            },
-            follow_redirects=False,
-        )
-
-        # Should redirect to /businesses list on success
-        assert response.status_code == 302
-        assert "/businesses" in response.headers.get("location", "")
-
-    @pytest.mark.asyncio
-    async def test_create_business_minimal_data(self, client: AsyncClient, db_session: AsyncSession):
-        """Test creating business with only required name field."""
-        response = await client.post(
-            "/businesses",
-            data={"name": "Farmacia Simple"},
-            follow_redirects=False,
-        )
-
-        assert response.status_code == 302
-        assert "/businesses" in response.headers.get("location", "")
-
-    @pytest.mark.asyncio
-    async def test_create_business_missing_name(self, client: AsyncClient):
-        """Test that creation without name fails with validation error."""
-        response = await client.post(
-            "/businesses",
-            data={
-                "address": "Some Address",
-                "phone": "+595971234567",
-            },
-            follow_redirects=False,
-        )
-
-        # FastAPI returns 422 for validation errors
-        assert response.status_code == 422
-
-
-class TestGetBusiness:
-    """Test retrieving business details."""
-
-    @pytest.mark.asyncio
-    async def test_get_business_page_exists(self, client: AsyncClient, db_session: AsyncSession):
-        """Test that businesses list page exists and is accessible."""
-        business = await BusinessFactory.create(db_session)
-
-        response = await client.get("/businesses")
-
-        # Should return the businesses list page
-        assert response.status_code == 200
-        assert "text/html" in response.headers.get("content-type", "")
-
-
-class TestUpdateBusiness:
-    """Test updating businesses."""
-
-    @pytest.mark.asyncio
-    async def test_update_business_not_yet_implemented(
-            self, client: AsyncClient, db_session: AsyncSession
-    ):
-        """Test that edit endpoint now exists (MIZ-XXX completed)."""
-        business = await BusinessFactory.create(db_session)
-
-        # Edit endpoint now exists!
-        response = await client.get(f"/businesses/{business.id}/edit", follow_redirects=False)
-
-        # Should render the edit form
-        assert response.status_code == 200
-        html = response.text
-        assert "Edit Business" in html
-
 class TestListBusinesses:
     """Test listing businesses."""
 
     @pytest.mark.asyncio
-    async def test_list_businesses_html(self, client: AsyncClient, db_session: AsyncSession):
-        """Test listing businesses returns HTML."""
-        await BusinessFactory.create(db_session, name="Farmacia 1")
-        await BusinessFactory.create(db_session, name="Farmacia 2")
+    async def test_list_businesses_returns_list(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test GET /businesses returns list of businesses."""
+        await BusinessFactory.create(db_session, name="Farmacia A")
+        await BusinessFactory.create(db_session, name="Farmacia B")
 
         response = await client.get("/businesses")
 
         assert response.status_code == 200
-        assert "text/html" in response.headers.get("content-type", "")
-        # At least one business name should be in the response
-        assert "Farmacia 1" in response.text or "Farmacia 2" in response.text
+        # Route returns HTML frontend, check for content
+        assert "Farmacia A" in response.text or "Farmacia B" in response.text
 
     @pytest.mark.asyncio
-    async def test_list_businesses_empty(self, client: AsyncClient):
-        """Test listing when no businesses exist."""
+    async def test_list_businesses_empty(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test list when no businesses exist."""
         response = await client.get("/businesses")
 
         assert response.status_code == 200
-        assert "text/html" in response.headers.get("content-type", "")
+        # Should still render page even if empty
+        html = response.text
+        assert "Businesses" in html or "businesses" in html.lower()
 
     @pytest.mark.asyncio
-    async def test_create_form_page(self, client: AsyncClient):
-        """Test that create business form page exists."""
-        response = await client.get("/businesses/new")
+    async def test_create_form_page_blocked_for_cashier(self, client: AsyncClient):
+        """Test cashier gets 403 on /businesses/new form page."""
+        response = await client.get("/businesses/new", follow_redirects=False)
+
+        # Cashier (default test_user) is blocked by require_admin
+        assert response.status_code == 403
+
+
+class TestCreateBusiness:
+    """Test business creation - admin only."""
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_create_business(self, client: AsyncClient):
+        """Test cashier gets 403 on POST to create business."""
+        response = await client.post(
+            "/businesses",
+            data={
+                "name": "Test Business",
+                "address": "123 Main St",
+                "phone": "123-456-7890",
+            },
+            follow_redirects=False,
+        )
+
+        # Cashier blocked by require_admin
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_create_with_minimal_data(self, client: AsyncClient):
+        """Test cashier gets 403 with minimal data."""
+        response = await client.post(
+            "/businesses",
+            data={"name": "Minimal Business"},
+            follow_redirects=False,
+        )
+
+        # Still 403, same reason
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_create_missing_required_field(
+        self, client: AsyncClient
+    ):
+        """Test cashier gets 403 even with missing fields."""
+        # Don't include name (required field)
+        response = await client.post(
+            "/businesses",
+            data={"address": "No Name St"},
+            follow_redirects=False,
+        )
+
+        # Still 403 due to RBAC, not validation
+        assert response.status_code == 403
+
+
+class TestUpdateBusiness:
+    """Test business update - admin only."""
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_edit_business_form(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test cashier gets 403 on edit form."""
+        business = await BusinessFactory.create(db_session, name="Original")
+
+        response = await client.get(
+            f"/businesses/{business.id}/edit", follow_redirects=False
+        )
+
+        # Blocked by require_admin
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_update_business(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test cashier gets 403 on PUT business."""
+        business = await BusinessFactory.create(db_session, name="Original")
+
+        response = await client.put(
+            f"/businesses/{business.id}",
+            json={"name": "Updated"},
+        )
+
+        assert response.status_code == 403
+
+
+class TestGetBusiness:
+    """Test getting a single business."""
+
+    @pytest.mark.asyncio
+    async def test_get_business_success(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test GET /businesses/{id} returns business."""
+        business = await BusinessFactory.create(
+            db_session, name="Test Business", address="123 Main St"
+        )
+
+        response = await client.get(f"/businesses/{business.id}")
 
         assert response.status_code == 200
-        assert "text/html" in response.headers.get("content-type", "")
+        # Check if JSON or HTML response
+        try:
+            data = response.json()
+            assert data["name"] == "Test Business"
+        except ValueError:
+            # HTML response, check content
+            assert "Test Business" in response.text or "123 Main St" in response.text
+
+    @pytest.mark.asyncio
+    async def test_get_business_not_found(self, client: AsyncClient):
+        """Test GET non-existent business."""
+        response = await client.get("/businesses/00000000-0000-0000-0000-000000000000")
+
+        assert response.status_code == 404

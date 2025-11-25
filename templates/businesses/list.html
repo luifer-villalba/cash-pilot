@@ -7,9 +7,15 @@
     <!-- Header with Search -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <h1 class="text-3xl md:text-4xl font-bold">{{ _('Businesses') }}</h1>
-        <a href="/businesses/new" class="btn btn-primary w-full sm:w-auto">
-            {{ _('+ New Business') }}
-        </a>
+        {% if current_user.role == 'ADMIN' %}
+            <a href="/businesses/new" class="btn btn-primary w-full sm:w-auto">
+                {{ _('+ New Business') }}
+            </a>
+        {% else %}
+            <button disabled class="btn btn-primary w-full sm:w-auto opacity-40 cursor-not-allowed" title="{{ _('Only admins can create businesses') }}">
+                {{ _('+ New Business') }}
+            </button>
+        {% endif %}
     </div>
 
     <!-- Search & Sort -->
@@ -89,15 +95,27 @@
 
                 <!-- Actions -->
                 <div class="card-actions gap-2 mt-auto pt-2 border-t border-base-200">
-                    <a href="/businesses/{{ business.id }}/edit" class="btn btn-xs btn-outline btn-primary flex-1">
-                        ✏️ {{ _('Edit') }}
-                    </a>
+                    {% if current_user.role == 'ADMIN' %}
+                        <a href="/businesses/{{ business.id }}/edit" class="btn btn-xs btn-outline btn-primary flex-1">
+                            ✏️ {{ _('Edit') }}
+                        </a>
+                    {% else %}
+                        <button disabled class="btn btn-xs btn-outline btn-primary flex-1 opacity-40 cursor-not-allowed" title="{{ _('Only admins can edit businesses') }}">
+                            ✏️ {{ _('Edit') }}
+                        </button>
+                    {% endif %}
                     <a href="/sessions?business_id={{ business.id }}" class="btn btn-xs btn-outline flex-1">
                         📊 {{ _('Sessions') }}
                     </a>
-                    <button class="btn btn-xs btn-ghost" onclick="confirm('{{ _('Delete') }}?') && alert('Coming soon')">
-                        🗑️
-                    </button>
+                    {% if current_user.role == 'ADMIN' %}
+                        <button class="btn btn-xs btn-ghost" onclick="confirm('{{ _('Delete') }}?') && alert('Coming soon')">
+                            🗑️
+                        </button>
+                    {% else %}
+                        <button disabled class="btn btn-xs btn-ghost opacity-40 cursor-not-allowed" title="{{ _('Only admins can delete') }}">
+                            🗑️
+                        </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -131,12 +149,21 @@
         <p class="text-gray-500 text-center mb-6 max-w-sm">
             {{ _('Create your first business to start managing cash sessions and reconciliations.') }}
         </p>
-        <a href="/businesses/new" class="btn btn-primary gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            {{ _('Create First Business') }}
-        </a>
+        {% if current_user.role == 'ADMIN' %}
+            <a href="/businesses/new" class="btn btn-primary gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                {{ _('Create First Business') }}
+            </a>
+        {% else %}
+            <button disabled class="btn btn-primary gap-2 opacity-40 cursor-not-allowed" title="{{ _('Only admins can create businesses') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                {{ _('Create First Business') }}
+            </button>
+        {% endif %}
     </div>
     {% endif %}
 </div>
