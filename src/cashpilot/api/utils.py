@@ -134,7 +134,7 @@ async def _build_session_filters(
 def _build_role_filter(current_user: User):
     """Build role-based access filter."""
     if current_user.role == UserRole.CASHIER:
-        return (CashSession.created_by == current_user.id) | (CashSession.created_by.is_(None))
+        return CashSession.created_by == current_user.id
     return None
 
 
