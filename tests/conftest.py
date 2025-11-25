@@ -88,7 +88,11 @@ async def client(db_session):
     app = create_app()
 
     # Create a test user
-    test_user = await UserFactory.create(db_session)
+    test_user = await UserFactory.create(
+        db_session,
+        first_name="Test",
+        last_name="User",
+    )
 
     # Override get_db and get_current_user dependencies
     async def override_get_db():
@@ -117,6 +121,8 @@ async def test_user(db_session: AsyncSession, request) -> User:
     user = await UserFactory.create(
         db_session,
         email=email,
+        first_name="Test",
+        last_name="User",
         hashed_password=hash_password("testpass123"),
         is_active=True,
     )

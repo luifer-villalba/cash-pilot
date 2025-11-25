@@ -6,7 +6,6 @@ from typing import Optional
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 
 from cashpilot.core.security import hash_password
 from cashpilot.models.business import Business
@@ -22,6 +21,9 @@ class UserFactory:
         session: AsyncSession,
         email: str = "test@example.com",
         hashed_password: Optional[str] = None,
+        first_name: str = "Test",
+        last_name: str = "User",
+        role: str = "CASHIER",
         is_active: bool = True,
         **kwargs,
     ) -> User:
@@ -33,6 +35,9 @@ class UserFactory:
             id=kwargs.get("id", uuid.uuid4()),
             email=email,
             hashed_password=hashed_password,
+            first_name=first_name,
+            last_name=last_name,
+            role=role,
             is_active=is_active,
         )
 
@@ -77,7 +82,7 @@ class CashSessionFactory:
     @staticmethod
     async def create(
         session: AsyncSession,
-        business_id: Optional[str] = None,
+        business_id: Optional[uuid.UUID] = None,
         cashier_name: str = "Test Cashier",
         initial_cash: Decimal = Decimal("1000000.00"),
         session_date: Optional[date_type] = None,
@@ -97,8 +102,6 @@ class CashSessionFactory:
         **kwargs,
     ) -> CashSession:
         """Create a test cash session."""
-        from datetime import datetime
-
         if business_id is None:
             business = await BusinessFactory.create(session)
             business_id = business.id

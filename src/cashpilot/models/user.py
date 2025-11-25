@@ -1,5 +1,6 @@
 """User model for authentication."""
 
+import enum
 import uuid
 from datetime import datetime
 
@@ -8,6 +9,13 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from cashpilot.core.db import Base
+
+
+class UserRole(str, enum.Enum):
+    """User role enumeration."""
+
+    ADMIN = "ADMIN"
+    CASHIER = "CASHIER"
 
 
 class User(Base):
@@ -33,6 +41,25 @@ class User(Base):
         nullable=False,
     )
 
+    first_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        default="",
+    )
+
+    last_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        default="",
+    )
+
+    role: Mapped[UserRole] = mapped_column(
+        String(20),
+        nullable=False,
+        default=UserRole.CASHIER.value,
+        index=True,
+    )
+
     is_active: Mapped[bool] = mapped_column(
         default=True,
         nullable=False,
@@ -44,5 +71,11 @@ class User(Base):
         default=lambda: datetime.now(),
     )
 
+    @property
+    def display_name(self) -> str:
+        """Return formatted display name (first_name last_name or email fallback)."""
+        full_name = f"{self.first_name} {self.last_name}".strip()
+        return full_name if full_name else self.email
+
     def __repr__(self) -> str:
-        return f"<User(email={self.email}, is_active={self.is_active})>"
+        return f"<User(email={self.email}, role={self.role}, is_active={self.is_active})>"
