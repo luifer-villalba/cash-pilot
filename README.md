@@ -83,7 +83,6 @@ make run
 **Access:**
 - Dashboard: http://localhost:8000
 - API Docs: http://localhost:8000/docs
-- Admin Panel: http://localhost:8000/admin
 
 ## 🌿 Git Workflow
 
@@ -157,8 +156,6 @@ docker compose run --rm app pytest tests/test_business.py -v
 **Tables:** businesses, cash_sessions, users  
 **Relations:** Business → Many CashSessions  
 **Migrations:** Alembic version-controlled schema changes
-
-See [API_DEMO.md](API_DEMO.md) for complete API examples.
 
 ## ⚠️ Troubleshooting
 ```bash
