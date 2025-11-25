@@ -209,11 +209,7 @@ async def get_dashboard_stats(
         selected_businesses = result.scalar() or 0
 
     active_sessions = await db.execute(
-        select(func.count(CashSession.id)).where(
-            and_(CashSession.status == "OPEN", *filters)
-            if filters
-            else CashSession.status == "OPEN"
-        )
+        select(func.count(CashSession.id)).where(and_(CashSession.status == "OPEN", *filters))
     )
 
     cash_sales = await db.execute(
@@ -223,56 +219,40 @@ async def get_dashboard_stats(
                     CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash
                 ).cast(Numeric(12, 2))
             )
-        ).where(
-            and_(CashSession.status == "CLOSED", *filters)
-            if filters
-            else CashSession.status == "CLOSED"
-        )
+        ).where(and_(CashSession.status == "CLOSED", *filters))
     )
 
     credit_card = await db.execute(
         select(func.sum(CashSession.credit_card_total.cast(Numeric(12, 2)))).where(
             and_(CashSession.status == "CLOSED", *filters)
-            if filters
-            else CashSession.status == "CLOSED"
         )
     )
 
     debit_card = await db.execute(
         select(func.sum(CashSession.debit_card_total.cast(Numeric(12, 2)))).where(
             and_(CashSession.status == "CLOSED", *filters)
-            if filters
-            else CashSession.status == "CLOSED"
         )
     )
 
     bank_transfer = await db.execute(
         select(func.sum(CashSession.bank_transfer_total.cast(Numeric(12, 2)))).where(
             and_(CashSession.status == "CLOSED", *filters)
-            if filters
-            else CashSession.status == "CLOSED"
         )
     )
 
     expenses = await db.execute(
         select(func.sum(CashSession.expenses.cast(Numeric(12, 2)))).where(
             and_(CashSession.status == "CLOSED", *filters)
-            if filters
-            else CashSession.status == "CLOSED"
         )
     )
 
     flagged_count = await db.execute(
-        select(func.count(CashSession.id)).where(
-            and_(CashSession.flagged is True, *filters) if filters else CashSession.flagged is True
-        )
+        select(func.count(CashSession.id)).where(and_(CashSession.flagged is True, *filters))
     )
 
     envelope = await db.execute(
         select(func.sum(CashSession.envelope_amount.cast(Numeric(12, 2)))).where(
             and_(CashSession.status == "CLOSED", *filters)
-            if filters
-            else CashSession.status == "CLOSED"
         )
     )
 

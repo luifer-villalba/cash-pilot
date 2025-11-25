@@ -42,6 +42,7 @@ async def list_shifts(
         stmt = stmt.where(CashSession.status == status_filter)
 
     stmt = stmt.offset(skip).limit(limit).order_by(CashSession.opened_time.desc())
+    stmt = stmt.where(~CashSession.is_deleted)
 
     result = await db.execute(stmt)
     return result.scalars().all()
