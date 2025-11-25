@@ -4,6 +4,11 @@
 ## 🤔 Why
 <!-- Explain the motivation/problem this solves -->
 
+## 🌿 Target Branch
+<!-- Which branch is this PR targeting? -->
+- [ ] `dev` (feature development)
+- [ ] `main` (production release from dev)
+
 ## 📝 Changes
 <!-- Detailed breakdown of changes by file/section -->
 
@@ -24,7 +29,6 @@
 
 ## ✅ Testing
 <!-- How to test these changes -->
-
 ```bash
 # Example test command
 make test tests/test_your_feature.py
@@ -44,6 +48,7 @@ make test tests/test_your_feature.py
 - [ ] Translations added (if UI text)
 - [ ] Docstrings/comments added
 - [ ] Database migrations created (if schema changed)
+- [ ] Targeting correct branch (`dev` for features, `main` for releases)
 
 ## 🔗 Related
 - Closes: MIZ-XXX (if applicable)
