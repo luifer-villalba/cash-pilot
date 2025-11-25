@@ -209,9 +209,7 @@ async def get_dashboard_stats(
         selected_businesses = result.scalar() or 0
 
     active_sessions = await db.execute(
-        select(func.count(CashSession.id)).where(
-            and_(CashSession.status == "OPEN", *filters)
-        )
+        select(func.count(CashSession.id)).where(and_(CashSession.status == "OPEN", *filters))
     )
 
     cash_sales = await db.execute(
@@ -221,9 +219,7 @@ async def get_dashboard_stats(
                     CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash
                 ).cast(Numeric(12, 2))
             )
-        ).where(
-            and_(CashSession.status == "CLOSED", *filters)
-        )
+        ).where(and_(CashSession.status == "CLOSED", *filters))
     )
 
     credit_card = await db.execute(
@@ -251,9 +247,7 @@ async def get_dashboard_stats(
     )
 
     flagged_count = await db.execute(
-        select(func.count(CashSession.id)).where(
-            and_(CashSession.flagged is True, *filters)
-        )
+        select(func.count(CashSession.id)).where(and_(CashSession.flagged is True, *filters))
     )
 
     envelope = await db.execute(
