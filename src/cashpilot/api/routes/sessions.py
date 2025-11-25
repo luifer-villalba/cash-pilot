@@ -1,4 +1,4 @@
-# File: src/cashpilot/api/routes/sessions.py (refactored, ~320 lines)
+# File: src/cashpilot/api/routes/sessions.py
 
 """Session management routes (HTML endpoints)."""
 
@@ -14,18 +14,21 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
+from cashpilot.api.auth_helpers import require_own_session
 from cashpilot.api.utils import (
     _get_session_calculations,
     format_currency_py,
     get_active_businesses,
     get_locale,
-    get_session_or_redirect,
     get_translation_function,
     parse_currency,
 )
 from cashpilot.core.db import get_db
+from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.user import User
+
+logger = get_logger(__name__)
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -87,14 +90,22 @@ async def create_session_post(
             initial_cash=initial_cash_val,
             session_date=session_date_val,
             opened_time=opened_time_val,
+            created_by=current_user.id,  # SET CREATOR
         )
         db.add(session)
         await db.commit()
         await db.refresh(session)
 
+        logger.info(
+            "session.created",
+            session_id=str(session.id),
+            created_by=str(current_user.id),
+        )
+
         return RedirectResponse(url=f"/sessions/{session.id}", status_code=302)
 
     except Exception as e:
+        logger.error("session.create_failed", error=str(e), user_id=str(current_user.id))
         businesses = await get_active_businesses(db)
         return templates.TemplateResponse(
             request,
@@ -115,15 +126,15 @@ async def session_detail(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
+    session: CashSession = Depends(require_own_session),
     db: AsyncSession = Depends(get_db),
 ):
-    """Display single session details."""
+    """Display single session details (with permission check)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    session = await get_session_or_redirect(session_id, db)
-    if not session:
-        return RedirectResponse(url="/", status_code=302)
+    # Ensure business is loaded (eager load to avoid template lazy loading)
+    await db.refresh(session, ["business"])
 
     calcs = _get_session_calculations(session)
     return templates.TemplateResponse(
@@ -141,15 +152,11 @@ async def edit_session_form(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    session: CashSession = Depends(require_own_session),
 ):
-    """Form to close/edit cash session."""
+    """Form to close/edit cash session (with permission check)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
-
-    session = await get_session_or_redirect(session_id, db)
-    if not session:
-        return RedirectResponse(url="/", status_code=302)
 
     return templates.TemplateResponse(
         request,
@@ -163,6 +170,7 @@ async def close_session_post(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
+    session: CashSession = Depends(require_own_session),
     final_cash: str = Form(...),
     envelope_amount: str = Form(...),
     credit_card_total: str = Form(...),
@@ -174,15 +182,11 @@ async def close_session_post(
     notes: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle session close form submission."""
+    """Handle session close form submission (with permission check)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
-        session = await get_session_or_redirect(session_id, db)
-        if not session:
-            return RedirectResponse(url="/", status_code=302)
-
         session.final_cash = parse_currency(final_cash)
         session.envelope_amount = parse_currency(envelope_amount) or Decimal("0")
         session.credit_card_total = parse_currency(credit_card_total) or Decimal("0")
@@ -197,9 +201,20 @@ async def close_session_post(
         db.add(session)
         await db.commit()
 
+        logger.info(
+            "session.closed",
+            session_id=str(session.id),
+            closed_by=str(current_user.id),
+        )
+
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
     except Exception as e:
-        session = await get_session_or_redirect(session_id, db)
+        logger.error(
+            "session.close_failed",
+            session_id=session_id,
+            error=str(e),
+            user_id=str(current_user.id),
+        )
         return templates.TemplateResponse(
             request,
             "sessions/close_session.html",

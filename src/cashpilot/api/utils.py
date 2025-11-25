@@ -13,7 +13,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from cashpilot.models import Business, CashSession
+from cashpilot.models import Business, CashSession, User, UserRole
 
 TEMPLATES_DIR = Path("/app/templates")
 
@@ -102,38 +102,73 @@ async def _build_session_filters(
     cashier_name: str | None,
     business_id: str | None,
     status: str | None,
+    current_user: User,
 ) -> list:
-    """Build SQLAlchemy filter list from query params."""
+    """Build SQLAlchemy filter list from query params.
+
+    Cashier sees only own sessions + legacy (NULL created_by).
+    Admin sees all sessions.
+    """
     filters = []
 
+    # Role-based filter
+    filters.append(_build_role_filter(current_user))
+
+    # Date filters
     if from_date:
-        try:
-            from_dt = datetime.fromisoformat(from_date).date()
-            filters.append(CashSession.session_date >= from_dt)
-        except ValueError:
-            pass
-
+        filters.append(_parse_from_date(from_date))
     if to_date:
-        try:
-            to_dt = datetime.fromisoformat(to_date).date()
-            filters.append(CashSession.session_date <= to_dt)
-        except ValueError:
-            pass
+        filters.append(_parse_to_date(to_date))
 
+    # Text/enum filters
     if cashier_name and cashier_name.strip():
         filters.append(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
-
     if business_id and business_id.strip():
-        try:
-            filters.append(CashSession.business_id == UUID(business_id))
-        except ValueError:
-            pass
-
+        filters.append(_parse_business_id(business_id))
     if status and status.strip():
-        if status in ("OPEN", "CLOSED"):  # Validate enum values
-            filters.append(CashSession.status == status)
+        filters.append(_parse_status(status))
 
-    return filters
+    return [f for f in filters if f is not None]
+
+
+def _build_role_filter(current_user: User):
+    """Build role-based access filter."""
+    if current_user.role == UserRole.CASHIER:
+        return (CashSession.created_by == current_user.id) | (CashSession.created_by.is_(None))
+    return None
+
+
+def _parse_from_date(from_date: str):
+    """Parse from_date query param."""
+    try:
+        from_dt = datetime.fromisoformat(from_date).date()
+        return CashSession.session_date >= from_dt
+    except ValueError:
+        return None
+
+
+def _parse_to_date(to_date: str):
+    """Parse to_date query param."""
+    try:
+        to_dt = datetime.fromisoformat(to_date).date()
+        return CashSession.session_date <= to_dt
+    except ValueError:
+        return None
+
+
+def _parse_business_id(business_id: str):
+    """Parse business_id query param."""
+    try:
+        return CashSession.business_id == UUID(business_id)
+    except ValueError:
+        return None
+
+
+def _parse_status(status: str):
+    """Parse status query param."""
+    if status in ("OPEN", "CLOSED"):
+        return CashSession.status == status
+    return None
 
 
 async def _get_paginated_sessions(

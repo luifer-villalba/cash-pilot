@@ -29,6 +29,7 @@ class TestCashSessionDateValidationAPI:
             business_id=business.id,
             session_date=date_type.today(),
             status="OPEN",
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -57,6 +58,7 @@ class TestCashSessionDateValidationAPI:
             business_id=business.id,
             session_date=yesterday,
             status="OPEN",
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -86,6 +88,7 @@ class TestCashSessionDateValidationAPI:
             business_id=business.id,
             session_date=date_type.today(),
             status="OPEN",
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -113,6 +116,7 @@ class TestCashSessionDateValidationAPI:
             business_id=business.id,
             session_date=date_type.today(),
             status="OPEN",
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -138,6 +142,7 @@ class TestCashSessionDateValidationAPI:
             session_date=date_type.today(),
             status="OPEN",
             initial_cash=Decimal("500000.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from cashpilot.models.business import Business
+    from cashpilot.models.user import User
 
 import uuid
 from datetime import date, datetime, time
@@ -36,6 +37,18 @@ class CashSession(Base):
     business: Mapped["Business"] = relationship(
         "Business",
         back_populates="cash_sessions",
+    )
+
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=True,
+        index=True,
+    )
+
+    created_by_user: Mapped["User | None"] = relationship(
+        "User",
+        foreign_keys=[created_by],
     )
 
     status: Mapped[str] = mapped_column(

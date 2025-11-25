@@ -1,3 +1,4 @@
+<!-- File: templates/index.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Dashboard') }} - CashPilot{% endblock %}
@@ -18,7 +19,8 @@
         </a>
     </div>
 
-    <!-- Stats Row (HTMX TARGET) -->
+    <!-- Stats Row (ONLY FOR ADMIN) -->
+    {% if current_user.role == 'ADMIN' %}
     <div id="stats-row"
          hx-get="/stats"
          hx-include="#filter-form"
@@ -33,6 +35,7 @@
             <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
         </div>
     </div>
+    {% endif %}
 
     <!-- Filters Section -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow">
@@ -53,6 +56,7 @@
                         id="filter-toggle"
                         class="btn btn-ghost btn-sm gap-2"
                         aria-label="Toggle filters"
+                        aria-expanded="false"
                 >
                     <span>{{ _('More Options') }}</span>
                     <svg id="filter-chevron" class="w-4 h-4 transition-transform duration-300" fill="none"
@@ -79,8 +83,8 @@
                 </button>
             </div>
 
-            <!-- Collapsible Filter Form -->
-            <form id="filter-form" class="space-y-4 transition-all duration-300">
+            <!-- Collapsible Filter Form (Hidden by default, controlled by toggle) -->
+            <form id="filter-form" class="space-y-4 hidden transition-all duration-300">
                 <!-- Date & Status Row -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- From Date -->
@@ -131,10 +135,8 @@
                         <div class="relative">
                             <select id="status" name="status" class="select select-sm select-bordered w-full pr-10">
                                 <option value="">{{ _('All') }}</option>
-                                <option value="OPEN" {% if current_filters.status==
-                                'OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
-                                <option value="CLOSED" {% if current_filters.status==
-                                'CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
+                                <option value="OPEN" {% if current_filters.status=='OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
+                                <option value="CLOSED" {% if current_filters.status=='CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
                             </select>
                             <button type="button"
                                     class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
@@ -153,8 +155,7 @@
                                     class="select select-sm select-bordered w-full pr-10">
                                 <option value="">{{ _('All') }}</option>
                                 {% for biz in businesses %}
-                                <option value="{{ biz.id }}" {% if current_filters.business_id== biz.id|string
-                                        %}selected{% endif %}>{{ biz.name }}
+                                <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -227,15 +228,31 @@
         window.location.search = urlParams.toString();
     }
 
+    // Filter Toggle
+    const filterToggle = document.getElementById('filter-toggle');
+    const filterForm = document.getElementById('filter-form');
+    const filterChevron = document.getElementById('filter-chevron');
+
+    filterToggle.addEventListener('click', function () {
+        const isExpanded = filterForm.classList.contains('hidden');
+        filterForm.classList.toggle('hidden');
+        filterChevron.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+        filterToggle.setAttribute('aria-expanded', isExpanded);
+    });
+
     // Helper to trigger both stats and table updates
     function applyFilters() {
         const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
         const queryString = '?' + params.toString();
 
-        // Update browser URL without reload
         window.history.pushState({}, '', queryString);
 
-        htmx.ajax('GET', '/stats' + queryString, '#stats-row');
+        // Only load stats if element exists (Admin only)
+        const statsRow = document.getElementById('stats-row');
+        if (statsRow) {
+            htmx.ajax('GET', '/stats' + queryString, '#stats-row');
+        }
+
         htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
     }
 

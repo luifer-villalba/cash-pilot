@@ -87,6 +87,7 @@ class CashSessionFactory:
         initial_cash: Decimal = Decimal("1000000.00"),
         session_date: Optional[date_type] = None,
         opened_time: Optional[time] = None,
+        created_by: Optional[uuid.UUID] = None,
         status: str = "OPEN",
         final_cash: Optional[Decimal] = None,
         envelope_amount: Decimal = Decimal("0.00"),
@@ -106,6 +107,11 @@ class CashSessionFactory:
             business = await BusinessFactory.create(session)
             business_id = business.id
 
+        # If created_by not provided, create a default user
+        if created_by is None:
+            user = await UserFactory.create(session, email=f"cashier_{uuid.uuid4().hex[:8]}@test.com")
+            created_by = user.id
+
         if session_date is None:
             session_date = date_type.today()
 
@@ -115,6 +121,7 @@ class CashSessionFactory:
         cash_session = CashSession(
             id=kwargs.get("id", uuid.uuid4()),
             business_id=business_id,
+            created_by=created_by,
             cashier_name=cashier_name,
             initial_cash=initial_cash,
             session_date=session_date,

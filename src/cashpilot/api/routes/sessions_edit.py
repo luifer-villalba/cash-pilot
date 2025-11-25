@@ -1,3 +1,4 @@
+# File: src/cashpilot/api/routes/sessions_edit.py
 """Session edit routes (edit-open, edit-closed)."""
 
 from datetime import datetime
@@ -10,17 +11,20 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
+from cashpilot.api.auth_helpers import require_own_session
 from cashpilot.api.utils import (
     get_locale,
-    get_session_or_redirect,
     get_translation_function,
     parse_currency,
     update_open_session_fields,
 )
 from cashpilot.core.db import get_db
+from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.user import User
+
+logger = get_logger(__name__)
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -36,15 +40,14 @@ async def edit_open_session_form(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    session: CashSession = Depends(require_own_session),
 ):
-    """Form to edit an OPEN cash session."""
+    """Form to edit an OPEN cash session (with permission check)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    session = await get_session_or_redirect(session_id, db)
-    if not session or session.status != "OPEN":
-        return RedirectResponse(url=f"/sessions/{session_id}" if session else "/", status_code=302)
+    if session.status != "OPEN":
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
     return templates.TemplateResponse(
         request,
@@ -58,6 +61,7 @@ async def edit_open_session_post(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
+    session: CashSession = Depends(require_own_session),
     cashier_name: str | None = Form(None),
     initial_cash: str | None = Form(None),
     opened_time: str | None = Form(None),
@@ -65,43 +69,52 @@ async def edit_open_session_post(
     reason: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle edit open session form submission."""
+    """Handle edit open session form submission (with permission check)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
-        session = await get_session_or_redirect(session_id, db)
-        if not session or session.status != "OPEN":
-            return RedirectResponse(
-                url=f"/sessions/{session_id}" if session else "/", status_code=302
-            )
+        if session.status != "OPEN":
+            return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
         changed_fields, old_values, new_values = await update_open_session_fields(
             session, cashier_name, initial_cash, opened_time, expenses
         )
 
         session.last_modified_at = datetime.now()
-        session.last_modified_by = "system"
+        session.last_modified_by = current_user.display_name
         db.add(session)
         await db.commit()
 
         if changed_fields:
             audit_log = CashSessionAuditLog(
                 session_id=session.id,
-                action="edit",
+                action="edit_open",
                 changed_fields=changed_fields,
                 old_values=old_values,
                 new_values=new_values,
-                changed_by="system",
+                changed_by=current_user.display_name,
                 reason=reason,
             )
             db.add(audit_log)
             await db.commit()
 
+            logger.info(
+                "session.edit_open",
+                session_id=str(session.id),
+                edited_by=str(current_user.id),
+                fields=changed_fields,
+            )
+
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
     except ValueError as e:
-        session = await get_session_or_redirect(session_id, db)
+        logger.error(
+            "session.edit_open_failed",
+            session_id=session_id,
+            error=str(e),
+            user_id=str(current_user.id),
+        )
         return templates.TemplateResponse(
             request,
             "sessions/edit_open_session.html",
@@ -124,15 +137,18 @@ async def edit_closed_session_form(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    session: CashSession = Depends(require_own_session),
 ):
-    """Form to edit a CLOSED cash session."""
+    """Form to edit a CLOSED cash session (with permission check).
+
+    Admin: can edit any closed session
+    Cashier: can edit only their own closed session
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    session = await get_session_or_redirect(session_id, db)
-    if not session or session.status != "CLOSED":
-        return RedirectResponse(url=f"/sessions/{session_id}" if session else "/", status_code=302)
+    if session.status != "CLOSED":
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
     return templates.TemplateResponse(
         request,
@@ -253,6 +269,7 @@ async def edit_closed_session_post(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
+    session: CashSession = Depends(require_own_session),
     final_cash: str | None = Form(None),
     envelope_amount: str | None = Form(None),
     credit_card_total: str | None = Form(None),
@@ -264,16 +281,13 @@ async def edit_closed_session_post(
     reason: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle edit closed session form submission."""
+    """Handle edit closed session form submission (with permission check)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
-        session = await get_session_or_redirect(session_id, db)
-        if not session or session.status != "CLOSED":
-            return RedirectResponse(
-                url=f"/sessions/{session_id}" if session else "/", status_code=302
-            )
+        if session.status != "CLOSED":
+            return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
         changed_fields, old_values, new_values = await update_closed_session_fields(
             session,
@@ -288,27 +302,39 @@ async def edit_closed_session_post(
         )
 
         session.last_modified_at = datetime.now()
-        session.last_modified_by = "system"
+        session.last_modified_by = current_user.display_name
         db.add(session)
         await db.commit()
 
         if changed_fields:
             audit_log = CashSessionAuditLog(
                 session_id=session.id,
-                action="edit",
+                action="edit_closed",
                 changed_fields=changed_fields,
                 old_values=old_values,
                 new_values=new_values,
-                changed_by="system",
+                changed_by=current_user.display_name,
                 reason=reason,
             )
             db.add(audit_log)
             await db.commit()
 
+            logger.info(
+                "session.edit_closed",
+                session_id=str(session.id),
+                edited_by=str(current_user.id),
+                fields=changed_fields,
+            )
+
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
     except ValueError as e:
-        session = await get_session_or_redirect(session_id, db)
+        logger.error(
+            "session.edit_closed_failed",
+            session_id=session_id,
+            error=str(e),
+            user_id=str(current_user.id),
+        )
         return templates.TemplateResponse(
             request,
             "sessions/edit_closed_session.html",

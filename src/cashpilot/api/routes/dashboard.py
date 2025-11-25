@@ -12,6 +12,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import Numeric, and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.api.utils import (
     _build_session_filters,
     _get_paginated_sessions,
@@ -40,6 +41,7 @@ async def dashboard(
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
     status: str | None = Query(None),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
@@ -51,7 +53,9 @@ async def dashboard(
     _ = get_translation_function(locale)
 
     # NO server defaults - client handles timezone
-    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id, status)
+    filters = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user
+    )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
         db, filters, page=page, per_page=10
     )
@@ -134,13 +138,16 @@ async def sessions_table(
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
     status: str | None = Query(None),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Paginated sessions table partial (HTMX endpoint)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id, status)
+    filters = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user
+    )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
         db, filters, page=page, per_page=10
     )
@@ -189,13 +196,16 @@ async def get_dashboard_stats(
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
     status: str | None = Query(None),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Return dashboard stats as HTML partial."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    filters = await _build_session_filters(from_date, to_date, cashier_name, business_id, status)
+    filters = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user
+    )
     filters.append(~CashSession.is_deleted)
 
     if business_id:

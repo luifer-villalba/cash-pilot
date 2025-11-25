@@ -77,5 +77,11 @@ class User(Base):
         full_name = f"{self.first_name} {self.last_name}".strip()
         return full_name if full_name else self.email
 
+    @property
+    def display_name_email(self) -> str:
+        """Return formatted display name (first_name last_name or email fallback)."""
+        full_name = f"{self.first_name} {self.last_name} <{self.email}>".strip()
+        return full_name if full_name else self.email
+
     def __repr__(self) -> str:
         return f"<User(email={self.email}, role={self.role}, is_active={self.is_active})>"

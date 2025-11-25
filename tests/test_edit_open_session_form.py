@@ -23,7 +23,7 @@ class TestEditOpenSessionFormGET:
         """Test GET /sessions/{id}/edit-open renders form."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
-            db_session, business_id=business.id, status="OPEN"
+            db_session, business_id=business.id, status="OPEN", created_by=client.test_user.id
         )
 
         response = await client.get(f"/sessions/{session.id}/edit-open")
@@ -43,6 +43,7 @@ class TestEditOpenSessionFormGET:
             status="OPEN",
             cashier_name="María López",
             initial_cash=Decimal("500000.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.get(f"/sessions/{session.id}/edit-open")
@@ -57,7 +58,7 @@ class TestEditOpenSessionFormGET:
         """Test accessing form for closed session redirects."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
-            db_session, business_id=business.id, status="CLOSED"
+            db_session, business_id=business.id, status="CLOSED", created_by=client.test_user.id
         )
 
         response = await client.get(f"/sessions/{session.id}/edit-open", follow_redirects=False)
@@ -79,6 +80,7 @@ class TestEditOpenSessionFormPOST:
             business_id=business.id,
             status="OPEN",
             initial_cash=Decimal("500000.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -105,6 +107,7 @@ class TestEditOpenSessionFormPOST:
             business_id=business.id,
             status="OPEN",
             expenses=Decimal("0.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -134,6 +137,7 @@ class TestEditOpenSessionFormPOST:
             initial_cash=Decimal("500000.00"),
             opened_time=time(8, 0),
             expenses=Decimal("0.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -166,7 +170,7 @@ class TestEditOpenSessionValidation:
         """Test POST with invalid time format returns error."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
-            db_session, business_id=business.id, status="OPEN"
+            db_session, business_id=business.id, status="OPEN", created_by=client.test_user.id
         )
 
         response = await client.post(
@@ -194,6 +198,7 @@ class TestEditOpenSessionAuditLogging:
             business_id=business.id,
             status="OPEN",
             cashier_name="Original",
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -229,6 +234,7 @@ class TestEditOpenSessionAuditLogging:
             cashier_name="Original",
             initial_cash=Decimal("500000.00"),
             expenses=Decimal("0.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -261,6 +267,7 @@ class TestEditOpenSessionAuditLogging:
             business_id=business.id,
             status="OPEN",
             initial_cash=Decimal("500000.00"),
+            created_by=client.test_user.id,
         )
 
         response = await client.post(
@@ -289,7 +296,7 @@ class TestEditOpenSessionAuditLogging:
         """Test audit log captures changed_at timestamp."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
-            db_session, business_id=business.id, status="OPEN"
+            db_session, business_id=business.id, status="OPEN", created_by=client.test_user.id
         )
 
         before = datetime.now()
@@ -325,6 +332,7 @@ class TestEditOpenSessionLastModified:
             business_id=business.id,
             status="OPEN",
             last_modified_at=None,
+            created_by=client.test_user.id,
         )
 
         await client.post(
@@ -346,6 +354,7 @@ class TestEditOpenSessionLastModified:
             business_id=business.id,
             status="OPEN",
             last_modified_by=None,
+            created_by=client.test_user.id,
         )
 
         await client.post(
@@ -354,7 +363,7 @@ class TestEditOpenSessionLastModified:
         )
 
         await db_session.refresh(session)
-        assert session.last_modified_by == "system"
+        assert session.last_modified_by == client.test_user.display_name
 
 
 class TestEditOpenSessionDecimalFormatting:
@@ -371,6 +380,7 @@ class TestEditOpenSessionDecimalFormatting:
             business_id=business.id,
             status="OPEN",
             initial_cash=Decimal("1234567.89"),
+            created_by=client.test_user.id,
         )
 
         response = await client.get(f"/sessions/{session.id}/edit-open")
@@ -384,7 +394,7 @@ class TestEditOpenSessionDecimalFormatting:
         """Test POST accepts amounts with separators."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
-            db_session, business_id=business.id, status="OPEN"
+            db_session, business_id=business.id, status="OPEN", created_by=client.test_user.id
         )
 
         # Submit with decimal point (no thousands separator)
@@ -407,7 +417,7 @@ class TestEditOpenSessionDecimalFormatting:
         """Test POST accepts amounts with comma thousands separator."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
-            db_session, business_id=business.id, status="OPEN"
+            db_session, business_id=business.id, status="OPEN", created_by=client.test_user.id
         )
 
         # Submit with comma thousands separator
