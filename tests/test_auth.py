@@ -122,16 +122,15 @@ class TestAuthEndpoints:
             self,
             client: AsyncClient,
     ) -> None:
-        """Test protected routes redirect to login (302)."""
-        from fastapi.testclient import TestClient
+        """Test protected routes return 401 without auth."""
+        from httpx import AsyncClient
         from cashpilot.main import create_app
 
         app = create_app()
-        test_client = TestClient(app)
-
-        response = test_client.get("/", follow_redirects=False)
-        assert response.status_code == 302
-        assert "/login" in response.headers.get("location", "")
+        async with AsyncClient(app=app, base_url="http://test") as unauthenticated_client:
+            response = await unauthenticated_client.get("/", follow_redirects=False)
+            assert response.status_code == 401
+            assert response.json()["detail"] == "Not authenticated"
 
     @pytest.mark.asyncio
     async def test_session_persistence(
