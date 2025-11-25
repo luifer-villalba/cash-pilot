@@ -8,11 +8,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import attributes
 
+from cashpilot.api.auth import get_current_user
+from cashpilot.api.auth_helpers import require_admin
 from cashpilot.api.utils import get_locale, get_translation_function
 from cashpilot.core.db import get_db
+from cashpilot.core.logging import get_logger
 from cashpilot.models import Business
+from cashpilot.models.user import User
+
+logger = get_logger(__name__)
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -23,6 +28,7 @@ router = APIRouter(prefix="/businesses", tags=["businesses-frontend"])
 @router.get("", response_class=HTMLResponse)
 async def list_businesses(
     request: Request,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """List all businesses with management options."""
@@ -38,6 +44,7 @@ async def list_businesses(
         "businesses/list.html",
         {
             "businesses": businesses,
+            "current_user": current_user,
             "locale": locale,
             "_": _,
         },
@@ -45,8 +52,11 @@ async def list_businesses(
 
 
 @router.get("/new", response_class=HTMLResponse)
-async def create_business_form(request: Request):
-    """Form to create new business."""
+async def create_business_form(
+    request: Request,
+    current_user: User = Depends(require_admin),
+):
+    """Form to create new business. Admin only."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -54,6 +64,7 @@ async def create_business_form(request: Request):
         request,
         "businesses/create.html",
         {
+            "current_user": current_user,
             "locale": locale,
             "_": _,
         },
@@ -66,9 +77,10 @@ async def create_business_post(
     name: str = Form(...),
     address: str | None = Form(None),
     phone: str | None = Form(None),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle business creation form submission."""
+    """Handle business creation form submission. Admin only."""
     business = Business(
         name=name.strip(),
         address=address.strip() if address else None,
@@ -78,6 +90,12 @@ async def create_business_post(
     db.add(business)
     await db.commit()
     await db.refresh(business)
+    logger.info(
+        "business.created_html",
+        business_id=str(business.id),
+        business_name=business.name,
+        created_by=str(current_user.id),
+    )
 
     return RedirectResponse(url=f"/businesses/{business.id}/edit", status_code=302)
 
@@ -86,9 +104,10 @@ async def create_business_post(
 async def edit_business_form(
     request: Request,
     business_id: str,
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Form to edit business and manage cashiers."""
+    """Form to edit business and manage cashiers. Admin only."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -104,23 +123,24 @@ async def edit_business_form(
         "businesses/edit.html",
         {
             "business": business,
+            "current_user": current_user,
             "locale": locale,
             "_": _,
         },
     )
 
 
-@router.post("/{business_id}", response_class=HTMLResponse)
-async def update_business_post(
+@router.put("/{business_id}", response_class=HTMLResponse)
+async def update_business_put(
     request: Request,
     business_id: str,
-    name: str = Form(...),
+    name: str | None = Form(None),
     address: str | None = Form(None),
     phone: str | None = Form(None),
-    is_active: bool = Form(True),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle business update form submission."""
+    """Handle business update via form. Admin only."""
     stmt = select(Business).where(Business.id == UUID(business_id))
     result = await db.execute(stmt)
     business = result.scalar_one_or_none()
@@ -128,82 +148,20 @@ async def update_business_post(
     if not business:
         return RedirectResponse(url="/businesses", status_code=302)
 
-    business.name = name.strip()
-    business.address = address.strip() if address else None
-    business.phone = phone.strip() if phone else None
-    business.is_active = is_active
+    if name:
+        business.name = name.strip()
+    if address is not None:
+        business.address = address.strip() if address else None
+    if phone is not None:
+        business.phone = phone.strip() if phone else None
 
     db.add(business)
     await db.commit()
+    await db.refresh(business)
+    logger.info(
+        "business.updated_html",
+        business_id=str(business.id),
+        updated_by=str(current_user.id),
+    )
 
     return RedirectResponse(url=f"/businesses/{business.id}/edit", status_code=302)
-
-
-@router.post("/{business_id}/cashiers/add", response_class=HTMLResponse)
-async def add_cashier_form(
-    request: Request,
-    business_id: str,
-    cashier_name: str = Form(...),
-    db: AsyncSession = Depends(get_db),
-):
-    """Handle adding cashier via form."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
-    result = await db.execute(stmt)
-    business = result.scalar_one_or_none()
-
-    if not business:
-        return RedirectResponse(url="/businesses", status_code=302)
-
-    cashier_clean = cashier_name.strip()
-    if cashier_clean and cashier_clean not in business.cashiers:
-        business.cashiers.append(cashier_clean)
-        attributes.flag_modified(business, "cashiers")
-        db.add(business)
-        await db.commit()
-
-    return RedirectResponse(url=f"/businesses/{business.id}/edit", status_code=302)
-
-
-@router.post("/{business_id}/cashiers/remove", response_class=HTMLResponse)
-async def remove_cashier_form(
-    request: Request,
-    business_id: str,
-    cashier_name: str = Form(...),
-    db: AsyncSession = Depends(get_db),
-):
-    """Handle removing cashier via form."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
-    result = await db.execute(stmt)
-    business = result.scalar_one_or_none()
-
-    if not business:
-        return RedirectResponse(url="/businesses", status_code=302)
-
-    if cashier_name in business.cashiers:
-        business.cashiers.remove(cashier_name)
-        attributes.flag_modified(business, "cashiers")  # ← ADD THIS
-        db.add(business)
-        await db.commit()
-
-    return RedirectResponse(url=f"/businesses/{business.id}/edit", status_code=302)
-
-
-@router.delete("/{business_id}", response_class=HTMLResponse)
-async def delete_business(
-    request: Request,
-    business_id: str,
-    db: AsyncSession = Depends(get_db),
-):
-    """Soft-delete business (sets is_active=False)."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
-    result = await db.execute(stmt)
-    business = result.scalar_one_or_none()
-
-    if not business:
-        return RedirectResponse(url="/businesses", status_code=302)
-
-    business.is_active = False
-    db.add(business)
-    await db.commit()
-
-    return RedirectResponse(url="/businesses", status_code=302)
