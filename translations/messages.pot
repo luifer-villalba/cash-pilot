@@ -1111,3 +1111,11 @@ msgstr ""
 msgid "Remove flag from this session?"
 msgstr ""
 
+msgid "Delete session"
+msgstr ""
+
+msgid "Delete this session? This can be undone by admins."
+msgstr ""
+
+msgid "Restore Session"
+msgstr ""

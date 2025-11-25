@@ -1112,3 +1112,12 @@ msgstr "Limpiar Marca"
 #: /app/templates/sessions/session_detail.html:553
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
+
+msgid "Delete session"
+msgstr "Borrar sesión"
+
+msgid "Delete this session? This can be undone by admins."
+msgstr "¿Borrar esta sesión? Los administradores pueden deshacer esto."
+
+msgid "Restore Session"
+msgstr "Restaurar Sesión"
