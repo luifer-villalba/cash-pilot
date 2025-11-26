@@ -1,12 +1,16 @@
 # File: src/cashpilot/api/routes/settings.py
 """User settings endpoints."""
 
-from fastapi import APIRouter, Depends, Form, HTTPException, status
-from fastapi.responses import RedirectResponse
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
 from cashpilot.api.auth import get_current_user
+from cashpilot.api.utils import get_locale, get_translation_function
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import hash_password, verify_password
@@ -15,6 +19,34 @@ from cashpilot.models.user import User
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/settings", tags=["settings"])
+
+TEMPLATES_DIR = Path("/app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+
+# Add this route before the POST endpoint:
+@router.get("/", response_class=HTMLResponse)
+async def settings_page(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+):
+    """Render settings page."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    error = request.query_params.get("error")
+    success = request.query_params.get("success")
+
+    return templates.TemplateResponse(
+        "settings.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "_": _,
+            "error": error,
+            "success": success,
+        },
+    )
 
 
 @router.post("/change-password")
@@ -34,9 +66,7 @@ async def change_password(
             user_id=str(current_user.id),
             reason="invalid_current_password",
         )
-        return RedirectResponse(
-            url="/settings?error=invalid_current_password", status_code=302
-        )
+        return RedirectResponse(url="/settings?error=invalid_current_password", status_code=302)
 
     # Validate new password matches confirmation
     if new_password != confirm_password:
@@ -45,9 +75,7 @@ async def change_password(
             user_id=str(current_user.id),
             reason="password_mismatch",
         )
-        return RedirectResponse(
-            url="/settings?error=password_mismatch", status_code=302
-        )
+        return RedirectResponse(url="/settings?error=password_mismatch", status_code=302)
 
     # Update password
     current_user.hashed_password = hash_password(new_password)

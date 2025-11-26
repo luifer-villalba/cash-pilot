@@ -89,9 +89,9 @@
                 </button>
                 <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-lg w-52 z-50 border border-base-200">
                     <li class="menu-title"><span class="text-xs text-base-content/60">{{ current_user.email }}</span></li>
-                    <li><a href="#" class="text-sm">{{ _('Profile') }}</a></li>
+                    <li><a href="/settings" class="text-sm">{{ _('Settings') }}</a></li>
                     <li>
-                        <form method="POST" action="/logout" onsubmit="return confirm('{{ _('Are you sure?') }}')">
+                        <form method="POST" action="/logout" onsubmit="return confirm('{{ _('Are you sure?')}}')">
                             <button type="submit" class="text-sm text-error">{{ _('Logout') }}</button>
                         </form>
                     </li>
