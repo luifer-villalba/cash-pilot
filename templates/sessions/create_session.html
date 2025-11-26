@@ -52,12 +52,14 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Initial Cash (Gs)') }}</span>
                         </label>
                         <input
-                                type="text"
-                                name="initial_cash"
-                                class="input input-sm input-bordered w-full"
-                                placeholder="500.000"
-                                inputmode="decimal"
-                                required
+                            type="text"
+                            name="initial_cash"
+                            class="input input-sm input-bordered w-full"
+                            placeholder="500.000"
+                            inputmode="decimal"
+                            required
+                            pattern="^\d{1,9}(\.\d{1,2})?$"
+                            title="{{ _('Enter a positive number with max 2 decimals (max: 999,999,999.99)') }}"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
@@ -70,10 +72,11 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Session Date') }}</span>
                         </label>
                         <input
-                                type="date"
-                                name="session_date"
-                                class="input input-sm input-bordered w-full"
-                                id="session-date"
+                            type="date"
+                            name="session_date"
+                            class="input input-sm input-bordered w-full"
+                            id="session-date"
+                            max="{{ date.today().isoformat() }}"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for today') }}</span>
