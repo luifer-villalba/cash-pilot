@@ -45,6 +45,75 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("app.shutdown", message="CashPilot shutting down gracefully")
 
 
+def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -> None:
+    """Configure all middleware in correct order."""
+    # Add middleware in reverse order (last added = first executed)
+    # RequestIDMiddleware LAST so it runs FIRST
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=session_secret_key,
+        max_age=14 * 24 * 60 * 60,
+        https_only=environment == "production",
+        same_site="lax",
+    )
+    app.add_middleware(AdminRedirectMiddleware)
+
+    from cashpilot.middleware.logging import RequestIDMiddleware
+
+    app.add_middleware(RequestIDMiddleware)
+
+
+def _mount_static(app: FastAPI) -> None:
+    """Mount static files directory."""
+    static_dir = Path(os.getenv("STATIC_DIR", "static")).resolve()
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    else:
+        logger.warning(f"Static directory not found: {static_dir}")
+
+
+def _register_routers(app: FastAPI) -> None:
+    """Register all API and frontend routers."""
+    # Core/Health
+    from cashpilot.api.health import router as health_router
+
+    app.include_router(health_router)
+
+    # Frontend (Dashboard & Auth)
+    from cashpilot.api.auth import router as auth_router
+    from cashpilot.api.routes import settings
+    from cashpilot.api.routes.dashboard import router as dashboard_router
+
+    app.include_router(dashboard_router)
+    app.include_router(auth_router)
+    app.include_router(settings.router)
+
+    # Cash Sessions (UI)
+    from cashpilot.api.routes.sessions import router as sessions_router
+    from cashpilot.api.routes.sessions_edit import router as sessions_edit_router
+
+    app.include_router(sessions_router)
+    app.include_router(sessions_edit_router)
+
+    # Businesses (UI)
+    from cashpilot.api.routes.businesses import router as businesses_router
+
+    app.include_router(businesses_router)
+
+    # API endpoints
+    from cashpilot.api.business import router as business_api_router
+    from cashpilot.api.cash_session import router as cash_session_router
+    from cashpilot.api.cash_session_audit import router as cash_session_audit_router
+    from cashpilot.api.cash_session_edit import router as cash_session_edit_router
+    from cashpilot.api.utils import router as utils_router
+
+    app.include_router(utils_router)
+    app.include_router(business_api_router)
+    app.include_router(cash_session_router)
+    app.include_router(cash_session_edit_router)
+    app.include_router(cash_session_audit_router)
+
+
 def create_app() -> FastAPI:
     """Application factory for CashPilot."""
     app = FastAPI(
@@ -61,64 +130,9 @@ def create_app() -> FastAPI:
     session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
     environment = os.getenv("ENVIRONMENT", "development")
 
-    # Add middleware in reverse order (last added = first executed)
-    # RequestIDMiddleware LAST so it runs FIRST
-    app.add_middleware(
-        SessionMiddleware,
-        secret_key=session_secret_key,
-        max_age=14 * 24 * 60 * 60,
-        https_only=environment == "production",
-        same_site="lax",
-    )
-
-    app.add_middleware(AdminRedirectMiddleware)
-
-    from cashpilot.middleware.logging import RequestIDMiddleware
-
-    app.add_middleware(RequestIDMiddleware)
-
-    static_dir = Path(os.getenv("STATIC_DIR", "static")).resolve()
-    if static_dir.exists():
-        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-    else:
-        logger.warning(f"Static directory not found: {static_dir}")
-
-    # Include routers
-    from cashpilot.api.health import router as health_router
-
-    app.include_router(health_router)
-
-    from cashpilot.api.routes.dashboard import router as dashboard_router
-    from cashpilot.api.utils import router as utils_router
-
-    app.include_router(utils_router)
-    app.include_router(dashboard_router)
-
-    from cashpilot.api.routes.sessions import router as sessions_router
-    from cashpilot.api.routes.sessions_edit import router as sessions_edit_router
-
-    app.include_router(sessions_router)
-    app.include_router(sessions_edit_router)
-
-    from cashpilot.api.routes.businesses import router as businesses_router
-
-    app.include_router(businesses_router)
-
-    from cashpilot.api.business import router as business_api_router
-
-    app.include_router(business_api_router)
-
-    from cashpilot.api.cash_session import router as cash_session_router
-    from cashpilot.api.cash_session_audit import router as cash_session_audit_router
-    from cashpilot.api.cash_session_edit import router as cash_session_edit_router
-
-    app.include_router(cash_session_router)
-    app.include_router(cash_session_edit_router)
-    app.include_router(cash_session_audit_router)
-
-    from cashpilot.api.auth import router as auth_router
-
-    app.include_router(auth_router)
+    _setup_middleware(app, environment, session_secret_key)
+    _mount_static(app)
+    _register_routers(app)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 

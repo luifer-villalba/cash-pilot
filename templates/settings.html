@@ -1,0 +1,112 @@
+{# File: templates/settings.html #}
+{% extends "base.html" %}
+
+{% block title %}{{ _('Settings') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold mb-2">⚙️ {{ _('Settings') }}</h1>
+        <p class="text-base-content/70">{{ _('Manage your account') }}</p>
+    </div>
+
+    <!-- Alert Messages -->
+    {% if success == 'password_changed' %}
+    <div class="alert alert-success mb-6 shadow-md">
+        <svg class="stroke-current shrink-0 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>{{ _('Password changed successfully') }}</span>
+    </div>
+    {% endif %}
+
+    {% if error == 'invalid_current_password' %}
+    <div class="alert alert-error mb-6 shadow-md">
+        <svg class="stroke-current shrink-0 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2M9 3h6a3 3 0 013 3v9a3 3 0 01-3 3H9a3 3 0 01-3-3V6a3 3 0 013-3z"></path>
+        </svg>
+        <span>{{ _('Current password is incorrect') }}</span>
+    </div>
+    {% endif %}
+
+    {% if error == 'password_mismatch' %}
+    <div class="alert alert-error mb-6 shadow-md">
+        <svg class="stroke-current shrink-0 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2M9 3h6a3 3 0 013 3v9a3 3 0 01-3 3H9a3 3 0 01-3-3V6a3 3 0 013-3z"></path>
+        </svg>
+        <span>{{ _('Passwords do not match') }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Change Password Card -->
+    <div class="card bg-base-100 shadow-lg border border-base-200">
+        <div class="card-body">
+            <h2 class="card-title text-2xl mb-6">🔐 {{ _('Change Password') }}</h2>
+            
+            <form method="POST" action="/settings/change-password" class="space-y-5">
+                <!-- Current Password -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm font-semibold uppercase tracking-wider">{{ _('Current Password') }}</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        name="current_password"
+                        placeholder="{{ _('Enter your current password') }}"
+                        required
+                        class="input input-bordered input-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                </div>
+
+                <!-- New Password -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm font-semibold uppercase tracking-wider">{{ _('New Password') }}</span>
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Minimum 8 characters') }}</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        name="new_password"
+                        placeholder="{{ _('Enter new password') }}"
+                        minlength="8"
+                        required
+                        class="input input-bordered input-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text text-sm font-semibold uppercase tracking-wider">{{ _('Confirm Password') }}</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        name="confirm_password"
+                        placeholder="{{ _('Confirm new password') }}"
+                        minlength="8"
+                        required
+                        class="input input-bordered input-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-control pt-4">
+                    <button type="submit" class="btn btn-primary gap-2">
+                        <span>✓</span>
+                        <span>{{ _('Update Password') }}</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back to Dashboard -->
+    <div class="mt-8 text-center">
+        <a href="/" class="btn btn-ghost gap-2">
+            <span>←</span>
+            <span>{{ _('Back to Dashboard') }}</span>
+        </a>
+    </div>
+</div>
+{% endblock %}
