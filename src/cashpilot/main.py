@@ -80,11 +80,9 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(health_router)
 
     # Frontend (Dashboard & Auth)
-    from cashpilot.api.auth import router as auth_router
-    from cashpilot.api.routes import admin, settings
     # Frontend (Dashboard & Auth)
     from cashpilot.api.auth import router as auth_router
-    from cashpilot.api.routes import settings
+    from cashpilot.api.routes import admin, settings
     from cashpilot.api.routes.dashboard import router as dashboard_router
 
     app.include_router(dashboard_router)
@@ -119,19 +117,6 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(cash_session_edit_router)
     app.include_router(cash_session_audit_router)
 
-
-def create_app() -> FastAPI:
-    """Application factory for CashPilot."""
-    app = FastAPI(
-        title="CashPilot API",
-        description="Pharmacy cash register reconciliation system",
-        version="0.1.0",
-        lifespan=lifespan,
-    )
-
-    from cashpilot.core.exception_handlers import register_exception_handlers
-
-    register_exception_handlers(app)
 
 def create_app() -> FastAPI:
     """Application factory for CashPilot."""
