@@ -131,6 +131,7 @@ async def edit_business_form(
 
 
 @router.put("/{business_id}", response_class=HTMLResponse)
+@router.post("/{business_id}", response_class=HTMLResponse)
 async def update_business_put(
     request: Request,
     business_id: str,

@@ -17,8 +17,12 @@
                             <span class="label-text font-semibold">{{ _('Name') }} *</span>
                         </label>
                         <input type="text" name="name" class="input input-bordered"
-                               placeholder="{{ _('e.g., Farmacia Central') }}"
-                               required minlength="1" maxlength="200" />
+                           placeholder="{{ _('e.g., Farmacia Central') }}"
+                           required
+                           minlength="1"
+                           maxlength="200"
+                           pattern="[a-zA-Z0-9\sáéíóúñÁÉÍÓÚÑ.,\-]+"
+                           title="{{ _('Only letters, numbers, spaces, and basic punctuation allowed') }}" />
                     </div>
 
                     <!-- Address -->
@@ -37,8 +41,10 @@
                             <span class="label-text font-semibold">{{ _('Phone') }}</span>
                         </label>
                         <input type="tel" name="phone" class="input input-bordered"
-                               placeholder="{{ _('+595 21 123456') }}"
-                               maxlength="50" />
+                           placeholder="{{ _('+595 21 123456') }}"
+                           maxlength="50"
+                           pattern="[0-9\s+\-()]+"
+                           title="{{ _('Only digits, spaces, +, -, (, ) allowed') }}" />
                     </div>
 
                     <!-- Buttons -->

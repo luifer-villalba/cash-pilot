@@ -170,6 +170,7 @@ async def sessions_table(
         "partials/sessions_table.html",
         {
             "request": request,
+            "current_user": current_user,
             "sessions": sessions,
             "page": page,
             "total_pages": total_pages,
