@@ -53,7 +53,13 @@ async def create_session_form(
     return templates.TemplateResponse(
         request,
         "sessions/create_session.html",
-        {"current_user": current_user, "businesses": businesses, "locale": locale, "_": _},
+        {
+            "current_user": current_user,
+            "businesses": businesses,
+            "locale": locale,
+            "_": _,
+            "today": date_type.today().isoformat(),  # ← Add this
+        },
     )
 
 

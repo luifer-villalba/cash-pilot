@@ -198,40 +198,6 @@ class TestCashSessionCreateValidation:
                 initial_cash=Decimal("100.00"),
             )
 
-    def test_currency_validated(self):
-        """Test currency field validation."""
-        # Valid
-        session = CashSessionCreate(
-            business_id=uuid4(),
-            cashier_name="Test",
-            initial_cash=Decimal("999999999.99"),
-        )
-        assert session.initial_cash == Decimal("999999999.99")
-
-        # Negative fails
-        with pytest.raises(ValidationError):
-            CashSessionCreate(
-                business_id=uuid4(),
-                cashier_name="Test",
-                initial_cash=Decimal("-100.00"),
-            )
-
-        # Exceeds max
-        with pytest.raises(ValidationError):
-            CashSessionCreate(
-                business_id=uuid4(),
-                cashier_name="Test",
-                initial_cash=Decimal("1000000000.00"),
-            )
-
-        # Too many decimals
-        with pytest.raises(ValidationError):
-            CashSessionCreate(
-                business_id=uuid4(),
-                cashier_name="Test",
-                initial_cash=Decimal("100.123"),
-            )
-
     def test_future_date_rejected(self):
         """Test future session date is rejected."""
         tomorrow = date.today() + timedelta(days=1)

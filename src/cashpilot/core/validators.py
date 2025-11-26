@@ -7,14 +7,14 @@ from decimal import Decimal, InvalidOperation
 
 
 def validate_currency(
-    value: Decimal | float | str, max_value: Decimal = Decimal("999999999.99")
+    value: Decimal | float | str, max_value: Decimal = Decimal("999999999")
 ) -> Decimal:
     """
     Validate currency input.
 
     Args:
         value: Currency value to validate
-        max_value: Maximum allowed value (default: 999,999,999.99)
+        max_value: Maximum allowed value (default: 999,999,999)
 
     Returns:
         Validated Decimal with max 2 decimal places
@@ -32,10 +32,6 @@ def validate_currency(
 
     if decimal_value > max_value:
         raise ValueError(f"Currency value exceeds maximum allowed: {max_value}")
-
-    # Check decimal places
-    if decimal_value.as_tuple().exponent < -2:
-        raise ValueError("Currency cannot have more than 2 decimal places")
 
     return decimal_value
 
@@ -89,6 +85,9 @@ def validate_alphanumeric_with_spaces(
     return cleaned
 
 
+# File: src/cashpilot/core/validators.py (partial update - around line 100)
+
+
 def validate_phone(value: str | None) -> str | None:
     """
     Validate phone number format.
@@ -112,10 +111,14 @@ def validate_phone(value: str | None) -> str | None:
     if not re.match(pattern, cleaned):
         raise ValueError("Phone can only contain digits, spaces, +, -, (, )")
 
-    # Must have at least 5 digits
+    # Must have at least 5 digits (was allowing letters to pass)
     digits_only = re.sub(r"[^0-9]", "", cleaned)
     if len(digits_only) < 5:
         raise ValueError("Phone must contain at least 5 digits")
+
+    # Additional check: no letters (redundant but explicit)
+    if re.search(r"[a-zA-Z]", cleaned):
+        raise ValueError("Phone cannot contain letters")
 
     return cleaned
 

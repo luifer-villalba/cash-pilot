@@ -58,8 +58,6 @@
                             placeholder="500.000"
                             inputmode="decimal"
                             required
-                            pattern="^\d{1,9}(\.\d{1,2})?$"
-                            title="{{ _('Enter a positive number with max 2 decimals (max: 999,999,999.99)') }}"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
@@ -76,7 +74,7 @@
                             name="session_date"
                             class="input input-sm input-bordered w-full"
                             id="session-date"
-                            max="{{ date.today().isoformat() }}"
+                            max="{{ today }}"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for today') }}</span>

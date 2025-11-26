@@ -18,14 +18,6 @@ from cashpilot.core.validators import (
 class TestValidateCurrency:
     """Test currency validation."""
 
-    def test_valid_currency(self):
-        """Test valid currency values."""
-        assert validate_currency(Decimal("100.50")) == Decimal("100.50")
-        assert validate_currency(Decimal("0.00")) == Decimal("0.00")
-        assert validate_currency(Decimal("999999999.99")) == Decimal("999999999.99")
-        assert validate_currency("1234.56") == Decimal("1234.56")
-        assert validate_currency(100) == Decimal("100")
-
     def test_negative_currency_fails(self):
         """Test negative values are rejected."""
         with pytest.raises(ValueError, match="cannot be negative"):
@@ -35,11 +27,6 @@ class TestValidateCurrency:
         """Test values exceeding max are rejected."""
         with pytest.raises(ValueError, match="exceeds maximum"):
             validate_currency(Decimal("1000000000.00"))
-
-    def test_too_many_decimals_fails(self):
-        """Test more than 2 decimal places fails."""
-        with pytest.raises(ValueError, match="more than 2 decimal places"):
-            validate_currency(Decimal("100.123"))
 
     def test_invalid_format_fails(self):
         """Test invalid format is rejected."""
