@@ -134,6 +134,9 @@ def create_app() -> FastAPI:
     _mount_static(app)
     _register_routers(app)
 
+    from cashpilot.api.routes import settings
+    app.include_router(settings.router)
+
     logger.info("app.configured", message="FastAPI application created successfully")
 
     return app
