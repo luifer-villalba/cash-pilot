@@ -4,6 +4,7 @@
 import asyncpg
 import pytest
 import pytest_asyncio
+from cashpilot.api.auth import get_current_user
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -146,5 +147,42 @@ async def unauthenticated_client(
             transport=ASGITransport(app=app),
             base_url="http://test"
     ) as ac:
+        ac.db_session = db_session
+        yield ac
+
+
+@pytest.fixture
+async def admin_client(
+        db_session: AsyncSession,
+) -> AsyncClient:
+    """AsyncClient authenticated as ADMIN user."""
+    app = create_app()
+
+    # Create admin user
+    admin_user = await UserFactory.create(
+        db_session,
+        email="admin_test@example.com",
+        first_name="Admin",
+        last_name="Test",
+        hashed_password=hash_password("adminpass123"),
+        role="ADMIN",
+    )
+
+    # Override dependencies
+    async def override_get_db():
+        yield db_session
+
+    async def override_get_current_user():
+        return admin_user
+
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
+
+    # Create client
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as ac:
+        ac.admin_user = admin_user
         ac.db_session = db_session
         yield ac

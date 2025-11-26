@@ -66,9 +66,7 @@ async def change_password(
             user_id=str(current_user.id),
             reason="invalid_current_password",
         )
-        return RedirectResponse(
-            url="/settings?error=invalid_current_password", status_code=302
-        )
+        return RedirectResponse(url="/settings?error=invalid_current_password", status_code=302)
 
     # Validate new password matches confirmation
     if new_password != confirm_password:
@@ -77,9 +75,7 @@ async def change_password(
             user_id=str(current_user.id),
             reason="password_mismatch",
         )
-        return RedirectResponse(
-            url="/settings?error=password_mismatch", status_code=302
-        )
+        return RedirectResponse(url="/settings?error=password_mismatch", status_code=302)
 
     # Update password
     current_user.hashed_password = hash_password(new_password)

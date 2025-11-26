@@ -1,0 +1,174 @@
+<!-- File: templates/admin/users.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('User Management') }} - CashPilot{% endblock %}
+
+{% block extra_head %}
+<script>
+function copyPassword(password) {
+    navigator.clipboard.writeText(password);
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold">Administración de Usuarios</h2>
+        <a href="/admin/users/create" class="btn btn-primary btn-sm gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Nuevo Usuario
+        </a>
+    </div>
+
+    <!-- Alerts -->
+    {% if success == 'password_reset' %}
+    <div class="alert alert-success gap-4">
+        <svg class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+            <h3 class="font-bold">Contraseña Restablecida</h3>
+            <div class="flex items-center gap-2 mt-2">
+                <code class="bg-base-200 px-2 py-1 rounded text-sm font-mono">{{ request.query_params.get('password') }}</code>
+                <button onclick="copyPassword('{{ request.query_params.get('password') }}')" class="btn btn-xs btn-ghost">Copiar</button>
+            </div>
+            <p class="text-sm mt-2">Compartí esta contraseña con el usuario. Debe cambiarla al primer inicio.</p>
+        </div>
+    </div>
+    {% elif success == 'user_disabled' %}
+    <div class="alert alert-success gap-4">
+        <svg class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Usuario deshabilitado</span>
+    </div>
+    {% elif success == 'user_enabled' %}
+    <div class="alert alert-success gap-4">
+        <svg class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Usuario habilitado</span>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error gap-4">
+        <svg class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>Error: {{ error }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Users List -->
+    {% if users %}
+    <div class="border border-base-300 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table table-sm w-full">
+                <thead class="bg-base-200">
+                    <tr>
+                        <th>Correo</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Creado</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td class="font-mono text-xs">{{ user.email }}</td>
+                        <td>{{ user.display_name }}</td>
+                        <td>
+                            {% if user.role == 'ADMIN' %}
+                            <span class="badge badge-primary badge-sm">ADMIN</span>
+                            {% else %}
+                            <span class="badge badge-ghost badge-sm">CASHIER</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                            <span class="badge badge-success badge-sm">Activo</span>
+                            {% else %}
+                            <span class="badge badge-warning badge-sm">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-sm">{{ user.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td class="text-right">
+                            <div class="flex gap-2 justify-end">
+                                <button onclick="document.getElementById('resetModal_{{ user.id }}').showModal()" class="btn btn-ghost btn-xs btn-circle" title="Restablecer contraseña">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                                    </svg>
+                                </button>
+                                {% if user.is_active %}
+                                    {% if user.role != 'ADMIN' and user.id != current_user.id %}
+                                    <form method="POST" action="/admin/users/{{ user.id }}/disable" onsubmit="return confirm('¿Estás seguro?')" style="display: inline;">
+                                        <button type="submit" class="btn btn-ghost btn-xs btn-circle text-error" title="Deshabilitar usuario">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                {% else %}
+                                <form method="POST" action="/admin/users/{{ user.id }}/enable" onsubmit="return confirm('¿Estás seguro?')" style="display: inline;">
+                                    <button type="submit" class="btn btn-ghost btn-xs btn-circle text-success" title="Habilitar usuario">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+
+                            <!-- Modal -->
+                            <dialog id="resetModal_{{ user.id }}" class="modal">
+                                <div class="modal-box">
+                                    <h3 class="font-bold text-lg">Restablecer Contraseña</h3>
+                                    <p class="text-sm text-base-content/60 mt-1">{{ user.display_name }}</p>
+                                    <form method="POST" action="/admin/reset-password/{{ user.id }}" class="mt-6 space-y-4">
+                                        <div class="form-control">
+                                            <label class="label pb-2">
+                                                <span class="label-text text-xs font-bold uppercase">Nueva Contraseña</span>
+                                            </label>
+                                            <input type="text" name="password" placeholder="Dejar vacío para auto-generar" class="input input-sm input-bordered" />
+                                            <label class="label">
+                                                <span class="label-text-alt text-xs">Se generará una contraseña aleatoria de 8 caracteres</span>
+                                            </label>
+                                        </div>
+                                        <div class="modal-action">
+                                            <form method="dialog">
+                                                <button type="button" class="btn btn-sm btn-ghost">Cancelar</button>
+                                            </form>
+                                            <button type="submit" class="btn btn-sm btn-primary">Restablecer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button>close</button>
+                                </form>
+                            </dialog>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="border border-base-300 rounded-lg p-8 text-center text-base-content/60">
+        <p class="text-sm">No hay usuarios</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

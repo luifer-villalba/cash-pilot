@@ -81,10 +81,16 @@ def _register_routers(app: FastAPI) -> None:
 
     # Frontend (Dashboard & Auth)
     from cashpilot.api.auth import router as auth_router
+    from cashpilot.api.routes import admin, settings
+    # Frontend (Dashboard & Auth)
+    from cashpilot.api.auth import router as auth_router
     from cashpilot.api.routes import settings
     from cashpilot.api.routes.dashboard import router as dashboard_router
 
     app.include_router(dashboard_router)
+    app.include_router(auth_router)
+    app.include_router(settings.router)
+    app.include_router(admin.router)
     app.include_router(auth_router)
     app.include_router(settings.router)
 
@@ -127,6 +133,19 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
 
+def create_app() -> FastAPI:
+    """Application factory for CashPilot."""
+    app = FastAPI(
+        title="CashPilot API",
+        description="Pharmacy cash register reconciliation system",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
+
+    from cashpilot.core.exception_handlers import register_exception_handlers
+
+    register_exception_handlers(app)
+
     session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
     environment = os.getenv("ENVIRONMENT", "development")
 
@@ -134,8 +153,12 @@ def create_app() -> FastAPI:
     _mount_static(app)
     _register_routers(app)
 
-    from cashpilot.api.routes import settings
-    app.include_router(settings.router)
+    session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
+    environment = os.getenv("ENVIRONMENT", "development")
+
+    _setup_middleware(app, environment, session_secret_key)
+    _mount_static(app)
+    _register_routers(app)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 

@@ -1,0 +1,86 @@
+<!-- File: templates/admin/create_user.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('New User') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-2xl">
+    <!-- Header -->
+    <div>
+        <h2 class="text-2xl font-bold">{{ _('New User') }}</h2>
+        <p class="text-sm text-base-content/60 mt-1">{{ _('Create a new cashier or admin account') }}</p>
+    </div>
+
+    <!-- Error Alert -->
+    {% if error %}
+    <div class="alert alert-error gap-4">
+        <svg class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>{{ _('Error') }}: {{ error }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Form Card -->
+    <div class="bg-base-100 border border-base-300 rounded-lg p-6">
+        <form method="POST" action="/admin/users" class="space-y-4">
+            <!-- Email -->
+            <div class="form-control">
+                <label class="label pb-2">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider">{{ _('Email') }}</span>
+                </label>
+                <input type="email" name="email" required class="input input-bordered input-sm" placeholder="user@example.com" />
+            </div>
+
+            <!-- Password -->
+            <div class="form-control">
+                <label class="label pb-2">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider">{{ _('Password') }}</span>
+                </label>
+                <input type="password" name="password" required minlength="8" class="input input-bordered input-sm" placeholder="Min. 8 characters" />
+                <label class="label">
+                    <span class="label-text-alt text-xs text-base-content/60">{{ _('Must contain letters and numbers') }}</span>
+                </label>
+            </div>
+
+            <!-- First Name -->
+            <div class="form-control">
+                <label class="label pb-2">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider">{{ _('First Name') }}</span>
+                </label>
+                <input type="text" name="first_name" required class="input input-bordered input-sm" />
+            </div>
+
+            <!-- Last Name -->
+            <div class="form-control">
+                <label class="label pb-2">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider">{{ _('Last Name') }}</span>
+                </label>
+                <input type="text" name="last_name" required class="input input-bordered input-sm" />
+            </div>
+
+            <!-- Role -->
+            <div class="form-control">
+                <label class="label pb-2">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider">{{ _('Role') }}</span>
+                </label>
+                <select name="role" class="select select-bordered select-sm">
+                    <option value="CASHIER">{{ _('Cashier') }}</option>
+                    <option value="ADMIN">{{ _('Admin') }}</option>
+                </select>
+            </div>
+
+            <!-- Divider -->
+            <div class="divider my-4"></div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3">
+                <button type="submit" class="btn btn-primary btn-sm flex-1">
+                    ✓ {{ _('Create User') }}
+                </button>
+                <a href="/admin/users" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
