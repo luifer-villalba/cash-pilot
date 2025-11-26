@@ -4,6 +4,7 @@
 import asyncpg
 import pytest
 import pytest_asyncio
+from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
@@ -132,3 +133,18 @@ async def test_user(db_session: AsyncSession, request) -> User:
         is_active=True,
     )
     return user
+
+
+@pytest.fixture
+async def unauthenticated_client(
+        db_session: AsyncSession,
+) -> AsyncClient:
+    """AsyncClient without authentication overrides (for testing auth failures)."""
+    app = create_app()
+
+    async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test"
+    ) as ac:
+        ac.db_session = db_session
+        yield ac

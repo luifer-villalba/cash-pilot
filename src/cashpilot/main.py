@@ -117,8 +117,10 @@ def create_app() -> FastAPI:
     app.include_router(cash_session_audit_router)
 
     from cashpilot.api.auth import router as auth_router
-
     app.include_router(auth_router)
+
+    from cashpilot.api.routes import settings
+    app.include_router(settings.router)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 
