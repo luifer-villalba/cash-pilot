@@ -1,0 +1,297 @@
+<!-- File: src/cashpilot/templates/admin/users.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('User Management - CashPilot') }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">{{ _('User Management') }}</h1>
+        <a href="/" class="btn btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            {{ _('Back to Dashboard') }}
+        </a>
+    </div>
+
+    <!-- Users Table -->
+    <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
+        <table class="table table-zebra w-full">
+            <thead>
+                <tr>
+                    <th>{{ _('Username') }}</th>
+                    <th>{{ _('Email') }}</th>
+                    <th>{{ _('Role') }}</th>
+                    <th>{{ _('Status') }}</th>
+                    <th>{{ _('Created') }}</th>
+                    <th class="text-right">{{ _('Actions') }}</th>
+                </tr>
+            </thead>
+            <tbody id="users-table-body">
+                <!-- Populated by HTMX -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<dialog id="reset-password-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">{{ _('Reset Password') }}</h3>
+        <form id="reset-password-form" class="space-y-4">
+            <input type="hidden" id="reset-user-id" name="user_id">
+            <input type="hidden" id="reset-username" name="username">
+
+            <div>
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="radio" name="password-option" value="generate" class="radio" checked>
+                    <span class="label-text">{{ _('Generate secure password') }}</span>
+                </label>
+                <label class="label cursor-pointer justify-start gap-2">
+                    <input type="radio" name="password-option" value="custom" class="radio">
+                    <span class="label-text">{{ _('Enter custom password') }}</span>
+                </label>
+            </div>
+
+            <div id="custom-password-field" class="hidden">
+                <label class="label">
+                    <span class="label-text">{{ _('New Password') }}</span>
+                </label>
+                <input
+                    type="text"
+                    id="custom-password"
+                    name="new_password"
+                    class="input input-bordered w-full"
+                    minlength="8"
+                    placeholder="{{ _('Minimum 8 characters') }}"
+                >
+            </div>
+
+            <div class="modal-action">
+                <button type="button" class="btn" onclick="reset_password_modal.close()">{{ _('Cancel') }}</button>
+                <button type="submit" class="btn btn-primary">{{ _('Reset Password') }}</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Generated Password Display Modal -->
+<dialog id="generated-password-modal" class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">{{ _('Password Reset Successful') }}</h3>
+        <div class="alert alert-success mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ _('New password generated for') }} <strong id="pwd-username"></strong></span>
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text font-semibold">{{ _('New Password') }}</span>
+            </label>
+            <div class="join w-full">
+                <input
+                    type="text"
+                    id="generated-password-display"
+                    class="input input-bordered join-item flex-1 font-mono"
+                    readonly
+                >
+                <button
+                    type="button"
+                    class="btn btn-primary join-item"
+                    onclick="copyPassword()"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    {{ _('Copy') }}
+                </button>
+            </div>
+            <label class="label">
+                <span class="label-text-alt text-warning">{{ _('⚠️ Save this password - it won\'t be shown again') }}</span>
+            </label>
+        </div>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-primary" onclick="closeGeneratedPasswordModal()">{{ _('Done') }}</button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+const i18n = {
+    loadingError: "{{ _('Failed to load users') }}",
+    resetError: "{{ _('Reset failed') }}",
+    operationError: "{{ _('Operation failed') }}",
+    resetSuccess: "{{ _('Password reset successfully') }}",
+    confirmDisable: "{{ _('Are you sure you want to disable this user?') }}",
+    confirmEnable: "{{ _('Are you sure you want to enable this user?') }}",
+    admin: "{{ _('Admin') }}",
+    active: "{{ _('Active') }}",
+    disabled: "{{ _('Disabled') }}",
+    resetPassword: "{{ _('Reset Password') }}",
+    disable: "{{ _('Disable') }}",
+    enable: "{{ _('Enable') }}",
+    copied: "{{ _('✓ Copied!') }}"
+};
+
+// Load users on page load
+document.addEventListener('DOMContentLoaded', loadUsers);
+
+async function loadUsers() {
+    try {
+        const response = await fetch('/admin/users');
+        const data = await response.json();
+
+        const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = data.users.map(user => `
+            <tr>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <span>${user.username}</span>
+                        ${user.role === 'ADMIN' ? `<span class="badge badge-primary badge-sm">${i18n.admin}</span>` : ''}
+                    </div>
+                </td>
+                <td>${user.email || '-'}</td>
+                <td>
+                    <span class="badge ${user.role === 'ADMIN' ? 'badge-primary' : 'badge-ghost'}">
+                        ${user.role}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${user.is_active ? 'badge-success' : 'badge-error'}">
+                        ${user.is_active ? i18n.active : i18n.disabled}
+                    </span>
+                </td>
+                <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                <td class="text-right">
+                    <div class="join">
+                        <button
+                            class="btn btn-sm join-item"
+                            onclick="openResetPasswordModal('${user.id}', '${user.username}')"
+                        >
+                            ${i18n.resetPassword}
+                        </button>
+                        <button
+                            class="btn btn-sm join-item ${user.is_active ? 'btn-error' : 'btn-success'}"
+                            onclick="toggleUserActive('${user.id}', ${!user.is_active})"
+                        >
+                            ${user.is_active ? i18n.disable : i18n.enable}
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Failed to load users:', error);
+        alert(i18n.loadingError);
+    }
+}
+
+// Password option toggle
+document.querySelectorAll('input[name="password-option"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        const customField = document.getElementById('custom-password-field');
+        const customInput = document.getElementById('custom-password');
+
+        if (e.target.value === 'custom') {
+            customField.classList.remove('hidden');
+            customInput.required = true;
+        } else {
+            customField.classList.add('hidden');
+            customInput.required = false;
+            customInput.value = '';
+        }
+    });
+});
+
+function openResetPasswordModal(userId, username) {
+    document.getElementById('reset-user-id').value = userId;
+    document.getElementById('reset-username').value = username;
+    const modalTitle = `${i18n.resetPassword} ${username}`;
+    document.querySelector('#reset-password-modal h3').textContent = modalTitle;
+    document.getElementById('reset-password-modal').showModal();
+}
+
+document.getElementById('reset-password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const userId = document.getElementById('reset-user-id').value;
+    const passwordOption = document.querySelector('input[name="password-option"]:checked').value;
+    const username = document.getElementById('reset-username').value;
+
+    const payload = passwordOption === 'generate'
+        ? { generate: true }
+        : { new_password: document.getElementById('custom-password').value };
+
+    try {
+        const response = await fetch(`/admin/users/${userId}/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || i18n.resetError);
+        }
+
+        const data = await response.json();
+        document.getElementById('reset-password-modal').close();
+
+        if (data.new_password) {
+            document.getElementById('pwd-username').textContent = username;
+            document.getElementById('generated-password-display').value = data.new_password;
+            document.getElementById('generated-password-modal').showModal();
+        } else {
+            alert(i18n.resetSuccess);
+        }
+
+        loadUsers();
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+async function toggleUserActive(userId, isActive) {
+    const message = isActive ? i18n.confirmEnable : i18n.confirmDisable;
+    if (!confirm(message)) return;
+
+    try {
+        const response = await fetch(`/admin/users/${userId}/toggle-active`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_active: isActive })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || i18n.operationError);
+        }
+
+        loadUsers();
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function copyPassword() {
+    const passwordField = document.getElementById('generated-password-display');
+    passwordField.select();
+    document.execCommand('copy');
+
+    const btn = event.target.closest('button');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = `<span class="text-sm">${i18n.copied}</span>`;
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+    }, 2000);
+}
+
+function closeGeneratedPasswordModal() {
+    document.getElementById('generated-password-modal').close();
+}
+</script>
+{% endblock %}

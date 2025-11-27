@@ -100,6 +100,11 @@ def _register_routers(app: FastAPI) -> None:
 
     app.include_router(businesses_router)
 
+    # Admin (UI + API)
+    from cashpilot.api.admin import router as admin_router
+
+    app.include_router(admin_router)
+
     # API endpoints
     from cashpilot.api.business import router as business_api_router
     from cashpilot.api.cash_session import router as cash_session_router
