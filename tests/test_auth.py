@@ -71,29 +71,27 @@ class TestAuthEndpoints:
 
     @pytest.mark.asyncio
     async def test_login_inactive_user(
-        self,
-        client: AsyncClient,
-        db_session: AsyncSession,
+            self,
+            client: AsyncClient,
+            test_user: User,
+            db_session: AsyncSession,
     ) -> None:
-        """Test login with inactive user."""
-        user = await UserFactory.create(
-            db_session,
-            email="inactive@example.com",
-            hashed_password=hash_password("testpass123"),
-            is_active=False,
-        )
+        """Test login fails for inactive users."""
+        # Deactivate user
+        test_user.is_active = False
+        await db_session.commit()
 
         response = await client.post(
             "/login",
             data={
-                "username": user.email,
+                "username": test_user.email,
                 "password": "testpass123",
             },
             follow_redirects=False,
         )
 
-        assert response.status_code == 302
-        assert "/login" in response.headers.get("location", "")
+        assert response.status_code == 302  # ← Changed from 403
+        assert "error" in response.headers.get("location", "")
 
     @pytest.mark.asyncio
     async def test_logout(

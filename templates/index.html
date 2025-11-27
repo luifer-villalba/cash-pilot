@@ -1,4 +1,4 @@
-<!-- File: templates/index.html -->
+<!-- File: src/cashpilot/templates/index.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Dashboard') }} - CashPilot{% endblock %}
@@ -11,13 +11,28 @@
             <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Dashboard') }}</h1>
             <p class="text-sm text-base-content/60 mt-1">{{ _('Monitor cash sessions and reconciliation') }}</p>
         </div>
-        <a href="/sessions/create" class="btn btn-primary gap-2 w-full sm:w-auto">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            {{ _('New Session') }}
-        </a>
+
+        <!-- REPLACE the single button with this div containing both buttons: -->
+        <div class="flex gap-2 w-full sm:w-auto">
+            {% if current_user.role == 'ADMIN' %}
+            <a href="/admin/users-page" class="btn btn-ghost gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+                {{ _('Manage Users') }}
+            </a>
+            {% endif %}
+            <a href="/sessions/create" class="btn btn-primary gap-2 w-full sm:w-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                {{ _('New Session') }}
+            </a>
+        </div>
     </div>
+
 
     <!-- Stats Row (ONLY FOR ADMIN) -->
     {% if current_user.role == 'ADMIN' %}
