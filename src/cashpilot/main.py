@@ -76,12 +76,14 @@ def _register_routers(app: FastAPI) -> None:
     """Register all API and frontend routers."""
     # Core/Health
     from cashpilot.api.health import router as health_router
+
     app.include_router(health_router)
 
     # Frontend (Dashboard & Auth)
     from cashpilot.api.auth import router as auth_router
     from cashpilot.api.routes import settings
     from cashpilot.api.routes.dashboard import router as dashboard_router
+
     app.include_router(dashboard_router)
     app.include_router(auth_router)
     app.include_router(settings.router)
@@ -89,15 +91,18 @@ def _register_routers(app: FastAPI) -> None:
     # Cash Sessions (UI)
     from cashpilot.api.routes.sessions import router as sessions_router
     from cashpilot.api.routes.sessions_edit import router as sessions_edit_router
+
     app.include_router(sessions_router)
     app.include_router(sessions_edit_router)
 
     # Businesses (UI)
     from cashpilot.api.routes.businesses import router as businesses_router
+
     app.include_router(businesses_router)
 
     # Admin (UI + API)
     from cashpilot.api.admin import router as admin_router
+
     app.include_router(admin_router)
 
     # API endpoints
@@ -106,6 +111,7 @@ def _register_routers(app: FastAPI) -> None:
     from cashpilot.api.cash_session_audit import router as cash_session_audit_router
     from cashpilot.api.cash_session_edit import router as cash_session_edit_router
     from cashpilot.api.utils import router as utils_router
+
     app.include_router(utils_router)
     app.include_router(business_api_router)
     app.include_router(cash_session_router)

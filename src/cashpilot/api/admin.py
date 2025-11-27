@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/admin.py
-from datetime import UTC, datetime
 import secrets
 import string
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
@@ -104,9 +104,7 @@ async def reset_user_password(
     target_user = result.scalar_one_or_none()
 
     if not target_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # Determine new password
     if request.generate:
@@ -156,9 +154,7 @@ async def toggle_user_active(
     target_user = result.scalar_one_or_none()
 
     if not target_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # Prevent admin from disabling themselves
     if target_user.id == admin_user.id:

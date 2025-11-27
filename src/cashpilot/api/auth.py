@@ -70,7 +70,9 @@ async def login(
 
     if not user.is_active:
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
-        return RedirectResponse(url="/login?error=disabled", status_code=302)  # ← Changed from HTTPException
+        return RedirectResponse(
+            url="/login?error=disabled", status_code=302
+        )  # ← Changed from HTTPException
 
     # Store user_id and role in session
     request.session["user_id"] = str(user.id)
