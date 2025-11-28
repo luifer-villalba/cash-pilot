@@ -8,7 +8,7 @@
     <div>
         <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Edit Open Cash Session') }}</h1>
         <p class="text-sm text-base-content/60 mt-2">
-            👤 <strong>{{ session.cashier_name }}</strong>
+            👤 <strong>{{ session.cashier.display_name }}</strong>
             <span class="mx-2">•</span>
             <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
                 <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
@@ -28,24 +28,6 @@
         <div class="lg:col-span-2">
             <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
                 <form method="POST" action="/sessions/{{ session.id }}/edit-open" class="space-y-6">
-                    <!-- Cashier Name -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier Name') }}</span>
-                        </label>
-                        <input
-                                type="text"
-                                name="cashier_name"
-                                class="input input-sm input-bordered w-full"
-                                value="{{ session.cashier_name }}"
-                                placeholder="{{ _('e.g., María López') }}"
-                                minlength="2"
-                                maxlength="100"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Who is handling this session?') }}</span>
-                        </label>
-                    </div>
 
                     <!-- Initial Cash -->
                     <div class="form-control">

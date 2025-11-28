@@ -12,7 +12,7 @@
                     <a href="/" class="btn btn-ghost btn-sm no-animation">← {{ _('Back') }}</a>
                     <div>
                         <h1 class="text-2xl font-semibold">
-                            💰 {{ _('Shift') }} @ {{ session.business.name }} ({{ session.cashier_name }})
+                            💰 {{ _('Shift') }} @ {{ session.business.name }} ({{ session.cashier.display_name }})
                         </h1>
                         <p class="text-xs text-base-content/50">📅 {{ session.session_date.strftime('%d/%m/%Y') }}</p>
                     </div>
@@ -121,7 +121,7 @@
                                 <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
                                     {{ _('Cashier') }}
                                 </p>
-                                <p class="text-base font-semibold mt-2">{{ session.cashier_name }}</p>
+                                <p class="text-base font-semibold mt-2">{{ session.cashier.display_name }}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">

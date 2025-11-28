@@ -52,7 +52,6 @@ async def dashboard(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    # NO server defaults - client handles timezone
     filters = await _build_session_filters(
         from_date, to_date, cashier_name, business_id, status, current_user
     )

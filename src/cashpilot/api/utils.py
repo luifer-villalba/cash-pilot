@@ -4,14 +4,17 @@ import gettext
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.orm import selectinload
 from uuid import UUID
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
+
+from typing import Sequence
 
 from cashpilot.models import Business, CashSession, User, UserRole
 
@@ -97,38 +100,47 @@ def parse_currency(value: str | None) -> Decimal | None:
 
 
 async def _build_session_filters(
-    from_date: str | None,
-    to_date: str | None,
-    cashier_name: str | None,
-    business_id: str | None,
-    status: str | None,
-    current_user: User,
+        from_date: str | None,
+        to_date: str | None,
+        cashier_name: str | None,  # Still accept this param
+        business_id: str | None,
+        status: str | None,
+        current_user: User,
 ) -> list:
-    """Build SQLAlchemy filter list from query params.
+    """Build SQLAlchemy filters for session queries."""
+    from cashpilot.models.user import User, UserRole
 
-    Cashier sees only own sessions + legacy (NULL created_by).
-    Admin sees all sessions.
-    """
-    filters = []
+    filters = [~CashSession.is_deleted]
 
-    # Role-based filter
-    filters.append(_build_role_filter(current_user))
+    # Role-based filtering
+    if current_user.role == UserRole.CASHIER:
+        filters.append(CashSession.cashier_id == current_user.id)
 
     # Date filters
     if from_date:
-        filters.append(_parse_from_date(from_date))
+        filters.append(CashSession.session_date >= from_date)
     if to_date:
-        filters.append(_parse_to_date(to_date))
+        filters.append(CashSession.session_date <= to_date)
 
-    # Text/enum filters
-    if cashier_name and cashier_name.strip():
-        filters.append(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
-    if business_id and business_id.strip():
-        filters.append(_parse_business_id(business_id))
-    if status and status.strip():
-        filters.append(_parse_status(status))
+    # Cashier name filter (now joins User table)
+    if cashier_name:
+        filters.append(
+            or_(
+                User.first_name.ilike(f"%{cashier_name}%"),
+                User.last_name.ilike(f"%{cashier_name}%"),
+                User.email.ilike(f"%{cashier_name}%"),
+            )
+        )
 
-    return [f for f in filters if f is not None]
+    # Business filter
+    if business_id:
+        filters.append(CashSession.business_id == UUID(business_id))
+
+    # Status filter
+    if status:
+        filters.append(CashSession.status == status)
+
+    return filters
 
 
 def _build_role_filter(current_user: User):
@@ -172,37 +184,53 @@ def _parse_status(status: str):
 
 
 async def _get_paginated_sessions(
-    db: AsyncSession,
-    filters: list,
-    page: int = 1,
-    per_page: int = 10,
-) -> tuple[list, int, int]:
-    """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages)."""
-    skip = (page - 1) * per_page
+        db: AsyncSession,
+        filters: list,
+        page: int = 1,
+        per_page: int = 10,
+) -> tuple[list[CashSession], int, int]:
+    """Get paginated sessions with filters."""
+    from cashpilot.models.user import User
 
-    stmt = select(CashSession).options(joinedload(CashSession.business))
+    # Count total matching sessions
     count_stmt = select(func.count(CashSession.id))
 
-    # Add deleted filter
-    filters.append(~CashSession.is_deleted)
-
-    for f in filters:
-        stmt = stmt.where(f)
-        count_stmt = count_stmt.where(f)
-
-    count_result = await db.execute(count_stmt)
-    total = count_result.scalar() or 0
-    total_pages = (total + per_page - 1) // per_page
-
-    stmt = (
-        stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
-        .offset(skip)
-        .limit(per_page)
+    # If filtering by cashier name, need to join User
+    has_user_filter = any(
+        hasattr(f, 'left') and hasattr(f.left, 'table') and
+        getattr(f.left.table, 'name', None) == 'users'
+        for f in filters
     )
-    result = await db.execute(stmt)
-    sessions = result.scalars().unique().all()
 
-    return list(sessions), total, total_pages
+    if has_user_filter:
+        count_stmt = count_stmt.join(User, CashSession.cashier_id == User.id)
+
+    count_stmt = count_stmt.where(and_(*filters))
+    result = await db.execute(count_stmt)
+    total_sessions = result.scalar() or 0
+
+    # Calculate pagination
+    total_pages = (total_sessions + per_page - 1) // per_page
+    offset = (page - 1) * per_page
+
+    # Fetch paginated sessions with eager loading of cashier
+    stmt = (
+        select(CashSession)
+        .options(selectinload(CashSession.cashier))  # Eager load cashier
+        .options(selectinload(CashSession.business))  # Eager load business
+    )
+
+    if has_user_filter:
+        stmt = stmt.join(User, CashSession.cashier_id == User.id)
+
+    stmt = stmt.where(and_(*filters))
+    stmt = stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
+    stmt = stmt.offset(offset).limit(per_page)
+
+    result = await db.execute(stmt)
+    sessions = list(result.scalars().all())
+
+    return sessions, total_sessions, total_pages
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -255,50 +283,36 @@ async def get_active_businesses(db: AsyncSession) -> list:
     return list(result.scalars().all())
 
 
-# File: src/cashpilot/api/utils.py (add this function)
-
-
 async def update_open_session_fields(
-    session: CashSession,
-    cashier_name: str | None,
-    initial_cash: str | None,
-    opened_time: str | None,
-    expenses: str | None,
+        session: CashSession,
+        initial_cash: str | None,
+        opened_time: str | None,
+        notes: str | None,  # Changed from expenses
 ) -> tuple[list[str], dict, dict]:
-    from datetime import datetime
-    from decimal import Decimal
-
+    """Update OPEN session fields and track changes for audit."""
     changed_fields = []
-    old_values, new_values = {}, {}
+    old_values = {}
+    new_values = {}
 
-    if cashier_name and cashier_name.strip() != session.cashier_name:
-        old_values["cashier_name"] = session.cashier_name
-        new_values["cashier_name"] = cashier_name.strip()
-        session.cashier_name = cashier_name.strip()
-        changed_fields.append("cashier_name")
+    # Helper to track changes
+    def _update_field(field_name, new_value, old_value):
+        if new_value is not None and new_value != old_value:
+            changed_fields.append(field_name)
+            old_values[field_name] = str(old_value) if old_value is not None else None
+            new_values[field_name] = str(new_value)
+            setattr(session, field_name, new_value)
+
+    # REMOVED: cashier_name (immutable)
 
     if initial_cash:
-        initial_cash_val = parse_currency(initial_cash)
-        if initial_cash_val != session.initial_cash:
-            old_values["initial_cash"] = str(session.initial_cash)
-            new_values["initial_cash"] = str(initial_cash_val)
-            session.initial_cash = initial_cash_val
-            changed_fields.append("initial_cash")
+        _update_field("initial_cash", parse_currency(initial_cash), session.initial_cash)
 
     if opened_time:
-        opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
-        if opened_time_val != session.opened_time:
-            old_values["opened_time"] = session.opened_time.isoformat()
-            new_values["opened_time"] = opened_time_val.isoformat()
-            session.opened_time = opened_time_val
-            changed_fields.append("opened_time")
+        from datetime import time as time_type
+        parsed_time = time_type.fromisoformat(opened_time)
+        _update_field("opened_time", parsed_time, session.opened_time)
 
-    if expenses is not None:
-        expenses_val = parse_currency(expenses) if expenses else Decimal("0")
-        if expenses_val != (session.expenses or Decimal("0")):
-            old_values["expenses"] = str(session.expenses or "0")
-            new_values["expenses"] = str(expenses_val)
-            session.expenses = expenses_val
-            changed_fields.append("expenses")
+    if notes is not None:
+        _update_field("notes", notes, session.notes)
 
     return changed_fields, old_values, new_values

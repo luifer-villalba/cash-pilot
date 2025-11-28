@@ -1,6 +1,6 @@
 """CashSession CRUD endpoints (list, get, open, close)."""
 
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
@@ -64,57 +64,70 @@ async def list_shifts(
 
 @router.post("", response_model=CashSessionRead, status_code=status.HTTP_201_CREATED)
 async def open_shift(
-    session: CashSessionCreate,
+    session_data: CashSessionCreate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Open a new cash session (shift).
 
     Cashier creates session for themselves.
-    Admin can create for any cashier.
+    Admin can create for any cashier via for_cashier_id.
     """
+    # Determine who the cashier is
+    if session_data.for_cashier_id:
+        # Admin creating session for another user
+        if current_user.role != UserRole.ADMIN:
+            raise InvalidStateError("Only admins can create sessions for other users")
+        cashier_id = session_data.for_cashier_id
+    else:
+        # Cashier creating session for themselves
+        cashier_id = current_user.id
+
     # Verify business exists
-    stmt = select(Business).where(Business.id == session.business_id)
+    stmt = select(Business).where(Business.id == session_data.business_id)
     result = await db.execute(stmt)
     business = result.scalar_one_or_none()
-
     if not business:
-        raise NotFoundError("Business", str(session.business_id))
+        raise NotFoundError("Business", str(session_data.business_id))
 
-    # Check overlap
-    if not session.allow_overlap:
-        overlap_error = await check_session_overlap(session.business_id, session.session_date, db)
-        if overlap_error:
-            raise ConflictError(overlap_error)
+    # Check for existing OPEN session
+    existing = await CashSession.check_open_session(db, session_data.business_id, cashier_id)
+    if existing:
+        raise ConflictError(
+            f"Cashier already has an open session at this business (ID: {existing.id})"
+        )
 
-    # Validate dates
-    date_error = await validate_session_dates(
-        session.session_date,
-        session.opened_time,
-        None,
+    # Check for overlapping sessions
+    overlap = await check_session_overlap(
+        db=db,
+        business_id=session_data.business_id,
+        cashier_id=cashier_id,
+        session_date=session_data.session_date or date.today(),
+        exclude_session_id=None,
     )
-    if date_error:
-        raise InvalidStateError(date_error["message"], details=date_error["details"])
+    if overlap:
+        raise ConflictError(f"Session overlaps with existing session (ID: {overlap.id})")
 
-    # Create session with current user as creator
+    # Create new session
     new_session = CashSession(
-        business_id=session.business_id,
-        cashier_name=session.cashier_name,
-        initial_cash=session.initial_cash,
-        expenses=session.expenses,
-        session_date=session.session_date,
-        opened_time=session.opened_time,
-        created_by=current_user.id,  # SET CREATOR
+        business_id=session_data.business_id,
+        cashier_id=cashier_id,
+        created_by=current_user.id,
+        status=SessionStatus.OPEN.value,
+        session_date=session_data.session_date or date.today(),
+        initial_cash=session_data.initial_cash,
+        notes=session_data.notes,
     )
 
     db.add(new_session)
-    await db.flush()
+    await db.commit()
     await db.refresh(new_session)
 
     logger.info(
-        "session.opened",
+        "cash_session.opened",
         session_id=str(new_session.id),
-        business_id=str(session.business_id),
+        business_id=str(new_session.business_id),
+        cashier_id=str(cashier_id),
         created_by=str(current_user.id),
     )
 
