@@ -23,6 +23,7 @@ class CashSessionCreate(BaseModel):
     for_cashier_id: UUID | None = Field(None, description="Admin: create session for another cashier")
     initial_cash: Decimal = Field(..., ge=0, decimal_places=2)
     expenses: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
+    notes: str | None = Field(None, max_length=1000)
 
     session_date: date | None = Field(
         None, description="Optional: override session date (default: today)"

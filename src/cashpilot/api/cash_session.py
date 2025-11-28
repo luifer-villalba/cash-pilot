@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_own_session
@@ -43,7 +44,14 @@ async def list_shifts(
     Admin: sees all sessions
     Cashier: sees only own sessions
     """
-    stmt = select(CashSession)
+    stmt = (
+        select(CashSession)
+        .options(
+            selectinload(CashSession.business),
+            selectinload(CashSession.cashier),
+            selectinload(CashSession.created_by_user),
+        )
+    )
 
     # Cashier filter: own sessions
     if current_user.role == UserRole.CASHIER:
@@ -91,7 +99,12 @@ async def open_shift(
         raise NotFoundError("Business", str(session_data.business_id))
 
     # Check for existing OPEN session
-    existing = await CashSession.check_open_session(db, session_data.business_id, cashier_id)
+    existing = await CashSession.check_open_session(
+        business_id=session_data.business_id,
+        session_date=session_data.session_date or date.today(),
+        cashier_id=cashier_id,
+        db=db,
+    )
     if existing:
         raise ConflictError(
             f"Cashier already has an open session at this business (ID: {existing.id})"

@@ -40,6 +40,7 @@ class CashSession(Base):
     business: Mapped["Business"] = relationship(
         "Business",
         back_populates="cash_sessions",
+        lazy="selectin",
     )
 
     # Cashier who operated this session
@@ -53,6 +54,7 @@ class CashSession(Base):
     cashier: Mapped["User"] = relationship(
         "User",
         foreign_keys=[cashier_id],
+        lazy="selectin",
     )
 
     # User who created this session (for audit trail)
@@ -66,6 +68,7 @@ class CashSession(Base):
     created_by_user: Mapped["User | None"] = relationship(
         "User",
         foreign_keys=[created_by],
+        lazy="selectin",
     )
 
     status: Mapped[str] = mapped_column(

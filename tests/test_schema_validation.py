@@ -1,20 +1,15 @@
 # File: tests/test_schema_validation.py
 """Tests for Pydantic schema validation."""
-
 import pytest
 from datetime import date, timedelta
 from decimal import Decimal
 from pydantic import ValidationError
-
 from cashpilot.models.user_schemas import UserCreate
 from cashpilot.models.business_schemas import BusinessCreate, BusinessUpdate
 from cashpilot.models.cash_session_schemas import CashSessionCreate
 from uuid import uuid4
-
-
 class TestUserCreateValidation:
     """Test UserCreate schema validation."""
-
     def test_valid_user_create(self):
         """Test valid user creation."""
         user = UserCreate(
@@ -25,7 +20,6 @@ class TestUserCreateValidation:
         )
         assert user.email == "test@example.com"
         assert user.first_name == "John"
-
     def test_email_normalized_lowercase(self):
         """Test email is converted to lowercase."""
         user = UserCreate(
@@ -35,7 +29,6 @@ class TestUserCreateValidation:
             last_name="Doe",
         )
         assert user.email == "test@example.com"
-
     def test_invalid_email_fails(self):
         """Test invalid email format is rejected."""
         with pytest.raises(ValidationError) as exc:
@@ -46,7 +39,6 @@ class TestUserCreateValidation:
                 last_name="Doe",
             )
         assert "Invalid email format" in str(exc.value)
-
     def test_weak_password_fails(self):
         """Test weak password is rejected."""
         # Too short
@@ -58,7 +50,6 @@ class TestUserCreateValidation:
                 last_name="Doe",
             )
         assert "at least 8 characters" in str(exc.value)
-
         # No letter
         with pytest.raises(ValidationError) as exc:
             UserCreate(
@@ -68,7 +59,6 @@ class TestUserCreateValidation:
                 last_name="Doe",
             )
         assert "at least one letter" in str(exc.value)
-
         # No number
         with pytest.raises(ValidationError) as exc:
             UserCreate(
@@ -78,7 +68,6 @@ class TestUserCreateValidation:
                 last_name="Doe",
             )
         assert "at least one number" in str(exc.value)
-
     def test_invalid_name_characters(self):
         """Test names with invalid characters are rejected."""
         with pytest.raises(ValidationError):
@@ -88,11 +77,8 @@ class TestUserCreateValidation:
                 first_name="John123",  # Numbers not allowed
                 last_name="Doe",
             )
-
-
 class TestBusinessCreateValidation:
     """Test BusinessCreate schema validation."""
-
     def test_valid_business_create(self):
         """Test valid business creation."""
         business = BusinessCreate(
@@ -103,19 +89,16 @@ class TestBusinessCreateValidation:
         )
         assert business.name == "Farmacia Central"
         assert len(business.cashiers) == 2
-
     def test_name_sanitized(self):
         """Test business name is validated and trimmed."""
         business = BusinessCreate(
             name="  Farmacia Test  ",
         )
         assert business.name == "Farmacia Test"
-
     def test_invalid_name_fails(self):
         """Test invalid business name is rejected."""
         with pytest.raises(ValidationError):
             BusinessCreate(name="Test<script>alert('xss')</script>")
-
     def test_address_sanitized_for_xss(self):
         """Test address is sanitized to prevent XSS."""
         business = BusinessCreate(
@@ -124,7 +107,6 @@ class TestBusinessCreateValidation:
         )
         # HTML tags should be stripped
         assert "<script>" not in business.address
-
     def test_phone_validated(self):
         """Test phone validation."""
         # Valid phone
@@ -133,14 +115,12 @@ class TestBusinessCreateValidation:
             phone="+595 21 123456",
         )
         assert business.phone == "+595 21 123456"
-
         # Invalid phone
         with pytest.raises(ValidationError):
             BusinessCreate(
                 name="Test",
                 phone="abc",  # Too few digits
             )
-
     def test_cashier_names_validated(self):
         """Test cashier names are validated."""
         # Valid cashiers
@@ -149,7 +129,6 @@ class TestBusinessCreateValidation:
             cashiers=["  María  ", "Juan"],
         )
         assert business.cashiers == ["María", "Juan"]
-
         # Invalid cashier name
         with pytest.raises(ValidationError):
             BusinessCreate(
