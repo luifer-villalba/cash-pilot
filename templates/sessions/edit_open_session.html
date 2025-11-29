@@ -1,3 +1,4 @@
+<!-- File: templates/sessions/edit_open_session.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Edit Open Cash Session') }} - CashPilot{% endblock %}
@@ -8,7 +9,7 @@
     <div>
         <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Edit Open Cash Session') }}</h1>
         <p class="text-sm text-base-content/60 mt-2">
-            👤 <strong>{{ session.cashier_name }}</strong>
+            👤 <strong>{{ session.cashier.display_name }}</strong>
             <span class="mx-2">•</span>
             <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
                 <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
@@ -28,25 +29,6 @@
         <div class="lg:col-span-2">
             <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
                 <form method="POST" action="/sessions/{{ session.id }}/edit-open" class="space-y-6">
-                    <!-- Cashier Name -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier Name') }}</span>
-                        </label>
-                        <input
-                                type="text"
-                                name="cashier_name"
-                                class="input input-sm input-bordered w-full"
-                                value="{{ session.cashier_name }}"
-                                placeholder="{{ _('e.g., María López') }}"
-                                minlength="2"
-                                maxlength="100"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Who is handling this session?') }}</span>
-                        </label>
-                    </div>
-
                     <!-- Initial Cash -->
                     <div class="form-control">
                         <label class="label pb-2">
@@ -57,8 +39,8 @@
                                 name="initial_cash"
                                 class="input input-sm input-bordered w-full"
                                 value="{{ " {:,.0f}".format(session.initial_cash) }}"
-                        placeholder="500.000"
-                        inputmode="decimal"
+                                placeholder="500.000"
+                                inputmode="decimal"
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
@@ -81,21 +63,18 @@
                         </label>
                     </div>
 
-                    <!-- Expenses -->
+                    <!-- Notes -->
                     <div class="form-control">
                         <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Expenses (Gs)') }}</span>
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Notes') }}</span>
                         </label>
-                        <input
-                                type="text"
-                                name="expenses"
-                                class="input input-sm input-bordered w-full"
-                                value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
-                                placeholder="0"
-                                inputmode="decimal"
-                        />
+                        <textarea
+                                name="notes"
+                                class="textarea textarea-sm textarea-bordered w-full h-20"
+                                placeholder="{{ _('Optional notes...') }}"
+                        >{{ session.notes if session.notes else '' }}</textarea>
                         <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Any additional information') }}</span>
                         </label>
                     </div>
 
@@ -110,7 +89,7 @@
                         <textarea
                                 name="reason"
                                 class="textarea textarea-sm textarea-bordered w-full h-20"
-                                placeholder="{{ _('e.g., Corrected initial count, Name typo fix...') }}"
+                                placeholder="{{ _('e.g., Corrected initial count...') }}"
                         ></textarea>
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Required for audit trail') }}</span>
@@ -139,8 +118,7 @@
         <div class="lg:col-span-1 space-y-4">
             <!-- Current Values -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
-                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Current Values')
-                    }}</h3>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Current Values') }}</h3>
                 <div class="space-y-2 text-xs">
                     <div>
                         <p class="text-base-content/60">{{ _('Session Date') }}</p>
@@ -153,10 +131,6 @@
                     <div>
                         <p class="text-base-content/60">{{ _('Initial Cash') }}</p>
                         <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
-                    </div>
-                    <div>
-                        <p class="text-base-content/60">{{ _('Expenses') }}</p>
-                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.expenses) }}</p>
                     </div>
                 </div>
             </div>
