@@ -192,8 +192,12 @@ async def _get_paginated_sessions(
     filters.append(~CashSession.is_deleted)
 
     # If filtering by cashier_name, join User table
-    has_cashier_filter = any(hasattr(f, 'left') and hasattr(f.left, 'table') and 
-                             getattr(f.left.table, 'name', None) == 'users' for f in filters)
+    has_cashier_filter = any(
+        hasattr(f, "left")
+        and hasattr(f.left, "table")
+        and getattr(f.left.table, "name", None) == "users"
+        for f in filters
+    )
     if has_cashier_filter:
         stmt = stmt.join(CashSession.cashier)
         count_stmt = count_stmt.join(CashSession.cashier, isouter=True)

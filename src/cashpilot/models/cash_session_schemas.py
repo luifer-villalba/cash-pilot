@@ -7,11 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from cashpilot.core.validators import (
-    sanitize_html,
-    validate_currency,
-    validate_no_future_date,
-)
+from cashpilot.core.validators import sanitize_html, validate_currency, validate_no_future_date
 from cashpilot.models.user_schemas import UserResponse
 
 
@@ -19,7 +15,9 @@ class CashSessionCreate(BaseModel):
     """Schema for creating a new cash session."""
 
     business_id: UUID
-    for_cashier_id: UUID | None = Field(None, description="Admin: create session for another cashier")
+    for_cashier_id: UUID | None = Field(
+        None, description="Admin: create session for another cashier"
+    )
     initial_cash: Decimal = Field(..., ge=0, decimal_places=2)
     expenses: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
     notes: str | None = Field(None, max_length=1000)
@@ -117,7 +115,14 @@ class CashSessionUpdate(BaseModel):
     closing_ticket: str | None = Field(None, max_length=50)
     notes: str | None = Field(None, max_length=1000)
 
-    @field_validator("final_cash", "envelope_amount", "credit_card_total", "debit_card_total", "bank_transfer_total", "expenses")
+    @field_validator(
+        "final_cash",
+        "envelope_amount",
+        "credit_card_total",
+        "debit_card_total",
+        "bank_transfer_total",
+        "expenses",
+    )
     @classmethod
     def validate_currency_fields(cls, v: Decimal) -> Decimal:
         """Validate currency values."""
