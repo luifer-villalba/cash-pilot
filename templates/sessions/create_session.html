@@ -1,3 +1,4 @@
+<!-- File: templates/sessions/create_session.html -->
 {% extends "base.html" %}
 
 {% block title %}{{ _('Open New Cash Session') }} - CashPilot{% endblock %}
@@ -29,20 +30,6 @@
                         </select>
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Which pharmacy location?') }}</span>
-                        </label>
-                    </div>
-
-                    <!-- Cashier Name -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier Name') }}</span>
-                        </label>
-                        <select id="cashier-select" name="cashier_name" class="select select-sm select-bordered w-full"
-                                required>
-                            <option value="">{{ _('Select cashier') }}</option>
-                        </select>
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Select business first') }}</span>
                         </label>
                     </div>
 
@@ -139,8 +126,8 @@
                 <h3 class="font-bold text-sm uppercase tracking-wider text-info">📝 {{ _('Quick Guide') }}</h3>
                 <ul class="space-y-2 text-xs text-base-content/70">
                     <li>
-                        <span class="font-semibold text-info">👤 {{ _('Cashier Name') }}</span>
-                        <p class="mt-1">{{ _("Who's working this shift?") }}</p>
+                        <span class="font-semibold text-info">👤 {{ _('Cashier') }}</span>
+                        <p class="mt-1">{{ _('Logged in as') }}: {{ current_user.display_name }}</p>
                     </li>
                     <li>
                         <span class="font-semibold text-info">💵 {{ _('Initial Cash') }}</span>

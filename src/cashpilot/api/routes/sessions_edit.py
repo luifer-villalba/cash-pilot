@@ -56,16 +56,19 @@ async def edit_open_session_form(
     )
 
 
+# File: src/cashpilot/api/routes/sessions_edit.py
+
+
 @router.post("/{session_id}/edit-open", response_class=HTMLResponse)
 async def edit_open_session_post(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
-    cashier_name: str | None = Form(None),
     initial_cash: str | None = Form(None),
-    opened_time: str | None = Form(None),
     expenses: str | None = Form(None),
+    opened_time: str | None = Form(None),
+    notes: str | None = Form(None),
     reason: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
@@ -78,7 +81,7 @@ async def edit_open_session_post(
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
         changed_fields, old_values, new_values = await update_open_session_fields(
-            session, cashier_name, initial_cash, opened_time, expenses
+            session, initial_cash, expenses, opened_time, notes
         )
 
         session.last_modified_at = datetime.now()

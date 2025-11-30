@@ -1,9 +1,12 @@
+# File: src/cashpilot/models/business.py
 """Business model for pharmacy locations."""
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from cashpilot.models.cash_session import CashSession
+    from cashpilot.models.user import User
+    from cashpilot.models.user_business import UserBusiness
 
 import uuid
 from datetime import datetime
@@ -75,10 +78,23 @@ class Business(Base):
         onupdate=lambda: datetime.now(),
     )
 
+    # Relationships
     cash_sessions: Mapped[list["CashSession"]] = relationship(
         "CashSession",
         back_populates="business",
         cascade="all, delete-orphan",
+    )
+
+    user_assignments: Mapped[list["UserBusiness"]] = relationship(
+        "UserBusiness",
+        back_populates="business",
+        cascade="all, delete-orphan",
+    )
+
+    users: Mapped[list["User"]] = relationship(
+        "User",
+        secondary="user_businesses",
+        viewonly=True,
     )
 
     def __repr__(self) -> str:

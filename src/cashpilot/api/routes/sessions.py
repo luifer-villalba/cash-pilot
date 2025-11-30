@@ -1,5 +1,4 @@
 # File: src/cashpilot/api/routes/sessions.py
-
 """Session management routes (HTML endpoints)."""
 
 from datetime import date as date_type
@@ -58,7 +57,7 @@ async def create_session_form(
             "businesses": businesses,
             "locale": locale,
             "_": _,
-            "today": date_type.today().isoformat(),  # ← Add this
+            "today": date_type.today().isoformat(),
         },
     )
 
@@ -68,7 +67,6 @@ async def create_session_post(
     request: Request,
     current_user: User = Depends(get_current_user),
     business_id: str = Form(...),
-    cashier_name: str = Form(...),
     initial_cash: str = Form(...),
     session_date: str | None = Form(None),
     opened_time: str | None = Form(None),
@@ -92,11 +90,11 @@ async def create_session_post(
 
         session = CashSession(
             business_id=UUID(business_id),
-            cashier_name=cashier_name,
+            cashier_id=current_user.id,
             initial_cash=initial_cash_val,
             session_date=session_date_val,
             opened_time=opened_time_val,
-            created_by=current_user.id,  # SET CREATOR
+            created_by=current_user.id,
         )
         db.add(session)
         await db.commit()

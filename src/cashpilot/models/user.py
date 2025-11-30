@@ -1,14 +1,20 @@
+# File: src/cashpilot/models/user.py
 """User model for authentication."""
 
 import enum
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
+
+if TYPE_CHECKING:
+    from cashpilot.models.business import Business
+    from cashpilot.models.user_business import UserBusiness
 
 
 class UserRole(str, enum.Enum):
@@ -69,6 +75,19 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         nullable=False,
         default=lambda: datetime.now(),
+    )
+
+    # Relationships
+    business_assignments: Mapped[list["UserBusiness"]] = relationship(
+        "UserBusiness",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    businesses: Mapped[list["Business"]] = relationship(
+        "Business",
+        secondary="user_businesses",
+        viewonly=True,
     )
 
     @property

@@ -1,3 +1,4 @@
+# File: src/cashpilot/api/utils.py
 """Frontend routes - dashboard only. Session/business routes moved to routes/."""
 
 import gettext
@@ -106,7 +107,7 @@ async def _build_session_filters(
 ) -> list:
     """Build SQLAlchemy filter list from query params.
 
-    Cashier sees only own sessions + legacy (NULL created_by).
+    Cashier sees only own sessions.
     Admin sees all sessions.
     """
     filters = []
@@ -122,7 +123,8 @@ async def _build_session_filters(
 
     # Text/enum filters
     if cashier_name and cashier_name.strip():
-        filters.append(CashSession.cashier_name.ilike(f"%{cashier_name}%"))
+        # Search by cashier user relationship
+        filters.append(User.email.ilike(f"%{cashier_name}%"))
     if business_id and business_id.strip():
         filters.append(_parse_business_id(business_id))
     if status and status.strip():
@@ -134,7 +136,7 @@ async def _build_session_filters(
 def _build_role_filter(current_user: User):
     """Build role-based access filter."""
     if current_user.role == UserRole.CASHIER:
-        return CashSession.created_by == current_user.id
+        return CashSession.cashier_id == current_user.id
     return None
 
 
@@ -180,11 +182,25 @@ async def _get_paginated_sessions(
     """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages)."""
     skip = (page - 1) * per_page
 
-    stmt = select(CashSession).options(joinedload(CashSession.business))
+    stmt = select(CashSession).options(
+        joinedload(CashSession.business),
+        joinedload(CashSession.cashier),
+    )
     count_stmt = select(func.count(CashSession.id))
 
     # Add deleted filter
     filters.append(~CashSession.is_deleted)
+
+    # If filtering by cashier_name, join User table
+    has_cashier_filter = any(
+        hasattr(f, "left")
+        and hasattr(f.left, "table")
+        and getattr(f.left.table, "name", None) == "users"
+        for f in filters
+    )
+    if has_cashier_filter:
+        stmt = stmt.join(CashSession.cashier)
+        count_stmt = count_stmt.join(CashSession.cashier, isouter=True)
 
     for f in filters:
         stmt = stmt.where(f)
@@ -255,27 +271,16 @@ async def get_active_businesses(db: AsyncSession) -> list:
     return list(result.scalars().all())
 
 
-# File: src/cashpilot/api/utils.py (add this function)
-
-
 async def update_open_session_fields(
     session: CashSession,
-    cashier_name: str | None,
     initial_cash: str | None,
-    opened_time: str | None,
     expenses: str | None,
+    opened_time: str | None,
+    notes: str | None,
 ) -> tuple[list[str], dict, dict]:
-    from datetime import datetime
-    from decimal import Decimal
-
+    """Track field changes for open session edit."""
     changed_fields = []
     old_values, new_values = {}, {}
-
-    if cashier_name and cashier_name.strip() != session.cashier_name:
-        old_values["cashier_name"] = session.cashier_name
-        new_values["cashier_name"] = cashier_name.strip()
-        session.cashier_name = cashier_name.strip()
-        changed_fields.append("cashier_name")
 
     if initial_cash:
         initial_cash_val = parse_currency(initial_cash)
@@ -285,6 +290,14 @@ async def update_open_session_fields(
             session.initial_cash = initial_cash_val
             changed_fields.append("initial_cash")
 
+    if expenses:
+        expenses_val = parse_currency(expenses)
+        if expenses_val != session.expenses:
+            old_values["expenses"] = str(session.expenses)
+            new_values["expenses"] = str(expenses_val)
+            session.expenses = expenses_val
+            changed_fields.append("expenses")
+
     if opened_time:
         opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
         if opened_time_val != session.opened_time:
@@ -293,12 +306,16 @@ async def update_open_session_fields(
             session.opened_time = opened_time_val
             changed_fields.append("opened_time")
 
-    if expenses is not None:
-        expenses_val = parse_currency(expenses) if expenses else Decimal("0")
-        if expenses_val != (session.expenses or Decimal("0")):
-            old_values["expenses"] = str(session.expenses or "0")
-            new_values["expenses"] = str(expenses_val)
-            session.expenses = expenses_val
-            changed_fields.append("expenses")
+    if notes is not None and notes != "":
+        if notes != session.notes:
+            old_values["notes"] = session.notes or ""
+            new_values["notes"] = notes
+            session.notes = notes
+            changed_fields.append("notes")
+    elif notes == "" and session.notes:
+        old_values["notes"] = session.notes
+        new_values["notes"] = ""
+        session.notes = ""
+        changed_fields.append("notes")
 
     return changed_fields, old_values, new_values
