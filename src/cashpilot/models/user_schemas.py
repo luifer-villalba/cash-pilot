@@ -1,12 +1,18 @@
 # File: src/cashpilot/models/user_schemas.py
 """Pydantic schemas for User API."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from cashpilot.models.business_schemas import BusinessRead
+
 from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from cashpilot.core.validators import validate_email
+from cashpilot.models.business_schemas import BusinessRead
 from cashpilot.models.user import UserRole
 
 
@@ -73,5 +79,13 @@ class UserResponse(BaseModel):
     role: UserRole
     is_active: bool
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserWithBusinessesResponse(UserResponse):
+    """User schema with assigned businesses (for assignment endpoints only)."""
+
+    businesses: list["BusinessRead"] = []
 
     model_config = ConfigDict(from_attributes=True)

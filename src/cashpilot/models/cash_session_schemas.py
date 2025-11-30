@@ -159,6 +159,7 @@ class CashSessionRead(BaseModel):
     business_id: UUID
     cashier_id: UUID
     cashier: UserResponse
+    created_by_user: UserResponse | None = None
     status: str
 
     session_date: date

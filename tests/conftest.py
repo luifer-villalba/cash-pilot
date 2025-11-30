@@ -148,3 +148,40 @@ async def unauthenticated_client(
     ) as ac:
         ac.db_session = db_session
         yield ac
+
+@pytest_asyncio.fixture
+async def admin_client(db_session):
+    """Create async test client with admin user."""
+    from cashpilot.api.auth import get_current_user
+    from cashpilot.models.user import UserRole
+
+    app = create_app()
+
+    # Create admin user
+    admin_user = await UserFactory.create(
+        db_session,
+        email="admin@example.com",
+        first_name="Admin",
+        last_name="User",
+        role=UserRole.ADMIN,
+        hashed_password=hash_password("adminpass123"),
+    )
+
+    # Override dependencies
+    async def override_get_db():
+        yield db_session
+
+    async def override_get_current_user():
+        return admin_user
+
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
+
+    # Create client
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as ac:
+        ac.test_user = admin_user
+        ac.db_session = db_session
+        yield ac
