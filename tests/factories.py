@@ -1,3 +1,4 @@
+# File: tests/factories.py
 """Factory classes for creating test objects."""
 
 from datetime import date as date_type, time
@@ -83,11 +84,11 @@ class CashSessionFactory:
     async def create(
         session: AsyncSession,
         business_id: Optional[uuid.UUID] = None,
-        cashier_name: str = "Test Cashier",
+        cashier_id: Optional[uuid.UUID] = None,
+        created_by: Optional[uuid.UUID] = None,
         initial_cash: Decimal = Decimal("1000000.00"),
         session_date: Optional[date_type] = None,
         opened_time: Optional[time] = None,
-        created_by: Optional[uuid.UUID] = None,
         status: str = "OPEN",
         final_cash: Optional[Decimal] = None,
         envelope_amount: Decimal = Decimal("0.00"),
@@ -95,22 +96,28 @@ class CashSessionFactory:
         debit_card_total: Decimal = Decimal("0.00"),
         bank_transfer_total: Decimal = Decimal("0.00"),
         expenses: Decimal = Decimal("0.00"),
+        notes: Optional[str] = None,
         closed_time: Optional[time] = None,
         closing_ticket: Optional[str] = None,
-        notes: Optional[str] = None,
-        last_modified_at: Optional[str] = None,
-        last_modified_by: Optional[str] = None,
         **kwargs,
     ) -> CashSession:
         """Create a test cash session."""
+        # Create business if not provided
         if business_id is None:
             business = await BusinessFactory.create(session)
             business_id = business.id
 
-        # If created_by not provided, create a default user
+        # Create user for cashier_id if not provided
+        if cashier_id is None:
+            user = await UserFactory.create(
+                session,
+                email=f"cashier_{uuid.uuid4().hex[:8]}@test.com"
+            )
+            cashier_id = user.id
+
+        # Default created_by to cashier_id
         if created_by is None:
-            user = await UserFactory.create(session, email=f"cashier_{uuid.uuid4().hex[:8]}@test.com")
-            created_by = user.id
+            created_by = cashier_id
 
         if session_date is None:
             session_date = date_type.today()
@@ -121,8 +128,8 @@ class CashSessionFactory:
         cash_session = CashSession(
             id=kwargs.get("id", uuid.uuid4()),
             business_id=business_id,
+            cashier_id=cashier_id,
             created_by=created_by,
-            cashier_name=cashier_name,
             initial_cash=initial_cash,
             session_date=session_date,
             opened_time=opened_time,
@@ -133,11 +140,9 @@ class CashSessionFactory:
             debit_card_total=debit_card_total,
             bank_transfer_total=bank_transfer_total,
             expenses=expenses,
+            notes=notes,
             closed_time=closed_time,
             closing_ticket=closing_ticket,
-            notes=notes,
-            last_modified_at=last_modified_at,
-            last_modified_by=last_modified_by,
         )
 
         session.add(cash_session)

@@ -1,11 +1,9 @@
+# File: tests/test_reconciliation_properties.py
 """Tests for CashSession reconciliation properties."""
 
 import pytest
 from decimal import Decimal
-from datetime import datetime
 from uuid import uuid4
-
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models import CashSession
 
@@ -17,7 +15,7 @@ class TestCashSessionProperties:
         """Test cash_sales calculation with perfect match."""
         session = CashSession(
             business_id=uuid4(),
-            cashier_name="Test Cashier",
+            cashier_id=uuid4(),
             initial_cash=Decimal("500000.00"),
             final_cash=Decimal("1200000.00"),
             envelope_amount=Decimal("300000.00"),
@@ -33,7 +31,7 @@ class TestCashSessionProperties:
         """Test cash_sales without envelope."""
         session = CashSession(
             business_id=uuid4(),
-            cashier_name="Test Cashier",
+            cashier_id=uuid4(),
             initial_cash=Decimal("500000.00"),
             final_cash=Decimal("1500000.00"),
             envelope_amount=Decimal("0.00"),
@@ -49,9 +47,9 @@ class TestCashSessionProperties:
         """Test cash_sales returns 0 when session not closed."""
         session = CashSession(
             business_id=uuid4(),
-            cashier_name="Test Cashier",
+            cashier_id=uuid4(),
             initial_cash=Decimal("500000.00"),
-            final_cash=None,  # Session still open
+            final_cash=None,
             envelope_amount=Decimal("0.00"),
             credit_card_total=Decimal("0.00"),
             debit_card_total=Decimal("0.00"),
@@ -64,7 +62,7 @@ class TestCashSessionProperties:
         """Test total_sales across all payment methods."""
         session = CashSession(
             business_id=uuid4(),
-            cashier_name="Test Cashier",
+            cashier_id=uuid4(),
             initial_cash=Decimal("500000.00"),
             final_cash=Decimal("1200000.00"),
             envelope_amount=Decimal("300000.00"),
@@ -81,7 +79,7 @@ class TestCashSessionProperties:
         """Test total_sales with only cash payments."""
         session = CashSession(
             business_id=uuid4(),
-            cashier_name="Test Cashier",
+            cashier_id=uuid4(),
             initial_cash=Decimal("500000.00"),
             final_cash=Decimal("1500000.00"),
             envelope_amount=Decimal("0.00"),

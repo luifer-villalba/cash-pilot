@@ -1,3 +1,4 @@
+# File: tests/test_edit_open_session_form.py
 """Tests for edit open session form functionality."""
 
 from datetime import datetime, time
@@ -33,7 +34,7 @@ class TestEditOpenSessionFormGET:
 
     @pytest.mark.asyncio
     async def test_form_displays_current_values(
-        self, client: AsyncClient, db_session: AsyncSession
+            self, client: AsyncClient, db_session: AsyncSession
     ):
         """Test form displays current session values."""
         business = await BusinessFactory.create(db_session)
@@ -41,7 +42,6 @@ class TestEditOpenSessionFormGET:
             db_session,
             business_id=business.id,
             status="OPEN",
-            cashier_name="María López",
             initial_cash=Decimal("500000.00"),
             created_by=client.test_user.id,
         )
@@ -49,7 +49,8 @@ class TestEditOpenSessionFormGET:
         response = await client.get(f"/sessions/{session.id}/edit-open")
 
         assert response.status_code == 200
-        assert "María López" in response.text
+        # Template formats as "500,000" with comma separator
+        assert "500,000" in response.text or "500.000" in response.text
 
     @pytest.mark.asyncio
     async def test_form_closed_session_redirects(
@@ -87,6 +88,9 @@ class TestEditOpenSessionFormPOST:
             f"/sessions/{session.id}/edit-open",
             data={
                 "initial_cash": "750000.00",
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
                 "reason": "Corrected initial count",
             },
         )
@@ -113,7 +117,10 @@ class TestEditOpenSessionFormPOST:
         response = await client.post(
             f"/sessions/{session.id}/edit-open",
             data={
+                "initial_cash": str(session.initial_cash),
                 "expenses": "25000.00",
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
                 "reason": "Added forgotten expenses",
             },
         )
@@ -133,7 +140,6 @@ class TestEditOpenSessionFormPOST:
             db_session,
             business_id=business.id,
             status="OPEN",
-            cashier_name="Old Name",
             initial_cash=Decimal("500000.00"),
             opened_time=time(8, 0),
             expenses=Decimal("0.00"),
@@ -143,10 +149,10 @@ class TestEditOpenSessionFormPOST:
         response = await client.post(
             f"/sessions/{session.id}/edit-open",
             data={
-                "cashier_name": "New Name",
                 "initial_cash": "750000.00",
                 "opened_time": "09:00",
                 "expenses": "50000.00",
+                "notes": "",
                 "reason": "Full correction",
             },
         )
@@ -154,7 +160,6 @@ class TestEditOpenSessionFormPOST:
         assert response.status_code == 302
 
         await db_session.refresh(session)
-        assert session.cashier_name == "New Name"
         assert session.initial_cash == Decimal("750000.00")
         assert session.opened_time == time(9, 0)
         assert session.expenses == Decimal("50000.00")
@@ -176,7 +181,10 @@ class TestEditOpenSessionValidation:
         response = await client.post(
             f"/sessions/{session.id}/edit-open",
             data={
+                "initial_cash": str(session.initial_cash),
+                "expenses": str(session.expenses),
                 "opened_time": "invalid-time",
+                "notes": "",
                 "reason": "Test",
             },
         )
@@ -197,21 +205,22 @@ class TestEditOpenSessionAuditLogging:
             db_session,
             business_id=business.id,
             status="OPEN",
-            cashier_name="Original",
             created_by=client.test_user.id,
         )
 
         response = await client.post(
             f"/sessions/{session.id}/edit-open",
             data={
-                "cashier_name": "Updated",
-                "reason": "Name correction",
+                "initial_cash": str(session.initial_cash + Decimal("100.00")),
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
+                "reason": "Test update",
             },
         )
 
         assert response.status_code == 302
 
-        # Verify audit log
         audit_stmt = select(CashSessionAuditLog).where(
             CashSessionAuditLog.session_id == session.id
         )
@@ -219,7 +228,7 @@ class TestEditOpenSessionAuditLogging:
         audit_log = audit_result.scalar_one_or_none()
 
         assert audit_log is not None
-        assert "cashier_name" in audit_log.changed_fields
+        assert "initial_cash" in audit_log.changed_fields
 
     @pytest.mark.asyncio
     async def test_audit_log_tracks_changed_fields(
@@ -231,7 +240,6 @@ class TestEditOpenSessionAuditLogging:
             db_session,
             business_id=business.id,
             status="OPEN",
-            cashier_name="Original",
             initial_cash=Decimal("500000.00"),
             expenses=Decimal("0.00"),
             created_by=client.test_user.id,
@@ -240,8 +248,10 @@ class TestEditOpenSessionAuditLogging:
         response = await client.post(
             f"/sessions/{session.id}/edit-open",
             data={
-                "cashier_name": "New Name",
                 "initial_cash": "750000.00",
+                "expenses": "25000.00",
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
                 "reason": "Bulk update",
             },
         )
@@ -254,7 +264,7 @@ class TestEditOpenSessionAuditLogging:
         audit_result = await db_session.execute(audit_stmt)
         audit_log = audit_result.scalar_one_or_none()
 
-        assert set(audit_log.changed_fields) == {"cashier_name", "initial_cash"}
+        assert set(audit_log.changed_fields) == {"initial_cash", "expenses"}
 
     @pytest.mark.asyncio
     async def test_audit_log_captures_old_new_values(
@@ -274,6 +284,9 @@ class TestEditOpenSessionAuditLogging:
             f"/sessions/{session.id}/edit-open",
             data={
                 "initial_cash": "750000.00",
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
                 "reason": "Recount",
             },
         )
@@ -303,7 +316,13 @@ class TestEditOpenSessionAuditLogging:
 
         await client.post(
             f"/sessions/{session.id}/edit-open",
-            data={"cashier_name": "Test", "reason": "Test"},
+            data={
+                "initial_cash": str(session.initial_cash),
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "Test notes",
+                "reason": "Test",
+            },
         )
 
         after = datetime.now()
@@ -337,7 +356,13 @@ class TestEditOpenSessionLastModified:
 
         await client.post(
             f"/sessions/{session.id}/edit-open",
-            data={"cashier_name": "Test", "reason": "Test"},
+            data={
+                "initial_cash": str(session.initial_cash),
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
+                "reason": "Test",
+            },
         )
 
         await db_session.refresh(session)
@@ -359,7 +384,13 @@ class TestEditOpenSessionLastModified:
 
         await client.post(
             f"/sessions/{session.id}/edit-open",
-            data={"cashier_name": "Test", "reason": "Test"},
+            data={
+                "initial_cash": str(session.initial_cash),
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
+                "reason": "Test",
+            },
         )
 
         await db_session.refresh(session)
@@ -397,11 +428,13 @@ class TestEditOpenSessionDecimalFormatting:
             db_session, business_id=business.id, status="OPEN", created_by=client.test_user.id
         )
 
-        # Submit with decimal point (no thousands separator)
         response = await client.post(
             f"/sessions/{session.id}/edit-open",
             data={
                 "initial_cash": "1234567.89",
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
                 "reason": "Test",
             },
         )
@@ -420,11 +453,13 @@ class TestEditOpenSessionDecimalFormatting:
             db_session, business_id=business.id, status="OPEN", created_by=client.test_user.id
         )
 
-        # Submit with comma thousands separator
         response = await client.post(
             f"/sessions/{session.id}/edit-open",
             data={
                 "initial_cash": "1,234,567.89",
+                "expenses": str(session.expenses),
+                "opened_time": session.opened_time.strftime("%H:%M"),
+                "notes": "",
                 "reason": "Test",
             },
         )

@@ -85,7 +85,7 @@ class TestUserCreateValidation:
             UserCreate(
                 email="test@example.com",
                 password="SecurePass123",
-                first_name="John123",  # Numbers not allowed
+                first_name="John123",
                 last_name="Doe",
             )
 
@@ -122,39 +122,34 @@ class TestBusinessCreateValidation:
             name="Test",
             address="<script>alert('xss')</script>123 Main St",
         )
-        # HTML tags should be stripped
         assert "<script>" not in business.address
 
     def test_phone_validated(self):
         """Test phone validation."""
-        # Valid phone
         business = BusinessCreate(
             name="Test",
             phone="+595 21 123456",
         )
         assert business.phone == "+595 21 123456"
 
-        # Invalid phone
         with pytest.raises(ValidationError):
             BusinessCreate(
                 name="Test",
-                phone="abc",  # Too few digits
+                phone="abc",
             )
 
     def test_cashier_names_validated(self):
         """Test cashier names are validated."""
-        # Valid cashiers
         business = BusinessCreate(
             name="Test",
             cashiers=["  María  ", "Juan"],
         )
         assert business.cashiers == ["María", "Juan"]
 
-        # Invalid cashier name
         with pytest.raises(ValidationError):
             BusinessCreate(
                 name="Test",
-                cashiers=["Valid Name", "A"],  # Too short
+                cashiers=["Valid Name", "A"],
             )
 
 
@@ -165,38 +160,9 @@ class TestCashSessionCreateValidation:
         """Test valid session creation."""
         session = CashSessionCreate(
             business_id=uuid4(),
-            cashier_name="María García",
             initial_cash=Decimal("500000.00"),
-            expenses=Decimal("0.00"),
         )
-        assert session.cashier_name == "María García"
         assert session.initial_cash == Decimal("500000.00")
-
-    def test_cashier_name_validated(self):
-        """Test cashier name validation."""
-        # Valid
-        session = CashSessionCreate(
-            business_id=uuid4(),
-            cashier_name="  Juan Pérez  ",
-            initial_cash=Decimal("100.00"),
-        )
-        assert session.cashier_name == "Juan Pérez"
-
-        # Too short
-        with pytest.raises(ValidationError):
-            CashSessionCreate(
-                business_id=uuid4(),
-                cashier_name="A",
-                initial_cash=Decimal("100.00"),
-            )
-
-        # Invalid characters
-        with pytest.raises(ValidationError):
-            CashSessionCreate(
-                business_id=uuid4(),
-                cashier_name="John@Doe",
-                initial_cash=Decimal("100.00"),
-            )
 
     def test_future_date_rejected(self):
         """Test future session date is rejected."""
@@ -205,7 +171,6 @@ class TestCashSessionCreateValidation:
         with pytest.raises(ValidationError) as exc:
             CashSessionCreate(
                 business_id=uuid4(),
-                cashier_name="Test",
                 initial_cash=Decimal("100.00"),
                 session_date=tomorrow,
             )
@@ -213,20 +178,16 @@ class TestCashSessionCreateValidation:
 
     def test_today_and_past_dates_accepted(self):
         """Test today and past dates are accepted."""
-        # Today
         session = CashSessionCreate(
             business_id=uuid4(),
-            cashier_name="Test",
             initial_cash=Decimal("100.00"),
             session_date=date.today(),
         )
         assert session.session_date == date.today()
 
-        # Yesterday
         yesterday = date.today() - timedelta(days=1)
         session = CashSessionCreate(
             business_id=uuid4(),
-            cashier_name="Test",
             initial_cash=Decimal("100.00"),
             session_date=yesterday,
         )

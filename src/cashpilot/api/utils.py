@@ -274,6 +274,7 @@ async def get_active_businesses(db: AsyncSession) -> list:
 async def update_open_session_fields(
     session: CashSession,
     initial_cash: str | None,
+    expenses: str | None,
     opened_time: str | None,
     notes: str | None,
 ) -> tuple[list[str], dict, dict]:
@@ -289,6 +290,14 @@ async def update_open_session_fields(
             session.initial_cash = initial_cash_val
             changed_fields.append("initial_cash")
 
+    if expenses:
+        expenses_val = parse_currency(expenses)
+        if expenses_val != session.expenses:
+            old_values["expenses"] = str(session.expenses)
+            new_values["expenses"] = str(expenses_val)
+            session.expenses = expenses_val
+            changed_fields.append("expenses")
+
     if opened_time:
         opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
         if opened_time_val != session.opened_time:
@@ -297,11 +306,16 @@ async def update_open_session_fields(
             session.opened_time = opened_time_val
             changed_fields.append("opened_time")
 
-    if notes is not None:
+    if notes is not None and notes != "":
         if notes != session.notes:
             old_values["notes"] = session.notes or ""
             new_values["notes"] = notes
             session.notes = notes
             changed_fields.append("notes")
+    elif notes == "" and session.notes:
+        old_values["notes"] = session.notes
+        new_values["notes"] = ""
+        session.notes = ""
+        changed_fields.append("notes")
 
     return changed_fields, old_values, new_values

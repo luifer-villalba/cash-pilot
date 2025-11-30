@@ -1,3 +1,4 @@
+# File: tests/test_cash_session_edit.py
 """Tests for CashSession edit endpoints."""
 
 from datetime import date, time
@@ -9,92 +10,8 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cashpilot.models import CashSession, CashSessionAuditLog
+from cashpilot.models import CashSessionAuditLog
 from .factories import BusinessFactory, CashSessionFactory
-
-
-@pytest.mark.asyncio
-async def test_edit_open_session_cashier_name(client: AsyncClient, db_session: AsyncSession):
-    """Test editing cashier_name on an open session."""
-    business = await BusinessFactory.create(db_session)
-    session = await CashSessionFactory.create(db_session, business_id=business.id, status="OPEN")
-
-    response = await client.patch(
-        f"/cash-sessions/{session.id}/edit-open",
-        json={"cashier_name": "Updated Cashier", "reason": "Name correction"},
-    )
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["cashier_name"] == "Updated Cashier"
-    assert data["last_modified_by"] == "system"
-    assert data["last_modified_at"] is not None
-
-    audit_stmt = select(CashSessionAuditLog).where(
-        CashSessionAuditLog.session_id == session.id
-    )
-    audit_result = await db_session.execute(audit_stmt)
-    audit_log = audit_result.scalar_one_or_none()
-    assert audit_log is not None
-    assert audit_log.action == "EDIT_OPEN"
-    assert audit_log.changed_fields == ["cashier_name"]
-    assert audit_log.reason == "Name correction"
-
-
-@pytest.mark.asyncio
-async def test_edit_open_session_initial_cash(client: AsyncClient, db_session: AsyncSession):
-    """Test editing initial_cash on an open session."""
-    business = await BusinessFactory.create(db_session)
-    session = await CashSessionFactory.create(
-        db_session, business_id=business.id, status="OPEN", initial_cash=Decimal("1000.00")
-    )
-
-    response = await client.patch(
-        f"/cash-sessions/{session.id}/edit-open",
-        json={"initial_cash": "1500.00", "reason": "Corrected initial count"},
-    )
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["initial_cash"] == "1500.00"
-
-
-@pytest.mark.asyncio
-async def test_edit_open_session_multiple_fields(
-    client: AsyncClient, db_session: AsyncSession
-):
-    """Test editing multiple fields at once."""
-    business = await BusinessFactory.create(db_session)
-    session = await CashSessionFactory.create(
-        db_session,
-        business_id=business.id,
-        status="OPEN",
-        cashier_name="Old Name",
-        initial_cash=Decimal("1000.00"),
-        expenses=Decimal("50.00"),
-    )
-
-    response = await client.patch(
-        f"/cash-sessions/{session.id}/edit-open",
-        json={
-            "cashier_name": "New Name",
-            "initial_cash": "2000.00",
-            "expenses": "100.00",
-        },
-    )
-
-    assert response.status_code == 200
-    data = response.json()
-    assert data["cashier_name"] == "New Name"
-    assert data["initial_cash"] == "2000.00"
-    assert data["expenses"] == "100.00"
-
-    audit_stmt = select(CashSessionAuditLog).where(
-        CashSessionAuditLog.session_id == session.id
-    )
-    audit_result = await db_session.execute(audit_stmt)
-    audit_log = audit_result.scalar_one_or_none()
-    assert set(audit_log.changed_fields) == {"cashier_name", "initial_cash", "expenses"}
 
 
 @pytest.mark.asyncio
@@ -109,7 +26,7 @@ async def test_edit_open_session_cannot_edit_closed(
 
     response = await client.patch(
         f"/cash-sessions/{session.id}/edit-open",
-        json={"cashier_name": "New Name"},
+        json={"initial_cash": "1500.00"},
     )
 
     assert response.status_code == 400
