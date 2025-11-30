@@ -58,6 +58,7 @@ async def edit_open_session_form(
 
 # File: src/cashpilot/api/routes/sessions_edit.py
 
+
 @router.post("/{session_id}/edit-open", response_class=HTMLResponse)
 async def edit_open_session_post(
     request: Request,
