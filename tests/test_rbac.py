@@ -148,9 +148,9 @@ class TestRBACSessionAccess:
 
     @pytest.mark.asyncio
     async def test_cashier_list_shows_only_own_sessions(
-        self,
-        client: AsyncClient,
-        db_session: AsyncSession,
+            self,
+            client: AsyncClient,
+            db_session: AsyncSession,
     ) -> None:
         """Test cashier can only list their own sessions."""
         other_cashier = await UserFactory.create(
@@ -164,15 +164,15 @@ class TestRBACSessionAccess:
         # Create session owned by test_user
         own_session = await CashSessionFactory.create(
             db_session,
-            business=business,
-            created_by=client.test_user.id,
+            business_id=business.id,
+            cashier_id=client.test_user.id,
         )
 
         # Create session owned by other cashier
         other_session = await CashSessionFactory.create(
             db_session,
-            business=business,
-            created_by=other_cashier.id,
+            business_id=business.id,
+            cashier_id=other_cashier.id,
         )
 
         response = await client.get("/cash-sessions")
@@ -183,7 +183,7 @@ class TestRBACSessionAccess:
 
         # Should have own session
         assert str(own_session.id) in session_ids
-        # Should NOT have other's session
+        # Should NOT have other cashier's session
         assert str(other_session.id) not in session_ids
 
 

@@ -1,9 +1,10 @@
 """CashSession CRUD endpoints (list, get, open, close)."""
 
+from datetime import date as date_type
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,13 +42,13 @@ async def list_shifts(
     """List cash sessions with optional filtering.
 
     Admin: sees all sessions
-    Cashier: sees only own sessions
+    Cashier: sees only own sessions (filtered by cashier_id)
     """
     stmt = select(CashSession)
 
-    # Cashier filter: own sessions
+    # Cashier filter: only see sessions where they are the cashier
     if current_user.role == UserRole.CASHIER:
-        stmt = stmt.where(CashSession.created_by == current_user.id)
+        stmt = stmt.where(CashSession.cashier_id == current_user.id)
 
     if business_id:
         stmt = stmt.where(CashSession.business_id == UUID(business_id))
@@ -62,6 +63,81 @@ async def list_shifts(
     return result.scalars().all()
 
 
+# File: src/cashpilot/api/cash_session.py
+# Add these helper functions before the open_shift endpoint:
+
+
+async def _determine_cashier_for_session(
+    session: CashSessionCreate,
+    current_user: User,
+    db: AsyncSession,
+) -> tuple[UUID, UUID]:
+    """Determine cashier_id and created_by based on user role and RBAC.
+
+    Returns: (cashier_id, created_by)
+    """
+    if current_user.role == UserRole.ADMIN:
+        return await _admin_session_creation(session, current_user, db)
+    else:
+        return await _cashier_session_creation(session, current_user, db)
+
+
+async def _admin_session_creation(
+    session: CashSessionCreate,
+    current_user: User,
+    db: AsyncSession,
+) -> tuple[UUID, UUID]:
+    """Handle admin session creation logic."""
+    cashier_id = session.for_cashier_id if session.for_cashier_id else current_user.id
+    created_by = current_user.id
+
+    # Verify cashier exists if different from admin
+    if cashier_id != current_user.id:
+        stmt = select(User).where(User.id == cashier_id)
+        result = await db.execute(stmt)
+        if not result.scalar_one_or_none():
+            raise NotFoundError("User", str(cashier_id))
+
+    return cashier_id, created_by
+
+
+async def _cashier_session_creation(
+    session: CashSessionCreate,
+    current_user: User,
+    db: AsyncSession,
+) -> tuple[UUID, UUID]:
+    """Handle cashier session creation with business assignment validation."""
+    if session.for_cashier_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cashiers cannot create sessions for other users",
+        )
+
+    # Load cashier's assigned businesses
+    stmt = select(User).where(User.id == current_user.id)
+    result = await db.execute(stmt)
+    user_with_businesses = result.scalar_one()
+    await db.refresh(user_with_businesses, ["businesses"])
+
+    assigned_business_ids = {b.id for b in user_with_businesses.businesses}
+
+    # Check if cashier has any assigned businesses
+    if not assigned_business_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No businesses assigned. Contact an administrator.",
+        )
+
+    # Validate business is assigned
+    if session.business_id not in assigned_business_ids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not assigned to this business",
+        )
+
+    return current_user.id, current_user.id
+
+
 @router.post("", response_model=CashSessionRead, status_code=status.HTTP_201_CREATED)
 async def open_shift(
     session: CashSessionCreate,
@@ -70,9 +146,12 @@ async def open_shift(
 ):
     """Open a new cash session (shift).
 
-    Cashier creates session for themselves.
-    Admin can create for any cashier.
+    Admin: Can create for any business/cashier, set for_cashier_id
+    Cashier: Can only create for self, using assigned businesses
     """
+    # Determine cashier_id and created_by based on RBAC
+    cashier_id, created_by = await _determine_cashier_for_session(session, current_user, db)
+
     # Verify business exists
     stmt = select(Business).where(Business.id == session.business_id)
     result = await db.execute(stmt)
@@ -83,7 +162,13 @@ async def open_shift(
 
     # Check overlap
     if not session.allow_overlap:
-        overlap_error = await check_session_overlap(session.business_id, session.session_date, db)
+        overlap_error = await check_session_overlap(
+            db=db,
+            business_id=session.business_id,
+            session_date=session.session_date or date_type.today(),
+            opened_time=session.opened_time or datetime.now().time(),
+            closed_time=None,
+        )
         if overlap_error:
             raise ConflictError(overlap_error)
 
@@ -96,15 +181,16 @@ async def open_shift(
     if date_error:
         raise InvalidStateError(date_error["message"], details=date_error["details"])
 
-    # Create session with current user as creator
+    # Create session
     new_session = CashSession(
         business_id=session.business_id,
-        cashier_name=session.cashier_name,
+        cashier_id=cashier_id,
+        created_by=created_by,
         initial_cash=session.initial_cash,
         expenses=session.expenses,
         session_date=session.session_date,
         opened_time=session.opened_time,
-        created_by=current_user.id,  # SET CREATOR
+        notes=session.notes,
     )
 
     db.add(new_session)
@@ -115,7 +201,8 @@ async def open_shift(
         "session.opened",
         session_id=str(new_session.id),
         business_id=str(session.business_id),
-        created_by=str(current_user.id),
+        cashier_id=str(cashier_id),
+        created_by=str(created_by),
     )
 
     return new_session
