@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from cashpilot.core.db import AsyncSessionLocal
 from cashpilot.models.business import Business
-from cashpilot.models.user import User, UserRole
+from cashpilot.models.user import User
 from cashpilot.models.user_business import UserBusiness
 
 
@@ -16,7 +16,7 @@ async def fetch_cashiers(db):
     """Fetch all active cashiers."""
     stmt = (
         select(User)
-        .where(User.role == UserRole.CASHIER, User.is_active is True)
+        .where(User.role == "CASHIER", User.is_active)
         .order_by(User.first_name, User.last_name)
     )
     result = await db.execute(stmt)
@@ -25,7 +25,7 @@ async def fetch_cashiers(db):
 
 async def fetch_businesses(db):
     """Fetch all active businesses."""
-    stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
     result = await db.execute(stmt)
     return result.scalars().all()
 

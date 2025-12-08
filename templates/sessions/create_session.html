@@ -23,8 +23,8 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
                         </label>
 
-                        {% if current_user.role.value == 'ADMIN' %}
-                            <!-- ADMIN: Full dropdown -->
+                        {% if current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
+                            <!-- ADMIN: Full dropdown of ALL businesses -->
                             <select name="business_id" class="select select-sm select-bordered w-full" required>
                                 <option value="">{{ _('Select a business') }}</option>
                                 {% for business in businesses %}
@@ -71,44 +71,25 @@
                         </label>
                     </div>
 
-                    <!-- Cashier Display (Read-only for Cashiers, Dropdown for Admins) -->
+                    <!-- Cashier Display (Read-only for all users) -->
                     <div class="form-control">
                         <label class="label pb-2">
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier') }}</span>
                         </label>
 
-                        {% if current_user.role.value == 'ADMIN' %}
-                            <!-- ADMIN: Cashier dropdown (requires HTMX to fetch from API) -->
-                            <select
-                                name="cashier_id"
-                                id="cashier-select"
-                                class="select select-sm select-bordered w-full"
-                                hx-get="/api/users?role=CASHIER"
-                                hx-trigger="load"
-                                hx-swap="innerHTML"
-                                required
-                            >
-                                <option value="">{{ _('Loading cashiers...') }}</option>
-                            </select>
-                        {% else %}
-                            <!-- CASHIER: Show current user (read-only) -->
-                            <input
-                                type="text"
-                                class="input input-sm input-bordered w-full bg-base-200"
-                                value="{{ current_user.display_name }}"
-                                disabled
-                                readonly
-                            />
-                            <!-- No hidden field needed - API derives from current_user -->
-                        {% endif %}
+                        <!-- All users: Show current user (read-only) -->
+                        <input
+                            type="text"
+                            class="input input-sm input-bordered w-full bg-base-200"
+                            value="{{ current_user.display_name }}"
+                            disabled
+                            readonly
+                        />
+                        <!-- No hidden field needed - API derives from current_user -->
 
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">
-                                {% if current_user.role.value == 'ADMIN' %}
-                                    {{ _('Who will operate this session?') }}
-                                {% else %}
-                                    {{ _('Logged in as') }}: {{ current_user.display_name }}
-                                {% endif %}
+                                {{ _('Logged in as') }}: {{ current_user.display_name }}
                             </span>
                         </label>
                     </div>
@@ -125,7 +106,9 @@
                             placeholder="500.000"
                             inputmode="decimal"
                             required
-                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                                {% if current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% endif %}
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
@@ -142,7 +125,9 @@
                             name="session_date"
                             class="input input-sm input-bordered w-full"
                             value="{{ today }}"
-                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                                {% if current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% endif %}
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for today') }}</span>
@@ -158,7 +143,9 @@
                             type="time"
                             name="opened_time"
                             class="input input-sm input-bordered w-full"
-                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                                {% if current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% endif %}
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for current time') }}</span>
@@ -173,7 +160,9 @@
                         <button
                             type="submit"
                             class="btn btn-primary btn-sm flex-1 gap-2"
-                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                                {% if current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% endif %}
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -220,23 +209,4 @@
         </div>
     </div>
 </div>
-
-<!-- HTMX Script for Admin Cashier Dropdown -->
-{% if current_user.role.value == 'ADMIN' %}
-<script>
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-        if (event.detail.target.id === 'cashier-select') {
-            const users = JSON.parse(event.detail.xhr.response);
-            const select = document.getElementById('cashier-select');
-            select.innerHTML = '<option value="">{{ _("Select cashier") }}</option>';
-            users.forEach(user => {
-                const option = document.createElement('option');
-                option.value = user.id;
-                option.textContent = user.display_name;
-                select.appendChild(option);
-            });
-        }
-    });
-</script>
-{% endif %}
 {% endblock %}
