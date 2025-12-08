@@ -1,3 +1,4 @@
+# File: src/cashpilot/api/routes/businesses.py
 """Business management routes (HTML endpoints)."""
 
 from pathlib import Path
@@ -8,6 +9,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_admin
@@ -35,7 +37,7 @@ async def list_businesses(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    stmt = select(Business).order_by(Business.name)
+    stmt = select(Business).options(selectinload(Business.users)).order_by(Business.name)
     result = await db.execute(stmt)
     businesses = result.scalars().all()
 
@@ -85,7 +87,6 @@ async def create_business_post(
         name=name.strip(),
         address=address.strip() if address else None,
         phone=phone.strip() if phone else None,
-        cashiers=[],
     )
     db.add(business)
     await db.commit()
@@ -107,11 +108,15 @@ async def edit_business_form(
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Form to edit business and manage cashiers. Admin only."""
+    """Form to edit business. Admin only."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    stmt = select(Business).where(Business.id == UUID(business_id))
+    stmt = (
+        select(Business)
+        .options(selectinload(Business.users))
+        .where(Business.id == UUID(business_id))
+    )
     result = await db.execute(stmt)
     business = result.scalar_one_or_none()
 
