@@ -3,17 +3,26 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_admin
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import NotFoundError
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import hash_password
-from cashpilot.models import Business, User, UserBusiness, UserCreate, UserWithBusinessesResponse
+from cashpilot.models import (
+    Business,
+    User,
+    UserBusiness,
+    UserCreate,
+    UserResponse,
+    UserRole,
+    UserWithBusinessesResponse,
+)
 
 logger = get_logger(__name__)
 
@@ -136,3 +145,25 @@ async def _assign_businesses(
             business_id=business_id,
         )
         db.add(assignment)
+
+
+@router.get("", response_model=list[UserResponse])
+async def list_users(
+    role: UserRole | None = Query(None, description="Filter by role"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """List all active users, optionally filtered by role. Admin only for now."""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    stmt = select(User).where(User.is_active is True)
+    if role:
+        stmt = stmt.where(User.role == role)
+
+    stmt = stmt.order_by(User.first_name, User.last_name)
+
+    result = await db.execute(stmt)
+    users = result.scalars().all()
+
+    return users

@@ -114,7 +114,10 @@ rebuild-quick:
 
 # ---------- User Management ----------
 create-user:
-	docker compose exec app python -m cashpilot.scripts.createuser
+	docker compose exec app python -m cashpilot.scripts.create_user
+
+assign-cashiers:
+	docker compose exec app python -m cashpilot.scripts.assign_cashiers
 
 list-users:
 	docker compose exec db psql -U cashpilot -d cashpilot_dev -c "SELECT id, email, is_active, created_at FROM users ORDER BY created_at DESC;"

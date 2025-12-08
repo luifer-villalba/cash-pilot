@@ -889,11 +889,11 @@ msgstr "total - gastos"
 #: /app/templates/sessions/create_session.html:3
 #: /app/templates/sessions/create_session.html:9
 msgid "Open New Cash Session"
-msgstr "Editar Sesión de Caja Abierta"
+msgstr "Abrir Nueva Sesión de Caja"
 
 #: /app/templates/sessions/create_session.html:10
 msgid "Start a new shift and track cash movements"
-msgstr "Iniciar nueva sesión/caja y empezá a tener movimientos"
+msgstr "Iniciar nueva sesión de caja y empezá a tener movimientos"
 
 #: /app/templates/sessions/create_session.html:25
 msgid "Select a business"

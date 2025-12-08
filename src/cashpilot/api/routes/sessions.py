@@ -49,6 +49,11 @@ async def create_session_form(
     _ = get_translation_function(locale)
     businesses = await get_active_businesses(db)
 
+    # Load user's businesses relationship (needed for template logic)
+    # For cashiers: shows assigned businesses
+    # For admins: not used, but we load it anyway to avoid template errors
+    await db.refresh(current_user, ["businesses"])
+
     return templates.TemplateResponse(
         request,
         "sessions/create_session.html",

@@ -46,7 +46,7 @@
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="font-semibold text-sm">{{ session.cashier_name }}</td>
+                        <td class="font-semibold text-sm">{{ session.cashier.display_name }}</td>
                         <td class="text-sm">{{ session.business.name }}</td>
                         <td class="text-xs text-base-content/70 font-mono">
                             <div>{{ session.session_date.strftime('%d/%m/%Y') }}</div>
@@ -123,7 +123,7 @@
                 <!-- Header: Cashier + Status -->
                 <div class="flex justify-between items-start gap-3">
                     <div>
-                        <h3 class="font-bold text-sm">{{ session.cashier_name }}</h3>
+                        <h3 class="font-bold text-sm">{{ session.cashier.display_name }}</h3>
                         <p class="text-xs text-base-content/60">{{ session.business.name }}</p>
                     </div>
                     {% if session.status == 'OPEN' %}
