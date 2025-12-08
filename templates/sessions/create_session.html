@@ -15,21 +15,101 @@
         <!-- Form (Main) -->
         <div class="lg:col-span-2">
             <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
-                <form method="POST" action="/sessions" class="space-y-6">
-                    <!-- Business Selection -->
+                <form method="POST" action="/sessions" class="space-y-6" id="session-form">
+
+                    <!-- Business Selection (Role-Aware) -->
                     <div class="form-control">
                         <label class="label pb-2">
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
                         </label>
-                        <select id="business-select" name="business_id" class="select select-sm select-bordered w-full"
-                                required>
-                            <option value="">{{ _('Select a business') }}</option>
-                            {% for business in businesses %}
-                            <option value="{{ business.id }}">{{ business.name }}</option>
-                            {% endfor %}
-                        </select>
+
+                        {% if current_user.role.value == 'ADMIN' %}
+                            <!-- ADMIN: Full dropdown -->
+                            <select name="business_id" class="select select-sm select-bordered w-full" required>
+                                <option value="">{{ _('Select a business') }}</option>
+                                {% for business in businesses %}
+                                <option value="{{ business.id }}">{{ business.name }}</option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            <!-- CASHIER: Check assigned businesses count -->
+                            {% set assigned_count = current_user.businesses|length %}
+
+                            {% if assigned_count == 0 %}
+                                <!-- No businesses assigned: Show error -->
+                                <div role="alert" class="alert alert-error">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>{{ _('No businesses assigned. Contact an administrator to assign you a location.') }}</span>
+                                </div>
+
+                            {% elif assigned_count == 1 %}
+                                <!-- Single business: Pre-filled, disabled -->
+                                <input
+                                    type="text"
+                                    class="input input-sm input-bordered w-full bg-base-200"
+                                    value="{{ current_user.businesses[0].name }}"
+                                    disabled
+                                    readonly
+                                />
+                                <input type="hidden" name="business_id" value="{{ current_user.businesses[0].id }}">
+
+                            {% else %}
+                                <!-- Multiple businesses: Dropdown of assigned only -->
+                                <select name="business_id" class="select select-sm select-bordered w-full" required>
+                                    <option value="">{{ _('Select a business') }}</option>
+                                    {% for business in current_user.businesses %}
+                                    <option value="{{ business.id }}">{{ business.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        {% endif %}
+
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Which pharmacy location?') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Cashier Display (Read-only for Cashiers, Dropdown for Admins) -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier') }}</span>
+                        </label>
+
+                        {% if current_user.role.value == 'ADMIN' %}
+                            <!-- ADMIN: Cashier dropdown (requires HTMX to fetch from API) -->
+                            <select
+                                name="cashier_id"
+                                id="cashier-select"
+                                class="select select-sm select-bordered w-full"
+                                hx-get="/api/users?role=CASHIER"
+                                hx-trigger="load"
+                                hx-swap="innerHTML"
+                                required
+                            >
+                                <option value="">{{ _('Loading cashiers...') }}</option>
+                            </select>
+                        {% else %}
+                            <!-- CASHIER: Show current user (read-only) -->
+                            <input
+                                type="text"
+                                class="input input-sm input-bordered w-full bg-base-200"
+                                value="{{ current_user.display_name }}"
+                                disabled
+                                readonly
+                            />
+                            <!-- No hidden field needed - API derives from current_user -->
+                        {% endif %}
+
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">
+                                {% if current_user.role.value == 'ADMIN' %}
+                                    {{ _('Who will operate this session?') }}
+                                {% else %}
+                                    {{ _('Logged in as') }}: {{ current_user.display_name }}
+                                {% endif %}
+                            </span>
                         </label>
                     </div>
 
@@ -45,6 +125,7 @@
                             placeholder="500.000"
                             inputmode="decimal"
                             required
+                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
@@ -60,8 +141,8 @@
                             type="date"
                             name="session_date"
                             class="input input-sm input-bordered w-full"
-                            id="session-date"
-                            max="{{ today }}"
+                            value="{{ today }}"
+                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for today') }}</span>
@@ -74,28 +155,13 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Opened At (Time)') }}</span>
                         </label>
                         <input
-                                type="time"
-                                name="opened_time"
-                                class="input input-sm input-bordered w-full"
-                                id="opened-time"
+                            type="time"
+                            name="opened_time"
+                            class="input input-sm input-bordered w-full"
+                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
                         />
                         <label class="label pt-2">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for current time') }}</span>
-                        </label>
-                    </div>
-
-                    <!-- Allow Overlap Checkbox -->
-                    <div class="form-control">
-                        <label class="label cursor-pointer gap-3 pb-2">
-                            <input
-                                    type="checkbox"
-                                    name="allow_overlap"
-                                    class="checkbox checkbox-sm"
-                            />
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Allow overlapping sessions?') }}</span>
-                        </label>
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Check only if multiple cashiers on same shift') }}</span>
                         </label>
                     </div>
 
@@ -104,7 +170,11 @@
 
                     <!-- Action Buttons -->
                     <div class="flex gap-3">
-                        <button type="submit" class="btn btn-primary btn-sm flex-1 gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary btn-sm flex-1 gap-2"
+                            {% if current_user.role.value == 'CASHIER' and current_user.businesses|length == 0 %}disabled{% endif %}
+                        >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
@@ -151,5 +221,22 @@
     </div>
 </div>
 
-<script src="/static/js/create-session.js"></script>
+<!-- HTMX Script for Admin Cashier Dropdown -->
+{% if current_user.role.value == 'ADMIN' %}
+<script>
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'cashier-select') {
+            const users = JSON.parse(event.detail.xhr.response);
+            const select = document.getElementById('cashier-select');
+            select.innerHTML = '<option value="">{{ _("Select cashier") }}</option>';
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.textContent = user.display_name;
+                select.appendChild(option);
+            });
+        }
+    });
+</script>
+{% endif %}
 {% endblock %}

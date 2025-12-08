@@ -95,7 +95,7 @@ async def seed_businesses(db: AsyncSession) -> list[Business]:
 
 
 async def seed_cash_sessions(
-        db: AsyncSession, businesses: list[Business], users: dict[str, User]
+    db: AsyncSession, businesses: list[Business], users: dict[str, User]
 ) -> list[CashSession]:
     """Generate 30 days of cash sessions with realistic reconciliation data."""
     sessions = []

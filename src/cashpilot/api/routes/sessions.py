@@ -49,6 +49,9 @@ async def create_session_form(
     _ = get_translation_function(locale)
     businesses = await get_active_businesses(db)
 
+    # Load cashier's assigned businesses for role-aware form
+    await db.refresh(current_user, ["businesses"])
+
     return templates.TemplateResponse(
         request,
         "sessions/create_session.html",
