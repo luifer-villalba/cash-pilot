@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-11-27 16:47+0000\n"
+"POT-Creation-Date: 2025-12-09 02:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,7 +23,7 @@ msgid "Dashboard"
 msgstr ""
 
 #: /app/templates/base.html:53 /app/templates/base.html:68
-#: /app/templates/businesses/list.html:3 /app/templates/businesses/list.html:9
+#: /app/templates/businesses/list.html:4 /app/templates/businesses/list.html:9
 msgid "Businesses"
 msgstr ""
 
@@ -100,14 +100,15 @@ msgstr ""
 msgid "To Date"
 msgstr ""
 
-#: /app/templates/admin/users.html:26 /app/templates/index.html:148
+#: /app/templates/admin/users.html:34 /app/templates/index.html:148
 #: /app/templates/partials/sessions_table.html:15
 #: /app/templates/sessions/session_detail.html:128
 #: /app/templates/sessions/session_detail.html:439
 msgid "Status"
 msgstr ""
 
-#: /app/templates/index.html:152 /app/templates/index.html:171
+#: /app/templates/admin/users.html:169 /app/templates/index.html:152
+#: /app/templates/index.html:171
 msgid "All"
 msgstr ""
 
@@ -115,7 +116,7 @@ msgstr ""
 #: /app/templates/partials/sessions_table.html:58
 #: /app/templates/partials/sessions_table.html:132
 #: /app/templates/partials/sessions_table.html:156
-#: /app/templates/sessions/edit_open_session.html:15
+#: /app/templates/sessions/edit_open_session.html:16
 #: /app/templates/sessions/session_detail.html:134
 msgid "Open"
 msgstr ""
@@ -130,15 +131,13 @@ msgid "Closed"
 msgstr ""
 
 #: /app/templates/index.html:166 /app/templates/partials/sessions_table.html:17
-#: /app/templates/sessions/create_session.html:21
-#: /app/templates/sessions/create_session.html:150
+#: /app/templates/sessions/create_session.html:23
+#: /app/templates/sessions/create_session.html:196
 #: /app/templates/sessions/session_detail.html:488
 msgid "Business"
 msgstr ""
 
-#: /app/templates/index.html:189 /app/templates/sessions/create_session.html:38
-#: /app/templates/sessions/create_session.html:142
-#: /app/templates/sessions/edit_open_session.html:34
+#: /app/templates/index.html:189
 msgid "Cashier Name"
 msgstr ""
 
@@ -178,8 +177,8 @@ msgstr ""
 msgid "Text admin"
 msgstr ""
 
-#: /app/templates/admin/users.html:41 /app/templates/admin/users.html:73
-#: /app/templates/admin/users.html:134 /app/templates/login.html:106
+#: /app/templates/admin/users.html:52 /app/templates/admin/users.html:91
+#: /app/templates/admin/users.html:216 /app/templates/login.html:106
 msgid "Reset Password"
 msgstr ""
 
@@ -219,12 +218,12 @@ msgstr ""
 msgid "Enter your current password"
 msgstr ""
 
-#: /app/templates/admin/users.html:59 /app/templates/admin/users.html:92
+#: /app/templates/admin/users.html:74 /app/templates/admin/users.html:108
 #: /app/templates/settings.html:65
 msgid "New Password"
 msgstr ""
 
-#: /app/templates/admin/users.html:67 /app/templates/settings.html:66
+#: /app/templates/admin/users.html:85 /app/templates/settings.html:66
 msgid "Minimum 8 characters"
 msgstr ""
 
@@ -244,7 +243,7 @@ msgstr ""
 msgid "Update Password"
 msgstr ""
 
-#: /app/templates/admin/users.html:14 /app/templates/settings.html:108
+#: /app/templates/admin/users.html:10 /app/templates/settings.html:108
 msgid "Back to Dashboard"
 msgstr ""
 
@@ -256,112 +255,172 @@ msgstr ""
 msgid "User Management"
 msgstr ""
 
-#: /app/templates/admin/users.html:23
+#: /app/templates/admin/users.html:21
+msgid "Search by name or email..."
+msgstr ""
+
+#: /app/templates/admin/users.html:31
 msgid "Username"
 msgstr ""
 
-#: /app/templates/admin/users.html:24
+#: /app/templates/admin/users.html:32
 msgid "Email"
 msgstr ""
 
-#: /app/templates/admin/users.html:25
+#: /app/templates/admin/users.html:33
 msgid "Role"
 msgstr ""
 
-#: /app/templates/admin/users.html:27 /app/templates/businesses/edit.html:108
+#: /app/templates/admin/users.html:35
+msgid "Assigned Businesses"
+msgstr ""
+
+#: /app/templates/admin/users.html:36 /app/templates/businesses/edit.html:67
 msgid "Created"
 msgstr ""
 
-#: /app/templates/admin/users.html:28 /app/templates/businesses/edit.html:126
+#: /app/templates/admin/users.html:37
 #: /app/templates/partials/sessions_table.html:25
 msgid "Actions"
 msgstr ""
 
-#: /app/templates/admin/users.html:49
+#: /app/templates/admin/users.html:55
+msgid "Resetting password for"
+msgstr ""
+
+#: /app/templates/admin/users.html:61
 msgid "Generate secure password"
 msgstr ""
 
-#: /app/templates/admin/users.html:53
+#: /app/templates/admin/users.html:68
 msgid "Enter custom password"
 msgstr ""
 
-#: /app/templates/admin/users.html:72 /app/templates/businesses/create.html:53
+#: /app/templates/admin/users.html:90 /app/templates/admin/users.html:191
+#: /app/templates/businesses/create.html:53
 #: /app/templates/sessions/close_session.html:190
-#: /app/templates/sessions/create_session.html:129
+#: /app/templates/sessions/create_session.html:175
 #: /app/templates/sessions/edit_closed_session.html:210
-#: /app/templates/sessions/edit_open_session.html:132
+#: /app/templates/sessions/edit_open_session.html:111
 #: /app/templates/sessions/session_detail.html:569
 #: /app/templates/sessions/session_detail.html:589
 msgid "Cancel"
 msgstr ""
 
-#: /app/templates/admin/users.html:82
+#: /app/templates/admin/users.html:99
 msgid "Password Reset Successful"
 msgstr ""
 
-#: /app/templates/admin/users.html:87
+#: /app/templates/admin/users.html:103
 msgid "New password generated for"
 msgstr ""
 
-#: /app/templates/admin/users.html:109
+#: /app/templates/admin/users.html:125
 msgid "Copy"
 msgstr ""
 
-#: /app/templates/admin/users.html:113
+#: /app/templates/admin/users.html:129
 msgid "⚠️ Save this password - it won't be shown again"
 msgstr ""
 
-#: /app/templates/admin/users.html:118
+#: /app/templates/admin/users.html:134
 msgid "Done"
 msgstr ""
 
-#: /app/templates/admin/users.html:125
+#: /app/templates/admin/users.html:142 /app/templates/admin/users.html:217
+msgid "Assign Businesses"
+msgstr ""
+
+#: /app/templates/admin/users.html:148
+msgid "Assigning businesses to"
+msgstr ""
+
+#: /app/templates/admin/users.html:155 /app/templates/businesses/list.html:21
+msgid "Search businesses..."
+msgstr ""
+
+#: /app/templates/admin/users.html:163
+msgid "Select Businesses"
+msgstr ""
+
+#: /app/templates/admin/users.html:175
+msgid "None"
+msgstr ""
+
+#: /app/templates/admin/users.html:185 /app/templates/admin/users.html:222
+msgid "selected"
+msgstr ""
+
+#: /app/templates/admin/users.html:197
+msgid "Save"
+msgstr ""
+
+#: /app/templates/admin/users.html:205
 msgid "Failed to load users"
 msgstr ""
 
-#: /app/templates/admin/users.html:126
+#: /app/templates/admin/users.html:206
 msgid "Reset failed"
 msgstr ""
 
-#: /app/templates/admin/users.html:127
+#: /app/templates/admin/users.html:207
 msgid "Operation failed"
 msgstr ""
 
-#: /app/templates/admin/users.html:128
+#: /app/templates/admin/users.html:208
 msgid "Password reset successfully"
 msgstr ""
 
-#: /app/templates/admin/users.html:129
+#: /app/templates/admin/users.html:209
+msgid "Businesses assigned successfully"
+msgstr ""
+
+#: /app/templates/admin/users.html:210
+msgid "Business unassigned successfully"
+msgstr ""
+
+#: /app/templates/admin/users.html:211
 msgid "Are you sure you want to disable this user?"
 msgstr ""
 
-#: /app/templates/admin/users.html:130
+#: /app/templates/admin/users.html:212
 msgid "Are you sure you want to enable this user?"
 msgstr ""
 
-#: /app/templates/admin/users.html:131
+#: /app/templates/admin/users.html:213
 msgid "Admin"
 msgstr ""
 
-#: /app/templates/admin/users.html:132 /app/templates/businesses/edit.html:48
-#: /app/templates/businesses/list.html:48
+#: /app/templates/admin/users.html:214 /app/templates/businesses/edit.html:49
 msgid "Active"
 msgstr ""
 
-#: /app/templates/admin/users.html:133
+#: /app/templates/admin/users.html:215
 msgid "Disabled"
 msgstr ""
 
-#: /app/templates/admin/users.html:135
+#: /app/templates/admin/users.html:218
 msgid "Disable"
 msgstr ""
 
-#: /app/templates/admin/users.html:136
+#: /app/templates/admin/users.html:219
 msgid "Enable"
 msgstr ""
 
-#: /app/templates/admin/users.html:137
+#: /app/templates/admin/users.html:220
 msgid "✓ Copied!"
+msgstr ""
+
+#: /app/templates/admin/users.html:221
+msgid "No businesses assigned"
+msgstr ""
+
+#: /app/templates/admin/users.html:223
+msgid "Assigned"
+msgstr ""
+
+#: /app/templates/admin/users.html:224
+msgid "You cannot disable yourself"
 msgstr ""
 
 #: /app/templates/businesses/create.html:3
@@ -374,7 +433,7 @@ msgstr ""
 
 #: /app/templates/businesses/create.html:17
 #: /app/templates/businesses/create.html:66
-#: /app/templates/businesses/edit.html:18
+#: /app/templates/businesses/edit.html:19
 msgid "Name"
 msgstr ""
 
@@ -387,7 +446,7 @@ msgid "Only letters, numbers, spaces, and basic punctuation allowed"
 msgstr ""
 
 #: /app/templates/businesses/create.html:31
-#: /app/templates/businesses/edit.html:28
+#: /app/templates/businesses/edit.html:29
 msgid "Address"
 msgstr ""
 
@@ -396,7 +455,7 @@ msgid "e.g., Av. España 123"
 msgstr ""
 
 #: /app/templates/businesses/create.html:41
-#: /app/templates/businesses/edit.html:38
+#: /app/templates/businesses/edit.html:39
 msgid "Phone"
 msgstr ""
 
@@ -413,7 +472,7 @@ msgid "Create Business"
 msgstr ""
 
 #: /app/templates/businesses/create.html:63
-#: /app/templates/sessions/create_session.html:139
+#: /app/templates/sessions/create_session.html:185
 msgid "Quick Guide"
 msgstr ""
 
@@ -430,7 +489,6 @@ msgid "Optional: for reference only"
 msgstr ""
 
 #: /app/templates/businesses/create.html:74
-#: /app/templates/businesses/list.html:77
 msgid "Cashiers"
 msgstr ""
 
@@ -438,88 +496,65 @@ msgstr ""
 msgid "Add cashier names after creation"
 msgstr ""
 
-#: /app/templates/businesses/edit.html:3 /app/templates/businesses/edit.html:11
+#: /app/templates/businesses/edit.html:4 /app/templates/businesses/edit.html:9
 msgid "Edit Business"
 msgstr ""
 
-#: /app/templates/businesses/edit.html:55
+#: /app/templates/businesses/edit.html:56
 #: /app/templates/sessions/edit_closed_session.html:208
-#: /app/templates/sessions/edit_open_session.html:130
+#: /app/templates/sessions/edit_open_session.html:109
 msgid "Save Changes"
 msgstr ""
 
-#: /app/templates/businesses/edit.html:62
-msgid "Manage Cashiers"
-msgstr ""
-
-#: /app/templates/businesses/edit.html:68
-msgid "Enter cashier name"
-msgstr ""
-
-#: /app/templates/businesses/edit.html:70
-msgid "Add"
-msgstr ""
-
-#: /app/templates/businesses/edit.html:84
-msgid "Remove"
-msgstr ""
-
-#: /app/templates/businesses/edit.html:92
-msgid "No cashiers added yet."
-msgstr ""
-
-#: /app/templates/businesses/edit.html:105
+#: /app/templates/businesses/edit.html:63
 msgid "Business Info"
 msgstr ""
 
-#: /app/templates/businesses/edit.html:112
+#: /app/templates/businesses/edit.html:71
 msgid "Updated"
 msgstr ""
 
-#: /app/templates/businesses/edit.html:116
-msgid "Cashiers Count"
+#: /app/templates/businesses/edit.html:75
+msgid "Assigned Users"
 msgstr ""
 
-#: /app/templates/businesses/edit.html:128
+#: /app/templates/businesses/edit.html:88
 msgid "Back to Businesses"
 msgstr ""
 
-#: /app/templates/businesses/list.html:12
-#: /app/templates/businesses/list.html:16
+#: /app/templates/businesses/list.html:11
+#: /app/templates/businesses/list.html:13
+#: /app/templates/businesses/list.html:130
 msgid "+ New Business"
 msgstr ""
 
-#: /app/templates/businesses/list.html:15
-#: /app/templates/businesses/list.html:160
+#: /app/templates/businesses/list.html:13
+#: /app/templates/businesses/list.html:132
 msgid "Only admins can create businesses"
 msgstr ""
 
-#: /app/templates/businesses/list.html:26
-msgid "Search businesses..."
-msgstr ""
-
-#: /app/templates/businesses/list.html:30
+#: /app/templates/businesses/list.html:24
 msgid "Sort by Name"
 msgstr ""
 
-#: /app/templates/businesses/list.html:31
+#: /app/templates/businesses/list.html:25
 msgid "Active First"
 msgstr ""
 
-#: /app/templates/businesses/list.html:32
+#: /app/templates/businesses/list.html:26
 msgid "Inactive First"
 msgstr ""
 
-#: /app/templates/businesses/list.html:53
+#: /app/templates/businesses/list.html:46
 msgid "Inactive"
 msgstr ""
 
-#: /app/templates/businesses/list.html:92
-msgid "None"
+#: /app/templates/businesses/list.html:69
+msgid "assigned users"
 msgstr ""
 
-#: /app/templates/businesses/list.html:100
-#: /app/templates/businesses/list.html:104
+#: /app/templates/businesses/list.html:77
+#: /app/templates/businesses/list.html:81
 #: /app/templates/partials/sessions_table.html:191
 #: /app/templates/partials/sessions_table.html:195
 #: /app/templates/sessions/session_detail.html:28
@@ -529,15 +564,15 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: /app/templates/businesses/list.html:103
+#: /app/templates/businesses/list.html:80
 msgid "Only admins can edit businesses"
 msgstr ""
 
-#: /app/templates/businesses/list.html:108
+#: /app/templates/businesses/list.html:85
 msgid "Sessions"
 msgstr ""
 
-#: /app/templates/businesses/list.html:111
+#: /app/templates/businesses/list.html:88
 #: /app/templates/sessions/session_detail.html:55
 #: /app/templates/sessions/session_detail.html:62
 #: /app/templates/sessions/session_detail.html:92
@@ -545,23 +580,18 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: /app/templates/businesses/list.html:115
+#: /app/templates/businesses/list.html:92
 msgid "Only admins can delete"
 msgstr ""
 
-#: /app/templates/businesses/list.html:148
+#: /app/templates/businesses/list.html:125
 msgid "No businesses found"
 msgstr ""
 
-#: /app/templates/businesses/list.html:150
+#: /app/templates/businesses/list.html:127
 msgid ""
 "Create your first business to start managing cash sessions and "
 "reconciliations."
-msgstr ""
-
-#: /app/templates/businesses/list.html:157
-#: /app/templates/businesses/list.html:164
-msgid "Create First Business"
 msgstr ""
 
 #: /app/templates/partials/sessions_table.html:6
@@ -569,6 +599,8 @@ msgid "Cash Sessions"
 msgstr ""
 
 #: /app/templates/partials/sessions_table.html:16
+#: /app/templates/sessions/create_session.html:77
+#: /app/templates/sessions/create_session.html:188
 #: /app/templates/sessions/session_detail.html:122
 msgid "Cashier"
 msgstr ""
@@ -736,7 +768,6 @@ msgstr ""
 #: /app/templates/partials/stats_row.html:51
 #: /app/templates/sessions/edit_closed_session.html:131
 #: /app/templates/sessions/edit_closed_session.html:253
-#: /app/templates/sessions/edit_open_session.html:158
 #: /app/templates/sessions/session_detail.html:213
 #: /app/templates/sessions/session_detail.html:281
 msgid "Expenses"
@@ -786,12 +817,10 @@ msgid "Bank Transfer Total (Gs)"
 msgstr ""
 
 #: /app/templates/sessions/close_session.html:114
-#: /app/templates/sessions/edit_open_session.html:87
 msgid "Expenses (Gs)"
 msgstr ""
 
 #: /app/templates/sessions/close_session.html:125
-#: /app/templates/sessions/edit_open_session.html:98
 #: /app/templates/sessions/session_detail.html:217
 msgid "Business expenses during shift"
 msgstr ""
@@ -801,7 +830,7 @@ msgid "Closed At (Time)"
 msgstr ""
 
 #: /app/templates/sessions/close_session.html:142
-#: /app/templates/sessions/create_session.html:96
+#: /app/templates/sessions/create_session.html:151
 msgid "Leave blank for current time"
 msgstr ""
 
@@ -823,6 +852,7 @@ msgstr ""
 
 #: /app/templates/sessions/close_session.html:169
 #: /app/templates/sessions/edit_closed_session.html:171
+#: /app/templates/sessions/edit_open_session.html:69
 #: /app/templates/sessions/session_detail.html:318
 #: /app/templates/sessions/session_detail.html:331
 msgid "Notes"
@@ -842,20 +872,20 @@ msgid "Opening Info"
 msgstr ""
 
 #: /app/templates/sessions/close_session.html:204
-#: /app/templates/sessions/create_session.html:70
+#: /app/templates/sessions/create_session.html:121
 #: /app/templates/sessions/edit_closed_session.html:224
-#: /app/templates/sessions/edit_open_session.html:146
+#: /app/templates/sessions/edit_open_session.html:124
 msgid "Session Date"
 msgstr ""
 
 #: /app/templates/sessions/close_session.html:208
-#: /app/templates/sessions/edit_open_session.html:150
+#: /app/templates/sessions/edit_open_session.html:128
 msgid "Opened At"
 msgstr ""
 
 #: /app/templates/sessions/close_session.html:212
-#: /app/templates/sessions/create_session.html:146
-#: /app/templates/sessions/edit_open_session.html:154
+#: /app/templates/sessions/create_session.html:192
+#: /app/templates/sessions/edit_open_session.html:132
 #: /app/templates/sessions/session_detail.html:173
 msgid "Initial Cash"
 msgstr ""
@@ -884,76 +914,66 @@ msgstr ""
 msgid "total − expenses"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:3
-#: /app/templates/sessions/create_session.html:9
+#: /app/templates/sessions/create_session.html:4
+#: /app/templates/sessions/create_session.html:10
 msgid "Open New Cash Session"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:10
+#: /app/templates/sessions/create_session.html:11
 msgid "Start a new shift and track cash movements"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:25
+#: /app/templates/sessions/create_session.html:29
+#: /app/templates/sessions/create_session.html:61
 msgid "Select a business"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:31
-#: /app/templates/sessions/create_session.html:151
+#: /app/templates/sessions/create_session.html:44
+msgid "No businesses assigned. Contact an administrator to assign you a location."
+msgstr ""
+
+#: /app/templates/sessions/create_session.html:70
+#: /app/templates/sessions/create_session.html:197
 msgid "Which pharmacy location?"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:42
-msgid "Select cashier"
+#: /app/templates/sessions/create_session.html:92
+#: /app/templates/sessions/create_session.html:189
+msgid "Logged in as"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:45
-msgid "Select business first"
-msgstr ""
-
-#: /app/templates/sessions/create_session.html:52
-#: /app/templates/sessions/edit_open_session.html:53
+#: /app/templates/sessions/create_session.html:100
+#: /app/templates/sessions/edit_open_session.html:35
 msgid "Initial Cash (Gs)"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:63
-#: /app/templates/sessions/edit_open_session.html:64
+#: /app/templates/sessions/create_session.html:114
+#: /app/templates/sessions/edit_open_session.html:46
 msgid "Starting amount in drawer"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:80
+#: /app/templates/sessions/create_session.html:133
 msgid "Leave blank for today"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:87
-#: /app/templates/sessions/edit_open_session.html:71
+#: /app/templates/sessions/create_session.html:140
+#: /app/templates/sessions/edit_open_session.html:53
 msgid "Opened At (Time)"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:108
-msgid "Allow overlapping sessions?"
-msgstr ""
-
-#: /app/templates/sessions/create_session.html:111
-msgid "Check only if multiple cashiers on same shift"
-msgstr ""
-
-#: /app/templates/sessions/create_session.html:127
+#: /app/templates/sessions/create_session.html:173
 msgid "Open Session"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:143
-msgid "Who's working this shift?"
-msgstr ""
-
-#: /app/templates/sessions/create_session.html:147
+#: /app/templates/sessions/create_session.html:193
 msgid "Amount you start with"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:158
+#: /app/templates/sessions/create_session.html:204
 msgid "Important"
 msgstr ""
 
-#: /app/templates/sessions/create_session.html:160
+#: /app/templates/sessions/create_session.html:206
 msgid ""
 "Once opened, only one session can be active per business unless overlap "
 "is enabled."
@@ -1037,7 +1057,7 @@ msgid "Document any differences or issues"
 msgstr ""
 
 #: /app/templates/sessions/edit_closed_session.html:186
-#: /app/templates/sessions/edit_open_session.html:108
+#: /app/templates/sessions/edit_open_session.html:87
 msgid "Reason for Edit"
 msgstr ""
 
@@ -1046,12 +1066,12 @@ msgid "e.g., Corrected final count, Card total verification..."
 msgstr ""
 
 #: /app/templates/sessions/edit_closed_session.html:194
-#: /app/templates/sessions/edit_open_session.html:116
+#: /app/templates/sessions/edit_open_session.html:95
 msgid "Required for audit trail"
 msgstr ""
 
 #: /app/templates/sessions/edit_closed_session.html:220
-#: /app/templates/sessions/edit_open_session.html:142
+#: /app/templates/sessions/edit_open_session.html:121
 msgid "Current Values"
 msgstr ""
 
@@ -1072,38 +1092,38 @@ msgid "Bank Transfer"
 msgstr ""
 
 #: /app/templates/sessions/edit_closed_session.html:262
-#: /app/templates/sessions/edit_open_session.html:166
+#: /app/templates/sessions/edit_open_session.html:140
 msgid "Quick Tip"
 msgstr ""
 
 #: /app/templates/sessions/edit_closed_session.html:264
-#: /app/templates/sessions/edit_open_session.html:168
+#: /app/templates/sessions/edit_open_session.html:142
 msgid "All edits are logged with reason and timestamp for compliance."
 msgstr ""
 
-#: /app/templates/sessions/edit_open_session.html:3
-#: /app/templates/sessions/edit_open_session.html:9
+#: /app/templates/sessions/edit_open_session.html:4
+#: /app/templates/sessions/edit_open_session.html:10
 msgid "Edit Open Cash Session"
 msgstr ""
 
-#: /app/templates/sessions/edit_open_session.html:41
-msgid "e.g., María López"
-msgstr ""
-
-#: /app/templates/sessions/edit_open_session.html:46
-msgid "Who is handling this session?"
-msgstr ""
-
-#: /app/templates/sessions/edit_open_session.html:80
+#: /app/templates/sessions/edit_open_session.html:62
 msgid "Time session was opened"
 msgstr ""
 
-#: /app/templates/sessions/edit_open_session.html:103
+#: /app/templates/sessions/edit_open_session.html:74
+msgid "Optional notes..."
+msgstr ""
+
+#: /app/templates/sessions/edit_open_session.html:77
+msgid "Any additional information"
+msgstr ""
+
+#: /app/templates/sessions/edit_open_session.html:82
 msgid "Audit Trail"
 msgstr ""
 
-#: /app/templates/sessions/edit_open_session.html:113
-msgid "e.g., Corrected initial count, Name typo fix..."
+#: /app/templates/sessions/edit_open_session.html:92
+msgid "e.g., Corrected initial count..."
 msgstr ""
 
 #: /app/templates/sessions/session_detail.html:3
