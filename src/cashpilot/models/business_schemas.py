@@ -14,12 +14,11 @@ from cashpilot.core.validators import (
 
 
 class BusinessBase(BaseModel):
-    """Base schema with common fields."""
+    """Base schema with common business fields."""
 
     name: str = Field(..., min_length=1, max_length=200)
     address: str | None = Field(None, max_length=500)
     phone: str | None = Field(None, max_length=50)
-    cashiers: list[str] = Field(default_factory=list, description="List of cashier names")
 
     @field_validator("name")
     @classmethod
@@ -47,22 +46,6 @@ class BusinessBase(BaseModel):
         """Validate phone format."""
         return validate_phone(v)
 
-    @field_validator("cashiers")
-    @classmethod
-    def validate_cashier_list(cls, v: list[str]) -> list[str]:
-        """Validate each cashier name."""
-        validated = []
-        for cashier in v:
-            if cashier and cashier.strip():
-                validated_name = validate_alphanumeric_with_spaces(
-                    cashier,
-                    field_name="Cashier name",
-                    min_length=2,
-                    max_length=100,
-                )
-                validated.append(validated_name)
-        return validated
-
 
 class BusinessCreate(BusinessBase):
     """Schema for creating a new business."""
@@ -76,7 +59,6 @@ class BusinessUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=200)
     address: str | None = Field(None, max_length=500)
     phone: str | None = Field(None, max_length=50)
-    cashiers: list[str] | None = Field(None, description="List of cashier names")
     is_active: bool | None = None
 
     @field_validator("name")
@@ -106,25 +88,6 @@ class BusinessUpdate(BaseModel):
     def validate_phone_number(cls, v: str | None) -> str | None:
         """Validate phone format."""
         return validate_phone(v)
-
-    @field_validator("cashiers")
-    @classmethod
-    def validate_cashier_list(cls, v: list[str] | None) -> list[str] | None:
-        """Validate each cashier name."""
-        if v is None:
-            return None
-
-        validated = []
-        for cashier in v:
-            if cashier and cashier.strip():
-                validated_name = validate_alphanumeric_with_spaces(
-                    cashier,
-                    field_name="Cashier name",
-                    min_length=2,
-                    max_length=100,
-                )
-                validated.append(validated_name)
-        return validated
 
 
 class BusinessRead(BusinessBase):

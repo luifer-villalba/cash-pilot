@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, String
+from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,7 +25,7 @@ class Business(Base):
     Each pharmacy location operates independently with its own:
     - Cash register operations
     - Daily reconciliation
-    - Employees (cashiers list)
+    - Employees (managed via UserBusiness relationship)
 
     Note: RUC (tax_id) is shared across all locations in Paraguay
     and should be stored at organization level (future implementation).
@@ -53,12 +53,6 @@ class Business(Base):
     phone: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,
-    )
-
-    cashiers: Mapped[list[str]] = mapped_column(
-        JSON,
-        nullable=False,
-        default=list,
     )
 
     is_active: Mapped[bool] = mapped_column(

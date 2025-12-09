@@ -1,8 +1,9 @@
-"""Business API endpoints for pharmacy location management."""
+# File: src/cashpilot/api/business.py
+"""Business management API endpoints."""
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +12,8 @@ from cashpilot.api.auth_helpers import require_admin
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import NotFoundError
 from cashpilot.core.logging import get_logger
-from cashpilot.models import Business, BusinessCreate, BusinessRead, BusinessUpdate
+from cashpilot.models import Business
+from cashpilot.models.business_schemas import BusinessCreate, BusinessRead, BusinessUpdate
 from cashpilot.models.user import User
 
 logger = get_logger(__name__)
@@ -21,19 +23,11 @@ router = APIRouter(prefix="/businesses", tags=["businesses"])
 
 @router.get("", response_model=list[BusinessRead])
 async def list_businesses(
-    skip: int = 0,
-    limit: int = 50,
-    is_active: bool | None = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all businesses with pagination and optional filtering."""
-    stmt = select(Business)
-
-    if is_active is not None:
-        stmt = stmt.where(Business.is_active == is_active)
-
-    stmt = stmt.offset(skip).limit(limit).order_by(Business.name)
+    """List all businesses. All roles can read."""
+    stmt = select(Business).order_by(Business.name)
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -44,8 +38,12 @@ async def create_business(
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Create a new business (pharmacy location). Admin only."""
-    business_obj = Business(**business.model_dump())
+    """Create a new business. Admin only."""
+    business_obj = Business(
+        name=business.name,
+        address=business.address,
+        phone=business.phone,
+    )
     db.add(business_obj)
     await db.commit()
     await db.refresh(business_obj)
@@ -64,11 +62,7 @@ async def get_business(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Get business details by ID. All roles can read."""
-    # Skip if it's a special route keyword
-    if business_id in ["create", "new", "list"]:
-        raise NotFoundError("Business", business_id)
-
+    """Get a single business by ID. All roles can read."""
     stmt = select(Business).where(Business.id == UUID(business_id))
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
@@ -86,7 +80,7 @@ async def update_business(
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update business details. Admin only."""
+    """Update a business. Admin only."""
     stmt = select(Business).where(Business.id == UUID(business_id))
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
@@ -132,90 +126,3 @@ async def delete_business(
         business_id=str(business_obj.id),
         deleted_by=str(current_user.id),
     )
-
-
-@router.get("/{business_id}/cashiers")
-async def get_cashiers(
-    business_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
-    """Get cashier list for a business. All roles can read."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
-    result = await db.execute(stmt)
-    business_obj = result.scalar_one_or_none()
-
-    if not business_obj:
-        raise NotFoundError("Business", business_id)
-
-    return {
-        "business_id": str(business_obj.id),
-        "business_name": business_obj.name,
-        "cashiers": business_obj.cashiers or [],
-    }
-
-
-@router.post("/{business_id}/cashiers", status_code=status.HTTP_200_OK)
-async def add_cashier(
-    business_id: str,
-    cashier_name: str = Query(...),
-    current_user: User = Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
-):
-    """Add a cashier to the business's cashier list. Admin only."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
-    result = await db.execute(stmt)
-    business_obj = result.scalar_one_or_none()
-
-    if not business_obj:
-        raise NotFoundError("Business", business_id)
-
-    if cashier_name.strip() not in business_obj.cashiers:
-        business_obj.cashiers.append(cashier_name.strip())
-        db.add(business_obj)
-        await db.commit()
-        await db.refresh(business_obj)
-        logger.info(
-            "business.cashier_added",
-            business_id=str(business_obj.id),
-            cashier_name=cashier_name,
-            added_by=str(current_user.id),
-        )
-
-    return {
-        "business_id": str(business_obj.id),
-        "cashiers": business_obj.cashiers,
-    }
-
-
-@router.delete("/{business_id}/cashiers/{cashier_name}", status_code=status.HTTP_200_OK)
-async def remove_cashier(
-    business_id: str,
-    cashier_name: str,
-    current_user: User = Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
-):
-    """Remove a cashier from the business's cashier list. Admin only."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
-    result = await db.execute(stmt)
-    business_obj = result.scalar_one_or_none()
-
-    if not business_obj:
-        raise NotFoundError("Business", business_id)
-
-    if cashier_name in business_obj.cashiers:
-        business_obj.cashiers.remove(cashier_name)
-        db.add(business_obj)
-        await db.commit()
-        await db.refresh(business_obj)
-        logger.info(
-            "business.cashier_removed",
-            business_id=str(business_obj.id),
-            cashier_name=cashier_name,
-            removed_by=str(current_user.id),
-        )
-
-    return {
-        "business_id": str(business_obj.id),
-        "cashiers": business_obj.cashiers,
-    }

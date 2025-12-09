@@ -99,10 +99,10 @@ class TestBusinessCreateValidation:
             name="Farmacia Central",
             address="Av. España 123",
             phone="+595 21 123456",
-            cashiers=["María García", "Juan Pérez"],
         )
         assert business.name == "Farmacia Central"
-        assert len(business.cashiers) == 2
+        assert business.address == "Av. España 123"
+        assert business.phone == "+595 21 123456"
 
     def test_name_sanitized(self):
         """Test business name is validated and trimmed."""
@@ -138,19 +138,12 @@ class TestBusinessCreateValidation:
                 phone="abc",
             )
 
-    def test_cashier_names_validated(self):
-        """Test cashier names are validated."""
-        business = BusinessCreate(
-            name="Test",
-            cashiers=["  María  ", "Juan"],
-        )
-        assert business.cashiers == ["María", "Juan"]
-
-        with pytest.raises(ValidationError):
-            BusinessCreate(
-                name="Test",
-                cashiers=["Valid Name", "A"],
-            )
+    def test_minimal_business_create(self):
+        """Test business creation with only required fields."""
+        business = BusinessCreate(name="Test Farmacia")
+        assert business.name == "Test Farmacia"
+        assert business.address is None
+        assert business.phone is None
 
 
 class TestCashSessionCreateValidation:
