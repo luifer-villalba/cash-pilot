@@ -1338,3 +1338,48 @@ msgstr "Seguimiento de Crédito"
 
 msgid "Credit Tracking (Optional)"
 msgstr "Seguimiento de Crédito (Opcional)"
+
+msgid "Create User"
+msgstr "Crear Usuario"
+
+msgid "Create New User"
+msgstr "Crear Nuevo Usuario"
+
+msgid "First Name"
+msgstr "Nombre"
+
+msgid "Last Name"
+msgstr "Apellido"
+
+msgid "User created successfully"
+msgstr "Usuario creado exitosamente"
+
+msgid "Email already registered"
+msgstr "Correo electrónico ya registrado"
+
+msgid "Password must be at least 8 characters"
+msgstr "La contraseña debe tener al menos 8 caracteres"
+
+msgid "Failed to create user"
+msgstr "Error al crear usuario"
+
+msgid "Please fill all required fields"
+msgstr "Por favor complete todos los campos requeridos"
+
+msgid "Optional"
+msgstr "Opcional"
+
+msgid "Enter custom password..."
+msgstr "Ingrese contraseña personalizada..."
+
+msgid "Used for login"
+msgstr "Usado para iniciar sesión"
+
+msgid "Recommended - automatically creates a strong password"
+msgstr "Recomendado - crea automáticamente una contraseña segura"
+
+msgid "Choose your own password (minimum 8 characters)"
+msgstr "Elija su propia contraseña (mínimo 8 caracteres)"
+
+msgid "Cashier"
+msgstr "Cajero"

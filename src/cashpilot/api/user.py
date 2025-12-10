@@ -1,6 +1,8 @@
 # File: src/cashpilot/api/user.py
 """User management API endpoints."""
 
+import secrets
+import string
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -34,8 +36,12 @@ class AssignBusinessesRequest(BaseModel):
 
     business_ids: list[UUID]
 
+def generate_password(length: int = 12) -> str:
+    """Generate a secure random password."""
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
-@router.post("", response_model=UserWithBusinessesResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: UserCreate,
     business_ids: list[UUID] | None = None,
@@ -52,10 +58,17 @@ async def create_user(
             detail="Email already registered",
         )
 
+    generated_password = None
+    if not user.password:
+        generated_password = generate_password()
+        password_to_hash = generated_password
+    else:
+        password_to_hash = user.password
+
     # Create user
     user_obj = User(
         email=user.email,
-        hashed_password=hash_password(user.password),
+        hashed_password=hash_password(password_to_hash),
         first_name=user.first_name,
         last_name=user.last_name,
         role=user.role,
@@ -79,7 +92,20 @@ async def create_user(
         business_count=len(business_ids) if business_ids else 0,
     )
 
-    return user_obj
+    return {
+        "id": str(user_obj.id),
+        "email": user_obj.email,
+        "first_name": user_obj.first_name,
+        "last_name": user_obj.last_name,
+        "role": user_obj.role,
+        "is_active": user_obj.is_active,
+        "created_at": user_obj.created_at.isoformat(),
+        "businesses": [
+            {"id": str(b.id), "name": b.name, "is_active": b.is_active}
+            for b in user_obj.businesses
+        ],
+        "generated_password": generated_password,  # Only present if auto-generated
+    }
 
 
 @router.post("/{user_id}/assign-businesses", response_model=UserWithBusinessesResponse)

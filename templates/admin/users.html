@@ -7,7 +7,17 @@
 <div class="container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold">{{ _('User Management') }}</h1>
-        <a href="/dashboard" class="btn btn-outline">{{ _('Back to Dashboard') }}</a>
+        <div class="flex gap-2">
+            {% if current_user.role == 'ADMIN' %}
+            <button onclick="openCreateUserModal()" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                {{ _('Create User') }}
+            </button>
+            {% endif %}
+            <a href="/dashboard" class="btn btn-outline">{{ _('Back to Dashboard') }}</a>
+        </div>
     </div>
 
     <!-- Users Table -->
@@ -46,6 +56,94 @@
     </div>
 </div>
 
+<!-- Create User Modal -->
+<dialog id="create-user-modal" class="modal">
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-xl mb-4">{{ _('Create New User') }}</h3>
+
+        <form id="create-user-form" class="space-y-4">
+            <!-- Name Fields -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">{{ _('First Name') }} <span class="text-error">*</span></span>
+                    </label>
+                    <input type="text" id="create-first-name" class="input input-bordered w-full" required>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-semibold">{{ _('Last Name') }} <span class="text-error">*</span></span>
+                    </label>
+                    <input type="text" id="create-last-name" class="input input-bordered w-full" required>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">{{ _('Email') }} <span class="text-error">*</span></span>
+                </label>
+                <input type="email" id="create-email" class="input input-bordered w-full" required>
+            </div>
+
+            <!-- Role -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">{{ _('Role') }} <span class="text-error">*</span></span>
+                </label>
+                <select id="create-role" class="select select-bordered w-full" required>
+                    <option value="CASHIER">{{ _('Cashier') }}</option>
+                    <option value="ADMIN">{{ _('Admin') }}</option>
+                </select>
+            </div>
+
+            <!-- Password Options -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">{{ _('Password') }} <span class="text-error">*</span></span>
+                </label>
+                <div class="space-y-3">
+                    <label class="label cursor-pointer justify-start gap-3 bg-base-200 p-3 rounded-lg">
+                        <input type="radio" name="create-password-type" value="generate" class="radio radio-primary" checked
+                               onchange="toggleCreatePasswordInput(false)">
+                        <span class="label-text">{{ _('Generate secure password') }}</span>
+                    </label>
+                    <label class="label cursor-pointer justify-start gap-3 bg-base-200 p-3 rounded-lg">
+                        <input type="radio" name="create-password-type" value="custom" class="radio radio-primary"
+                               onchange="toggleCreatePasswordInput(true)">
+                        <span class="label-text">{{ _('Enter custom password') }}</span>
+                    </label>
+                </div>
+                <input type="text" id="create-custom-password" class="input input-bordered w-full mt-3"
+                       placeholder="{{ _('Enter custom password...') }}" disabled minlength="8">
+            </div>
+
+            <!-- Business Assignment -->
+            <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">{{ _('Assign Businesses') }} <span class="text-gray-500">({{ _('Optional') }})</span></span>
+                </label>
+                <input type="text" id="create-business-search" placeholder="{{ _('Search businesses...') }}"
+                       class="input input-bordered input-sm w-full mb-2" oninput="filterCreateBusinessCheckboxes()">
+                <div id="create-business-checkbox-list"
+                     class="border-2 border-base-300 rounded-lg p-3 max-h-60 overflow-y-auto bg-base-50">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </form>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="closeCreateUserModal()">{{ _('Cancel') }}</button>
+            <button type="button" class="btn btn-primary" onclick="submitCreateUser()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                {{ _('Create User') }}
+            </button>
+        </div>
+    </div>
+</dialog>
+
 <!-- Reset Password Modal -->
 <dialog id="reset-password-modal" class="modal">
     <div class="modal-box">
@@ -75,14 +173,8 @@
             <label class="label">
                 <span class="label-text font-semibold">{{ _('New Password') }}</span>
             </label>
-            <input
-                    type="text"
-                    id="custom-password"
-                    class="input input-bordered w-full"
-                    placeholder="Enter password..."
-                    disabled
-                    minlength="8"
-            >
+            <input type="text" id="custom-password" class="input input-bordered w-full"
+                   placeholder="Enter password..." disabled minlength="8">
             <label class="label">
                 <span class="label-text-alt">{{ _('Minimum 8 characters') }}</span>
             </label>
@@ -104,10 +196,8 @@
         <h3 class="font-bold text-lg mb-4">{{ _('Password Reset Successful') }}</h3>
 
         <div class="alert alert-success mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
-                 viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <span>{{ _('New password generated for') }} <strong id="pwd-username"></strong></span>
         </div>
@@ -117,21 +207,10 @@
                 <span class="label-text font-semibold">{{ _('New Password') }}</span>
             </label>
             <div class="join w-full">
-                <input
-                        type="text"
-                        id="generated-password-display"
-                        class="input input-bordered join-item flex-1 font-mono"
-                        readonly
-                >
-                <button
-                        type="button"
-                        class="btn btn-primary join-item"
-                        onclick="copyPassword()"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                <input type="text" id="generated-password-display" class="input input-bordered join-item flex-1 font-mono" readonly>
+                <button type="button" class="btn btn-primary join-item" onclick="copyPassword()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                     {{ _('Copy') }}
                 </button>
@@ -142,8 +221,7 @@
         </div>
 
         <div class="modal-action">
-            <button type="button" class="btn btn-primary" onclick="closeGeneratedPasswordModal()">{{ _('Done') }}
-            </button>
+            <button type="button" class="btn btn-primary" onclick="closeGeneratedPasswordModal()">{{ _('Done') }}</button>
         </div>
     </div>
 </dialog>
@@ -159,13 +237,8 @@
         </div>
 
         <div class="form-control mb-3">
-            <input
-                    type="text"
-                    id="business-search"
-                    placeholder="{{ _('Search businesses...') }}"
-                    class="input input-bordered w-full"
-                    oninput="filterBusinessCheckboxes()"
-            >
+            <input type="text" id="business-search" placeholder="{{ _('Search businesses...') }}"
+                   class="input input-bordered w-full" oninput="filterBusinessCheckboxes()">
         </div>
 
         <div class="form-control">
@@ -173,17 +246,14 @@
                 <span class="label-text font-semibold">{{ _('Select Businesses') }}</span>
                 <div class="flex gap-2">
                     <button type="button" class="btn btn-xs btn-ghost" onclick="selectAllBusinesses()">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
                         {{ _('All') }}
                     </button>
                     <button type="button" class="btn btn-xs btn-ghost" onclick="deselectAllBusinesses()">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                             stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M6 18L18 6M6 6l12 12"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                         {{ _('None') }}
                     </button>
@@ -201,12 +271,9 @@
         </div>
 
         <div class="modal-action">
-            <button type="button" class="btn btn-ghost" onclick="closeAssignBusinessesModal()">
-                {{ _('Cancel') }}
-            </button>
+            <button type="button" class="btn btn-ghost" onclick="closeAssignBusinessesModal()">{{ _('Cancel') }}</button>
             <button type="button" class="btn btn-primary" onclick="submitAssignBusinesses()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 {{ _('Save') }}
@@ -236,12 +303,16 @@
         noBusinesses: "{{ _('No businesses assigned') }}",
         selected: "{{ _('selected') }}",
         assigned: "{{ _('Assigned') }}",
-        cannotDisableSelf: "{{ _('You cannot disable yourself') }}"
+        cannotDisableSelf: "{{ _('You cannot disable yourself') }}",
+        userCreated: "{{ _('User created successfully') }}",
+        emailAlreadyExists: "{{ _('Email already registered') }}",
+        passwordTooShort: "{{ _('Password must be at least 8 characters') }}",
+        createError: "{{ _('Failed to create user') }}",
+        fillRequired: "{{ _('Please fill all required fields') }}"
     };
 
     let allBusinesses = [];
 
-    // Load users and businesses on page load
     document.addEventListener('DOMContentLoaded', async () => {
         await loadBusinesses();
         await loadUsers();
@@ -264,7 +335,6 @@
 
             const tbody = document.getElementById('users-table-body');
             tbody.innerHTML = data.users.map(user => {
-                // Check if this is the current logged-in user
                 const isCurrentUser = user.email === '{{ current_user.email }}';
 
                 return `
@@ -355,7 +425,6 @@
                             class="btn btn-sm btn-ghost tooltip tooltip-top hover:bg-gray-100"
                             data-tip="${i18n.resetPassword}"
                             onclick="openResetPasswordModal('${user.id}', '${user.username}')"
-                            aria-label="${i18n.resetPassword} for ${user.username}"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
@@ -365,18 +434,13 @@
                             class="btn btn-sm btn-primary tooltip tooltip-top"
                             data-tip="${i18n.assignBusinesses}"
                             onclick="openAssignBusinessesModal('${user.id}', '${user.username}', ${JSON.stringify(user.businesses).replace(/"/g, '&quot;')})"
-                            aria-label="${i18n.assignBusinesses} for ${user.username}"
                         >
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                             </svg>
                         </button>
                         ${isCurrentUser
-                    ? `<button
-                                class="btn btn-sm btn-disabled tooltip tooltip-top"
-                                data-tip="${i18n.cannotDisableSelf || 'No puedes deshabilitarte a ti mismo'}"
-                                disabled
-                            >
+                    ? `<button class="btn btn-sm btn-disabled tooltip tooltip-top" data-tip="${i18n.cannotDisableSelf}" disabled>
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                 </svg>
@@ -385,7 +449,6 @@
                                 class="btn btn-sm ${user.is_active ? 'btn-warning hover:btn-error' : 'btn-success'} tooltip tooltip-top"
                                 data-tip="${user.is_active ? i18n.disable : i18n.enable}"
                                 onclick="toggleUserActive('${user.id}', ${!user.is_active})"
-                                aria-label="${user.is_active ? i18n.disable : i18n.enable} ${user.username}"
                             >
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${user.is_active ? 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' : 'M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z'}" />
@@ -395,7 +458,7 @@
                     </div>
                 </td>
             </tr>
-        `
+        `;
             }).join('');
         } catch (error) {
             console.error('Failed to load users:', error);
@@ -403,11 +466,110 @@
         }
     }
 
+    // ===== CREATE USER MODAL =====
+    function openCreateUserModal() {
+        document.getElementById('create-user-form').reset();
+        document.getElementById('create-custom-password').disabled = true;
+
+        // Populate business checkboxes
+        const container = document.getElementById('create-business-checkbox-list');
+        container.innerHTML = allBusinesses.map(b => `
+            <label class="label cursor-pointer justify-start gap-3 hover:bg-base-200 rounded-lg px-3 py-2">
+                <input type="checkbox" class="checkbox checkbox-primary create-business-checkbox" value="${b.id}">
+                <span class="label-text">${b.name}</span>
+            </label>
+        `).join('');
+
+        document.getElementById('create-user-modal').showModal();
+    }
+
+    function closeCreateUserModal() {
+        document.getElementById('create-user-modal').close();
+    }
+
+    function toggleCreatePasswordInput(enabled) {
+        const input = document.getElementById('create-custom-password');
+        input.disabled = !enabled;
+        if (enabled) input.focus();
+        else input.value = '';
+    }
+
+    function filterCreateBusinessCheckboxes() {
+        const search = document.getElementById('create-business-search').value.toLowerCase();
+        const labels = document.querySelectorAll('#create-business-checkbox-list label');
+        labels.forEach(label => {
+            const text = label.textContent.toLowerCase();
+            label.style.display = text.includes(search) ? '' : 'none';
+        });
+    }
+
+    async function submitCreateUser() {
+        const firstName = document.getElementById('create-first-name').value.trim();
+        const lastName = document.getElementById('create-last-name').value.trim();
+        const email = document.getElementById('create-email').value.trim();
+        const role = document.getElementById('create-role').value;
+        const isGenerate = document.querySelector('input[name="create-password-type"]:checked').value === 'generate';
+        const customPassword = document.getElementById('create-custom-password').value;
+
+        if (!firstName || !lastName || !email || !role) {
+            alert(i18n.fillRequired);
+            return;
+        }
+
+        if (!isGenerate && customPassword.length < 8) {
+            alert(i18n.passwordTooShort);
+            return;
+        }
+
+        const checkboxes = document.querySelectorAll('.create-business-checkbox:checked');
+        const businessIds = Array.from(checkboxes).map(cb => cb.value);
+
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    email,
+                    password: isGenerate ? null : customPassword,
+                    first_name: firstName,
+                    last_name: lastName,
+                    role,
+                    business_ids: businessIds.length > 0 ? businessIds : null
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                if (error.detail === 'Email already registered') {
+                    alert(i18n.emailAlreadyExists);
+                } else {
+                    throw new Error(error.detail || 'Failed to create user');
+                }
+                return;
+            }
+
+            const data = await response.json();
+
+            if (isGenerate && data.generated_password) {
+                document.getElementById('pwd-username').textContent = `${firstName} ${lastName}`;
+                document.getElementById('generated-password-display').value = data.generated_password;
+                document.getElementById('generated-password-modal').showModal();
+            } else {
+                alert(i18n.userCreated);
+            }
+
+            closeCreateUserModal();
+            await loadUsers();
+        } catch (error) {
+            console.error('Failed to create user:', error);
+            alert(i18n.createError);
+        }
+    }
+
     // ===== SEARCH & FILTER =====
     function filterUsers() {
         const search = document.getElementById('user-search').value.toLowerCase();
         const rows = document.querySelectorAll('#users-table-body tr');
-
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
             row.style.display = text.includes(search) ? '' : 'none';
@@ -417,7 +579,6 @@
     function filterBusinessCheckboxes() {
         const search = document.getElementById('business-search').value.toLowerCase();
         const labels = document.querySelectorAll('#business-checkbox-list label');
-
         labels.forEach(label => {
             const name = label.getAttribute('data-business-name');
             label.style.display = name.includes(search) ? '' : 'none';
@@ -442,13 +603,8 @@
 
         container.innerHTML = allBusinesses.map((b) => `
         <label class="label cursor-pointer justify-start gap-3 hover:bg-base-200 rounded-lg px-3 py-3 transition-colors border border-transparent hover:border-base-300" data-business-name="${b.name.toLowerCase()}">
-            <input
-                type="checkbox"
-                class="checkbox checkbox-primary business-checkbox"
-                value="${b.id}"
-                ${currentIds.includes(b.id) ? 'checked' : ''}
-                onchange="updateSelectedCount()"
-            >
+            <input type="checkbox" class="checkbox checkbox-primary business-checkbox" value="${b.id}"
+                ${currentIds.includes(b.id) ? 'checked' : ''} onchange="updateSelectedCount()">
             <span class="label-text flex-1 font-medium">${b.name}</span>
             ${currentIds.includes(b.id) ? `<span class="badge badge-sm badge-primary">${i18n.assigned}</span>` : ''}
         </label>
@@ -557,7 +713,6 @@
             const data = await response.json();
 
             if (data.new_password) {
-                // Show generated password modal
                 document.getElementById('pwd-username').textContent = currentResetUsername;
                 document.getElementById('generated-password-display').value = data.new_password;
                 document.getElementById('generated-password-modal').showModal();

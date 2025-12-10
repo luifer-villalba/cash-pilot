@@ -1360,3 +1360,47 @@ msgstr ""
 msgid "Remove flag from this session?"
 msgstr ""
 
+msgid "Create User"
+msgstr ""
+
+msgid "Create New User"
+msgstr ""
+
+msgid "First Name"
+msgstr ""
+
+msgid "Last Name"
+msgstr ""
+
+msgid "User created successfully"
+msgstr ""
+
+msgid "Email already registered"
+msgstr ""
+
+msgid "Password must be at least 8 characters"
+msgstr ""
+
+msgid "Failed to create user"
+msgstr ""
+
+msgid "Please fill all required fields"
+msgstr ""
+
+msgid "Optional"
+msgstr ""
+
+msgid "Enter custom password..."
+msgstr ""
+
+msgid "Used for login"
+msgstr ""
+
+msgid "Recommended - automatically creates a strong password"
+msgstr ""
+
+msgid "Choose your own password (minimum 8 characters)"
+msgstr ""
+
+msgid "Cashier"
+msgstr ""
