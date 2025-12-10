@@ -288,38 +288,25 @@ async def update_open_session_fields(
     changed_fields = []
     old_values, new_values = {}, {}
 
-    if initial_cash:
-        initial_cash_val = parse_currency(initial_cash)
-        if initial_cash_val != session.initial_cash:
-            old_values["initial_cash"] = str(session.initial_cash)
-            new_values["initial_cash"] = str(initial_cash_val)
-            session.initial_cash = initial_cash_val
-            changed_fields.append("initial_cash")
+    # Currency fields with parse_currency
+    currency_fields = {
+        "initial_cash": initial_cash,
+        "expenses": expenses,
+        "credit_sales_total": credit_sales_total,
+        "credit_payments_collected": credit_payments_collected,
+    }
 
-    if expenses:
-        expenses_val = parse_currency(expenses) or Decimal("0")
-        if expenses_val != session.expenses:
-            old_values["expenses"] = str(session.expenses)
-            new_values["expenses"] = str(expenses_val)
-            session.expenses = expenses_val
-            changed_fields.append("expenses")
+    for field_name, form_value in currency_fields.items():
+        if form_value:
+            parsed_value = parse_currency(form_value) or Decimal("0")
+            current_value = getattr(session, field_name)
+            if parsed_value != current_value:
+                old_values[field_name] = str(current_value)
+                new_values[field_name] = str(parsed_value)
+                setattr(session, field_name, parsed_value)
+                changed_fields.append(field_name)
 
-    if credit_sales_total:
-        credit_sales_val = parse_currency(credit_sales_total) or Decimal("0")
-        if credit_sales_val != session.credit_sales_total:
-            old_values["credit_sales_total"] = str(session.credit_sales_total)
-            new_values["credit_sales_total"] = str(credit_sales_val)
-            session.credit_sales_total = credit_sales_val
-            changed_fields.append("credit_sales_total")
-
-    if credit_payments_collected:
-        credit_payments_val = parse_currency(credit_payments_collected) or Decimal("0")
-        if credit_payments_val != session.credit_payments_collected:
-            old_values["credit_payments_collected"] = str(session.credit_payments_collected)
-            new_values["credit_payments_collected"] = str(credit_payments_val)
-            session.credit_payments_collected = credit_payments_val
-            changed_fields.append("credit_payments_collected")
-
+    # Opened time (special handling)
     if opened_time:
         opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
         if opened_time_val != session.opened_time:
@@ -328,6 +315,7 @@ async def update_open_session_fields(
             session.opened_time = opened_time_val
             changed_fields.append("opened_time")
 
+    # Notes (special handling for empty string)
     if notes is not None and notes != "":
         if notes != session.notes:
             old_values["notes"] = session.notes or ""
