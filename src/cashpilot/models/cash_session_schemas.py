@@ -77,6 +77,8 @@ class CashSessionPatchClosed(BaseModel):
     debit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     bank_transfer_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     expenses: Decimal | None = Field(None, ge=0, decimal_places=2)
+    credit_sales_total: Decimal | None = Field(None, ge=0, decimal_places=2)
+    credit_payments_collected: Decimal | None = Field(None, ge=0, decimal_places=2)
     notes: str | None = Field(None, max_length=1000)
     reason: str | None = Field(None, max_length=500, description="Reason for edit")
 
@@ -87,6 +89,8 @@ class CashSessionPatchClosed(BaseModel):
         "debit_card_total",
         "bank_transfer_total",
         "expenses",
+        "credit_sales_total",
+        "credit_payments_collected",
     )
     @classmethod
     def validate_currency_fields(cls, v: Decimal | None) -> Decimal | None:
@@ -111,6 +115,8 @@ class CashSessionUpdate(BaseModel):
     debit_card_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
     bank_transfer_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
     expenses: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
+    credit_sales_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
+    credit_payments_collected: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
     closed_time: time | None = Field(None)
     closing_ticket: str | None = Field(None, max_length=50)
     notes: str | None = Field(None, max_length=1000)
@@ -122,6 +128,8 @@ class CashSessionUpdate(BaseModel):
         "debit_card_total",
         "bank_transfer_total",
         "expenses",
+        "credit_sales_total",
+        "credit_payments_collected",
     )
     @classmethod
     def validate_currency_fields(cls, v: Decimal) -> Decimal:
@@ -173,6 +181,8 @@ class CashSessionRead(BaseModel):
     debit_card_total: Decimal
     bank_transfer_total: Decimal
     expenses: Decimal
+    credit_sales_total: Decimal
+    credit_payments_collected: Decimal
     closing_ticket: str | None
     notes: str | None
 

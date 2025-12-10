@@ -120,6 +120,14 @@ class CashSession(Base):
         Numeric(12, 2), nullable=False, default=Decimal("0.00")
     )
 
+    credit_sales_total: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0.00")
+    )
+
+    credit_payments_collected: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), nullable=False, default=Decimal("0.00")
+    )
+
     # Session state
     has_conflict: Mapped[bool] = mapped_column(
         default=False,
