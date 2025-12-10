@@ -140,8 +140,12 @@ async def seed_cash_sessions(
                     debit_card_total=debit_card_total,
                     bank_transfer_total=bank_transfer_total,
                     expenses=Decimal(random.randint(0, 50000)) if is_closed else Decimal(0),
-                    credit_sales_total=Decimal(random.randint(50000, 300000)) if is_closed else Decimal(0),
-                    credit_payments_collected=Decimal(random.randint(30000, 200000)) if is_closed else Decimal(0),
+                    credit_sales_total=(
+                        Decimal(random.randint(50000, 300000)) if is_closed else Decimal(0)
+                    ),
+                    credit_payments_collected=(
+                        Decimal(random.randint(30000, 200000)) if is_closed else Decimal(0)
+                    ),
                     session_date=session_date,
                     opened_time=shift["start_time"],
                     closed_time=shift["end_time"] if is_closed else None,

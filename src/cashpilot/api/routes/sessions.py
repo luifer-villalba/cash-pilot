@@ -205,7 +205,9 @@ async def close_session_post(
         session.bank_transfer_total = parse_currency(bank_transfer_total) or Decimal("0")
         session.expenses = parse_currency(expenses) or Decimal("0")
         session.credit_sales_total = parse_currency(credit_sales_total) or Decimal("0")
-        session.credit_payments_collected = parse_currency(credit_payments_collected) or Decimal("0")
+        session.credit_payments_collected = parse_currency(credit_payments_collected) or Decimal(
+            "0"
+        )
         session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
         session.closing_ticket = closing_ticket
         session.notes = notes

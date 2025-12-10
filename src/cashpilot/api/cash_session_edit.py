@@ -1,6 +1,6 @@
 """CashSession edit endpoints (patch open/closed sessions)."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -90,7 +90,42 @@ async def edit_open_session(
     return session
 
 
-# File: src/cashpilot/api/cash_session_edit.py
+def _capture_session_values(session: CashSession) -> dict:
+    """Capture current session values for audit trail."""
+    return {
+        "final_cash": session.final_cash,
+        "envelope_amount": session.envelope_amount,
+        "credit_card_total": session.credit_card_total,
+        "debit_card_total": session.debit_card_total,
+        "bank_transfer_total": session.bank_transfer_total,
+        "expenses": session.expenses,
+        "credit_sales_total": session.credit_sales_total,
+        "credit_payments_collected": session.credit_payments_collected,
+        "notes": session.notes,
+    }
+
+
+def _apply_patch_updates(session: CashSession, patch: CashSessionPatchClosed) -> None:
+    """Apply patch updates to session."""
+    if patch.final_cash is not None:
+        session.final_cash = patch.final_cash
+    if patch.envelope_amount is not None:
+        session.envelope_amount = patch.envelope_amount
+    if patch.credit_card_total is not None:
+        session.credit_card_total = patch.credit_card_total
+    if patch.debit_card_total is not None:
+        session.debit_card_total = patch.debit_card_total
+    if patch.bank_transfer_total is not None:
+        session.bank_transfer_total = patch.bank_transfer_total
+    if patch.expenses is not None:
+        session.expenses = patch.expenses
+    if patch.credit_sales_total is not None:
+        session.credit_sales_total = patch.credit_sales_total
+    if patch.credit_payments_collected is not None:
+        session.credit_payments_collected = patch.credit_payments_collected
+    if patch.notes is not None:
+        session.notes = patch.notes
+
 
 @router.patch("/{session_id}/edit-closed", response_model=CashSessionRead)
 async def edit_closed_session(
@@ -113,54 +148,17 @@ async def edit_closed_session(
         )
 
     # Capture old values
-    old_values = {
-        "final_cash": session.final_cash,
-        "envelope_amount": session.envelope_amount,
-        "credit_card_total": session.credit_card_total,
-        "debit_card_total": session.debit_card_total,
-        "bank_transfer_total": session.bank_transfer_total,
-        "expenses": session.expenses,
-        "credit_sales_total": session.credit_sales_total,
-        "credit_payments_collected": session.credit_payments_collected,
-        "notes": session.notes,
-    }
+    old_values = _capture_session_values(session)
 
     # Apply updates
-    if patch.final_cash is not None:
-        session.final_cash = patch.final_cash
-    if patch.envelope_amount is not None:
-        session.envelope_amount = patch.envelope_amount
-    if patch.credit_card_total is not None:
-        session.credit_card_total = patch.credit_card_total
-    if patch.debit_card_total is not None:
-        session.debit_card_total = patch.debit_card_total
-    if patch.bank_transfer_total is not None:
-        session.bank_transfer_total = patch.bank_transfer_total
-    if patch.expenses is not None:
-        session.expenses = patch.expenses
-    if patch.credit_sales_total is not None:
-        session.credit_sales_total = patch.credit_sales_total
-    if patch.credit_payments_collected is not None:
-        session.credit_payments_collected = patch.credit_payments_collected
-    if patch.notes is not None:
-        session.notes = patch.notes
+    _apply_patch_updates(session, patch)
 
     # Update audit fields
     session.last_modified_at = datetime.now()
     session.last_modified_by = changed_by
 
     # Capture new values
-    new_values = {
-        "final_cash": session.final_cash,
-        "envelope_amount": session.envelope_amount,
-        "credit_card_total": session.credit_card_total,
-        "debit_card_total": session.debit_card_total,
-        "bank_transfer_total": session.bank_transfer_total,
-        "expenses": session.expenses,
-        "credit_sales_total": session.credit_sales_total,
-        "credit_payments_collected": session.credit_payments_collected,
-        "notes": session.notes,
-    }
+    new_values = _capture_session_values(session)
 
     # Log to audit trail
     await log_session_edit(
