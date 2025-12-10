@@ -42,7 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
         'credit_card_total',
         'debit_card_total',
         'bank_transfer_total',
-        'expenses'
+        'expenses',
+        'credit_sales_total',
+        'credit_payments_collected'
     ];
 
     calculatorFields.forEach(fieldName => {

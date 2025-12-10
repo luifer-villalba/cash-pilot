@@ -50,10 +50,18 @@ class CashSessionPatchOpen(BaseModel):
 
     initial_cash: Decimal | None = Field(None, ge=0, decimal_places=2)
     opened_time: time | None = Field(None)
+    expenses: Decimal | None = Field(None, ge=0, decimal_places=2)
+    credit_sales_total: Decimal | None = Field(None, ge=0, decimal_places=2)
+    credit_payments_collected: Decimal | None = Field(None, ge=0, decimal_places=2)
     notes: str | None = Field(None, max_length=1000)
     reason: str | None = Field(None, max_length=500, description="Reason for edit")
 
-    @field_validator("initial_cash")
+    @field_validator(
+        "initial_cash",
+        "expenses",
+        "credit_sales_total",
+        "credit_payments_collected",
+    )
     @classmethod
     def validate_currency_fields(cls, v: Decimal | None) -> Decimal | None:
         """Validate currency values."""

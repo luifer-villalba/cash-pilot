@@ -217,6 +217,28 @@
                             </p>
                             <p class="text-xs text-red-600/70 mt-1">💸 {{ _('Business expenses during shift') }}</p>
                         </div>
+
+                        <!-- Credit Sales (OPEN session) -->
+                        {% if session.credit_sales_total and session.credit_sales_total > 0 %}
+                        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 rounded-lg border border-blue-200 shadow p-4">
+                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">{{ _('Credit Sales') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-blue-900">
+                                Gs {{ session.credit_sales_total | format_currency_py }}
+                            </p>
+                            <p class="text-xs text-blue-600/70 mt-1">🧾 {{ _('New customer debt created') }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Credit Payments (OPEN session) -->
+                        {% if session.credit_payments_collected and session.credit_payments_collected > 0 %}
+                        <div class="bg-gradient-to-br from-green-500/10 to-base-100 rounded-lg border border-green-200 shadow p-4">
+                            <p class="text-xs text-green-700 uppercase tracking-wider font-semibold">{{ _('Debt Collected') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-green-900">
+                                +Gs {{ session.credit_payments_collected | format_currency_py }}
+                            </p>
+                            <p class="text-xs text-green-600/70 mt-1">💰 {{ _('Customer paid old debt') }}</p>
+                        </div>
+                        {% endif %}
                     </div>
                 </section>
 

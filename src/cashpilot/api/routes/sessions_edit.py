@@ -56,9 +56,6 @@ async def edit_open_session_form(
     )
 
 
-# File: src/cashpilot/api/routes/sessions_edit.py
-
-
 @router.post("/{session_id}/edit-open", response_class=HTMLResponse)
 async def edit_open_session_post(
     request: Request,
@@ -67,6 +64,8 @@ async def edit_open_session_post(
     session: CashSession = Depends(require_own_session),
     initial_cash: str | None = Form(None),
     expenses: str | None = Form(None),
+    credit_sales_total: str | None = Form(None),
+    credit_payments_collected: str | None = Form(None),
     opened_time: str | None = Form(None),
     notes: str | None = Form(None),
     reason: str | None = Form(None),
@@ -74,14 +73,20 @@ async def edit_open_session_post(
 ):
     """Handle edit open session form submission (with permission check)."""
     locale = get_locale(request)
-    _ = get_translation_function(locale)
+    _ = get_translation_function(request)
 
     try:
         if session.status != "OPEN":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
         changed_fields, old_values, new_values = await update_open_session_fields(
-            session, initial_cash, expenses, opened_time, notes
+            session,
+            initial_cash,
+            expenses,
+            credit_sales_total,
+            credit_payments_collected,
+            opened_time,
+            notes,
         )
 
         session.last_modified_at = datetime.now()
