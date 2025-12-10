@@ -29,7 +29,7 @@ async def edit_open_session(
     changed_by: str = "system",
     db: AsyncSession = Depends(get_db),
 ):
-    """Edit an OPEN session (cashier_name, initial_cash, opened_time, expenses)."""
+    """Edit an OPEN session (initial_cash, opened_time, expenses, credit fields)."""
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
@@ -44,21 +44,27 @@ async def edit_open_session(
 
     # Capture old values
     old_values = {
-        "cashier_name": session.cashier_name,
         "initial_cash": session.initial_cash,
         "opened_time": session.opened_time,
         "expenses": session.expenses,
+        "credit_sales_total": session.credit_sales_total,
+        "credit_payments_collected": session.credit_payments_collected,
+        "notes": session.notes,
     }
 
     # Apply updates
-    if patch.cashier_name is not None:
-        session.cashier_name = patch.cashier_name
     if patch.initial_cash is not None:
         session.initial_cash = patch.initial_cash
     if patch.opened_time is not None:
         session.opened_time = patch.opened_time
     if patch.expenses is not None:
         session.expenses = patch.expenses
+    if patch.credit_sales_total is not None:
+        session.credit_sales_total = patch.credit_sales_total
+    if patch.credit_payments_collected is not None:
+        session.credit_payments_collected = patch.credit_payments_collected
+    if patch.notes is not None:
+        session.notes = patch.notes
 
     # Update audit fields
     session.last_modified_at = datetime.now()
@@ -66,10 +72,12 @@ async def edit_open_session(
 
     # Capture new values
     new_values = {
-        "cashier_name": session.cashier_name,
         "initial_cash": session.initial_cash,
         "opened_time": session.opened_time,
         "expenses": session.expenses,
+        "credit_sales_total": session.credit_sales_total,
+        "credit_payments_collected": session.credit_payments_collected,
+        "notes": session.notes,
     }
 
     # Log to audit trail

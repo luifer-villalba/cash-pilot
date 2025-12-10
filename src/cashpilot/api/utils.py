@@ -3,7 +3,7 @@
 
 import gettext
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from uuid import UUID
 
@@ -91,10 +91,14 @@ def parse_currency(value: str | None) -> Decimal | None:
         # No dots, just remove commas
         value = value.replace(",", "")
 
-    if not value or value == ".":
+    # After cleaning, check if valid
+    if not value or value == "." or value == "":
         return None
 
-    return Decimal(value)
+    try:
+        return Decimal(value)
+    except (ValueError, InvalidOperation):
+        return None
 
 
 async def _build_session_filters(
@@ -275,6 +279,8 @@ async def update_open_session_fields(
     session: CashSession,
     initial_cash: str | None,
     expenses: str | None,
+    credit_sales_total: str | None,
+    credit_payments_collected: str | None,
     opened_time: str | None,
     notes: str | None,
 ) -> tuple[list[str], dict, dict]:
@@ -291,12 +297,28 @@ async def update_open_session_fields(
             changed_fields.append("initial_cash")
 
     if expenses:
-        expenses_val = parse_currency(expenses)
+        expenses_val = parse_currency(expenses) or Decimal("0")
         if expenses_val != session.expenses:
             old_values["expenses"] = str(session.expenses)
             new_values["expenses"] = str(expenses_val)
             session.expenses = expenses_val
             changed_fields.append("expenses")
+
+    if credit_sales_total:
+        credit_sales_val = parse_currency(credit_sales_total) or Decimal("0")
+        if credit_sales_val != session.credit_sales_total:
+            old_values["credit_sales_total"] = str(session.credit_sales_total)
+            new_values["credit_sales_total"] = str(credit_sales_val)
+            session.credit_sales_total = credit_sales_val
+            changed_fields.append("credit_sales_total")
+
+    if credit_payments_collected:
+        credit_payments_val = parse_currency(credit_payments_collected) or Decimal("0")
+        if credit_payments_val != session.credit_payments_collected:
+            old_values["credit_payments_collected"] = str(session.credit_payments_collected)
+            new_values["credit_payments_collected"] = str(credit_payments_val)
+            session.credit_payments_collected = credit_payments_val
+            changed_fields.append("credit_payments_collected")
 
     if opened_time:
         opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
