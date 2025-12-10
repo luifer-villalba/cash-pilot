@@ -1302,3 +1302,39 @@ msgstr "Limpiar Marca"
 #: /app/templates/sessions/session_detail.html:583
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
+
+msgid "Credit Sales"
+msgstr "Ventas a crédito"
+
+msgid "Credit Sales (Gs)"
+msgstr "Ventas a crédito (Gs)"
+
+msgid "Debt Collected"
+msgstr "Cobros de deuda"
+
+msgid "Debt Collected (Gs)"
+msgstr "Cobros de deuda (Gs)"
+
+msgid "New debt created"
+msgstr "Nueva deuda creada"
+
+msgid "Old debt collected"
+msgstr "Deuda antigua cobrada"
+
+msgid "Customer Credit Activity"
+msgstr "Actividad de Crédito"
+
+msgid "Net Credit Impact"
+msgstr "Impacto Neto de Crédito"
+
+msgid "(New debt − Collected)"
+msgstr "(Deuda nueva − Cobrada)"
+
+msgid "Credit tracking is for reporting only and does not affect reconciliation calculations."
+msgstr "El seguimiento de crédito es solo para reportes y no afecta los cálculos de conciliación."
+
+msgid "Credit Tracking"
+msgstr "Seguimiento de Crédito"
+
+msgid "Credit Tracking (Optional)"
+msgstr "Seguimiento de Crédito (Opcional)"

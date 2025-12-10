@@ -42,10 +42,6 @@ async def edit_open_session(
             f"Session must be OPEN to edit with this endpoint (current: {session.status})"
         )
 
-    # Check freeze period (soft warning)
-    session_age = datetime.now().date() - session.session_date
-    session_age > timedelta(days=FREEZE_PERIOD_DAYS)
-
     # Capture old values
     old_values = {
         "cashier_name": session.cashier_name,
@@ -94,6 +90,8 @@ async def edit_open_session(
     return session
 
 
+# File: src/cashpilot/api/cash_session_edit.py
+
 @router.patch("/{session_id}/edit-closed", response_model=CashSessionRead)
 async def edit_closed_session(
     session_id: str,
@@ -114,10 +112,6 @@ async def edit_closed_session(
             f"Session must be CLOSED to edit with this endpoint (current: {session.status})"
         )
 
-    # Check freeze period (soft warning)
-    session_age = datetime.now().date() - session.session_date
-    session_age > timedelta(days=FREEZE_PERIOD_DAYS)
-
     # Capture old values
     old_values = {
         "final_cash": session.final_cash,
@@ -126,6 +120,8 @@ async def edit_closed_session(
         "debit_card_total": session.debit_card_total,
         "bank_transfer_total": session.bank_transfer_total,
         "expenses": session.expenses,
+        "credit_sales_total": session.credit_sales_total,
+        "credit_payments_collected": session.credit_payments_collected,
         "notes": session.notes,
     }
 
@@ -142,6 +138,10 @@ async def edit_closed_session(
         session.bank_transfer_total = patch.bank_transfer_total
     if patch.expenses is not None:
         session.expenses = patch.expenses
+    if patch.credit_sales_total is not None:
+        session.credit_sales_total = patch.credit_sales_total
+    if patch.credit_payments_collected is not None:
+        session.credit_payments_collected = patch.credit_payments_collected
     if patch.notes is not None:
         session.notes = patch.notes
 
@@ -157,6 +157,8 @@ async def edit_closed_session(
         "debit_card_total": session.debit_card_total,
         "bank_transfer_total": session.bank_transfer_total,
         "expenses": session.expenses,
+        "credit_sales_total": session.credit_sales_total,
+        "credit_payments_collected": session.credit_payments_collected,
         "notes": session.notes,
     }
 

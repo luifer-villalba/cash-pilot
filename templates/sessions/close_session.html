@@ -114,15 +114,54 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">📉 {{ _('Expenses (Gs)') }}</span>
                         </label>
                         <input
-                                type="text"
-                                name="expenses"
-                                class="input input-sm input-bordered w-full"
-                                value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
-                                placeholder="0"
-                                inputmode="decimal"
+                            type="text"
+                            name="expenses"
+                            class="input input-sm input-bordered w-full"
+                            value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
+                            placeholder="0"
+                            inputmode="decimal"
                         />
                         <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Divider: Credit Tracking -->
+                    <div class="divider my-4">{{ _('Credit Tracking (Optional)') }}</div>
+
+                    <!-- Credit Sales -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🧾 {{ _('Credit Sales (Gs)') }}</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="credit_sales_total"
+                            class="input input-sm input-bordered w-full"
+                            value="{% if session.credit_sales_total and session.credit_sales_total > 0 %}{{ '{:,.0f}'.format(session.credit_sales_total) }}{% endif %}"
+                            placeholder="0"
+                            inputmode="decimal"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('New customer debt created') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Credit Payments Collected -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💰 {{ _('Debt Collected (Gs)') }}</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="credit_payments_collected"
+                            class="input input-sm input-bordered w-full"
+                            value="{% if session.credit_payments_collected and session.credit_payments_collected > 0 %}{{ '{:,.0f}'.format(session.credit_payments_collected) }}{% endif %}"
+                            placeholder="0"
+                            inputmode="decimal"
+                        />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Old customer debt collected') }}</span>
                         </label>
                     </div>
 

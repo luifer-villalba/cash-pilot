@@ -191,6 +191,8 @@ async def update_closed_session_fields(
     debit_card_total: str | None = None,
     bank_transfer_total: str | None = None,
     expenses: str | None = None,
+    credit_sales_total: str | None = None,
+    credit_payments_collected: str | None = None,
     closing_ticket: str | None = None,
     notes: str | None = None,
 ) -> tuple[list[str], dict, dict]:
@@ -255,6 +257,24 @@ async def update_closed_session_fields(
     )
     _update_field(
         session,
+        "credit_sales_total",
+        parse_currency(credit_sales_total) or Decimal("0"),
+        session.credit_sales_total,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "credit_payments_collected",
+        parse_currency(credit_payments_collected) or Decimal("0"),
+        session.credit_payments_collected,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
         "closing_ticket",
         closing_ticket,
         session.closing_ticket,
@@ -279,6 +299,8 @@ async def edit_closed_session_post(
     debit_card_total: str | None = Form(None),
     bank_transfer_total: str | None = Form(None),
     expenses: str | None = Form(None),
+    credit_sales_total: str | None = Form(None),
+    credit_payments_collected: str | None = Form(None),
     closing_ticket: str | None = Form(None),
     notes: str | None = Form(None),
     reason: str | None = Form(None),
@@ -300,6 +322,8 @@ async def edit_closed_session_post(
             debit_card_total,
             bank_transfer_total,
             expenses,
+            credit_sales_total,
+            credit_payments_collected,
             closing_ticket,
             notes,
         )
