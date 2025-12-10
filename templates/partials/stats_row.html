@@ -40,7 +40,7 @@
         </div>
 
         <!-- Card 5: Net Earnings (HERO - emphasis) -->
-        <div class="bg-gradient-to-br from-primary/10 to-white border-2 border-primary rounded-lg shadow-lg p-4 space-y-3 w-72 md:w-auto">
+        <div class="bg-gradient-to-br from-primary/10 to-base-100 border-2 border-primary rounded-lg shadow-lg p-4 space-y-3 w-72 md:w-auto">
             <p class="text-xs font-bold uppercase tracking-wider text-primary/70">💎 {{ _('Net Earnings') }}</p>
             {% set net_value = total_ingresos - expenses %}
             <p class="text-2xl font-black break-words {% if net_value >= 0 %}text-primary{% else %}text-error{% endif %}">

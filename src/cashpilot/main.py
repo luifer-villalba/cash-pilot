@@ -30,6 +30,28 @@ class AdminRedirectMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+class AuthRedirectMiddleware(BaseHTTPMiddleware):
+    """Redirect unauthenticated browser requests to login page."""
+
+    async def dispatch(self, request: Request, call_next):
+        # Skip for public routes
+        public_paths = ["/login", "/logout", "/static", "/health"]
+        if any(request.url.path.startswith(path) for path in public_paths):
+            return await call_next(request)
+
+        # Check session (access via scope, not request.session)
+        session = request.scope.get("session", {})
+        user_id = session.get("user_id")
+
+        if not user_id:
+            # Detect browser (HTML request)
+            accept = request.headers.get("accept", "")
+            if "text/html" in accept:
+                return RedirectResponse(url="/login", status_code=303)
+
+        return await call_next(request)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Lifespan context manager for startup and shutdown events."""
@@ -47,8 +69,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -> None:
     """Configure all middleware in correct order."""
-    # Add middleware in reverse order (last added = first executed)
-    # RequestIDMiddleware LAST so it runs FIRST
+    # Add in REVERSE order (last added = first executed)
+
+    # 1. RequestIDMiddleware (runs FIRST)
+    from cashpilot.middleware.logging import RequestIDMiddleware
+
+    app.add_middleware(RequestIDMiddleware)
+
+    # 2. AuthRedirectMiddleware (runs SECOND, needs session)
+    app.add_middleware(AuthRedirectMiddleware)
+
+    # 3. AdminRedirectMiddleware (runs THIRD)
+    app.add_middleware(AdminRedirectMiddleware)
+
+    # 4. SessionMiddleware (runs FOURTH, creates session)
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
@@ -56,11 +90,6 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
         https_only=environment == "production",
         same_site="lax",
     )
-    app.add_middleware(AdminRedirectMiddleware)
-
-    from cashpilot.middleware.logging import RequestIDMiddleware
-
-    app.add_middleware(RequestIDMiddleware)
 
 
 def _mount_static(app: FastAPI) -> None:

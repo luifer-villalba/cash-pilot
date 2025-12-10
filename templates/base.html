@@ -1,3 +1,4 @@
+<!-- File: src/cashpilot/templates/base.html -->
 <!DOCTYPE html>
 <html lang="es" data-theme="light" id="html-root">
 <head>
@@ -51,7 +52,16 @@
                 <ul class="dropdown-content menu p-2 shadow bg-base-100 rounded-lg w-52 z-50 border border-base-200">
                     <li><a href="/" class="text-sm">{{ _('Dashboard') }}</a></li>
                     <li><a href="/businesses" class="text-sm">{{ _('Businesses') }}</a></li>
-                    <li><a href="/docs" target="_blank" class="text-sm">{{ _('API Docs') }}</a></li>
+                    {% if current_user and current_user.is_admin %}
+                    <li>
+                        <a href="/admin/users-page" class="text-sm gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            {{ _('Users') }}
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
             <!-- Brand -->
@@ -66,7 +76,16 @@
             <ul class="menu menu-horizontal gap-0 px-1">
                 <li><a href="/" class="text-sm font-medium">{{ _('Dashboard') }}</a></li>
                 <li><a href="/businesses" class="text-sm font-medium">{{ _('Businesses') }}</a></li>
-                <li><a href="/docs" target="_blank" class="text-sm font-medium">{{ _('API Docs') }}</a></li>
+                {% if current_user and current_user.is_admin %}
+                <li>
+                    <a href="/admin/users-page" class="text-sm font-medium gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        {{ _('Users') }}
+                    </a>
+                </li>
+                {% endif %}
             </ul>
         </div>
 
