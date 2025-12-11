@@ -20,7 +20,7 @@ class UserCreate(BaseModel):
     """Schema for creating a new user."""
 
     email: str = Field(..., min_length=5, max_length=255)
-    password: str = Field(..., min_length=8, max_length=128)
+    password: str | None = Field(None, min_length=8, max_length=128)
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     role: UserRole = Field(UserRole.CASHIER, description="User role (ADMIN or CASHIER)")
@@ -52,8 +52,11 @@ class UserCreate(BaseModel):
 
     @field_validator("password")
     @classmethod
-    def validate_password_strength(cls, v: str) -> str:
+    def validate_password_strength(cls, v: str | None) -> str | None:
         """Ensure password meets minimum requirements."""
+        if v is None:
+            return None
+
         if len(v) < 8:
             raise ValueError("Password must be at least 8 characters")
 
