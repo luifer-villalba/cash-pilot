@@ -1,4 +1,24 @@
 # File: Dockerfile
+
+# ─── Stage 1: Build CSS ───
+FROM node:20-alpine AS css-builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy config and source files
+COPY tailwind.config.js postcss.config.js ./
+COPY static/css/input.css ./static/css/
+COPY templates ./templates
+COPY static/js ./static/js
+
+# Build CSS
+RUN npm run build:css
+
+# ─── Stage 2: Python App ───
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -20,6 +40,9 @@ COPY alembic/ ./alembic/
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY translations/ ./translations/
+
+# Copy compiled CSS from Node stage
+COPY --from=css-builder /app/static/css/main.css /app/static/css/
 
 RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -e .

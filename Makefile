@@ -31,12 +31,15 @@ clean-branches:
 
 # ---------- Run ----------
 run dev:
+	@echo "🎨 Building CSS..."
+	@npm run build:css || echo "⚠️  CSS build failed, continuing..."
 	@echo "🚀 Starting development environment..."
 	docker compose down --remove-orphans
 	docker compose up -d db app
 	@echo "✅ Services started (detached mode)"
 	@echo "➡️  Dashboard: http://127.0.0.1:8000/"
 	@echo "➡️  Swagger docs: http://127.0.0.1:8000/docs"
+	@echo "💡 Tip: Run 'make watch-css' in another terminal for live CSS updates"
 
 reload:
 	@echo "♻️  Forcing manual reload..."
@@ -150,3 +153,13 @@ i18n-compile:
 i18n-update:
 	@echo "🌍 Updating Spanish translations from extracted strings..."
 	docker compose exec app pybabel update -i translations/messages.pot -d translations -l es_PY
+
+# ---------- CSS Build ----------
+build-css:
+	@echo "🎨 Building CSS..."
+	npm run build:css
+	@echo "✅ CSS built: static/css/main.css"
+
+watch-css:
+	@echo "👀 Watching CSS for changes..."
+	npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch
