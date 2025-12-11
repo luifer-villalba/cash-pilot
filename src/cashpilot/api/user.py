@@ -36,10 +36,12 @@ class AssignBusinessesRequest(BaseModel):
 
     business_ids: list[UUID]
 
+
 def generate_password(length: int = 12) -> str:
     """Generate a secure random password."""
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
     return "".join(secrets.choice(alphabet) for _ in range(length))
+
 
 @router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_user(
@@ -101,8 +103,7 @@ async def create_user(
         "is_active": user_obj.is_active,
         "created_at": user_obj.created_at.isoformat(),
         "businesses": [
-            {"id": str(b.id), "name": b.name, "is_active": b.is_active}
-            for b in user_obj.businesses
+            {"id": str(b.id), "name": b.name, "is_active": b.is_active} for b in user_obj.businesses
         ],
         "generated_password": generated_password,  # Only present if auto-generated
     }
