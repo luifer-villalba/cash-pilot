@@ -10,7 +10,8 @@
         <div class="flex gap-2">
             {% if current_user.role == 'ADMIN' %}
             <button onclick="openCreateUserModal()" class="btn btn-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 {{ _('Create User') }}
@@ -66,13 +67,15 @@
             <div class="grid grid-cols-2 gap-4">
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text font-semibold">{{ _('First Name') }} <span class="text-error">*</span></span>
+                        <span class="label-text font-semibold">{{ _('First Name') }} <span
+                                class="text-error">*</span></span>
                     </label>
                     <input type="text" id="create-first-name" class="input input-bordered w-full" required>
                 </div>
                 <div class="form-control">
                     <label class="label">
-                        <span class="label-text font-semibold">{{ _('Last Name') }} <span class="text-error">*</span></span>
+                        <span class="label-text font-semibold">{{ _('Last Name') }} <span
+                                class="text-error">*</span></span>
                     </label>
                     <input type="text" id="create-last-name" class="input input-bordered w-full" required>
                 </div>
@@ -104,7 +107,8 @@
                 </label>
                 <div class="space-y-3">
                     <label class="label cursor-pointer justify-start gap-3 bg-base-200 p-3 rounded-lg">
-                        <input type="radio" name="create-password-type" value="generate" class="radio radio-primary" checked
+                        <input type="radio" name="create-password-type" value="generate" class="radio radio-primary"
+                               checked
                                onchange="toggleCreatePasswordInput(false)">
                         <span class="label-text">{{ _('Generate secure password') }}</span>
                     </label>
@@ -135,7 +139,8 @@
         <div class="modal-action">
             <button type="button" class="btn btn-ghost" onclick="closeCreateUserModal()">{{ _('Cancel') }}</button>
             <button type="button" class="btn btn-primary" onclick="submitCreateUser()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 {{ _('Create User') }}
@@ -196,8 +201,10 @@
         <h3 class="font-bold text-lg mb-4">{{ _('Password Reset Successful') }}</h3>
 
         <div class="alert alert-success mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <span>{{ _('New password generated for') }} <strong id="pwd-username"></strong></span>
         </div>
@@ -207,21 +214,25 @@
                 <span class="label-text font-semibold">{{ _('New Password') }}</span>
             </label>
             <div class="join w-full">
-                <input type="text" id="generated-password-display" class="input input-bordered join-item flex-1 font-mono" readonly>
-                <button type="button" class="btn btn-primary join-item" onclick="copyPassword()">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                <input type="text" id="generated-password-display"
+                       class="input input-bordered join-item flex-1 font-mono" readonly>
+                <button type="button" class="btn btn-primary join-item" onclick="copyPassword(event)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                     </svg>
                     {{ _('Copy') }}
                 </button>
             </div>
             <label class="label">
-                <span class="label-text-alt text-warning">{{ _('⚠️ Save this password - it won\'t be shown again') }}</span>
+                <span class="label-text-alt">{{ _('⚠️ Save this password - it won\'t be shown again') }}</span>
             </label>
         </div>
 
         <div class="modal-action">
-            <button type="button" class="btn btn-primary" onclick="closeGeneratedPasswordModal()">{{ _('Done') }}</button>
+            <button type="button" class="btn btn-primary" onclick="closeGeneratedPasswordModal()">{{ _('Done') }}
+            </button>
         </div>
     </div>
 </dialog>
@@ -246,14 +257,17 @@
                 <span class="label-text font-semibold">{{ _('Select Businesses') }}</span>
                 <div class="flex gap-2">
                     <button type="button" class="btn btn-xs btn-ghost" onclick="selectAllBusinesses()">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
                         {{ _('All') }}
                     </button>
                     <button type="button" class="btn btn-xs btn-ghost" onclick="deselectAllBusinesses()">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                         {{ _('None') }}
                     </button>
@@ -271,9 +285,11 @@
         </div>
 
         <div class="modal-action">
-            <button type="button" class="btn btn-ghost" onclick="closeAssignBusinessesModal()">{{ _('Cancel') }}</button>
+            <button type="button" class="btn btn-ghost" onclick="closeAssignBusinessesModal()">{{ _('Cancel') }}
+            </button>
             <button type="button" class="btn btn-primary" onclick="submitAssignBusinesses()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
                 {{ _('Save') }}
@@ -338,128 +354,137 @@
                 const isCurrentUser = user.email === '{{ current_user.email }}';
 
                 return `
-            <tr>
-                <td>
-                    <div class="flex items-center gap-2">
-                        <span class="font-medium">${user.username}</span>
-                        ${user.role === 'ADMIN'
-                    ? `<span class="badge badge-sm bg-purple-100 text-purple-700 border-purple-300">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                </svg>
-                                ${i18n.admin}
-                            </span>`
-                    : ''
-                }
-                        ${isCurrentUser ? '<span class="badge badge-sm badge-info">(Tú)</span>' : ''}
-                    </div>
-                </td>
-                <td class="text-gray-600">${user.email || '-'}</td>
-                <td>
+        <tr>
+            <td>
+                <div class="flex items-center gap-2">
+                    <span class="font-medium">${user.username}</span>
                     ${user.role === 'ADMIN'
-                    ? `<span class="badge bg-purple-500 text-white border-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    ? `<span class="badge badge-sm bg-purple-100 text-purple-700 border-purple-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
-                            ADMIN
+                            ${i18n.admin}
                         </span>`
+                    : ''
+                }
+                    ${isCurrentUser ? '<span class="badge badge-sm badge-info">(Tú)</span>' : ''}
+                </div>
+            </td>
+            <td class="text-gray-600">${user.email || '-'}</td>
+            <td>
+                ${user.role === 'ADMIN'
+                    ? `<span class="badge bg-purple-500 text-white border-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                        ADMIN
+                    </span>`
                     : `<span class="badge bg-blue-100 text-blue-700 border-blue-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            CASHIER
-                        </span>`
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        CASHIER
+                    </span>`
                 }
-                </td>
-                <td>
-                    ${user.is_active
+            </td>
+            <td>
+                ${user.is_active
                     ? `<span class="badge bg-green-100 text-green-700 border-green-300 gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            ${i18n.active}
-                        </span>`
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ${i18n.active}
+                    </span>`
                     : `<span class="badge bg-red-100 text-red-700 border-red-300 gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ${i18n.disabled}
+                    </span>`
+                }
+            </td>
+            <td>
+                <div class="flex flex-col gap-1 max-w-xs">
+                    ${user.businesses.length > 0
+                    ? user.businesses.map(b => `
+                            <span class="badge badge-sm gap-1 w-full justify-between ${b.is_active ? 'bg-gray-100 text-gray-700 border-gray-300' : 'bg-orange-100 text-orange-700 border-orange-300'}">
+                                <span class="truncate flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                    ${b.name}
+                                </span>
+                                <button
+                                    class="btn btn-xs btn-ghost btn-circle p-0 h-4 w-4 min-h-0 flex-shrink-0 hover:bg-red-100 hover:text-red-600"
+                                    onclick="unassignBusiness('${user.id}', '${b.id}')"
+                                    title="Remove"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </span>
+                        `).join('')
+                    : `<span class="text-gray-400 text-sm italic flex items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                             </svg>
-                            ${i18n.disabled}
+                            ${i18n.noBusinesses}
                         </span>`
                 }
-                </td>
-                <td>
-                    <div class="flex flex-col gap-1 max-w-xs">
-                        ${user.businesses.length > 0
-                    ? user.businesses.map(b => `
-                                <span class="badge badge-sm gap-1 w-full justify-between ${b.is_active ? 'bg-gray-100 text-gray-700 border-gray-300' : 'bg-orange-100 text-orange-700 border-orange-300'}">
-                                    <span class="truncate flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                        </svg>
-                                        ${b.name}
-                                    </span>
-                                    <button
-                                        class="btn btn-xs btn-ghost btn-circle p-0 h-4 w-4 min-h-0 flex-shrink-0 hover:bg-red-100 hover:text-red-600"
-                                        onclick="unassignBusiness('${user.id}', '${b.id}')"
-                                        title="Remove"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </span>
-                            `).join('')
-                    : `<span class="text-gray-400 text-sm italic flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                                </svg>
-                                ${i18n.noBusinesses}
-                            </span>`
-                }
-                    </div>
-                </td>
-                <td class="text-gray-600">${new Date(user.created_at).toLocaleDateString()}</td>
-                <td class="text-center">
-                    <div class="flex gap-2 justify-center">
-                        <button
-                            class="btn btn-sm btn-ghost tooltip tooltip-top hover:bg-gray-100"
-                            data-tip="${i18n.resetPassword}"
-                            onclick="openResetPasswordModal('${user.id}', '${user.username}')"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                            </svg>
-                        </button>
-                        <button
-                            class="btn btn-sm btn-primary tooltip tooltip-top"
-                            data-tip="${i18n.assignBusinesses}"
-                            onclick="openAssignBusinessesModal('${user.id}', '${user.username}', ${JSON.stringify(user.businesses).replace(/"/g, '&quot;')})"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                            </svg>
-                        </button>
-                        ${isCurrentUser
+                </div>
+            </td>
+            <td class="text-gray-600">${new Date(user.created_at).toLocaleDateString()}</td>
+            <td class="text-center">
+                <div class="flex gap-2 justify-center">
+                    <button
+                        class="btn btn-sm btn-ghost tooltip tooltip-top hover:bg-gray-100"
+                        data-tip="${i18n.resetPassword}"
+                        onclick="openResetPasswordModal('${user.id}', '${user.username}')"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                        </svg>
+                    </button>
+                    <button
+                        class="btn btn-sm btn-primary tooltip tooltip-top"
+                        data-tip="${i18n.assignBusinesses}"
+                        onclick="openAssignBusinessesModal('${user.id}', '${user.username}', ${JSON.stringify(user.businesses).replace(/"/g, '&quot;')})"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </button>
+                    ${isCurrentUser
                     ? `<button class="btn btn-sm btn-disabled tooltip tooltip-top" data-tip="${i18n.cannotDisableSelf}" disabled>
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                </svg>
-                            </button>`
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </button>`
                     : `<button
-                                class="btn btn-sm ${user.is_active ? 'btn-warning hover:btn-error' : 'btn-success'} tooltip tooltip-top"
-                                data-tip="${user.is_active ? i18n.disable : i18n.enable}"
-                                onclick="toggleUserActive('${user.id}', ${!user.is_active})"
-                            >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${user.is_active ? 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' : 'M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z'}" />
-                                </svg>
-                            </button>`
+                            class="btn btn-sm ${user.is_active ? 'btn-warning hover:btn-error' : 'btn-success'} tooltip tooltip-top"
+                            data-tip="${user.is_active ? i18n.disable : i18n.enable}"
+                            onclick="toggleUserActive('${user.id}', ${!user.is_active})"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${user.is_active ? 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' : 'M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z'}" />
+                            </svg>
+                        </button>`
                 }
-                    </div>
-                </td>
-            </tr>
-        `;
+                </div>
+            </td>
+        </tr>
+    `;
             }).join('');
+
+            // Reinitialize DaisyUI tooltips after DOM update
+            setTimeout(() => {
+                document.querySelectorAll('[data-tip]').forEach(el => {
+                    if (!el.classList.contains('tooltip')) {
+                        el.classList.add('tooltip');
+                    }
+                });
+            }, 50);
         } catch (error) {
             console.error('Failed to load users:', error);
             alert(i18n.loadingError);
@@ -525,24 +550,31 @@
         const businessIds = Array.from(checkboxes).map(cb => cb.value);
 
         try {
-            const response = await fetch('/api/users', {
+            // Send everything in body, not query params
+            const response = await fetch('/users', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    email,
-                    password: isGenerate ? null : customPassword,
-                    first_name: firstName,
-                    last_name: lastName,
-                    role,
+                    user: {
+                        email,
+                        password: isGenerate ? null : customPassword,
+                        first_name: firstName,
+                        last_name: lastName,
+                        role
+                    },
                     business_ids: businessIds.length > 0 ? businessIds : null
                 })
             });
 
             if (!response.ok) {
                 const error = await response.json();
+                console.error('Full error:', error);
+                console.error('Error detail:', JSON.stringify(error, null, 2));
+
                 if (error.detail === 'Email already registered') {
                     alert(i18n.emailAlreadyExists);
                 } else {
+                    alert(`Error: ${JSON.stringify(error.detail || error)}`);
                     throw new Error(error.detail || 'Failed to create user');
                 }
                 return;
@@ -550,7 +582,7 @@
 
             const data = await response.json();
 
-            if (isGenerate && data.generated_password) {
+            if (data.generated_password) {
                 document.getElementById('pwd-username').textContent = `${firstName} ${lastName}`;
                 document.getElementById('generated-password-display').value = data.generated_password;
                 document.getElementById('generated-password-modal').showModal();
@@ -732,7 +764,7 @@
         document.getElementById('generated-password-modal').close();
     }
 
-    async function copyPassword() {
+    async function copyPassword(event) {
         const input = document.getElementById('generated-password-display');
         await navigator.clipboard.writeText(input.value);
 
@@ -764,5 +796,13 @@
             alert(i18n.operationError);
         }
     }
+
+    window.addEventListener('error', (e) => {
+        // Suppress DaisyUI tooltip initialization errors
+        if (e.message && e.message.includes('dataset')) {
+            e.preventDefault();
+            return true;
+        }
+    });
 </script>
 {% endblock %}
