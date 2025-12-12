@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import Numeric, and_, func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
@@ -204,96 +204,92 @@ async def get_dashboard_stats(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
+    # Build filters (reuse logic from sessions table)
     filters = await _build_session_filters(
         from_date, to_date, cashier_name, business_id, status, current_user
     )
-    filters.append(~CashSession.is_deleted)
 
-    if business_id:
-        selected_businesses = 1
-    else:
-        result = await db.execute(select(func.count(Business.id)).where(Business.is_active))
-        selected_businesses = result.scalar() or 0
+    # Get ALL filtered sessions for session counts (open/closed/flagged)
+    stmt_all = select(CashSession).where(and_(*filters))
+    result_all = await db.execute(stmt_all)
+    all_sessions = list(result_all.scalars().all())
 
-    active_sessions = await db.execute(
-        select(func.count(CashSession.id)).where(and_(CashSession.status == "OPEN", *filters))
+    # Count by status
+    sessions_open = sum(1 for s in all_sessions if s.status == "OPEN")
+    sessions_closed = sum(1 for s in all_sessions if s.status == "CLOSED")
+    sessions_need_review = sum(1 for s in all_sessions if s.flagged)
+
+    # Get closed sessions only for financial aggregations
+    closed_sessions = [s for s in all_sessions if s.status == "CLOSED"]
+
+    # Calculate aggregations from closed sessions
+    cash_sales_val = sum(session.cash_sales for session in closed_sessions)
+    credit_card_val = sum(session.credit_card_total for session in closed_sessions)
+    debit_card_val = sum(session.debit_card_total for session in closed_sessions)
+    bank_val = sum(session.bank_transfer_total for session in closed_sessions)
+    expenses_val = sum(session.expenses for session in closed_sessions)
+    credit_sales_val = sum(
+        session.credit_sales_total or Decimal("0") for session in closed_sessions
+    )
+    credit_payments_val = sum(
+        session.credit_payments_collected or Decimal("0") for session in closed_sessions
     )
 
-    cash_sales = await db.execute(
-        select(
-            func.sum(
-                (
-                    CashSession.final_cash + CashSession.envelope_amount - CashSession.initial_cash
-                ).cast(Numeric(12, 2))
-            )
-        ).where(and_(CashSession.status == "CLOSED", *filters))
-    )
+    # Card #1: Cash Sales
+    # Already calculated as cash_sales_val
 
-    credit_card = await db.execute(
-        select(func.sum(CashSession.credit_card_total.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters)
-        )
-    )
+    # Card #2: Bank Transfers
+    # Already calculated as bank_val
 
-    debit_card = await db.execute(
-        select(func.sum(CashSession.debit_card_total.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters)
-        )
-    )
+    # Card #3: Total Expenses
+    total_expenses = expenses_val
 
-    bank_transfer = await db.execute(
-        select(func.sum(CashSession.bank_transfer_total.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters)
-        )
-    )
+    # Card #4: Cash Profit = cash_sales + bank - expenses
+    cash_profit = cash_sales_val + bank_val - expenses_val
 
-    expenses = await db.execute(
-        select(func.sum(CashSession.expenses.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters)
-        )
-    )
+    # Card #5: Total Sales = cash + cards + bank
+    total_sales = cash_sales_val + credit_card_val + debit_card_val + bank_val
 
-    flagged_count = await db.execute(
-        select(func.count(CashSession.id)).where(and_(CashSession.flagged is True, *filters))
-    )
+    # Card #6: Card Payments (for collapsible section)
+    card_payments_total = credit_card_val + debit_card_val
 
-    envelope = await db.execute(
-        select(func.sum(CashSession.envelope_amount.cast(Numeric(12, 2)))).where(
-            and_(CashSession.status == "CLOSED", *filters)
-        )
-    )
+    # Card #7: Credit Sales (for collapsible section)
+    # Already calculated as credit_sales_val
 
-    cash_sales_val = cash_sales.scalar() or Decimal("0.00")
-    credit_card_val = credit_card.scalar() or Decimal("0.00")
-    debit_card_val = debit_card.scalar() or Decimal("0.00")
-    bank_transfer_val = bank_transfer.scalar() or Decimal("0.00")
-    expenses_val = expenses.scalar() or Decimal("0.00")
-    total_ingresos = cash_sales_val + credit_card_val + debit_card_val + bank_transfer_val
+    # Card #8: Credit Payments (for collapsible section)
+    # Already calculated as credit_payments_val
 
-    # Calculate payment mix %
-    cash_pct = (cash_sales_val / total_ingresos * 100) if total_ingresos > 0 else 0
-    card_pct = (
-        ((credit_card_val + debit_card_val) / total_ingresos * 100) if total_ingresos > 0 else 0
-    )
-    bank_pct = (bank_transfer_val / total_ingresos * 100) if total_ingresos > 0 else 0
+    # Card #9: Payment Mix % (for collapsible section)
+    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val
+    cash_pct = (cash_sales_val / total_income * 100) if total_income > 0 else 0
+    card_pct = (card_payments_total / total_income * 100) if total_income > 0 else 0
+    bank_pct = (bank_val / total_income * 100) if total_income > 0 else 0
+
+    # Card #10: Sessions Status (for collapsible section)
+    # Already calculated: sessions_open, sessions_closed, sessions_need_review
 
     return templates.TemplateResponse(
         "partials/stats_row.html",
         {
             "request": request,
-            "selected_businesses": selected_businesses,
-            "active_sessions": active_sessions.scalar() or 0,
+            # Card 1-5 (always visible)
             "cash_sales": cash_sales_val,
-            "envelope_total": envelope.scalar() or Decimal("0.00"),
+            "bank_transfer_total": bank_val,
+            "total_expenses": total_expenses,
+            "cash_profit": cash_profit,
+            "total_sales": total_sales,
+            # Card 6-10 (collapsible)
+            "card_payments_total": card_payments_total,
             "credit_card_total": credit_card_val,
             "debit_card_total": debit_card_val,
-            "bank_transfer_total": bank_transfer_val,
-            "expenses": expenses_val,
-            "total_ingresos": total_ingresos,
-            "flagged_count": flagged_count.scalar() or 0,
+            "credit_sales_total": credit_sales_val,
+            "credit_payments_collected": credit_payments_val,
             "cash_pct": cash_pct,
             "card_pct": card_pct,
             "bank_pct": bank_pct,
+            "sessions_open": sessions_open,
+            "sessions_closed": sessions_closed,
+            "sessions_need_review": sessions_need_review,
             "locale": locale,
             "_": _,
         },
