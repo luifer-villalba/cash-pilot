@@ -31,6 +31,8 @@ clean-branches:
 
 # ---------- Run ----------
 run dev:
+	@echo "🎨 Building CSS..."
+	@docker compose run --rm css-builder
 	@echo "🚀 Starting development environment..."
 	docker compose down --remove-orphans
 	docker compose up -d db app
@@ -150,3 +152,13 @@ i18n-compile:
 i18n-update:
 	@echo "🌍 Updating Spanish translations from extracted strings..."
 	docker compose exec app pybabel update -i translations/messages.pot -d translations -l es_PY
+
+# ---------- CSS Build ----------
+build-css:
+	@echo "🎨 Building CSS..."
+	docker compose run --rm css-builder
+	@echo "✅ CSS built: static/css/main.css"
+
+watch-css:
+	@echo "👀 Watching CSS for changes..."
+	docker compose run --rm css-builder npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch
