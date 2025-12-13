@@ -760,9 +760,8 @@ msgid "Create one"
 msgstr "Crear uno"
 
 #: /app/templates/partials/stats_row.html:6
-#, fuzzy
 msgid "TOTAL SALES"
-msgstr "Ventas Totales"
+msgstr "VENTAS TOTALES"
 
 #: /app/templates/partials/stats_row.html:13
 #: /app/templates/partials/stats_row.html:21
@@ -770,7 +769,7 @@ msgstr "Ventas Totales"
 #: /app/templates/sessions/session_detail.html:314
 #: /app/templates/sessions/session_detail.html:341
 msgid "Cash Sales"
-msgstr "Efectivo"
+msgstr "Ventas al Contado"
 
 #: /app/templates/partials/stats_row.html:13
 #: /app/templates/sessions/edit_closed_session.html:287
@@ -779,13 +778,9 @@ msgstr "Efectivo"
 msgid "Bank Transfer"
 msgstr "Transferencia Bancaria"
 
-#: /app/templates/partials/stats_row.html:26
-msgid "Ventas al Contado"
-msgstr ""
-
 #: /app/templates/partials/stats_row.html:28
 msgid "Register"
-msgstr ""
+msgstr "Dif. Dinero en Caja"
 
 #: /app/templates/partials/stats_row.html:28
 #: /app/templates/sessions/edit_closed_session.html:272
@@ -796,11 +791,7 @@ msgstr "Sobre"
 #: /app/templates/partials/stats_row.html:35
 #: /app/templates/sessions/session_detail.html:320
 msgid "Card Payments"
-msgstr "Pagos con Tarjetas"
-
-#: /app/templates/partials/stats_row.html:40
-msgid "Ventas Con Tarjeta"
-msgstr ""
+msgstr "Ventas con Tarjeta"
 
 #: /app/templates/partials/stats_row.html:42
 #: /app/templates/sessions/session_detail.html:327
@@ -817,7 +808,7 @@ msgstr "Débito"
 #: /app/templates/sessions/session_detail.html:234
 #: /app/templates/sessions/session_detail.html:361
 msgid "Credit Sales"
-msgstr "Ventas a crédito"
+msgstr "Ventas a Crédito"
 
 #: /app/templates/partials/stats_row.html:54
 msgid "Ventas a Crédito"
@@ -828,9 +819,8 @@ msgid "Sales on credit"
 msgstr "Ventas a crédito"
 
 #: /app/templates/partials/stats_row.html:63
-#, fuzzy
 msgid "Collections"
-msgstr "Acciones"
+msgstr "Cobranzas"
 
 #: /app/templates/partials/stats_row.html:68
 msgid "Cobranzas"
@@ -869,9 +859,8 @@ msgid "Business expenses"
 msgstr "Gastos del negocio"
 
 #: /app/templates/partials/stats_row.html:113
-#, fuzzy
 msgid "Cash outflows"
-msgstr "Flujo de efectivo"
+msgstr "Salida de efectivo"
 
 #: /app/templates/partials/stats_row.html:120
 #: /app/templates/sessions/session_detail.html:307
@@ -896,9 +885,8 @@ msgid "Sessions Status"
 msgstr "Estado de Sesiones"
 
 #: /app/templates/partials/stats_row.html:146
-#, fuzzy
 msgid "Active sessions"
-msgstr "Filtrar Sesiones"
+msgstr "Sesiones Activas"
 
 #: /app/templates/partials/stats_row.html:161
 msgid "Less Details"
@@ -956,7 +944,7 @@ msgstr "Seguimiento de Crédito (Opcional)"
 #: /app/templates/sessions/close_session.html:135
 #: /app/templates/sessions/edit_open_session.html:74
 msgid "Credit Sales (Gs)"
-msgstr "Ventas a crédito (Gs)"
+msgstr "Ventas a Crédito (Gs)"
 
 #: /app/templates/sessions/close_session.html:146
 #: /app/templates/sessions/edit_closed_session.html:163
@@ -1527,3 +1515,5 @@ msgstr "¿Remover marca de esta sesión?"
 #~ msgid "Payment Mix"
 #~ msgstr "Mix de Pagos"
 
+msgid "Amount of money on credit"
+msgstr "Monto de créditos entrantes"

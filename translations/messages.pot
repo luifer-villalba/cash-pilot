@@ -1471,3 +1471,5 @@ msgstr ""
 msgid "Remove flag from this session?"
 msgstr ""
 
+msgid "Amount of money on credit"
+msgstr ""
