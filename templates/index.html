@@ -65,7 +65,7 @@
                 <!-- Business Quick Filter -->
                 <div class="form-control sm:ml-auto">
                     <select id="business_quick" class="select select-sm select-bordered w-full sm:w-56">
-                        <option value="">🏢 {{ _('All Businesses') }}</option>
+                        <option value="">{{ _('All Businesses') }}</option>
                         {% for biz in businesses %}
                         <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}</option>
                         {% endfor %}
@@ -75,6 +75,9 @@
 
             <!-- Collapsible Filter Form (Hidden by default, controlled by toggle) -->
             <form id="filter-form" class="hidden transition-all duration-300 pt-2">
+                <!-- Hidden business_id input -->
+                <input type="hidden" id="business_id" name="business_id" value="{{ current_filters.business_id or '' }}">
+                
                 <!-- Single Row: All Filters -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-end">
                     <!-- From Date -->
