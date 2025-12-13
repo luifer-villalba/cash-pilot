@@ -6,35 +6,23 @@
 {% block content %}
 <div class="space-y-8">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-            <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Dashboard') }}</h1>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4">
+        <div class="flex-1">
+            <h1 class="text-3xl md:text-4xl font-bold text-base-content">{{ _('Dashboard') }}</h1>
             <p class="text-sm text-base-content/60 mt-1">{{ _('Monitor cash sessions and reconciliation') }}</p>
         </div>
 
-        <!-- REPLACE the single button with this div containing both buttons: -->
-        <div class="flex gap-2 w-full sm:w-auto">
-            {% if current_user.role == 'ADMIN' %}
-            <a href="/admin/users-page" class="btn btn-ghost gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-                {{ _('Manage Users') }}
-            </a>
-            {% endif %}
-            <a href="/sessions/create" class="btn btn-primary gap-2 w-full sm:w-auto">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                {{ _('New Session') }}
-            </a>
-        </div>
+        <!-- Primary Action Button -->
+        <a href="/sessions/create" class="btn btn-primary gap-2 w-full sm:w-auto shadow-lg hover:shadow-xl transition-shadow">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            {{ _('New Session') }}
+        </a>
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md transition-shadow">
         <div class="p-4 md:p-6 space-y-6">
             <!-- Filter Header -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -50,7 +38,7 @@
                 <button
                         type="button"
                         id="filter-toggle"
-                        class="btn btn-ghost btn-sm gap-2"
+                        class="btn btn-sm btn-ghost gap-2 hover:bg-base-200"
                         aria-label="Toggle filters"
                         aria-expanded="false"
                 >
@@ -63,37 +51,49 @@
                 </button>
             </div>
 
-            <!-- Preset Buttons (Always Visible) -->
-            <div class="flex flex-wrap gap-2 pb-4 border-b border-base-200">
-                <button type="button" class="btn btn-sm btn-outline gap-1" data-preset="today">
-                    <span>📅</span>
-                    <span>{{ _('Today') }}</span>
-                </button>
-                <button type="button" class="btn btn-sm btn-outline gap-1" data-preset="week">
-                    <span>📆</span>
-                    <span>{{ _('This Week') }}</span>
-                </button>
-                <button type="button" class="btn btn-sm btn-outline gap-1" data-preset="month">
-                    <span>📊</span>
-                    <span>{{ _('This Month') }}</span>
-                </button>
+            <!-- Preset Buttons + Business Selector (Always Visible) -->
+            <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-start sm:items-center">
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="today">
+                        <span>📅</span>
+                        <span>{{ _('Today') }}</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="week">
+                        <span>📆</span>
+                        <span>{{ _('This Week') }}</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="month">
+                        <span>📊</span>
+                        <span>{{ _('This Month') }}</span>
+                    </button>
+                </div>
+                
+                <!-- Business Quick Filter -->
+                <div class="form-control sm:ml-auto">
+                    <select id="business_quick" class="select select-sm select-bordered w-full sm:w-56">
+                        <option value="">🏢 {{ _('All Businesses') }}</option>
+                        {% for biz in businesses %}
+                        <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
             <!-- Collapsible Filter Form (Hidden by default, controlled by toggle) -->
-            <form id="filter-form" class="space-y-4 hidden transition-all duration-300">
-                <!-- Date & Status Row -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <form id="filter-form" class="hidden transition-all duration-300 pt-2">
+                <!-- Single Row: All Filters -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-end">
                     <!-- From Date -->
                     <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('From Date') }}</span>
+                        <label class="label py-1 px-0">
+                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('From Date') }}</span>
                         </label>
                         <div class="relative">
                             <input
                                     type="date"
                                     id="from_date"
                                     name="from_date"
-                                    class="input input-sm input-bordered w-full pr-10"
+                                    class="input input-sm input-bordered w-full pr-10 h-9"
                                     value="{{ current_filters.from_date }}"
                             />
                             <button type="button"
@@ -105,15 +105,15 @@
 
                     <!-- To Date -->
                     <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('To Date') }}</span>
+                        <label class="label py-1 px-0">
+                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('To Date') }}</span>
                         </label>
                         <div class="relative">
                             <input
                                     type="date"
                                     id="to_date"
                                     name="to_date"
-                                    class="input input-sm input-bordered w-full pr-10"
+                                    class="input input-sm input-bordered w-full pr-10 h-9"
                                     value="{{ current_filters.to_date }}"
                             />
                             <button type="button"
@@ -125,11 +125,11 @@
 
                     <!-- Status -->
                     <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Status') }}</span>
+                        <label class="label py-1 px-0">
+                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('Status') }}</span>
                         </label>
                         <div class="relative">
-                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10">
+                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10 h-9">
                                 <option value="">{{ _('All') }}</option>
                                 <option value="OPEN" {% if current_filters.status=='OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
                                 <option value="CLOSED" {% if current_filters.status=='CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
@@ -141,40 +141,17 @@
                         </div>
                     </div>
 
-                    <!-- Business -->
+                    <!-- Cashier Name -->
                     <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
-                        </label>
-                        <div class="relative">
-                            <select id="business_id" name="business_id"
-                                    class="select select-sm select-bordered w-full pr-10">
-                                <option value="">{{ _('All') }}</option>
-                                {% for biz in businesses %}
-                                <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            <button type="button"
-                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
-                                    data-field="business_id">✕
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cashier Name Row -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Cashier Name') }}</span>
+                        <label class="label py-1 px-0">
+                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('Cashier Name') }}</span>
                         </label>
                         <div class="relative">
                             <input
                                     type="text"
                                     id="cashier_name"
                                     name="cashier_name"
-                                    class="input input-sm input-bordered w-full pr-10"
+                                    class="input input-sm input-bordered w-full pr-10 h-9"
                                     placeholder="{{ _('Search...') }}"
                                     value="{{ current_filters.cashier_name or '' }}"
                             />
@@ -186,7 +163,7 @@
                     </div>
 
                     <!-- Clear All Button -->
-                    <a href="/" class="btn btn-outline btn-sm w-full">{{ _('Clear All') }}</a>
+                    <a href="/" class="btn btn-outline btn-sm px-4 h-9 hover:btn-error transition-colors">{{ _('Clear All') }}</a>
                 </div>
             </form>
         </div>
@@ -307,6 +284,12 @@
 
     // Filter form change handler
     document.getElementById('filter-form').addEventListener('change', applyFilters);
+
+    // Business quick filter handler
+    document.getElementById('business_quick').addEventListener('change', function() {
+        document.getElementById('business_id').value = this.value;
+        applyFilters();
+    });
 
     // Filter field clear handlers
     document.querySelectorAll('.clear-filter-btn').forEach(btn => {

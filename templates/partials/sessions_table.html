@@ -12,13 +12,14 @@
             <table class="table table-sm w-full">
                 <thead>
                     <tr class="border-b border-base-300">
-                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Date') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Status') }}</th>
                         <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cashier') }}</th>
                         <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Business') }}</th>
-                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Status') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Initial Cash') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Final Cash') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Envelope') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Date & Time') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Received') }} → {{ _('Handed') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cash Sales') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Transfer') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cards') }}</th>
                         <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Sales Total') }}</th>
                         <th class="text-center text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Actions') }}</th>
                     </tr>
@@ -26,9 +27,7 @@
                 <tbody class="divide-y divide-base-200">
                     {% for session in sessions %}
                     <tr class="transition-colors{% if session.status == 'CLOSED' and session.flagged %} border-l-4 border-error bg-error/10 hover:bg-error/20{% else %} hover:bg-base-50{% endif %}">
-                        <td class="text-sm">{{ session.session_date.strftime('%d/%m/%Y') }}</td>
-                        <td class="font-semibold text-sm">{{ session.cashier.display_name }}</td>
-                        <td class="text-sm">{{ session.business.name }}</td>
+                        <!-- Status -->
                         <td>
                             {% if session.status == 'OPEN' %}
                                 <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-warning/20 text-warning border border-warning/30 text-xs font-semibold">
@@ -51,10 +50,40 @@
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="text-right text-sm">Gs {{ session.initial_cash | format_currency_py }}</td>
-                        <td class="text-right text-sm">Gs {{ session.final_cash | format_currency_py if session.final_cash else '—' }}</td>
-                        <td class="text-right text-sm">Gs {{ session.envelope_amount | format_currency_py }}</td>
-                        <td class="text-right text-sm font-semibold">Gs {{ (session.cash_sales + session.credit_card_total + session.debit_card_total + session.bank_transfer_total) | format_currency_py }}</td>
+                        <!-- Cashier -->
+                        <td class="font-semibold text-sm">{{ session.cashier.display_name }}</td>
+                        <!-- Business -->
+                        <td class="text-sm">{{ session.business.name }}</td>
+                        <!-- Date & Time -->
+                        <td class="text-xs text-base-content/70 font-mono">
+                            <div>{{ session.session_date.strftime('%d/%m/%Y') }}</div>
+                            <div class="opacity-80">
+                                {{ session.opened_time.strftime('%H:%M') }}
+                                {% if session.closed_time %}
+                                    → {{ session.closed_time.strftime('%H:%M') }}
+                                {% else %}
+                                    → <span class="text-warning">{{ _('Open') }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <!-- Initial → Final Cash -->
+                        <td class="text-right text-sm font-semibold">
+                            <span class="text-base-content/80">Gs {{ session.initial_cash | format_currency_py }}</span>
+                            <span class="text-base-content/50 mx-1">→</span>
+                            {% if session.final_cash %}
+                                <span class="text-base-content/80">Gs {{ session.final_cash | format_currency_py }}</span>
+                            {% else %}
+                                <span class="text-warning italic">{{ _('Active') }}</span>
+                            {% endif %}
+                        </td>
+                        <!-- Cash Sales -->
+                        <td class="text-right text-sm">Gs {{ session.cash_sales | format_currency_py }}</td>
+                        <!-- Bank Transfer -->
+                        <td class="text-right text-sm">Gs {{ session.bank_transfer_total | format_currency_py }}</td>
+                        <!-- Card Sales -->
+                        <td class="text-right text-sm">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</td>
+                        <!-- Sales Total -->
+                        <td class="text-right text-sm font-bold text-primary">Gs {{ (session.cash_sales + session.credit_card_total + session.debit_card_total + session.bank_transfer_total) | format_currency_py }}</td>
                         <td class="text-center">
                             <div class="flex gap-1 justify-center">
                                 <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs btn-circle" title="{{ _('View details') }}">
