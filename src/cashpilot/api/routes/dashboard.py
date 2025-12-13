@@ -60,7 +60,9 @@ async def dashboard(
         db, filters, page=page, per_page=10
     )
 
-    stmt_active = select(func.count(CashSession.id)).where(CashSession.status == "OPEN")
+    stmt_active = select(func.count(CashSession.id)).where(
+        CashSession.status == "OPEN", ~CashSession.is_deleted
+    )
     result_active = await db.execute(stmt_active)
     active_count = result_active.scalar() or 0
 
@@ -79,7 +81,11 @@ async def dashboard(
             + CashSession.bank_transfer_total
             - CashSession.initial_cash
         )
-    ).where(CashSession.session_date == today, CashSession.status == "CLOSED")
+    ).where(
+        CashSession.session_date == today,
+        CashSession.status == "CLOSED",
+        ~CashSession.is_deleted,
+    )
     result_today = await db.execute(stmt_today)
     total_revenue = result_today.scalar() or Decimal("0.00")
 
@@ -208,6 +214,9 @@ async def get_dashboard_stats(
     filters = await _build_session_filters(
         from_date, to_date, cashier_name, business_id, status, current_user
     )
+
+    # Exclude deleted sessions from stats
+    filters.append(~CashSession.is_deleted)
 
     # Get ALL filtered sessions for session counts (open/closed/flagged)
     stmt_all = select(CashSession).where(and_(*filters))
