@@ -812,9 +812,9 @@ msgid "TOTAL SALES"
 msgstr "VENTAS TOTALES"
 
 #: /app/templates/partials/stats_row.html:7
-#, fuzzy
+
 msgid "Cash"
-msgstr "Cajero"
+msgstr "Efectivo"
 
 #: /app/templates/partials/stats_row.html:7
 #: /app/templates/sessions/edit_closed_session.html:287
