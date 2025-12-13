@@ -1,10 +1,20 @@
 <div class="bg-base-100 border border-base-300 rounded-lg shadow">
     <div class="p-4 md:p-6">
         <!-- Header -->
-        <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-6 flex items-center gap-2">
-            <span>📋</span>
-            {{ _('Cash Sessions') }}
-        </h2>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                {{ _('Cash Sessions') }}
+            </h2>
+            <a href="/sessions/create" class="btn btn-primary btn-sm gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                {{ _('New Session') }}
+            </a>
+        </div>
 
         <style>
             /* Single-source hover tint for rows (normal and flagged). */
@@ -74,7 +84,7 @@
                                 {% if session.closed_time %}
                                     → {{ session.closed_time.strftime('%H:%M') }}
                                 {% else %}
-                                    → <span class="text-info">{{ _('Open') }}</span>
+                                    → <span class="text-sky-600 dark:text-sky-400">{{ _('Open') }}</span>
                                 {% endif %}
                             </div>
                         </td>
@@ -85,7 +95,7 @@
                             {% if session.final_cash %}
                                 <span class="text-base-content/80">Gs {{ session.final_cash | format_currency_py }}</span>
                             {% else %}
-                                <span class="text-info italic">{{ _('Active') }}</span>
+                                <span class="text-sky-600 dark:text-sky-400 italic">{{ _('Active') }}</span>
                             {% endif %}
                         </td>
                         <!-- Cash Sales -->
@@ -195,7 +205,7 @@
                         {% if session.closed_time %}
                             {{ session.closed_time.strftime('%H:%M') }}
                         {% else %}
-                            <span class="text-info">{{ _('Open') }}</span>
+                            <span class="text-sky-600 dark:text-sky-400">{{ _('Open') }}</span>
                         {% endif %}
                     </p>
                 </div>
@@ -277,7 +287,7 @@
         </div>
 
         {% else %}
-        <div class="bg-base-50 border-l-4 border-info p-4 rounded-md">
+        <div class="bg-base-200/50 border-l-4 border-primary p-4 rounded-md">
             <p class="text-sm text-base-content/70">
                 {{ _('No sessions found.') }} <a href="/sessions/create" class="link link-primary font-semibold">{{ _('Create one') }}</a>
             </p>
