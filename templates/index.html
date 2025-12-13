@@ -49,15 +49,32 @@
             <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-start sm:items-center">
                 <div class="flex flex-wrap gap-2">
                     <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="today">
-                        <span>📅</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                         <span>{{ _('Today') }}</span>
                     </button>
                     <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="week">
-                        <span>📆</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="7" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="14" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                         <span>{{ _('This Week') }}</span>
                     </button>
                     <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="month">
-                        <span>📊</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="7" y="13" width="3" height="6" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="11" y="9" width="3" height="10" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <rect x="15" y="6" width="3" height="13" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                         <span>{{ _('This Month') }}</span>
                     </button>
                 </div>
