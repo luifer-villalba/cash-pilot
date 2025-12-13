@@ -317,7 +317,8 @@
                         <!-- Digital -->
                         <div class="bg-gradient-to-br from-sky-500/10 to-base-100 rounded-lg border border-sky-200 shadow p-3 md:p-4">
                             <p class="text-xs text-sky-700 uppercase tracking-wider font-semibold">
-                                {{ _('Credit/Debit') }}</p>
+                                {{ _('Card Payments') }}
+                            </p>
                             <p class="text-2xl sm:text-3xl font-bold mt-2 text-sky-900">
                                 +Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}
                             </p>
@@ -330,7 +331,7 @@
                         <!-- Revenue -->
                         <div class="bg-gradient-to-br from-green-500/10 to-base-100 rounded-lg border border-green-200 shadow p-3 md:p-4">
                             <p class="text-xs text-green-700 uppercase tracking-wider font-semibold">
-                                {{ _('Revenue') }}
+                                {{ _('Total Sales') }}
                             </p>
                             <p class="text-2xl sm:text-3xl font-bold mt-2 text-green-900">
                                 +Gs {{ session.total_sales | format_currency_py }}
