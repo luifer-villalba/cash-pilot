@@ -209,6 +209,9 @@ async def get_dashboard_stats(
         from_date, to_date, cashier_name, business_id, status, current_user
     )
 
+    # Exclude deleted sessions from stats
+    filters.append(~CashSession.is_deleted)
+
     # Get ALL filtered sessions for session counts (open/closed/flagged)
     stmt_all = select(CashSession).where(and_(*filters))
     result_all = await db.execute(stmt_all)
