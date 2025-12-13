@@ -8,65 +8,53 @@
 
         {% if sessions %}
         <!-- Desktop Table (hidden on mobile) -->
-        <div class="overflow-x-auto hidden md:block">
+        <div class="overflow-x-auto hidden lg:block">
             <table class="table table-sm w-full">
                 <thead>
                     <tr class="border-b border-base-300">
-                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Status') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Date') }}</th>
                         <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cashier') }}</th>
                         <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Business') }}</th>
-                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Date & Time') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💵 {{ _('Initial') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💵 {{ _('Final') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💰 {{ _('Cash') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💳 {{ _('Cards') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">🏦 {{ _('Bank') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">📊 {{ _('Net') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Status') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Initial Cash') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Final Cash') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Envelope') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Sales Total') }}</th>
                         <th class="text-center text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-base-200">
                     {% for session in sessions %}
-                    <tr class="hover:bg-base-50 transition-colors">
+                    <tr class="transition-colors{% if session.status == 'CLOSED' and session.flagged %} border-l-4 border-error bg-error/10 hover:bg-error/20{% else %} hover:bg-base-50{% endif %}">
+                        <td class="text-sm">{{ session.session_date.strftime('%d/%m/%Y') }}</td>
+                        <td class="font-semibold text-sm">{{ session.cashier.display_name }}</td>
+                        <td class="text-sm">{{ session.business.name }}</td>
                         <td>
                             {% if session.status == 'OPEN' %}
-                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
-                                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-warning/20 text-warning border border-warning/30 text-xs font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
                                     {{ _('Open') }}
                                 </span>
-                            {% elif session.flagged %}
-                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-error/15 text-error text-xs font-semibold">
-                                    <span class="w-2 h-2 rounded-full bg-error"></span>
+                            {% elif session.status == 'CLOSED' and session.flagged %}
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-error/20 text-error border border-error/30 text-xs font-semibold">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
                                     {{ _('Review') }}
                                 </span>
                             {% else %}
-                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-base-300/50 text-base-content/70 text-xs font-semibold">
-                                    <span class="w-2 h-2 rounded-full bg-base-content/70"></span>
+                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success/20 text-success border border-success/30 text-xs font-semibold">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
                                     {{ _('Closed') }}
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="font-semibold text-sm">{{ session.cashier.display_name }}</td>
-                        <td class="text-sm">{{ session.business.name }}</td>
-                        <td class="text-xs text-base-content/70 font-mono">
-                            <div>{{ session.session_date.strftime('%d/%m/%Y') }}</div>
-                            <div class="opacity-80">
-                                {{ session.opened_time.strftime('%H:%M') }}
-                                {% if session.closed_time %}
-                                    → {{ session.closed_time.strftime('%H:%M') }}
-                                {% else %}
-                                    → <span class="text-warning">{{ _('Open') }}</span>
-                                {% endif %}
-                            </div>
-                        </td>
-                        <td class="text-right text-sm text-base-content/80">Gs {{ session.initial_cash | format_currency_py }}</td>
-                        <td class="text-right text-sm text-base-content/80">Gs {{ session.final_cash | format_currency_py if session.final_cash else '—' }}</td>
-                        <td class="text-right text-sm font-semibold">Gs {{ session.cash_sales | format_currency_py }}</td>
-                        <td class="text-right text-sm font-semibold">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</td>
-                        <td class="text-right text-sm font-semibold">Gs {{ session.bank_transfer_total | format_currency_py }}</td>
-                        <td class="text-right text-sm font-bold {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
-                            {% if session.net_earnings >= 0 %}+{% endif %}Gs {{ session.net_earnings | format_currency_py }}
-                        </td>
+                        <td class="text-right text-sm">Gs {{ session.initial_cash | format_currency_py }}</td>
+                        <td class="text-right text-sm">Gs {{ session.final_cash | format_currency_py if session.final_cash else '—' }}</td>
+                        <td class="text-right text-sm">Gs {{ session.envelope_amount | format_currency_py }}</td>
+                        <td class="text-right text-sm font-semibold">Gs {{ (session.cash_sales + session.credit_card_total + session.debit_card_total + session.bank_transfer_total) | format_currency_py }}</td>
                         <td class="text-center">
                             <div class="flex gap-1 justify-center">
                                 <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs btn-circle" title="{{ _('View details') }}">
@@ -117,87 +105,72 @@
         </div>
 
         <!-- Mobile Card Layout (visible on mobile only) -->
-        <div class="md:hidden space-y-4">
+        <div class="lg:hidden grid grid-cols-1 gap-4">
             {% for session in sessions %}
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
-                <!-- Header: Cashier + Status -->
-                <div class="flex justify-between items-start gap-3">
-                    <div>
-                        <h3 class="font-bold text-sm">{{ session.cashier.display_name }}</h3>
-                        <p class="text-xs text-base-content/60">{{ session.business.name }}</p>
-                    </div>
+            <a href="/sessions/{{ session.id|string }}" class="block border border-base-300 rounded-lg p-4 space-y-3 hover:shadow-lg transition-shadow{% if session.status == 'CLOSED' and session.flagged %} bg-error/10 border-l-4 border-error{% else %}bg-base-100{% endif %}">
+                <!-- Status Badge -->
+                <div class="flex justify-end">
                     {% if session.status == 'OPEN' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
-                            <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-warning/20 text-warning border border-warning/30 text-xs font-semibold">
+                            <span class="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
                             {{ _('Open') }}
                         </span>
-                    {% elif session.flagged %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error/15 text-error text-xs font-semibold">
-                            <span class="w-2 h-2 rounded-full bg-error"></span>
+                    {% elif session.status == 'CLOSED' and session.flagged %}
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-error/20 text-error border border-error/30 text-xs font-semibold">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
                             {{ _('Review') }}
                         </span>
                     {% else %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-base-300/50 text-base-content/70 text-xs font-semibold">
-                            <span class="w-2 h-2 rounded-full bg-base-content/70"></span>
+                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-success/20 text-success border border-success/30 text-xs font-semibold">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
                             {{ _('Closed') }}
                         </span>
                     {% endif %}
                 </div>
 
-                <!-- Date/Time -->
-                <div class="text-xs text-base-content/60 font-mono flex gap-2">
-                    <span>{{ session.session_date.strftime('%d/%m/%Y') }}</span>
-                    <span>•</span>
-                    <span>
+                <!-- Business & Cashier -->
+                <div>
+                    <h3 class="font-bold text-base text-base-content">{{ session.business.name }}</h3>
+                    <p class="text-sm text-base-content/70">{{ session.cashier.display_name }}</p>
+                </div>
+
+                <!-- Date & Period -->
+                <div class="space-y-1">
+                    <p class="text-sm text-base-content/70">
+                        <span class="font-semibold">{{ _('Date') }}:</span> {{ session.session_date.strftime('%d/%m/%Y') }}
+                    </p>
+                    <p class="text-sm text-base-content/70 font-mono">
+                        <span class="font-semibold">{{ _('Period') }}:</span>
                         {{ session.opened_time.strftime('%H:%M') }}
+                        →
                         {% if session.closed_time %}
-                            → {{ session.closed_time.strftime('%H:%M') }}
+                            {{ session.closed_time.strftime('%H:%M') }}
                         {% else %}
-                            → <span class="text-warning">{{ _('Open') }}</span>
+                            <span class="text-warning">{{ _('Open') }}</span>
                         {% endif %}
-                    </span>
+                    </p>
                 </div>
 
-                <!-- Key Numbers Grid -->
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">💰 {{ _('Cash') }}</p>
-                        <p class="font-bold text-sm">Gs {{ session.cash_sales | format_currency_py }}</p>
+                <!-- Financial Summary -->
+                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-base-200">
+                    <div>
+                        <p class="text-xs text-base-content/60 mb-0.5">{{ _('Initial Cash') }}</p>
+                        <p class="font-semibold text-sm">Gs {{ session.initial_cash | format_currency_py }}</p>
                     </div>
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">💳 {{ _('Cards') }}</p>
-                        <p class="font-bold text-sm">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</p>
+                    <div>
+                        <p class="text-xs text-base-content/60 mb-0.5">{{ _('Final Cash') }}</p>
+                        <p class="font-semibold text-sm">Gs {{ session.final_cash | format_currency_py if session.final_cash else '—' }}</p>
                     </div>
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">🏦 {{ _('Bank') }}</p>
-                        <p class="font-bold text-sm">Gs {{ session.bank_transfer_total | format_currency_py }}</p>
-                    </div>
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">📊 {{ _('Net') }}</p>
-                        <p class="font-bold text-sm {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
-                            {% if session.net_earnings >= 0 %}+{% endif %}Gs {{ session.net_earnings | format_currency_py }}
-                        </p>
+                    <div class="col-span-2">
+                        <p class="text-xs text-base-content/60 mb-0.5">{{ _('Sales Total') }}</p>
+                        <p class="font-bold text-base text-primary">Gs {{ (session.cash_sales + session.credit_card_total + session.debit_card_total + session.bank_transfer_total) | format_currency_py }}</p>
                     </div>
                 </div>
-
-                <!-- Actions -->
-                <div class="flex gap-2 justify-end pt-2 border-t border-base-200">
-                    <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs gap-1 text-xs">
-                        👁️ {{ _('View') }}
-                    </a>
-                    {% if session.status == 'OPEN' %}
-                        {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
-                            <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-info btn-xs gap-1 text-xs">
-                                ✏️ {{ _('Edit') }}
-                            </a>
-                        {% else %}
-                            <button disabled class="btn btn-info btn-xs gap-1 text-xs opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can edit') }}">
-                                ✏️ {{ _('Edit') }}
-                            </button>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            </div>
+            </a>
             {% endfor %}
         </div>
 
