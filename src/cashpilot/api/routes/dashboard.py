@@ -221,7 +221,7 @@ async def get_dashboard_stats(
         func.sum(case((CashSession.status == "OPEN", 1), else_=0)).label("sessions_open"),
         func.sum(case((CashSession.status == "CLOSED", 1), else_=0)).label("sessions_closed"),
         func.sum(case((CashSession.flagged, 1), else_=0)).label("sessions_need_review"),
-    ).where(and_(*filters))
+    ).where(and_(*filters, ~CashSession.is_deleted))
 
     result_counts = await db.execute(stmt_counts)
     counts_row = result_counts.one()
@@ -261,7 +261,7 @@ async def get_dashboard_stats(
         func.sum(
             case((CashSession.status == "CLOSED", CashSession.credit_payments_collected), else_=0)
         ).label("credit_payments_collected"),
-    ).where(and_(*filters))
+    ).where(and_(*filters, ~CashSession.is_deleted))
 
     result_aggs = await db.execute(stmt_aggs)
     aggs_row = result_aggs.one()
