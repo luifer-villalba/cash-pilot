@@ -27,6 +27,13 @@
             </div>
             {% endif %}
 
+            <!-- Session Expired Alert -->
+            {% if expired %}
+            <div class="alert alert-warning shadow-md mb-6 border border-warning/20">
+                <span class="text-sm">{{ _('Session expired due to inactivity. Please sign in again.') }}</span>
+            </div>
+            {% endif %}
+
             <!-- Login Form -->
             <form method="POST" action="/login" class="space-y-5">
                 <!-- Email -->
