@@ -13,15 +13,18 @@ from starlette.requests import Request
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
-from cashpilot.models.user import User
+from cashpilot.models.user import User, UserRole
 
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["auth"])
 
 
-# Configurable inactivity timeout for CASHIER role (seconds)
-CASHIER_TIMEOUT = 30 * 60
+# Configurable inactivity timeout by role (seconds)
+ROLE_TIMEOUTS = {
+    UserRole.CASHIER: 30 * 60,  # 30 minutes
+    UserRole.ADMIN: 2 * 60 * 60,  # 2 hours
+}
 
 
 async def get_current_user(
@@ -30,18 +33,27 @@ async def get_current_user(
 ) -> User:
     """Dependency to get current authenticated user from session."""
     user_id = request.session.get("user_id")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     user_role = request.session.get("user_role")
 
-    # Enforce role-based inactivity timeout for cashiers only
-    if user_id and user_role == "CASHIER":
-        now = datetime.now()
+    # Enforce role-based inactivity timeout for roles with configured timeouts
+    if user_role in ROLE_TIMEOUTS:
+        timeout = ROLE_TIMEOUTS[user_role]
+        now = datetime.utcnow()
         last_activity_raw = request.session.get("last_activity")
+
         try:
             last_activity = datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
-        except Exception:
+        except (ValueError, TypeError):
             last_activity = None
 
-        if last_activity and (now - last_activity) > timedelta(seconds=CASHIER_TIMEOUT):
+        if last_activity and (now - last_activity) > timedelta(seconds=timeout):
             # Expired: clear session and redirect to login with message
             request.session.clear()
             raise HTTPException(
@@ -52,12 +64,6 @@ async def get_current_user(
         else:
             # Refresh last_activity on each authenticated request
             request.session["last_activity"] = now.isoformat()
-
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
 
     try:
         user_uuid = UUID(user_id)
@@ -105,9 +111,9 @@ async def login(
     request.session["user_id"] = str(user.id)
     request.session["user_role"] = user.role
     request.session["user_display_name"] = user.display_name
-    # Set last_activity only for cashier role
-    if user.role == "CASHIER":
-        request.session["last_activity"] = datetime.now().isoformat()
+    # Set last_activity for roles with configured timeouts
+    if user.role in ROLE_TIMEOUTS:
+        request.session["last_activity"] = datetime.utcnow().isoformat()
     logger.info(
         "auth.login_success",
         email=user.email,
