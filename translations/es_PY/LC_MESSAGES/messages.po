@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-12 20:38+0000\n"
+"POT-Creation-Date: 2025-12-13 03:39+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -118,8 +118,7 @@ msgstr "Todos"
 #: /app/templates/partials/sessions_table.html:58
 #: /app/templates/partials/sessions_table.html:132
 #: /app/templates/partials/sessions_table.html:156
-#: /app/templates/partials/stats_row.html:164
-#: /app/templates/partials/stats_row.html:211
+#: /app/templates/partials/stats_row.html:143
 #: /app/templates/sessions/edit_open_session.html:16
 #: /app/templates/sessions/session_detail.html:145
 msgid "Open"
@@ -127,8 +126,7 @@ msgstr "Abierto"
 
 #: /app/templates/index.html:154 /app/templates/partials/sessions_table.html:45
 #: /app/templates/partials/sessions_table.html:142
-#: /app/templates/partials/stats_row.html:165
-#: /app/templates/partials/stats_row.html:212
+#: /app/templates/partials/stats_row.html:143
 #: /app/templates/sessions/edit_closed_session.html:16
 #: /app/templates/sessions/session_detail.html:150
 #: /app/templates/sessions/session_detail.html:165
@@ -670,15 +668,12 @@ msgstr "Final"
 
 #: /app/templates/partials/sessions_table.html:21
 #: /app/templates/partials/sessions_table.html:164
-#: /app/templates/partials/stats_row.html:142
-#: /app/templates/partials/stats_row.html:198
 msgid "Cash"
 msgstr "Efectivo"
 
 #: /app/templates/partials/sessions_table.html:22
 #: /app/templates/partials/sessions_table.html:168
-#: /app/templates/partials/stats_row.html:143
-#: /app/templates/partials/stats_row.html:198
+#: /app/templates/partials/stats_row.html:13
 #: /app/templates/sessions/session_detail.html:325
 #: /app/templates/sessions/session_detail.html:341
 msgid "Cards"
@@ -686,8 +681,6 @@ msgstr "Tarjetas"
 
 #: /app/templates/partials/sessions_table.html:23
 #: /app/templates/partials/sessions_table.html:172
-#: /app/templates/partials/stats_row.html:144
-#: /app/templates/partials/stats_row.html:199
 msgid "Bank"
 msgstr "Banco"
 
@@ -698,8 +691,6 @@ msgstr "Neto"
 
 #: /app/templates/partials/sessions_table.html:40
 #: /app/templates/partials/sessions_table.html:137
-#: /app/templates/partials/stats_row.html:166
-#: /app/templates/partials/stats_row.html:213
 msgid "Review"
 msgstr "Revisar"
 
@@ -768,111 +759,148 @@ msgstr "No se encontraron sesiones de cajas."
 msgid "Create one"
 msgstr "Crear uno"
 
-#: /app/templates/partials/stats_row.html:12
+#: /app/templates/partials/stats_row.html:6
+#, fuzzy
+msgid "TOTAL SALES"
+msgstr "Ventas Totales"
+
+#: /app/templates/partials/stats_row.html:13
+#: /app/templates/partials/stats_row.html:21
+#: /app/templates/partials/stats_row.html:129
 #: /app/templates/sessions/session_detail.html:314
 #: /app/templates/sessions/session_detail.html:341
 msgid "Cash Sales"
 msgstr "Efectivo"
 
-#: /app/templates/partials/stats_row.html:14
-msgid "Register + Envelope"
-msgstr "Caja + Sobre"
+#: /app/templates/partials/stats_row.html:13
+#: /app/templates/sessions/edit_closed_session.html:287
+#: /app/templates/sessions/session_detail.html:214
+#: /app/templates/sessions/session_detail.html:299
+msgid "Bank Transfer"
+msgstr "Transferencia Bancaria"
 
-#: /app/templates/partials/stats_row.html:25
-msgid "Bank Transfers"
-msgstr "Transferencias"
+#: /app/templates/partials/stats_row.html:26
+msgid "Ventas al Contado"
+msgstr ""
 
-#: /app/templates/partials/stats_row.html:27
-#: /app/templates/sessions/session_detail.html:219
-msgid "Direct account transfers"
-msgstr "Transferencias directas a cuenta"
+#: /app/templates/partials/stats_row.html:28
+msgid "Register"
+msgstr ""
 
-#: /app/templates/partials/stats_row.html:38
-msgid "Total Expenses"
-msgstr "Total de Gastos"
+#: /app/templates/partials/stats_row.html:28
+#: /app/templates/sessions/edit_closed_session.html:272
+#: /app/templates/sessions/session_detail.html:299
+msgid "Envelope"
+msgstr "Sobre"
 
-#: /app/templates/partials/stats_row.html:40
-#: /app/templates/sessions/close_session.html:125
-#: /app/templates/sessions/edit_closed_session.html:142
-msgid "Business expenses"
-msgstr "Gastos del negocio"
-
-#: /app/templates/partials/stats_row.html:51
-#: /app/templates/sessions/session_detail.html:307
-msgid "Cash Profit"
-msgstr "Ganancia en Efectivo"
-
-#: /app/templates/partials/stats_row.html:55
-msgid "Cash-only earnings"
-msgstr "Ganancias solo efectivo"
-
-#: /app/templates/partials/stats_row.html:66
-#: /app/templates/sessions/session_detail.html:334
-msgid "Total Sales"
-msgstr "Ventas Totales"
-
-#: /app/templates/partials/stats_row.html:68
-msgid "Gross revenue"
-msgstr "Ingresos brutos"
-
-#: /app/templates/partials/stats_row.html:75
-#: /app/templates/partials/stats_row.html:174
-#: /app/templates/partials/stats_row.html:229
-msgid "More Details"
-msgstr "Más Detalles"
-
-#: /app/templates/partials/stats_row.html:94
-#: /app/templates/partials/stats_row.html:179
+#: /app/templates/partials/stats_row.html:35
 #: /app/templates/sessions/session_detail.html:320
 msgid "Card Payments"
 msgstr "Pagos con Tarjetas"
 
-#: /app/templates/partials/stats_row.html:97
-#: /app/templates/partials/stats_row.html:181
+#: /app/templates/partials/stats_row.html:40
+msgid "Ventas Con Tarjeta"
+msgstr ""
+
+#: /app/templates/partials/stats_row.html:42
 #: /app/templates/sessions/session_detail.html:327
 msgid "Credit"
 msgstr "Crédito"
 
-#: /app/templates/partials/stats_row.html:98
-#: /app/templates/partials/stats_row.html:182
+#: /app/templates/partials/stats_row.html:42
 #: /app/templates/sessions/session_detail.html:327
 msgid "Debit"
 msgstr "Débito"
 
-#: /app/templates/partials/stats_row.html:110
-#: /app/templates/partials/stats_row.html:186
+#: /app/templates/partials/stats_row.html:49
 #: /app/templates/sessions/edit_closed_session.html:152
 #: /app/templates/sessions/session_detail.html:234
 #: /app/templates/sessions/session_detail.html:361
 msgid "Credit Sales"
 msgstr "Ventas a crédito"
 
-#: /app/templates/partials/stats_row.html:112
-#: /app/templates/partials/stats_row.html:188
+#: /app/templates/partials/stats_row.html:54
+msgid "Ventas a Crédito"
+msgstr ""
+
+#: /app/templates/partials/stats_row.html:56
 msgid "Sales on credit"
 msgstr "Ventas a crédito"
 
-#: /app/templates/partials/stats_row.html:123
-#: /app/templates/partials/stats_row.html:191
-msgid "Credit Payments"
-msgstr "Pagos de Crédito"
+#: /app/templates/partials/stats_row.html:63
+#, fuzzy
+msgid "Collections"
+msgstr "Acciones"
 
-#: /app/templates/partials/stats_row.html:126
-#: /app/templates/partials/stats_row.html:193
+#: /app/templates/partials/stats_row.html:68
+msgid "Cobranzas"
+msgstr ""
+
+#: /app/templates/partials/stats_row.html:70
 msgid "Payments collected"
 msgstr "Pagos cobrados"
 
-#: /app/templates/partials/stats_row.html:139
-#: /app/templates/partials/stats_row.html:196
-msgid "Payment Mix"
-msgstr "Mix de Pagos"
+#: /app/templates/partials/stats_row.html:78
+#: /app/templates/partials/stats_row.html:161
+msgid "More Details"
+msgstr "Más Detalles"
 
-#: /app/templates/partials/stats_row.html:156
-#: /app/templates/partials/stats_row.html:203
+#: /app/templates/partials/stats_row.html:92
+msgid "Bank Transfers"
+msgstr "Transferencias"
+
+#: /app/templates/partials/stats_row.html:97
+msgid "Mobile banking"
+msgstr ""
+
+#: /app/templates/partials/stats_row.html:99
+#: /app/templates/sessions/session_detail.html:219
+msgid "Direct account transfers"
+msgstr "Transferencias directas a cuenta"
+
+#: /app/templates/partials/stats_row.html:106
+msgid "Total Expenses"
+msgstr "Total de Gastos"
+
+#: /app/templates/partials/stats_row.html:111
+#: /app/templates/sessions/close_session.html:125
+#: /app/templates/sessions/edit_closed_session.html:142
+msgid "Business expenses"
+msgstr "Gastos del negocio"
+
+#: /app/templates/partials/stats_row.html:113
+#, fuzzy
+msgid "Cash outflows"
+msgstr "Flujo de efectivo"
+
+#: /app/templates/partials/stats_row.html:120
+#: /app/templates/sessions/session_detail.html:307
+msgid "Cash Profit"
+msgstr "Ganancia en Efectivo"
+
+#: /app/templates/partials/stats_row.html:126
+#: /app/templates/sessions/session_detail.html:312
+msgid "Cash only"
+msgstr "Solo efectivo"
+
+#: /app/templates/partials/stats_row.html:129
+#: /app/templates/sessions/edit_closed_session.html:131
+#: /app/templates/sessions/edit_closed_session.html:292
+#: /app/templates/sessions/session_detail.html:224
+#: /app/templates/sessions/session_detail.html:314
+msgid "Expenses"
+msgstr "Gastos"
+
+#: /app/templates/partials/stats_row.html:136
 msgid "Sessions Status"
 msgstr "Estado de Sesiones"
 
-#: /app/templates/partials/stats_row.html:229
+#: /app/templates/partials/stats_row.html:146
+#, fuzzy
+msgid "Active sessions"
+msgstr "Filtrar Sesiones"
+
+#: /app/templates/partials/stats_row.html:161
 msgid "Less Details"
 msgstr "Menos Detalles"
 
@@ -1158,13 +1186,6 @@ msgstr "Total Transferencias"
 msgid "Direct bank transfers"
 msgstr "Transferencias directas"
 
-#: /app/templates/sessions/edit_closed_session.html:131
-#: /app/templates/sessions/edit_closed_session.html:292
-#: /app/templates/sessions/session_detail.html:224
-#: /app/templates/sessions/session_detail.html:314
-msgid "Expenses"
-msgstr "Gastos"
-
 #: /app/templates/sessions/edit_closed_session.html:147
 #: /app/templates/sessions/session_detail.html:350
 msgid "Credit Tracking"
@@ -1215,11 +1236,6 @@ msgstr "Requerido para el registro de auditoría"
 msgid "Current Values"
 msgstr "Valores Actuales"
 
-#: /app/templates/sessions/edit_closed_session.html:272
-#: /app/templates/sessions/session_detail.html:299
-msgid "Envelope"
-msgstr "Sobre"
-
 #: /app/templates/sessions/edit_closed_session.html:277
 #: /app/templates/sessions/session_detail.html:263
 msgid "Credit Card"
@@ -1229,12 +1245,6 @@ msgstr "Tarjeta de Crédito"
 #: /app/templates/sessions/session_detail.html:272
 msgid "Debit Card"
 msgstr "Tarjeta de Débito"
-
-#: /app/templates/sessions/edit_closed_session.html:287
-#: /app/templates/sessions/session_detail.html:214
-#: /app/templates/sessions/session_detail.html:299
-msgid "Bank Transfer"
-msgstr "Transferencia Bancaria"
 
 #: /app/templates/sessions/edit_closed_session.html:301
 #: /app/templates/sessions/edit_open_session.html:200
@@ -1340,14 +1350,14 @@ msgstr "Reconciliación"
 msgid "CASH SALES & BANK TRANSFER"
 msgstr "VENTAS EFECTIVO & TRANSFERENCIAS"
 
-#: /app/templates/sessions/session_detail.html:312
-msgid "Cash only"
-msgstr "Solo efectivo"
-
 #: /app/templates/sessions/session_detail.html:314
 #: /app/templates/sessions/session_detail.html:341
 msgid "Transfer"
 msgstr "Transferencia"
+
+#: /app/templates/sessions/session_detail.html:334
+msgid "Total Sales"
+msgstr "Ventas Totales"
 
 #: /app/templates/sessions/session_detail.html:339
 msgid "All sales"
@@ -1501,4 +1511,19 @@ msgstr "¿Remover marca de esta sesión?"
 
 #~ msgid "Choose your own password (minimum 8 characters)"
 #~ msgstr "Elija su propia contraseña (mínimo 8 caracteres)"
+
+#~ msgid "Register + Envelope"
+#~ msgstr "Caja + Sobre"
+
+#~ msgid "Cash-only earnings"
+#~ msgstr "Ganancias solo efectivo"
+
+#~ msgid "Gross revenue"
+#~ msgstr "Ingresos brutos"
+
+#~ msgid "Credit Payments"
+#~ msgstr "Pagos de Crédito"
+
+#~ msgid "Payment Mix"
+#~ msgstr "Mix de Pagos"
 

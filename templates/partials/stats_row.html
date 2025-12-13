@@ -1,76 +1,67 @@
+<!-- File: src/cashpilot/templates/partials/stats_row.html -->
 <div id="stats-row" class="space-y-4">
-    <!-- First 5 stats (always visible) -->
-    <div class="stats stats-vertical lg:stats-horizontal shadow w-full">
-        <!-- Stat 1: Cash Sales -->
-        <div class="stat">
-            <div class="stat-figure text-base-content">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-            </div>
-            <div class="stat-title">{{ _('Cash Sales') }}</div>
-            <div class="stat-value text-2xl lg:text-3xl">Gs {{ cash_sales | format_currency_py }}</div>
-            <div class="stat-desc">{{ _('Register + Envelope') }}</div>
+    <!-- Hero: Total Sales -->
+    <div class="bg-gradient-to-br from-primary/10 to-base-100 rounded-lg border-2 border-primary shadow-lg p-6">
+        <p class="text-xs text-primary/70 uppercase tracking-wider font-bold">
+            💎 {{ _('TOTAL SALES') }}
+        </p>
+        <div class="mt-4 flex items-baseline gap-2">
+            <p class="text-4xl font-black text-primary">
+                Gs {{ total_sales | format_currency_py }}
+            </p>
+        </div>
+        <p class="text-xs text-base-content/60 mt-3">🧮 {{ _('Cash Sales') }} + {{ _('Cards') }} + {{ _('Bank Transfer') }}</p>
+    </div>
+
+    <!-- Primary Grid: POS Report Comparison (4-column) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <!-- Ventas al Contado (Cash Sales) -->
+        <div class="bg-gradient-to-br from-amber-500/10 to-base-100 rounded-lg border border-amber-200 shadow p-3 md:p-4">
+            <p class="text-xs text-amber-700 uppercase tracking-wider font-semibold">
+                💵 {{ _('Cash Sales') }}
+            </p>
+            <p class="text-2xl sm:text-3xl font-bold mt-2 text-amber-900">
+                Gs {{ cash_sales | format_currency_py }}
+            </p>
+            <p class="text-xs text-amber-600/70 mt-3">📦 {{ _('Register') }} + {{ _('Envelope') }}</p>
         </div>
 
-        <!-- Stat 2: Bank Transfers -->
-        <div class="stat">
-            <div class="stat-figure text-base-content">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                </svg>
-            </div>
-            <div class="stat-title">{{ _('Bank Transfers') }}</div>
-            <div class="stat-value text-2xl lg:text-3xl">Gs {{ bank_transfer_total | format_currency_py }}</div>
-            <div class="stat-desc">{{ _('Direct account transfers') }}</div>
+        <!-- Ventas Con Tarjeta (Card Payments) -->
+        <div class="bg-gradient-to-br from-sky-500/10 to-base-100 rounded-lg border border-sky-200 shadow p-3 md:p-4">
+            <p class="text-xs text-sky-700 uppercase tracking-wider font-semibold">
+                💳 {{ _('Card Payments') }}
+            </p>
+            <p class="text-2xl sm:text-3xl font-bold mt-2 text-sky-900">
+                Gs {{ card_payments_total | format_currency_py }}
+            </p>
+            <p class="text-xs text-sky-600/70 mt-3">📱 {{ _('Credit') }} + {{ _('Debit') }}</p>
         </div>
 
-        <!-- Stat 3: Total Expenses -->
-        <div class="stat">
-            <div class="stat-figure text-error">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
-                </svg>
-            </div>
-            <div class="stat-title">{{ _('Total Expenses') }}</div>
-            <div class="stat-value text-error text-2xl lg:text-3xl">Gs {{ total_expenses | format_currency_py }}</div>
-            <div class="stat-desc">{{ _('Business expenses') }}</div>
+        <!-- Ventas a Crédito (Credit Sales) -->
+        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 rounded-lg border border-blue-200 shadow p-3 md:p-4">
+            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">
+                📝 {{ _('Credit Sales') }}
+            </p>
+            <p class="text-2xl sm:text-3xl font-bold mt-2 text-blue-900">
+                Gs {{ credit_sales_total | format_currency_py }}
+            </p>
+            <p class="text-xs text-blue-600/70 mt-3">🧾 {{ _('Amount of money on credit') }}</p>
         </div>
 
-        <!-- Stat 4: Cash Profit -->
-        <div class="stat">
-            <div class="stat-figure {% if cash_profit >= 0 %}text-success{% else %}text-error{% endif %}">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <div class="stat-title">{{ _('Cash Profit') }}</div>
-            <div class="stat-value {% if cash_profit >= 0 %}text-success{% else %}text-error{% endif %} text-2xl lg:text-3xl">
-                {% if cash_profit >= 0 %}+{% else %}−{% endif %}Gs {{ cash_profit|abs | format_currency_py }}
-            </div>
-            <div class="stat-desc">{{ _('Cash-only earnings') }}</div>
-        </div>
-
-        <!-- Stat 5: Total Sales (HERO) -->
-        <div class="stat bg-gradient-to-br from-primary/10 to-base-100 border-2 border-primary">
-            <div class="stat-figure text-primary">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-            </div>
-            <div class="stat-title text-primary/70">{{ _('Total Sales') }}</div>
-            <div class="stat-value text-primary text-2xl lg:text-3xl">Gs {{ total_sales | format_currency_py }}</div>
-            <div class="stat-desc text-primary/60">{{ _('Gross revenue') }}</div>
+        <!-- Cobranzas (Collections) -->
+        <div class="bg-gradient-to-br from-green-500/10 to-base-100 rounded-lg border border-green-200 shadow p-3 md:p-4">
+            <p class="text-xs text-green-700 uppercase tracking-wider font-semibold">
+                ✅ {{ _('Collections') }}
+            </p>
+            <p class="text-2xl sm:text-3xl font-bold mt-2 text-green-900">
+                Gs {{ credit_payments_collected | format_currency_py }}
+            </p>
+            <p class="text-xs text-green-600/70 mt-3">💰 {{ _('Payments collected') }}</p>
         </div>
     </div>
 
-    <!-- More Details Button (Desktop) -->
-    <div class="hidden lg:flex justify-center">
+    <!-- More Details Toggle -->
+    <div class="text-center">
         <button onclick="toggleMoreStats()" class="btn btn-sm btn-ghost gap-2">
             <span id="toggle-text">{{ _('More Details') }}</span>
             <svg id="toggle-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor"
@@ -80,142 +71,59 @@
         </button>
     </div>
 
-    <!-- Collapsible 5 stats (Desktop: hidden by default) -->
+    <!-- Collapsible: Additional Business Metrics -->
     <div id="more-stats" class="hidden">
-        <div class="stats stats-vertical lg:stats-horizontal shadow w-full">
-            <!-- Stat 6: Card Payments -->
-            <div class="stat">
-                <div class="stat-figure text-base-content">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                    </svg>
-                </div>
-                <div class="stat-title">{{ _('Card Payments') }}</div>
-                <div class="stat-value text-2xl lg:text-3xl">Gs {{ card_payments_total | format_currency_py }}</div>
-                <div class="stat-desc">
-                    {{ _('Credit') }}: Gs {{ credit_card_total | format_currency_py }} ·
-                    {{ _('Debit') }}: Gs {{ debit_card_total | format_currency_py }}
-                </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <!-- Bank Transfers -->
+            <div class="bg-gradient-to-br from-amber-500/10 to-base-100 rounded-lg border border-amber-200 shadow p-3 md:p-4">
+                <p class="text-xs text-amber-700 uppercase tracking-wider font-semibold">
+                    🏦 {{ _('Bank Transfers') }}
+                </p>
+                <p class="text-2xl sm:text-3xl font-bold mt-2 text-amber-900">
+                    Gs {{ bank_transfer_total | format_currency_py }}
+                </p>
+                <p class="text-xs text-amber-600/70 mt-3">📱 {{ _('Direct account transfers') }}</p>
             </div>
 
-            <!-- Stat 7: Credit Sales -->
-            <div class="stat">
-                <div class="stat-figure text-base-content">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <div class="stat-title">{{ _('Credit Sales') }}</div>
-                <div class="stat-value text-2xl lg:text-3xl">Gs {{ credit_sales_total | format_currency_py }}</div>
-                <div class="stat-desc">{{ _('Sales on credit') }}</div>
+            <!-- Total Expenses -->
+            <div class="bg-gradient-to-br from-red-500/10 to-base-100 rounded-lg border border-red-200 shadow p-3 md:p-4">
+                <p class="text-xs text-red-700 uppercase tracking-wider font-semibold">
+                    📉 {{ _('Total Expenses') }}
+                </p>
+                <p class="text-2xl sm:text-3xl font-bold mt-2 text-red-900">
+                    −Gs {{ total_expenses | format_currency_py }}
+                </p>
+                <p class="text-xs text-red-600/70 mt-3">💸 {{ _('Cash outflows') }}</p>
             </div>
 
-            <!-- Stat 8: Credit Payments -->
-            <div class="stat">
-                <div class="stat-figure text-success">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                </div>
-                <div class="stat-title">{{ _('Credit Payments') }}</div>
-                <div class="stat-value text-2xl lg:text-3xl">Gs {{ credit_payments_collected | format_currency_py }}
-                </div>
-                <div class="stat-desc">{{ _('Payments collected') }}</div>
+            <!-- Cash Profit -->
+            <div class="{% if cash_profit >= 0 %}bg-gradient-to-br from-emerald-500/10 to-base-100 border-emerald-200{% else %}bg-gradient-to-br from-red-500/10 to-base-100 border-red-200{% endif %} rounded-lg border shadow p-3 md:p-4">
+                <p class="text-xs {% if cash_profit >= 0 %}text-emerald-700{% else %}text-red-700{% endif %} uppercase tracking-wider font-semibold">
+                    💰 {{ _('Cash Profit') }}
+                </p>
+                <p class="text-2xl sm:text-3xl font-bold mt-2 {% if cash_profit >= 0 %}text-emerald-900{% else %}text-red-900{% endif %}">
+                    {% if cash_profit >= 0 %}+{% endif %}Gs {{ cash_profit|abs | format_currency_py }}
+                </p>
+                <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/70{% else %}text-red-600/70{% endif %} mt-3">
+                    💵  {{ _('Cash Sales') }} − {{ _('Expenses') }}
+                </p>
             </div>
 
-            <!-- Stat 9: Payment Mix -->
-            <div class="stat">
-                <div class="stat-figure text-base-content">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
-                    </svg>
-                </div>
-                <div class="stat-title">{{ _('Payment Mix') }}</div>
-                <div class="stat-value text-2xl lg:text-3xl">{{ "%.0f"|format(cash_pct) }}%</div>
-                <div class="stat-desc">
-                    <span class="text-base-content/60">●</span> {{ _('Cash') }} {{ "%.0f"|format(cash_pct) }}% ·
-                    <span class="text-base-content/60">●</span> {{ _('Cards') }} {{ "%.0f"|format(card_pct) }}% ·
-                    <span class="text-base-content/60">●</span> {{ _('Bank') }} {{ "%.0f"|format(bank_pct) }}%
-                </div>
-            </div>
-
-            <!-- Stat 10: Sessions Status -->
-            <div class="stat">
-                <div class="stat-figure text-base-content">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                    </svg>
-                </div>
-                <div class="stat-title">{{ _('Sessions Status') }}</div>
-                <div class="stat-value text-xl lg:text-2xl">
-                    <span class="text-warning">{{ sessions_open }}</span> ·
+            <!-- Sessions Status -->
+            <div class="bg-gradient-to-br from-info/5 to-base-100 rounded-lg border border-info/20 shadow p-3 md:p-4">
+                <p class="text-xs text-info/70 uppercase tracking-wider font-semibold">
+                    📋 {{ _('Sessions Status') }}
+                </p>
+                <p class="text-2xl sm:text-3xl font-bold mt-2 text-base-content/80">
+                    <span class="text-warning">{{ sessions_open }}</span> / 
                     <span class="text-success">{{ sessions_closed }}</span>
-                    {% if sessions_need_review > 0 %} · <span class="text-error">{{ sessions_need_review }}</span>{%
-                    endif %}
-                </div>
-                <div class="stat-desc">
-                    <span class="text-warning">●</span> {{ _('Open') }}
-                    <span class="text-success">●</span> {{ _('Closed') }}
-                    {% if sessions_need_review > 0 %}<span class="text-error">●</span> {{ _('Review') }}{% endif %}
-                </div>
+                </p>
+                <p class="text-xs text-base-content/60 mt-3">
+                    📂 {{ _('Open') }} / {{ _('Closed') }}
+                </p>
             </div>
         </div>
     </div>
-
-    <!-- Mobile Accordion -->
-    <details class="lg:hidden collapse collapse-arrow bg-base-200">
-        <summary class="collapse-title font-semibold">{{ _('More Details') }}</summary>
-        <div class="collapse-content">
-            <div class="stats stats-vertical shadow w-full mt-4">
-                <!-- Same 5 stats as desktop (Stats 6-10) -->
-                <div class="stat">
-                    <div class="stat-title">{{ _('Card Payments') }}</div>
-                    <div class="stat-value text-xl">Gs {{ card_payments_total | format_currency_py }}</div>
-                    <div class="stat-desc">{{ _('Credit') }}: Gs {{ credit_card_total | format_currency_py }} · {{
-                        _('Debit') }}: Gs {{ debit_card_total | format_currency_py }}
-                    </div>
-                </div>
-                <div class="stat">
-                    <div class="stat-title">{{ _('Credit Sales') }}</div>
-                    <div class="stat-value text-xl">Gs {{ credit_sales_total | format_currency_py }}</div>
-                    <div class="stat-desc">{{ _('Sales on credit') }}</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-title">{{ _('Credit Payments') }}</div>
-                    <div class="stat-value text-xl">Gs {{ credit_payments_collected | format_currency_py }}</div>
-                    <div class="stat-desc">{{ _('Payments collected') }}</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-title">{{ _('Payment Mix') }}</div>
-                    <div class="stat-value text-xl">{{ "%.0f"|format(cash_pct) }}%</div>
-                    <div class="stat-desc">{{ _('Cash') }} {{ "%.0f"|format(cash_pct) }}% · {{ _('Cards') }} {{
-                        "%.0f"|format(card_pct) }}% · {{ _('Bank') }} {{ "%.0f"|format(bank_pct) }}%
-                    </div>
-                </div>
-                <div class="stat">
-                    <div class="stat-title">{{ _('Sessions Status') }}</div>
-                    <div class="stat-value text-xl">
-                        <span class="text-warning">{{ sessions_open }}</span> ·
-                        <span class="text-success">{{ sessions_closed }}</span>
-                        {% if sessions_need_review > 0 %} · <span class="text-error">{{ sessions_need_review }}</span>{%
-                        endif %}
-                    </div>
-                    <div class="stat-desc">
-                        <span class="text-warning">●</span> {{ _('Open') }}
-                        <span class="text-success">●</span> {{ _('Closed') }}
-                        {% if sessions_need_review > 0 %}<span class="text-error">●</span> {{ _('Review') }}{% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </details>
 </div>
 
 <script>
