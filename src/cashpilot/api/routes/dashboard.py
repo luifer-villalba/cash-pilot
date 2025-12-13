@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
@@ -209,31 +209,67 @@ async def get_dashboard_stats(
         from_date, to_date, cashier_name, business_id, status, current_user
     )
 
-    # Get ALL filtered sessions for session counts (open/closed/flagged)
-    stmt_all = select(CashSession).where(and_(*filters))
-    result_all = await db.execute(stmt_all)
-    all_sessions = list(result_all.scalars().all())
+    # Use database aggregations for efficiency
+    # Count sessions by status and flagged state
+    stmt_counts = select(
+        func.count(case((CashSession.status == "OPEN", 1))).label("sessions_open"),
+        func.count(case((CashSession.status == "CLOSED", 1))).label("sessions_closed"),
+        func.count(case((CashSession.flagged == True, 1))).label("sessions_need_review"),
+    ).where(and_(*filters))
 
-    # Count by status
-    sessions_open = sum(1 for s in all_sessions if s.status == "OPEN")
-    sessions_closed = sum(1 for s in all_sessions if s.status == "CLOSED")
-    sessions_need_review = sum(1 for s in all_sessions if s.flagged)
+    result_counts = await db.execute(stmt_counts)
+    counts_row = result_counts.one()
+    sessions_open = counts_row.sessions_open
+    sessions_closed = counts_row.sessions_closed
+    sessions_need_review = counts_row.sessions_need_review
 
-    # Get closed sessions only for financial aggregations
-    closed_sessions = [s for s in all_sessions if s.status == "CLOSED"]
+    # Calculate financial aggregations for closed sessions only
+    # cash_sales = (final_cash - initial_cash) + envelope_amount
+    # Note: Only include sessions where final_cash is not NULL
+    stmt_aggs = select(
+        func.sum(
+            case(
+                (
+                    and_(CashSession.status == "CLOSED", CashSession.final_cash.isnot(None)),
+                    (CashSession.final_cash - CashSession.initial_cash)
+                    + CashSession.envelope_amount,
+                ),
+                else_=0,
+            )
+        ).label("cash_sales"),
+        func.sum(
+            case((CashSession.status == "CLOSED", CashSession.credit_card_total), else_=0)
+        ).label("credit_card_total"),
+        func.sum(
+            case((CashSession.status == "CLOSED", CashSession.debit_card_total), else_=0)
+        ).label("debit_card_total"),
+        func.sum(
+            case((CashSession.status == "CLOSED", CashSession.bank_transfer_total), else_=0)
+        ).label("bank_transfer_total"),
+        func.sum(case((CashSession.status == "CLOSED", CashSession.expenses), else_=0)).label(
+            "expenses"
+        ),
+        func.sum(
+            case((CashSession.status == "CLOSED", CashSession.credit_sales_total), else_=0)
+        ).label("credit_sales_total"),
+        func.sum(
+            case(
+                (CashSession.status == "CLOSED", CashSession.credit_payments_collected), else_=0
+            )
+        ).label("credit_payments_collected"),
+    ).where(and_(*filters))
 
-    # Calculate aggregations from closed sessions
-    cash_sales_val = sum(session.cash_sales for session in closed_sessions)
-    credit_card_val = sum(session.credit_card_total for session in closed_sessions)
-    debit_card_val = sum(session.debit_card_total for session in closed_sessions)
-    bank_val = sum(session.bank_transfer_total for session in closed_sessions)
-    expenses_val = sum(session.expenses for session in closed_sessions)
-    credit_sales_val = sum(
-        session.credit_sales_total or Decimal("0") for session in closed_sessions
-    )
-    credit_payments_val = sum(
-        session.credit_payments_collected or Decimal("0") for session in closed_sessions
-    )
+    result_aggs = await db.execute(stmt_aggs)
+    aggs_row = result_aggs.one()
+
+    # Convert to Decimal, handling None from aggregations
+    cash_sales_val = Decimal(str(aggs_row.cash_sales or 0))
+    credit_card_val = Decimal(str(aggs_row.credit_card_total or 0))
+    debit_card_val = Decimal(str(aggs_row.debit_card_total or 0))
+    bank_val = Decimal(str(aggs_row.bank_transfer_total or 0))
+    expenses_val = Decimal(str(aggs_row.expenses or 0))
+    credit_sales_val = Decimal(str(aggs_row.credit_sales_total or 0))
+    credit_payments_val = Decimal(str(aggs_row.credit_payments_collected or 0))
 
     # Card #1: Cash Sales
     # Already calculated as cash_sales_val
