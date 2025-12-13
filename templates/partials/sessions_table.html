@@ -47,7 +47,7 @@
                 </thead>
                 <tbody class="divide-y divide-base-200">
                     {% for session in sessions %}
-                    <tr class="session-row transition-all cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'">
+                    <tr class="session-row transition-all cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" aria-label="{{ _('View session') }}" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}';}">
                         <!-- Status -->
                         <td onclick="event.stopPropagation()">
                             {% if session.status == 'OPEN' %}
