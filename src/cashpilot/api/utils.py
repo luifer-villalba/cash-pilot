@@ -232,6 +232,7 @@ async def login_page(request: Request):
     gettext_func = get_translation_function(locale)
 
     error = request.query_params.get("error")
+    expired = request.query_params.get("expired")
 
     # Render template with translation function
     return templates.TemplateResponse(
@@ -240,6 +241,7 @@ async def login_page(request: Request):
             "request": request,
             "_": gettext_func,
             "error": error,
+            "expired": expired,
         },
     )
 

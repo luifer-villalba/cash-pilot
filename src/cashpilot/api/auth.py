@@ -1,5 +1,6 @@
 """Authentication endpoints and dependencies."""
 
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,11 +13,18 @@ from starlette.requests import Request
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
-from cashpilot.models.user import User
+from cashpilot.models.user import User, UserRole
 
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["auth"])
+
+
+# Configurable inactivity timeout by role (seconds)
+ROLE_TIMEOUTS = {
+    UserRole.CASHIER: 30 * 60,  # 30 minutes
+    UserRole.ADMIN: 2 * 60 * 60,  # 2 hours
+}
 
 
 async def get_current_user(
@@ -31,6 +39,31 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
+
+    user_role = request.session.get("user_role")
+
+    # Enforce role-based inactivity timeout for roles with configured timeouts
+    if user_role in ROLE_TIMEOUTS:
+        timeout = ROLE_TIMEOUTS[user_role]
+        now = datetime.utcnow()
+        last_activity_raw = request.session.get("last_activity")
+
+        try:
+            last_activity = datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
+        except (ValueError, TypeError):
+            last_activity = None
+
+        if last_activity and (now - last_activity) > timedelta(seconds=timeout):
+            # Expired: clear session and redirect to login with message
+            request.session.clear()
+            raise HTTPException(
+                status_code=302,
+                detail="Session expired",
+                headers={"Location": "/login?expired=1"},
+            )
+        else:
+            # Refresh last_activity on each authenticated request
+            request.session["last_activity"] = now.isoformat()
 
     try:
         user_uuid = UUID(user_id)
@@ -78,6 +111,9 @@ async def login(
     request.session["user_id"] = str(user.id)
     request.session["user_role"] = user.role
     request.session["user_display_name"] = user.display_name
+    # Set last_activity for roles with configured timeouts
+    if user.role in ROLE_TIMEOUTS:
+        request.session["last_activity"] = datetime.utcnow().isoformat()
     logger.info(
         "auth.login_success",
         email=user.email,
