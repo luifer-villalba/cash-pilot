@@ -219,9 +219,9 @@ async def get_dashboard_stats(
 
     result_counts = await db.execute(stmt_counts)
     counts_row = result_counts.one()
-    sessions_open = counts_row.sessions_open
-    sessions_closed = counts_row.sessions_closed
-    sessions_need_review = counts_row.sessions_need_review
+    sessions_open = counts_row.sessions_open or 0
+    sessions_closed = counts_row.sessions_closed or 0
+    sessions_need_review = counts_row.sessions_need_review or 0
 
     # Calculate financial aggregations for closed sessions only
     # cash_sales = (final_cash - initial_cash) + envelope_amount
