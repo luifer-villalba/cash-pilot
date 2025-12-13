@@ -214,7 +214,7 @@ async def get_dashboard_stats(
     stmt_counts = select(
         func.count(case((CashSession.status == "OPEN", 1))).label("sessions_open"),
         func.count(case((CashSession.status == "CLOSED", 1))).label("sessions_closed"),
-        func.count(case((CashSession.flagged == True, 1))).label("sessions_need_review"),
+        func.count(case((CashSession.flagged, 1))).label("sessions_need_review"),
     ).where(and_(*filters))
 
     result_counts = await db.execute(stmt_counts)
@@ -230,7 +230,7 @@ async def get_dashboard_stats(
         func.sum(
             case(
                 (
-                    and_(CashSession.status == "CLOSED", CashSession.final_cash.isnot(None)),
+                    and_(CashSession.status == "CLOSED", CashSession.final_cash.is_not(None)),
                     (CashSession.final_cash - CashSession.initial_cash)
                     + CashSession.envelope_amount,
                 ),
