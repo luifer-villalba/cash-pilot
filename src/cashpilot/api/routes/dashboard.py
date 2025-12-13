@@ -212,9 +212,9 @@ async def get_dashboard_stats(
     # Use database aggregations for efficiency
     # Count sessions by status and flagged state
     stmt_counts = select(
-        func.count(case((CashSession.status == "OPEN", 1))).label("sessions_open"),
-        func.count(case((CashSession.status == "CLOSED", 1))).label("sessions_closed"),
-        func.count(case((CashSession.flagged, 1))).label("sessions_need_review"),
+        func.sum(case((CashSession.status == "OPEN", 1), else_=0)).label("sessions_open"),
+        func.sum(case((CashSession.status == "CLOSED", 1), else_=0)).label("sessions_closed"),
+        func.sum(case((CashSession.flagged, 1), else_=0)).label("sessions_need_review"),
     ).where(and_(*filters))
 
     result_counts = await db.execute(stmt_counts)
@@ -232,7 +232,7 @@ async def get_dashboard_stats(
                 (
                     and_(CashSession.status == "CLOSED", CashSession.final_cash.is_not(None)),
                     (CashSession.final_cash - CashSession.initial_cash)
-                    + CashSession.envelope_amount,
+                    + func.coalesce(CashSession.envelope_amount, 0),
                 ),
                 else_=0,
             )
@@ -263,13 +263,13 @@ async def get_dashboard_stats(
     aggs_row = result_aggs.one()
 
     # Convert to Decimal, handling None from aggregations
-    cash_sales_val = Decimal(str(aggs_row.cash_sales or 0))
-    credit_card_val = Decimal(str(aggs_row.credit_card_total or 0))
-    debit_card_val = Decimal(str(aggs_row.debit_card_total or 0))
-    bank_val = Decimal(str(aggs_row.bank_transfer_total or 0))
-    expenses_val = Decimal(str(aggs_row.expenses or 0))
-    credit_sales_val = Decimal(str(aggs_row.credit_sales_total or 0))
-    credit_payments_val = Decimal(str(aggs_row.credit_payments_collected or 0))
+    cash_sales_val = Decimal(aggs_row.cash_sales or 0)
+    credit_card_val = Decimal(aggs_row.credit_card_total or 0)
+    debit_card_val = Decimal(aggs_row.debit_card_total or 0)
+    bank_val = Decimal(aggs_row.bank_transfer_total or 0)
+    expenses_val = Decimal(aggs_row.expenses or 0)
+    credit_sales_val = Decimal(aggs_row.credit_sales_total or 0)
+    credit_payments_val = Decimal(aggs_row.credit_payments_collected or 0)
 
     # Card #1: Cash Sales
     # Already calculated as cash_sales_val
