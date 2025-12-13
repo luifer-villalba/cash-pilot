@@ -37,9 +37,7 @@ async def get_current_user(
         now = datetime.now()
         last_activity_raw = request.session.get("last_activity")
         try:
-            last_activity = (
-                datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
-            )
+            last_activity = datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
         except Exception:
             last_activity = None
 
