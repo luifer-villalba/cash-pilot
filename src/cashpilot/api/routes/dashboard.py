@@ -259,9 +259,7 @@ async def get_dashboard_stats(
             case((CashSession.status == "CLOSED", CashSession.credit_sales_total), else_=0)
         ).label("credit_sales_total"),
         func.sum(
-            case(
-                (CashSession.status == "CLOSED", CashSession.credit_payments_collected), else_=0
-            )
+            case((CashSession.status == "CLOSED", CashSession.credit_payments_collected), else_=0)
         ).label("credit_payments_collected"),
     ).where(and_(*filters))
 
