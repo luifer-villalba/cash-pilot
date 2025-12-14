@@ -48,7 +48,7 @@
             <!-- Preset Buttons + Business Selector (Always Visible) -->
             <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-start sm:items-center">
                 <div class="flex flex-wrap gap-2">
-                    <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="today">
+                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="today">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -57,7 +57,17 @@
                         </svg>
                         <span>{{ _('Today') }}</span>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="week">
+                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="yesterday">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7 14 L9 16 L7 18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>{{ _('Yesterday') }}</span>
+                    </button>
+                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="week">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -68,7 +78,7 @@
                         </svg>
                         <span>{{ _('This Week') }}</span>
                     </button>
-                    <button type="button" class="btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="month">
+                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-colors" data-preset="month">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <rect x="7" y="13" width="3" height="6" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -261,6 +271,59 @@
         htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
     }
 
+    // Mark active preset button
+    function setActivePreset(preset) {
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            if (btn.dataset.preset === preset) {
+                btn.classList.remove('btn-outline');
+                btn.classList.add('btn-primary');
+            } else {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline');
+            }
+        });
+    }
+
+    // Check which preset matches current dates on load
+    function detectActivePreset() {
+        const fromDate = document.getElementById('from_date').value;
+        const toDate = document.getElementById('to_date').value;
+        
+        function formatLocalDate(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        const now = new Date();
+        const today = formatLocalDate(now);
+        
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = formatLocalDate(yesterday);
+        
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+        const weekStart = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), diff));
+        const weekEnd = new Date(now.getFullYear(), now.getMonth(), diff);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const weekEndStr = formatLocalDate(weekEnd);
+        
+        const monthStart = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
+        const monthEnd = formatLocalDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+        
+        if (fromDate === today && toDate === today) {
+            setActivePreset('today');
+        } else if (fromDate === yesterdayStr && toDate === yesterdayStr) {
+            setActivePreset('yesterday');
+        } else if (fromDate === weekStart && toDate === weekEndStr) {
+            setActivePreset('week');
+        } else if (fromDate === monthStart && toDate === monthEnd) {
+            setActivePreset('month');
+        }
+    }
+
     // Preset button handlers
     document.querySelectorAll('[data-preset]').forEach(btn => {
         btn.addEventListener('click', function (e) {
@@ -271,6 +334,10 @@
 
             if (preset === 'today') {
                 startDate = endDate = now;
+            } else if (preset === 'yesterday') {
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 1);
+                endDate = startDate;
             } else if (preset === 'week') {
                 const day = now.getDay();
                 const diff = now.getDate() - day + (day === 0 ? -6 : 1);
@@ -292,9 +359,13 @@
             document.getElementById('from_date').value = formatLocalDate(startDate);
             document.getElementById('to_date').value = formatLocalDate(endDate);
 
+            setActivePreset(preset);
             applyFilters();
         });
     });
+
+    // Detect active preset on page load
+    detectActivePreset();
 
     // Filter form change handler
     document.getElementById('filter-form').addEventListener('change', applyFilters);

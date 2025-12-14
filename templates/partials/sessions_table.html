@@ -1,4 +1,4 @@
-<!-- File: templates/sessions/sessions_table.html -->
+<!-- File: src/cashpilot/templates/partials/sessions_table.html -->
 <div class="bg-base-100 border border-base-300 rounded-lg shadow">
     <div class="p-4 md:p-6">
         <!-- Header -->
@@ -18,12 +18,24 @@
         </div>
 
         <style>
-            /* Single-source hover tint for rows (normal and flagged). */
+            /* Hover tint */
             .table tbody tr.session-row:hover td {
                 background-color: hsl(var(--p) / 0.10) !important;
             }
+        
             .table tbody tr.session-row.flagged:hover td {
                 background-color: hsl(var(--er) / 0.14) !important;
+            }
+        
+            /* Horizontal borders between rows */
+            .table tbody tr {
+                border-bottom: 1px solid hsl(var(--b2));
+            }
+        
+            /* Vertical borders between columns */
+            .table tbody td:not(:last-child),
+            .table thead th:not(:last-child) {
+                border-right: 1px solid hsl(var(--bc) / 0.1);
             }
         </style>
 
@@ -45,7 +57,7 @@
                         <th class="text-center text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Actions') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-base-200">
+                <tbody>
                     {% for session in sessions %}
                     <tr class="session-row transition-all cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" aria-label="{{ _('View session') }}" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}';}">
                         <!-- Status -->
