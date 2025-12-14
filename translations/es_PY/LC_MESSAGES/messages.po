@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-13 03:39+0000\n"
+"POT-Creation-Date: 2025-12-13 20:29+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -19,42 +19,42 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.14.0\n"
 
-#: /app/templates/base.html:70 /app/templates/base.html:94
+#: /app/templates/base.html:70 /app/templates/base.html:93
 #: /app/templates/index.html:4 /app/templates/index.html:11
 msgid "Dashboard"
 msgstr "Panel"
 
-#: /app/templates/base.html:71 /app/templates/base.html:95
+#: /app/templates/base.html:71 /app/templates/base.html:99
 #: /app/templates/businesses/list.html:4 /app/templates/businesses/list.html:9
 msgid "Businesses"
 msgstr "Negocios"
 
-#: /app/templates/base.html:78 /app/templates/base.html:102
+#: /app/templates/base.html:73 /app/templates/base.html:106
 msgid "Users"
 msgstr "Usuarios"
 
-#: /app/templates/base.html:112
+#: /app/templates/base.html:114
 msgid "Toggle theme"
 msgstr "Cambiar tema"
 
-#: /app/templates/base.html:128 /app/templates/settings.html:4
+#: /app/templates/base.html:130 /app/templates/settings.html:4
 #: /app/templates/settings.html:10
 msgid "Settings"
 msgstr "Configuraciones"
 
-#: /app/templates/base.html:130
+#: /app/templates/base.html:131
 msgid "Are you sure?"
 msgstr "¿Estás seguro?"
 
-#: /app/templates/base.html:131
+#: /app/templates/base.html:132
 msgid "Logout"
 msgstr "Cerrar sesión"
 
-#: /app/templates/base.html:139 /app/templates/login.html:7
+#: /app/templates/base.html:141 /app/templates/login.html:7
 msgid "Login"
 msgstr "Iniciar sesión"
 
-#: /app/templates/base.html:153 /app/templates/login.html:19
+#: /app/templates/base.html:155 /app/templates/login.html:19
 msgid "Business Cash Register Reconciliation System"
 msgstr "Sistema de Reconciliación de Caja para Farmacias"
 
@@ -62,71 +62,64 @@ msgstr "Sistema de Reconciliación de Caja para Farmacias"
 msgid "Monitor cash sessions and reconciliation"
 msgstr "Monitorear sesiones de caja y reconciliación"
 
-#: /app/templates/index.html:24
-msgid "Manage Users"
-msgstr "Administrar usuarios"
-
-#: /app/templates/index.html:31
-msgid "New Session"
-msgstr "Abrir Caja"
-
-#: /app/templates/index.html:63
+#: /app/templates/index.html:26
 msgid "Filter Sessions"
 msgstr "Filtrar Sesiones"
 
-#: /app/templates/index.html:66
+#: /app/templates/index.html:29
 msgid "active"
 msgstr "activo"
 
-#: /app/templates/index.html:76
+#: /app/templates/index.html:39
 msgid "More Options"
 msgstr "Más Opciones"
 
-#: /app/templates/index.html:89
+#: /app/templates/index.html:53
 msgid "Today"
 msgstr "Hoy"
 
-#: /app/templates/index.html:93
+#: /app/templates/index.html:57
 msgid "This Week"
 msgstr "Esta Semana"
 
-#: /app/templates/index.html:97
+#: /app/templates/index.html:61
 msgid "This Month"
 msgstr "Este Mes"
 
-#: /app/templates/index.html:108
+#: /app/templates/index.html:68
+msgid "All Businesses"
+msgstr "Todos los Negocios"
+
+#: /app/templates/index.html:83
 msgid "From Date"
 msgstr "Desde Fecha"
 
-#: /app/templates/index.html:128
+#: /app/templates/index.html:103
 msgid "To Date"
 msgstr "Hasta Fecha"
 
-#: /app/templates/admin/users.html:45 /app/templates/index.html:148
-#: /app/templates/partials/sessions_table.html:15
+#: /app/templates/admin/users.html:45 /app/templates/index.html:123
+#: /app/templates/partials/sessions_table.html:35
 #: /app/templates/sessions/session_detail.html:139
 #: /app/templates/sessions/session_detail.html:526
 msgid "Status"
 msgstr "Estado"
 
-#: /app/templates/admin/users.html:264 /app/templates/index.html:152
-#: /app/templates/index.html:171
+#: /app/templates/admin/users.html:264 /app/templates/index.html:127
 msgid "All"
 msgstr "Todos"
 
-#: /app/templates/index.html:153 /app/templates/partials/sessions_table.html:35
-#: /app/templates/partials/sessions_table.html:58
-#: /app/templates/partials/sessions_table.html:132
-#: /app/templates/partials/sessions_table.html:156
-#: /app/templates/partials/stats_row.html:143
+#: /app/templates/index.html:128 /app/templates/partials/sessions_table.html:57
+#: /app/templates/partials/sessions_table.html:87
+#: /app/templates/partials/sessions_table.html:177
+#: /app/templates/partials/sessions_table.html:208
 #: /app/templates/sessions/edit_open_session.html:16
 #: /app/templates/sessions/session_detail.html:145
 msgid "Open"
 msgstr "Abierto"
 
-#: /app/templates/index.html:154 /app/templates/partials/sessions_table.html:45
-#: /app/templates/partials/sessions_table.html:142
-#: /app/templates/partials/stats_row.html:143
+#: /app/templates/index.html:129 /app/templates/partials/sessions_table.html:71
+#: /app/templates/partials/sessions_table.html:191
 #: /app/templates/sessions/edit_closed_session.html:16
 #: /app/templates/sessions/session_detail.html:150
 #: /app/templates/sessions/session_detail.html:165
@@ -134,22 +127,15 @@ msgstr "Abierto"
 msgid "Closed"
 msgstr "Cerrado"
 
-#: /app/templates/index.html:166 /app/templates/partials/sessions_table.html:17
-#: /app/templates/sessions/create_session.html:23
-#: /app/templates/sessions/create_session.html:196
-#: /app/templates/sessions/session_detail.html:575
-msgid "Business"
-msgstr "Negocio"
-
-#: /app/templates/index.html:189
+#: /app/templates/index.html:141
 msgid "Cashier Name"
 msgstr "Nombre del Cajero"
 
-#: /app/templates/index.html:197
+#: /app/templates/index.html:149
 msgid "Search..."
 msgstr "Buscar..."
 
-#: /app/templates/index.html:208
+#: /app/templates/index.html:160
 msgid "Clear All"
 msgstr "Limpiar Todo"
 
@@ -157,40 +143,46 @@ msgstr "Limpiar Todo"
 msgid "Invalid email or password. Please try again."
 msgstr "Email o contraseña inválida. Por favor, intente de nuevo."
 
-#: /app/templates/login.html:35
+#: /app/templates/login.html:33
+msgid "Session expired due to inactivity. Please sign in again."
+msgstr "Sesión expirada por inactividad. Por favor, iniciá sesión de nuevo."
+
+#: /app/templates/login.html:42
 msgid "Email Address"
 msgstr "Correo electrónico"
 
-#: /app/templates/admin/users.html:106 /app/templates/login.html:51
+#: /app/templates/admin/users.html:106 /app/templates/login.html:58
 msgid "Password"
 msgstr "Contraseña"
 
-#: /app/templates/login.html:72
+#: /app/templates/login.html:79
 msgid "Remember me"
 msgstr "Recordarme"
 
-#: /app/templates/login.html:81
+#: /app/templates/login.html:88
 msgid "Sign In"
 msgstr "Iniciar sesión"
 
-#: /app/templates/login.html:88
+#: /app/templates/login.html:95
 msgid "Forgot your password?"
 msgstr "¿Olvidaste tu contraseña?"
 
-#: /app/templates/login.html:94
+#: /app/templates/login.html:101
 msgid "Text admin"
 msgstr "Contactá al admin"
 
 #: /app/templates/admin/users.html:155 /app/templates/admin/users.html:192
-#: /app/templates/admin/users.html:314 /app/templates/login.html:105
+#: /app/templates/admin/users.html:314 /app/templates/login.html:112
 msgid "Reset Password"
 msgstr "Restablecer contraseña"
 
-#: /app/templates/login.html:108
+#: /app/templates/login.html:115
 msgid "To reset your password, please contact the administrator:"
 msgstr "Para restablecer tu contraseña, contactá al administrador"
 
-#: /app/templates/login.html:115 /app/templates/sessions/session_detail.html:52
+#: /app/templates/login.html:122
+#: /app/templates/partials/sessions_table.html:240
+#: /app/templates/sessions/session_detail.html:52
 msgid "Close"
 msgstr "Cerrar"
 
@@ -288,7 +280,7 @@ msgid "Created"
 msgstr "Creado"
 
 #: /app/templates/admin/users.html:48
-#: /app/templates/partials/sessions_table.html:25
+#: /app/templates/partials/sessions_table.html:44
 msgid "Actions"
 msgstr "Acciones"
 
@@ -305,7 +297,7 @@ msgid "Last Name"
 msgstr "Apellido"
 
 #: /app/templates/admin/users.html:98
-#: /app/templates/partials/sessions_table.html:16
+#: /app/templates/partials/sessions_table.html:36
 #: /app/templates/sessions/create_session.html:77
 #: /app/templates/sessions/create_session.html:188
 #: /app/templates/sessions/session_detail.html:133
@@ -430,6 +422,8 @@ msgid "Are you sure you want to enable this user?"
 msgstr "¿Estás seguro de que deseas activar este usuario?"
 
 #: /app/templates/admin/users.html:312 /app/templates/businesses/edit.html:49
+#: /app/templates/partials/sessions_table.html:98
+#: /app/templates/partials/stats_row.html:79
 msgid "Active"
 msgstr "Activo"
 
@@ -613,8 +607,7 @@ msgstr "usuarios asignados"
 
 #: /app/templates/businesses/list.html:77
 #: /app/templates/businesses/list.html:81
-#: /app/templates/partials/sessions_table.html:191
-#: /app/templates/partials/sessions_table.html:195
+#: /app/templates/partials/sessions_table.html:231
 #: /app/templates/sessions/session_detail.html:35
 #: /app/templates/sessions/session_detail.html:86
 msgid "Edit"
@@ -649,230 +642,246 @@ msgid ""
 "reconciliations."
 msgstr "Creá tu primer sucursal para monitorear sesiones de caja y reconciliación"
 
-#: /app/templates/partials/sessions_table.html:6
+#: /app/templates/partials/sessions_table.html:9
 msgid "Cash Sessions"
 msgstr "Sesiones de Caja"
 
-#: /app/templates/partials/sessions_table.html:18
+#: /app/templates/partials/sessions_table.html:15
+msgid "New Session"
+msgstr "Abrir Caja"
+
+#: /app/templates/partials/sessions_table.html:37
+#: /app/templates/sessions/create_session.html:23
+#: /app/templates/sessions/create_session.html:196
+#: /app/templates/sessions/session_detail.html:575
+msgid "Business"
+msgstr "Negocio"
+
+#: /app/templates/partials/sessions_table.html:38
 msgid "Date & Time"
 msgstr "Fecha y Hora"
 
-#: /app/templates/partials/sessions_table.html:19
-#: /app/templates/sessions/session_detail.html:299
-msgid "Initial"
-msgstr "Inicial"
+#: /app/templates/partials/sessions_table.html:39
+msgid "Received"
+msgstr "Recibido"
 
-#: /app/templates/partials/sessions_table.html:20
-msgid "Final"
-msgstr "Final"
-
-#: /app/templates/partials/sessions_table.html:21
-#: /app/templates/partials/sessions_table.html:164
-msgid "Cash"
-msgstr "Efectivo"
-
-#: /app/templates/partials/sessions_table.html:22
-#: /app/templates/partials/sessions_table.html:168
-#: /app/templates/partials/stats_row.html:13
-#: /app/templates/sessions/session_detail.html:325
-#: /app/templates/sessions/session_detail.html:341
-msgid "Cards"
-msgstr "Tarjetas"
-
-#: /app/templates/partials/sessions_table.html:23
-#: /app/templates/partials/sessions_table.html:172
-msgid "Bank"
-msgstr "Banco"
-
-#: /app/templates/partials/sessions_table.html:24
-#: /app/templates/partials/sessions_table.html:176
-msgid "Net"
-msgstr "Neto"
+#: /app/templates/partials/sessions_table.html:39
+msgid "Handed"
+msgstr "Entregado"
 
 #: /app/templates/partials/sessions_table.html:40
-#: /app/templates/partials/sessions_table.html:137
-msgid "Review"
-msgstr "Revisar"
-
-#: /app/templates/partials/sessions_table.html:72
-msgid "View details"
-msgstr "Ver detalles"
-
-#: /app/templates/partials/sessions_table.html:80
-msgid "Edit session"
-msgstr "Editar sesión"
-
-#: /app/templates/partials/sessions_table.html:86
-#: /app/templates/partials/sessions_table.html:194
-#: /app/templates/sessions/session_detail.html:39
-msgid "Only admins and session creator can edit"
-msgstr "Solo administradores y creadores de sesiones pueden editar"
-
-#: /app/templates/partials/sessions_table.html:96
-#: /app/templates/sessions/session_detail.html:58
-#: /app/templates/sessions/session_detail.html:103
-msgid "Delete this session? This can be undone by admins."
-msgstr "¿Borrar esta sesión? Los administradores pueden deshacer esto."
-
-#: /app/templates/partials/sessions_table.html:99
-msgid "Delete session"
-msgstr "Borrar sesión"
-
-#: /app/templates/partials/sessions_table.html:105
-#: /app/templates/sessions/session_detail.html:69
-msgid "Only admins and session creator can delete"
-msgstr "Solo administradores y el creador de la sesión pueden eliminar"
-
-#: /app/templates/partials/sessions_table.html:186
-msgid "View"
-msgstr "Ver"
-
-#: /app/templates/partials/sessions_table.html:207
-msgid "Showing"
-msgstr "Mostrando"
-
-#: /app/templates/partials/sessions_table.html:207
-msgid "of"
-msgstr "de"
-
-#: /app/templates/partials/sessions_table.html:211
-msgid "First page"
-msgstr "Primera página"
-
-#: /app/templates/partials/sessions_table.html:212
-msgid "Previous page"
-msgstr "Página anterior"
-
-#: /app/templates/partials/sessions_table.html:224
-msgid "Next page"
-msgstr "Siguiente página"
-
-#: /app/templates/partials/sessions_table.html:225
-msgid "Last page"
-msgstr "Última página"
-
-#: /app/templates/partials/sessions_table.html:233
-msgid "No sessions found."
-msgstr "No se encontraron sesiones de cajas."
-
-#: /app/templates/partials/sessions_table.html:233
-msgid "Create one"
-msgstr "Crear uno"
-
-#: /app/templates/partials/stats_row.html:6
-msgid "TOTAL SALES"
-msgstr "VENTAS TOTALES"
-
-#: /app/templates/partials/stats_row.html:13
-#: /app/templates/partials/stats_row.html:21
-#: /app/templates/partials/stats_row.html:129
+#: /app/templates/partials/stats_row.html:14
+#: /app/templates/partials/stats_row.html:72
 #: /app/templates/sessions/session_detail.html:314
 #: /app/templates/sessions/session_detail.html:341
 msgid "Cash Sales"
 msgstr "Ventas al Contado"
 
-#: /app/templates/partials/stats_row.html:13
+#: /app/templates/partials/sessions_table.html:41
+#: /app/templates/sessions/session_detail.html:314
+#: /app/templates/sessions/session_detail.html:341
+msgid "Transfer"
+msgstr "Transferencia"
+
+#: /app/templates/partials/sessions_table.html:42
+#: /app/templates/partials/stats_row.html:7
+#: /app/templates/sessions/session_detail.html:325
+#: /app/templates/sessions/session_detail.html:341
+msgid "Cards"
+msgstr "Tarjetas"
+
+#: /app/templates/partials/sessions_table.html:43
+#: /app/templates/partials/sessions_table.html:224
+msgid "Sales Total"
+msgstr "Venta Total"
+
+#: /app/templates/partials/sessions_table.html:64
+#: /app/templates/partials/sessions_table.html:184
+msgid "Review"
+msgstr "Revisar"
+
+#: /app/templates/partials/sessions_table.html:111
+#: /app/templates/partials/sessions_table.html:231
+msgid "Edit session"
+msgstr "Editar sesión"
+
+#: /app/templates/partials/sessions_table.html:120
+#: /app/templates/partials/sessions_table.html:236
+msgid "Close this session? You can still edit it afterward."
+msgstr "¿Cerrar esta sesión? Aún podrás editarla después."
+
+#: /app/templates/partials/sessions_table.html:123
+#: /app/templates/partials/sessions_table.html:239
+msgid "Close session"
+msgstr "Cerrar sesión"
+
+#: /app/templates/partials/sessions_table.html:129
+msgid "Only admins and session creator can close"
+msgstr "Solo administradores y el creador pueden cerrar"
+
+#: /app/templates/partials/sessions_table.html:139
+#: /app/templates/sessions/session_detail.html:58
+#: /app/templates/sessions/session_detail.html:103
+msgid "Delete this session? This can be undone by admins."
+msgstr "¿Borrar esta sesión? Los administradores pueden deshacer esto."
+
+#: /app/templates/partials/sessions_table.html:142
+msgid "Delete session"
+msgstr "Borrar sesión"
+
+#: /app/templates/partials/sessions_table.html:148
+#: /app/templates/sessions/session_detail.html:69
+msgid "Only admins and session creator can delete"
+msgstr "Solo administradores y el creador de la sesión pueden eliminar"
+
+#: /app/templates/partials/sessions_table.html:199
+msgid "Date"
+msgstr "Fecha"
+
+#: /app/templates/partials/sessions_table.html:202
+msgid "Period"
+msgstr "Período"
+
+#: /app/templates/partials/sessions_table.html:216
+#: /app/templates/sessions/close_session.html:251
+#: /app/templates/sessions/create_session.html:192
+#: /app/templates/sessions/edit_open_session.html:192
+#: /app/templates/sessions/session_detail.html:184
+msgid "Initial Cash"
+msgstr "Efectivo Inicial"
+
+#: /app/templates/partials/sessions_table.html:220
+#: /app/templates/sessions/edit_closed_session.html:36
+#: /app/templates/sessions/edit_closed_session.html:267
+#: /app/templates/sessions/session_detail.html:193
+#: /app/templates/sessions/session_detail.html:299
+msgid "Final Cash"
+msgstr "Efectivo Final"
+
+#: /app/templates/partials/sessions_table.html:247
+msgid "Remove this session? This can be undone by admins."
+msgstr "¿Eliminar esta sesión? Los administradores pueden deshacer esto."
+
+#: /app/templates/partials/sessions_table.html:250
+msgid "Remove session"
+msgstr "Eliminar sesión"
+
+#: /app/templates/partials/sessions_table.html:251
+#: /app/templates/partials/sessions_table.html:255
+msgid "Remove"
+msgstr "Eliminar"
+
+#: /app/templates/partials/sessions_table.html:254
+msgid "Only admins and session creator can remove"
+msgstr "Solo administradores y el creador pueden eliminar"
+
+#: /app/templates/partials/sessions_table.html:266
+msgid "Showing"
+msgstr "Mostrando"
+
+#: /app/templates/partials/sessions_table.html:266
+msgid "of"
+msgstr "de"
+
+#: /app/templates/partials/sessions_table.html:270
+msgid "First page"
+msgstr "Primera página"
+
+#: /app/templates/partials/sessions_table.html:271
+msgid "Previous page"
+msgstr "Página anterior"
+
+#: /app/templates/partials/sessions_table.html:283
+msgid "Next page"
+msgstr "Siguiente página"
+
+#: /app/templates/partials/sessions_table.html:284
+msgid "Last page"
+msgstr "Última página"
+
+#: /app/templates/partials/sessions_table.html:292
+msgid "No sessions found."
+msgstr "No se encontraron sesiones de cajas."
+
+#: /app/templates/partials/sessions_table.html:292
+msgid "Create one"
+msgstr "Crear uno"
+
+#: /app/templates/partials/stats_row.html:5
+msgid "TOTAL SALES"
+msgstr "VENTAS TOTALES"
+
+#: /app/templates/partials/stats_row.html:7
+
+msgid "Cash"
+msgstr "Efectivo"
+
+#: /app/templates/partials/stats_row.html:7
 #: /app/templates/sessions/edit_closed_session.html:287
 #: /app/templates/sessions/session_detail.html:214
 #: /app/templates/sessions/session_detail.html:299
 msgid "Bank Transfer"
 msgstr "Transferencia Bancaria"
 
-#: /app/templates/partials/stats_row.html:28
+#: /app/templates/partials/stats_row.html:16
 msgid "Register"
 msgstr "Dif. Dinero en Caja"
 
-#: /app/templates/partials/stats_row.html:28
+#: /app/templates/partials/stats_row.html:16
 #: /app/templates/sessions/edit_closed_session.html:272
 #: /app/templates/sessions/session_detail.html:299
 msgid "Envelope"
 msgstr "Sobre"
 
-#: /app/templates/partials/stats_row.html:35
+#: /app/templates/partials/stats_row.html:21
 #: /app/templates/sessions/session_detail.html:320
 msgid "Card Payments"
 msgstr "Ventas con Tarjeta"
 
-#: /app/templates/partials/stats_row.html:42
+#: /app/templates/partials/stats_row.html:23
 #: /app/templates/sessions/session_detail.html:327
 msgid "Credit"
 msgstr "Crédito"
 
-#: /app/templates/partials/stats_row.html:42
+#: /app/templates/partials/stats_row.html:23
 #: /app/templates/sessions/session_detail.html:327
 msgid "Debit"
 msgstr "Débito"
 
-#: /app/templates/partials/stats_row.html:49
+#: /app/templates/partials/stats_row.html:28
 #: /app/templates/sessions/edit_closed_session.html:152
 #: /app/templates/sessions/session_detail.html:234
 #: /app/templates/sessions/session_detail.html:361
 msgid "Credit Sales"
 msgstr "Ventas a Crédito"
 
-#: /app/templates/partials/stats_row.html:54
-msgid "Ventas a Crédito"
-msgstr ""
+#: /app/templates/partials/stats_row.html:30
+msgid "Pending payments"
+msgstr "Pagos pendientes"
 
-#: /app/templates/partials/stats_row.html:56
-msgid "Sales on credit"
-msgstr "Ventas a crédito"
-
-#: /app/templates/partials/stats_row.html:63
+#: /app/templates/partials/stats_row.html:35
 msgid "Collections"
 msgstr "Cobranzas"
 
-#: /app/templates/partials/stats_row.html:68
-msgid "Cobranzas"
-msgstr ""
-
-#: /app/templates/partials/stats_row.html:70
+#: /app/templates/partials/stats_row.html:37
 msgid "Payments collected"
 msgstr "Pagos cobrados"
 
-#: /app/templates/partials/stats_row.html:78
-#: /app/templates/partials/stats_row.html:161
-msgid "More Details"
-msgstr "Más Detalles"
-
-#: /app/templates/partials/stats_row.html:92
+#: /app/templates/partials/stats_row.html:42
 msgid "Bank Transfers"
 msgstr "Transferencias"
 
-#: /app/templates/partials/stats_row.html:97
-msgid "Mobile banking"
-msgstr ""
+#: /app/templates/partials/stats_row.html:44
+msgid "Direct transfers"
+msgstr "Transferencias directas"
 
-#: /app/templates/partials/stats_row.html:99
-#: /app/templates/sessions/session_detail.html:219
-msgid "Direct account transfers"
-msgstr "Transferencias directas a cuenta"
+#: /app/templates/partials/stats_row.html:51
+#: /app/templates/partials/stats_row.html:107
+msgid "More Details"
+msgstr "Más Detalles"
 
-#: /app/templates/partials/stats_row.html:106
-msgid "Total Expenses"
-msgstr "Total de Gastos"
-
-#: /app/templates/partials/stats_row.html:111
-#: /app/templates/sessions/close_session.html:125
-#: /app/templates/sessions/edit_closed_session.html:142
-msgid "Business expenses"
-msgstr "Gastos del negocio"
-
-#: /app/templates/partials/stats_row.html:113
-msgid "Cash outflows"
-msgstr "Salida de efectivo"
-
-#: /app/templates/partials/stats_row.html:120
-#: /app/templates/sessions/session_detail.html:307
-msgid "Cash Profit"
-msgstr "Ganancia en Efectivo"
-
-#: /app/templates/partials/stats_row.html:126
-#: /app/templates/sessions/session_detail.html:312
-msgid "Cash only"
-msgstr "Solo efectivo"
-
-#: /app/templates/partials/stats_row.html:129
+#: /app/templates/partials/stats_row.html:63
+#: /app/templates/partials/stats_row.html:72
 #: /app/templates/sessions/edit_closed_session.html:131
 #: /app/templates/sessions/edit_closed_session.html:292
 #: /app/templates/sessions/session_detail.html:224
@@ -880,15 +889,36 @@ msgstr "Solo efectivo"
 msgid "Expenses"
 msgstr "Gastos"
 
-#: /app/templates/partials/stats_row.html:136
-msgid "Sessions Status"
-msgstr "Estado de Sesiones"
+#: /app/templates/partials/stats_row.html:65
+msgid "Cash outflows"
+msgstr "Salida de efectivo"
 
-#: /app/templates/partials/stats_row.html:146
-msgid "Active sessions"
-msgstr "Sesiones Activas"
+#: /app/templates/partials/stats_row.html:70
+#: /app/templates/sessions/session_detail.html:307
+msgid "Cash Profit"
+msgstr "Ganancia en Efectivo"
 
-#: /app/templates/partials/stats_row.html:161
+#: /app/templates/partials/stats_row.html:77
+msgid "Open Sessions"
+msgstr "Sesiones Abiertas"
+
+#: /app/templates/partials/stats_row.html:84
+msgid "Closed Sessions"
+msgstr "Sesiones Cerradas"
+
+#: /app/templates/partials/stats_row.html:86
+msgid "Completed"
+msgstr "Completadas"
+
+#: /app/templates/partials/stats_row.html:91
+msgid "Flagged Sessions"
+msgstr "Sesiones Marcadas"
+
+#: /app/templates/partials/stats_row.html:93
+msgid "Need review"
+msgstr "Necesitan revisión"
+
+#: /app/templates/partials/stats_row.html:107
 msgid "Less Details"
 msgstr "Menos Detalles"
 
@@ -935,6 +965,11 @@ msgstr "Total Transferencias (Gs)"
 #: /app/templates/sessions/edit_open_session.html:53
 msgid "Expenses (Gs)"
 msgstr "Gastos (Gs)"
+
+#: /app/templates/sessions/close_session.html:125
+#: /app/templates/sessions/edit_closed_session.html:142
+msgid "Business expenses"
+msgstr "Gastos del negocio"
 
 #: /app/templates/sessions/close_session.html:130
 #: /app/templates/sessions/edit_open_session.html:69
@@ -1020,13 +1055,6 @@ msgstr "Fecha de la Sesión"
 #: /app/templates/sessions/edit_open_session.html:188
 msgid "Opened At"
 msgstr "Abierto en"
-
-#: /app/templates/sessions/close_session.html:251
-#: /app/templates/sessions/create_session.html:192
-#: /app/templates/sessions/edit_open_session.html:192
-#: /app/templates/sessions/session_detail.html:184
-msgid "Initial Cash"
-msgstr "Efectivo Inicial"
 
 #: /app/templates/sessions/close_session.html:259
 msgid "Reconciliation Preview"
@@ -1125,13 +1153,6 @@ msgstr ""
 #: /app/templates/sessions/edit_closed_session.html:10
 msgid "Edit Closed Cash Session"
 msgstr "Editar Sesión de Caja Abierta"
-
-#: /app/templates/sessions/edit_closed_session.html:36
-#: /app/templates/sessions/edit_closed_session.html:267
-#: /app/templates/sessions/session_detail.html:193
-#: /app/templates/sessions/session_detail.html:299
-msgid "Final Cash"
-msgstr "Efectivo Final"
 
 #: /app/templates/sessions/edit_closed_session.html:46
 msgid "Amount counted from cash"
@@ -1293,6 +1314,10 @@ msgstr "Detalles de la Sesión"
 msgid "Shift"
 msgstr "Turno"
 
+#: /app/templates/sessions/session_detail.html:39
+msgid "Only admins and session creator can edit"
+msgstr "Solo administradores y creadores de sesiones pueden editar"
+
 #: /app/templates/sessions/session_detail.html:90
 msgid "Mark this session for review?"
 msgstr "¿Marcar esta sesión para revisión?"
@@ -1300,7 +1325,7 @@ msgstr "¿Marcar esta sesión para revisión?"
 #: /app/templates/sessions/session_detail.html:96
 #: /app/templates/sessions/session_detail.html:648
 msgid "Flag"
-msgstr "Marcado"
+msgstr "Marcar"
 
 #: /app/templates/sessions/session_detail.html:127
 msgid "Session Info"
@@ -1326,6 +1351,10 @@ msgstr "Monto de cierre"
 msgid "Set aside"
 msgstr "Apartado"
 
+#: /app/templates/sessions/session_detail.html:219
+msgid "Direct account transfers"
+msgstr "Transferencias directas a cuenta"
+
 #: /app/templates/sessions/session_detail.html:277
 msgid "Debit only"
 msgstr "Solo débito"
@@ -1338,10 +1367,13 @@ msgstr "Reconciliación"
 msgid "CASH SALES & BANK TRANSFER"
 msgstr "VENTAS EFECTIVO & TRANSFERENCIAS"
 
-#: /app/templates/sessions/session_detail.html:314
-#: /app/templates/sessions/session_detail.html:341
-msgid "Transfer"
-msgstr "Transferencia"
+#: /app/templates/sessions/session_detail.html:299
+msgid "Initial"
+msgstr "Inicial"
+
+#: /app/templates/sessions/session_detail.html:312
+msgid "Cash only"
+msgstr "Solo efectivo"
 
 #: /app/templates/sessions/session_detail.html:334
 msgid "Total Sales"
@@ -1473,47 +1505,8 @@ msgstr "Limpiar Marca"
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
 
-#~ msgid "API Docs"
-#~ msgstr "Documentación API"
+msgid "Yesterday"
+msgstr "Ayer"
 
-#~ msgid "Register"
-#~ msgstr "Caja"
-
-#~ msgid "Total Income"
-#~ msgstr "Ingreso Total"
-
-#~ msgid "sessions flagged"
-#~ msgstr "sesiones marcadas"
-
-#~ msgid "Back"
-#~ msgstr "Atrás"
-
-#~ msgid "Credit/Debit"
-#~ msgstr "Crédito/Débito"
-
-#~ msgid "Used for login"
-#~ msgstr "Usado para iniciar sesión"
-
-#~ msgid "Recommended - automatically creates a strong password"
-#~ msgstr "Recomendado - crea automáticamente una contraseña segura"
-
-#~ msgid "Choose your own password (minimum 8 characters)"
-#~ msgstr "Elija su propia contraseña (mínimo 8 caracteres)"
-
-#~ msgid "Register + Envelope"
-#~ msgstr "Caja + Sobre"
-
-#~ msgid "Cash-only earnings"
-#~ msgstr "Ganancias solo efectivo"
-
-#~ msgid "Gross revenue"
-#~ msgstr "Ingresos brutos"
-
-#~ msgid "Credit Payments"
-#~ msgstr "Pagos de Crédito"
-
-#~ msgid "Payment Mix"
-#~ msgstr "Mix de Pagos"
-
-msgid "Amount of money on credit"
-msgstr "Monto de créditos entrantes"
+msgid "Monitor cash sessions and reconciliation"
+msgstr "Monitoreo de caja y reconciliación"

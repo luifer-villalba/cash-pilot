@@ -8,7 +8,7 @@
     <div>
         <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Close Cash Session') }}</h1>
         <p class="text-sm text-base-content/60 mt-2">
-            👤 <strong>{{ session.cashier_name }}</strong>
+            <svg xmlns="http://www.w3.org/2000/svg" class="inline w-4 h-4 align-text-bottom text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1112 21a9 9 0 01-6.879-3.196zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> <strong>{{ session.cashier.display_name }}</strong>
             <span class="mx-2">•</span>
             <span class="font-mono text-xs">{{ session.session_date.strftime('%d/%m/%Y') }}</span>
         </p>

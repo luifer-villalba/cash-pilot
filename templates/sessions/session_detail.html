@@ -10,32 +10,48 @@
         <div class="max-w-7xl mx-auto px-4 py-3 sm:py-4 sm:px-6 lg:px-8">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <!-- Left: Back + Title -->
-                <div class="flex items-start gap-2 sm:gap-3 min-w-0">
-                    <a href="/" class="btn btn-ghost btn-sm no-animation shrink-0">←</a>
+                <div class="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                    <a href="/" class="btn btn-ghost btn-sm no-animation shrink-0 -ml-2">←</a>
                     <div class="min-w-0 flex-1">
-                        <h1 class="text-lg sm:text-2xl font-semibold truncate">
-                            💰 {{ _('Shift') }} @ {{ session.business.name }}
-                        </h1>
-                        <p class="text-xs text-base-content/50 mt-0.5">
-                            👤 {{ session.cashier.display_name }} • 📅 {{ session.session_date.strftime('%d/%m/%Y') }}
+                        <div class="flex items-center gap-2 min-w-0">
+                            <svg class="w-5 h-5 text-primary shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            <h1 class="text-base sm:text-2xl font-semibold truncate">
+                                {{ _('Shift') }} @ {{ session.business.name }}
+                            </h1>
+                            {% if session.status == 'OPEN' %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 text-xs font-medium shrink-0 hidden sm:inline-flex lg:hidden">
+                                <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+                                {{ _('Open') }}
+                            </span>
+                            {% elif session.flagged %}
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 text-xs font-medium shrink-0 hidden sm:inline-flex lg:hidden">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                                {{ _('Review') }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-base-content/50 mt-0.5 truncate">
+                            {{ session.cashier.display_name }} • {{ session.session_date.strftime('%d/%m/%Y') }}
                         </p>
                     </div>
                 </div>
 
                 <!-- Right: Action Buttons -->
-                <div class="flex gap-2 sm:shrink-0">
+                <div class="flex flex-wrap gap-2 sm:shrink-0">
                     {% if session.status == 'OPEN' %}
                         {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
                             <a href="/sessions/{{ session.id }}/edit-open"
-                               class="btn btn-outline btn-sm gap-1 hidden sm:flex">
+                               class="btn btn-outline btn-sm gap-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
-                                <span class="hidden lg:inline">{{ _('Edit') }}</span>
+                                <span class="hidden sm:inline">{{ _('Edit') }}</span>
                             </a>
                         {% else %}
-                            <button disabled class="btn btn-outline btn-sm gap-1 opacity-40 cursor-not-allowed hidden sm:flex"
+                            <button disabled class="btn btn-outline btn-sm gap-1 opacity-40 cursor-not-allowed"
                                     title="{{ _('Only admins and session creator can edit') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -57,12 +73,12 @@
                                 hx-delete="/cash-sessions/{{ session.id }}"
                                 hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
                                 hx-on="htmx:afterRequest: if(event.detail.successful) window.location.href = '/'"
-                                class="btn btn-error btn-sm gap-1">
+                                class="btn btn-error btn-sm gap-1 hidden sm:flex">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
-                                <span class="hidden sm:inline">{{ _('Delete') }}</span>
+                                <span class="hidden lg:inline">{{ _('Delete') }}</span>
                             </button>
                         {% else %}
                             <button disabled class="btn btn-error btn-sm gap-1 opacity-40 cursor-not-allowed hidden sm:flex"
@@ -85,16 +101,6 @@
                                 </svg>
                                 <span class="hidden lg:inline">{{ _('Edit') }}</span>
                             </a>
-                            <button
-                                hx-post="/cash-sessions/{{ session.id }}/flag"
-                                hx-confirm="{{ _('Mark this session for review?') }}"
-                                class="btn btn-warning btn-sm gap-1 flex-1 sm:flex-none">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
-                                </svg>
-                                <span class="hidden sm:inline">{{ _('Flag') }}</span>
-                            </button>
                         {% endif %}
 
                         {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
@@ -102,12 +108,12 @@
                                 hx-delete="/cash-sessions/{{ session.id }}"
                                 hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
                                 hx-on="htmx:afterRequest: if(event.detail.successful) window.location.href = '/'"
-                                class="btn btn-error btn-sm gap-1">
+                                class="btn btn-error btn-sm gap-1 hidden sm:flex">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
-                                <span class="hidden sm:inline">{{ _('Delete') }}</span>
+                                <span class="hidden lg:inline">{{ _('Delete') }}</span>
                             </button>
                         {% endif %}
                     {% endif %}
@@ -124,7 +130,10 @@
                 <!-- Session Info -->
                 <section>
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
-                        <span class="text-lg">👤</span> {{ _('Session Info') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        {{ _('Session Info') }}
                     </h2>
                     <div class="bg-base-100 rounded-lg border border-base-200 shadow p-6 space-y-4">
                         <div class="grid grid-cols-2 gap-6">
@@ -157,7 +166,7 @@
                                     {{ _('Opened') }}
                                 </p>
                                 <p class="text-base font-semibold mt-2">
-                                    🕐 {{ session.opened_time.strftime('%H:%M') }}
+                                    {{ session.opened_time.strftime('%H:%M') }}
                                 </p>
                             </div>
                             <div>
@@ -165,7 +174,7 @@
                                     {{ _('Closed') }}
                                 </p>
                                 <p class="text-base font-semibold mt-2">
-                                    {% if session.closed_time %}🕐 {{ session.closed_time.strftime('%H:%M') }}{% else %}—{% endif %}
+                                    {% if session.closed_time %}{{ session.closed_time.strftime('%H:%M') }}{% else %}—{% endif %}
                                 </p>
                             </div>
                         </div>
@@ -175,78 +184,81 @@
                 <!-- Cash Flow -->
                 <section>
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
-                        <span class="text-lg">💵</span> {{ _('Cash Flow') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        {{ _('Cash Flow') }}
                     </h2>
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Efectivo Inicial -->
-                        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 rounded-lg border border-blue-200 shadow p-4">
-                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">
+                        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 dark:from-blue-500/20 dark:to-base-200 rounded-lg border border-blue-200 dark:border-blue-800 shadow p-4">
+                            <p class="text-xs text-blue-700 dark:text-blue-400 uppercase tracking-wider font-semibold">
                                 {{ _('Initial Cash') }}
                             </p>
-                            <p class="text-2xl font-bold mt-2 text-blue-900">Gs {{ session.initial_cash | format_currency_py }}</p>
-                            <p class="text-xs text-blue-600/70 mt-1">💳 {{ _('Opening amount') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-blue-900 dark:text-blue-100">Gs {{ session.initial_cash | format_currency_py }}</p>
+                            <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ _('Opening amount') }}</p>
                         </div>
 
                         <!-- Efectivo Final -->
-                        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 rounded-lg border border-blue-200 shadow p-4">
-                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">
+                        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 dark:from-blue-500/20 dark:to-base-200 rounded-lg border border-blue-200 dark:border-blue-800 shadow p-4">
+                            <p class="text-xs text-blue-700 dark:text-blue-400 uppercase tracking-wider font-semibold">
                                 {{ _('Final Cash') }}
                             </p>
-                            <p class="text-2xl font-bold mt-2 text-blue-900">
+                            <p class="text-2xl font-bold mt-2 text-blue-900 dark:text-blue-100">
                                 {% if session.final_cash %}Gs {{ session.final_cash | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-blue-600/70 mt-1">💰 {{ _('Closing amount') }}</p>
+                            <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ _('Closing amount') }}</p>
                         </div>
 
                         <!-- Sobre -->
-                        <div class="bg-gradient-to-br from-purple-500/10 to-base-100 rounded-lg border border-purple-200 shadow p-4">
-                            <p class="text-xs text-purple-700 uppercase tracking-wider font-semibold">
+                        <div class="bg-gradient-to-br from-purple-500/10 to-base-100 dark:from-purple-500/20 dark:to-base-200 rounded-lg border border-purple-200 dark:border-purple-800 shadow p-4">
+                            <p class="text-xs text-purple-700 dark:text-purple-400 uppercase tracking-wider font-semibold">
                                 {{ _('Envelope Amount') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-purple-900">
+                            <p class="text-2xl font-bold mt-2 text-purple-900 dark:text-purple-100">
                                 {% if session.envelope_amount %}Gs {{ session.envelope_amount | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-purple-600/70 mt-1">🎁 {{ _('Set aside') }}</p>
+                            <p class="text-xs text-purple-600/70 dark:text-purple-400/70 mt-1">{{ _('Set aside') }}</p>
                         </div>
 
                         <!-- Transferencia Bancaria -->
-                        <div class="bg-gradient-to-br from-amber-500/10 to-base-100 rounded-lg border border-amber-200 shadow p-4">
-                            <p class="text-xs text-amber-700 uppercase tracking-wider font-semibold">
+                        <div class="bg-gradient-to-br from-amber-500/10 to-base-100 dark:from-amber-500/20 dark:to-base-200 rounded-lg border border-amber-200 dark:border-amber-800 shadow p-4">
+                            <p class="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wider font-semibold">
                                 {{ _('Bank Transfer') }}
                             </p>
-                            <p class="text-2xl font-bold mt-2 text-amber-900">
+                            <p class="text-2xl font-bold mt-2 text-amber-900 dark:text-amber-100">
                                 {% if session.bank_transfer_total %}Gs {{ session.bank_transfer_total | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-amber-600/70 mt-1">🏦 {{ _('Direct account transfers') }}</p>
+                            <p class="text-xs text-amber-600/70 dark:text-amber-400/70 mt-1">{{ _('Direct account transfers') }}</p>
                         </div>
 
                         <!-- Gastos -->
-                        <div class="bg-gradient-to-br from-red-500/10 to-base-100 rounded-lg border border-red-200 shadow p-4">
-                            <p class="text-xs text-red-700 uppercase tracking-wider font-semibold">{{ _('Expenses') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-red-900">
+                        <div class="bg-gradient-to-br from-red-500/10 to-base-100 dark:from-red-500/20 dark:to-base-200 rounded-lg border border-red-200 dark:border-red-800 shadow p-4">
+                            <p class="text-xs text-red-700 dark:text-red-400 uppercase tracking-wider font-semibold">{{ _('Expenses') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-red-900 dark:text-red-100">
                                 {% if session.expenses %}−Gs {{ session.expenses | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-red-600/70 mt-1">💸 {{ _('Business expenses during shift') }}</p>
+                            <p class="text-xs text-red-600/70 dark:text-red-400/70 mt-1">{{ _('Business expenses during shift') }}</p>
                         </div>
 
                         <!-- Credit Sales (OPEN session) -->
                         {% if session.credit_sales_total and session.credit_sales_total > 0 %}
-                        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 rounded-lg border border-blue-200 shadow p-4">
-                            <p class="text-xs text-blue-700 uppercase tracking-wider font-semibold">{{ _('Credit Sales') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-blue-900">
+                        <div class="bg-gradient-to-br from-blue-500/10 to-base-100 dark:from-blue-500/20 dark:to-base-200 rounded-lg border border-blue-200 dark:border-blue-800 shadow p-4">
+                            <p class="text-xs text-blue-700 dark:text-blue-400 uppercase tracking-wider font-semibold">{{ _('Credit Sales') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-blue-900 dark:text-blue-100">
                                 Gs {{ session.credit_sales_total | format_currency_py }}
                             </p>
-                            <p class="text-xs text-blue-600/70 mt-1">🧾 {{ _('New customer debt created') }}</p>
+                            <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ _('New customer debt created') }}</p>
                         </div>
                         {% endif %}
 
                         <!-- Credit Payments (OPEN session) -->
                         {% if session.credit_payments_collected and session.credit_payments_collected > 0 %}
-                        <div class="bg-gradient-to-br from-green-500/10 to-base-100 rounded-lg border border-green-200 shadow p-4">
-                            <p class="text-xs text-green-700 uppercase tracking-wider font-semibold">{{ _('Debt Collected') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-green-900">
+                        <div class="bg-gradient-to-br from-green-500/10 to-base-100 dark:from-green-500/20 dark:to-base-200 rounded-lg border border-green-200 dark:border-green-800 shadow p-4">
+                            <p class="text-xs text-green-700 dark:text-green-400 uppercase tracking-wider font-semibold">{{ _('Debt Collected') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-green-900 dark:text-green-100">
                                 +Gs {{ session.credit_payments_collected | format_currency_py }}
                             </p>
-                            <p class="text-xs text-green-600/70 mt-1">💰 {{ _('Customer paid old debt') }}</p>
+                            <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-1">{{ _('Customer paid old debt') }}</p>
                         </div>
                         {% endif %}
                     </div>
@@ -255,7 +267,10 @@
                 <!-- Payment Methods -->
                 <section>
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
-                        <span class="text-lg">💳</span> {{ _('Payment Methods') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                        {{ _('Payment Methods') }}
                     </h2>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-base-100 rounded-lg border border-base-200 shadow p-4">
@@ -265,7 +280,7 @@
                             <p class="text-2xl font-bold mt-2 text-base-content/80">
                                 {% if session.status == 'CLOSED' %}Gs {{ session.credit_card_total | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-base-content/50 mt-1">🏦 Visa/Mastercard</p>
+                            <p class="text-xs text-base-content/50 mt-1">Visa/Mastercard</p>
                         </div>
                         <div class="bg-base-100 rounded-lg border border-base-200 shadow p-4">
                             <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
@@ -274,7 +289,7 @@
                             <p class="text-2xl font-bold mt-2 text-base-content/80">
                                 {% if session.status == 'CLOSED' %}Gs {{ session.debit_card_total | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-base-content/50 mt-1">💳 {{ _('Debit only') }}</p>
+                            <p class="text-xs text-base-content/50 mt-1">{{ _('Debit only') }}</p>
                         </div>
                     </div>
                 </section>
@@ -283,61 +298,64 @@
                 <!-- Reconciliation -->
                 <section>
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
-                        <span class="text-lg">📊</span> {{ _('Reconciliation') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        {{ _('Reconciliation') }}
                     </h2>
 
                     <!-- Hero: Cash Sales & Bank Transfer -->
-                    <div class="bg-gradient-to-br from-primary/10 to-base-100 rounded-lg border-2 border-primary shadow-lg p-8 mb-4">
-                        <p class="text-xs text-primary/70 uppercase tracking-wider font-bold">
-                            💎 {{ _('CASH SALES & BANK TRANSFER') }}
+                    <div class="bg-gradient-to-br from-primary/10 to-base-100 dark:from-primary/20 dark:to-base-200 rounded-lg border-2 border-primary shadow-lg p-8 mb-4">
+                        <p class="text-xs text-primary/70 dark:text-primary uppercase tracking-wider font-bold">
+                            {{ _('CASH SALES & BANK TRANSFER') }}
                         </p>
                         <div class="mt-4 flex items-baseline gap-2">
-                            <p class="text-6xl font-black {% if net_cash_movement >= 0 %}text-primary{% else %}text-error{% endif %}">
+                            <p class="text-4xl sm:text-6xl font-black {% if net_cash_movement >= 0 %}text-primary{% else %}text-error{% endif %}">
                                 Gs {{ net_cash_movement | format_currency_py }}
                             </p>
                         </div>
-                        <p class="text-xs text-base-content/60 mt-3">🧮 {{ _('Final Cash') }} − {{ _('Initial') }} + {{ _('Envelope') }} + {{ _('Bank Transfer') }}</p>
+                        <p class="text-xs text-base-content/60 mt-3">{{ _('Final Cash') }} − {{ _('Initial') }} + {{ _('Envelope') }} + {{ _('Bank Transfer') }}</p>
                     </div>
 
                     <!-- Secondary Stats (3-column grid) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4">
                         <!-- Cash Profit -->
-                        <div class="{% if cash_profit >= 0 %}bg-gradient-to-br from-emerald-500/10 to-base-100 border-emerald-200{% else %}bg-gradient-to-br from-red-500/10 to-base-100 border-red-200{% endif %} rounded-lg border shadow p-3 md:p-4">
-                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-700{% else %}text-red-700{% endif %} uppercase tracking-wider font-semibold">
+                        <div class="{% if cash_profit >= 0 %}bg-gradient-to-br from-emerald-500/10 to-base-100 dark:from-emerald-500/20 dark:to-base-200 border-emerald-200 dark:border-emerald-800{% else %}bg-gradient-to-br from-red-500/10 to-base-100 dark:from-red-500/20 dark:to-base-200 border-red-200 dark:border-red-800{% endif %} rounded-lg border shadow p-3 md:p-4">
+                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-700 dark:text-emerald-400{% else %}text-red-700 dark:text-red-400{% endif %} uppercase tracking-wider font-semibold">
                                 {{ _('Cash Profit') }}</p>
-                            <p class="text-2xl sm:text-3xl font-bold mt-2 {% if cash_profit >= 0 %}text-emerald-900{% else %}text-red-900{% endif %}">
+                            <p class="text-2xl sm:text-3xl font-bold mt-2 {% if cash_profit >= 0 %}text-emerald-900 dark:text-emerald-100{% else %}text-red-900 dark:text-red-100{% endif %}">
                                 {% if cash_profit >= 0 %}+{% endif %}Gs {{ (net_cash_movement - session.expenses) | format_currency_py }}
                             </p>
-                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/70{% else %}text-red-600/70{% endif %} mt-3">
-                                💵 {{ _('Cash only') }}</p>
-                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/50{% else %}text-red-600/50{% endif %} mt-2 font-mono break-words">
+                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/70 dark:text-emerald-400/70{% else %}text-red-600/70 dark:text-red-400/70{% endif %} mt-3">
+                                {{ _('Cash only') }}</p>
+                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/50 dark:text-emerald-400/50{% else %}text-red-600/50 dark:text-red-400/50{% endif %} mt-2 font-mono break-words">
                                 {{ _('Cash Sales') }} + {{ _('Transfer') }} − {{ _('Expenses') }}</p>
                         </div>
 
                         <!-- Digital -->
-                        <div class="bg-gradient-to-br from-sky-500/10 to-base-100 rounded-lg border border-sky-200 shadow p-3 md:p-4">
-                            <p class="text-xs text-sky-700 uppercase tracking-wider font-semibold">
+                        <div class="bg-gradient-to-br from-sky-500/10 to-base-100 dark:from-sky-500/20 dark:to-base-200 rounded-lg border border-sky-200 dark:border-sky-800 shadow p-3 md:p-4">
+                            <p class="text-xs text-sky-700 dark:text-sky-400 uppercase tracking-wider font-semibold">
                                 {{ _('Card Payments') }}
                             </p>
-                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-sky-900">
+                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-sky-900 dark:text-sky-100">
                                 +Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}
                             </p>
-                            <p class="text-xs text-sky-600/70 mt-3">📱 {{ _('Cards') }}</p>
-                            <p class="text-xs text-sky-600/50 mt-2 font-mono break-words">
+                            <p class="text-xs text-sky-600/70 dark:text-sky-400/70 mt-3">{{ _('Cards') }}</p>
+                            <p class="text-xs text-sky-600/50 dark:text-sky-400/50 mt-2 font-mono break-words">
                                 {{ _('Credit') }} + {{ _('Debit') }}
                             </p>
                         </div>
 
                         <!-- Revenue -->
-                        <div class="bg-gradient-to-br from-green-500/10 to-base-100 rounded-lg border border-green-200 shadow p-3 md:p-4">
-                            <p class="text-xs text-green-700 uppercase tracking-wider font-semibold">
+                        <div class="bg-gradient-to-br from-green-500/10 to-base-100 dark:from-green-500/20 dark:to-base-200 rounded-lg border border-green-200 dark:border-green-800 shadow p-3 md:p-4">
+                            <p class="text-xs text-green-700 dark:text-green-400 uppercase tracking-wider font-semibold">
                                 {{ _('Total Sales') }}
                             </p>
-                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-green-900">
+                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-green-900 dark:text-green-100">
                                 +Gs {{ session.total_sales | format_currency_py }}
                             </p>
-                            <p class="text-xs text-green-600/70 mt-3">💹 {{ _('All sales') }}</p>
-                            <p class="text-xs text-green-600/50 mt-2 font-mono break-words">
+                            <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-3">{{ _('All sales') }}</p>
+                            <p class="text-xs text-green-600/50 dark:text-green-400/50 mt-2 font-mono break-words">
                                 {{ _('Cash Sales') }} + {{ _('Cards') }} + {{ _('Transfer') }}
                             </p>
                         </div>
@@ -347,18 +365,21 @@
                 <!-- Credit Tracking Section -->
                 <section>
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
-                        <span class="text-lg">🧾</span> {{ _('Credit Tracking') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        {{ _('Credit Tracking') }}
                     </h2>
 
-                    <div class="bg-gradient-to-br from-info/5 to-base-100 rounded-lg border border-info/20 shadow p-4 mb-4">
-                        <p class="text-xs text-info/70 uppercase tracking-wider font-semibold mb-4">
-                            💳 {{ _('Customer Credit Activity') }}
+                    <div class="bg-gradient-to-br from-info/5 to-base-100 dark:from-info/10 dark:to-base-200 rounded-lg border border-info/20 dark:border-info/30 shadow p-4 mb-4">
+                        <p class="text-xs text-info/70 dark:text-info uppercase tracking-wider font-semibold mb-4">
+                            {{ _('Customer Credit Activity') }}
                         </p>
 
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Credit Sales -->
                             <div>
-                                <p class="text-xs text-base-content/60 mb-1">📝 {{ _('Credit Sales') }}</p>
+                                <p class="text-xs text-base-content/60 mb-1">{{ _('Credit Sales') }}</p>
                                 <p class="text-2xl font-bold text-info">
                                     Gs {{ session.credit_sales_total | format_currency_py }}
                                 </p>
@@ -367,7 +388,7 @@
 
                             <!-- Credit Payments Collected -->
                             <div>
-                                <p class="text-xs text-base-content/60 mb-1">💰 {{ _('Debt Collected') }}</p>
+                                <p class="text-xs text-base-content/60 mb-1">{{ _('Debt Collected') }}</p>
                                 <p class="text-2xl font-bold text-success">
                                     Gs {{ session.credit_payments_collected | format_currency_py }}
                                 </p>
@@ -379,7 +400,7 @@
 
                         <!-- Net Credit Movement -->
                         <div class="flex justify-between items-center">
-                            <p class="text-xs text-base-content/60">📊 {{ _('Net Credit Impact') }}</p>
+                            <p class="text-xs text-base-content/60">{{ _('Net Credit Impact') }}</p>
                             <p class="text-lg font-bold {% if (session.credit_sales_total - session.credit_payments_collected) > 0 %}text-warning{% else %}text-success{% endif %}">
                                 {% if (session.credit_sales_total - session.credit_payments_collected) >= 0 %}+{% endif %}Gs {{ (session.credit_sales_total - session.credit_payments_collected) | format_currency_py }}
                             </p>
@@ -402,12 +423,15 @@
                 {% if session.closing_ticket or session.notes %}
                 <section>
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
-                        <span class="text-lg">📝</span> {{ _('Notes') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        {{ _('Notes') }}
                     </h2>
                     <div class="bg-base-100 rounded-lg border border-base-200 shadow p-6 space-y-4">
                         {% if session.closing_ticket %}
                         <div>
-                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">🎫 {{ _('Ticket') }}</p>
+                            <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">{{ _('Ticket') }}</p>
                             <p class="text-sm font-mono mt-2 text-base-content/70 bg-base-100 p-2 rounded border border-base-200">
                                 {{ session.closing_ticket }}</p>
                         </div>
@@ -415,7 +439,7 @@
                         {% if session.notes %}
                         <div>
                             <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold">
-                                📄 {{ _('Notes') }}
+                                {{ _('Notes') }}
                             </p>
                             <p class="text-sm mt-2 whitespace-pre-wrap text-base-content/70 bg-base-100 p-3 rounded border-l-4 border-primary">
                                 {{ session.notes }}</p>
@@ -429,7 +453,10 @@
                 {% if session.status == 'CLOSED' and session.last_modified_at %}
                 <section>
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
-                        <span class="text-lg">⏱️</span> {{ _('Edit History') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ _('Edit History') }}
                     </h2>
                     <div class="bg-base-100 rounded-lg border border-base-200 shadow overflow-hidden">
                         <div class="overflow-x-auto">
@@ -437,16 +464,16 @@
                                 <thead class="bg-base-100 border-b border-base-200">
                                 <tr>
                                     <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
-                                        ⏰ {{ _('When') }}
+                                        {{ _('When') }}
                                     </th>
                                     <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
-                                        👤 {{ _('Who') }}
+                                        {{ _('Who') }}
                                     </th>
                                     <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
-                                        ⚙️ {{ _('Action') }}
+                                        {{ _('Action') }}
                                     </th>
                                     <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
-                                        🔄 {{ _('Changed') }}
+                                        {{ _('Changed') }}
                                     </th>
                                 </tr>
                                 </thead>
@@ -523,19 +550,19 @@
             <aside class="lg:col-span-1 space-y-4">
                 <!-- Status Card -->
                 <div class="bg-base-100 rounded-lg border border-base-200 shadow p-4">
-                    <p class="text-xs font-bold uppercase tracking-widest text-base-content/70">🎯 {{ _('Status') }}</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-base-content/70">{{ _('Status') }}</p>
                     {% if session.status == 'OPEN' %}
                     <div class="flex items-center gap-2 mt-2">
                         <span class="w-3 h-3 rounded-full bg-success animate-pulse"></span>
                         <p class="text-base font-bold text-success">{{ _('Active Shift') }}</p>
                     </div>
-                    <p class="text-xs text-base-content/50 mt-1">⏳ {{ _('Still running') }}</p>
+                    <p class="text-xs text-base-content/50 mt-1">{{ _('Still running') }}</p>
                     {% else %}
                     <div class="flex items-center gap-2 mt-2">
                         <span class="w-3 h-3 rounded-full bg-base-content/70"></span>
                         <p class="text-base font-bold">{{ _('Closed') }}</p>
                     </div>
-                    <p class="text-xs text-base-content/50 mt-1">✓ {{ _('Session complete') }}</p>
+                    <p class="text-xs text-base-content/50 mt-1">{{ _('Session complete') }}</p>
                     {% endif %}
                 </div>
 
@@ -572,21 +599,21 @@
 
                 <!-- Business Card -->
                 <div class="bg-base-100 rounded-lg border border-base-200 shadow p-4">
-                    <p class="text-xs font-bold uppercase tracking-widest text-base-content/70">🏪 {{ _('Business') }}</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-base-content/70">{{ _('Business') }}</p>
                     <p class="text-base font-bold mt-2">{{ session.business.name }}</p>
                     {% if session.business.address %}
-                    <p class="text-xs text-base-content/60 mt-1">📍 {{ session.business.address }}</p>
+                    <p class="text-xs text-base-content/60 mt-1">{{ session.business.address }}</p>
                     {% endif %}
                     {% if session.business.phone %}
-                    <p class="text-xs text-base-content/60">📞 {{ session.business.phone }}</p>
+                    <p class="text-xs text-base-content/60">{{ session.business.phone }}</p>
                     {% endif %}
                 </div>
 
                 <!-- Quick Stats -->
                 <div class="bg-base-100 rounded-lg border border-base-200 shadow p-4 space-y-3">
-                    <p class="text-xs font-bold uppercase tracking-widest text-base-content/70">📈 {{ _('Quick Stats') }}</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-base-content/70">{{ _('Quick Stats') }}</p>
                     <div class="flex justify-between text-xs">
-                        <span class="text-base-content/60">⏱️ {{ _('Shift Duration') }}</span>
+                        <span class="text-base-content/60">{{ _('Shift Duration') }}</span>
                         <span class="font-mono font-bold">
                             {% if session.closed_time %}
                                 {{ (session.closed_time.hour - session.opened_time.hour) % 24 }}h
@@ -596,14 +623,14 @@
                         </span>
                     </div>
                     <div class="flex justify-between text-xs">
-                        <span class="text-base-content/60">💳 {{ _('Payment Methods') }}</span>
+                        <span class="text-base-content/60">{{ _('Payment Methods') }}</span>
                         <span class="font-mono font-bold">
                             {% set methods = (session.credit_card_total > 0) + (session.debit_card_total > 0) + (session.bank_transfer_total > 0) + (session.cash_sales > 0) %}
                             {{ methods }}
                         </span>
                     </div>
                     <div class="flex justify-between text-xs">
-                        <span class="text-base-content/60">📊 {{ _('Margin') }}</span>
+                        <span class="text-base-content/60">{{ _('Margin') }}</span>
                         <span class="font-mono font-bold">
                             {% if session.total_sales > 0 %}
                                 {{ ((session.net_earnings / session.total_sales) * 100) | round(1) }}%

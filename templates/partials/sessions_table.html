@@ -1,14 +1,47 @@
+<!-- File: src/cashpilot/templates/partials/sessions_table.html -->
 <div class="bg-base-100 border border-base-300 rounded-lg shadow">
     <div class="p-4 md:p-6">
         <!-- Header -->
-        <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-6 flex items-center gap-2">
-            <span>📋</span>
-            {{ _('Cash Sessions') }}
-        </h2>
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                {{ _('Cash Sessions') }}
+            </h2>
+            <a href="/sessions/create" class="btn btn-primary btn-sm gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                {{ _('New Session') }}
+            </a>
+        </div>
+
+        <style>
+            /* Hover tint */
+            .table tbody tr.session-row:hover td {
+                background-color: hsl(var(--p) / 0.10) !important;
+            }
+        
+            .table tbody tr.session-row.flagged:hover td {
+                background-color: hsl(var(--er) / 0.14) !important;
+            }
+        
+            /* Horizontal borders between rows */
+            .table tbody tr {
+                border-bottom: 1px solid hsl(var(--b2));
+            }
+        
+            /* Vertical borders between columns */
+            .table tbody td:not(:last-child),
+            .table thead th:not(:last-child) {
+                border-right: 1px solid hsl(var(--bc) / 0.1);
+            }
+        </style>
 
         {% if sessions %}
         <!-- Desktop Table (hidden on mobile) -->
-        <div class="overflow-x-auto hidden md:block">
+        <div class="overflow-x-auto hidden lg:block">
             <table class="table table-sm w-full">
                 <thead>
                     <tr class="border-b border-base-300">
@@ -16,38 +49,47 @@
                         <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cashier') }}</th>
                         <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Business') }}</th>
                         <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Date & Time') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💵 {{ _('Initial') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💵 {{ _('Final') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💰 {{ _('Cash') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">💳 {{ _('Cards') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">🏦 {{ _('Bank') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">📊 {{ _('Net') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Received') }} → {{ _('Handed') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cash Sales') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Transfer') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cards') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Sales Total') }}</th>
                         <th class="text-center text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Actions') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-base-200">
+                <tbody>
                     {% for session in sessions %}
-                    <tr class="hover:bg-base-50 transition-colors">
-                        <td>
+                    <tr class="session-row transition-all cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" aria-label="{{ _('View session') }}" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}';}">
+                        <!-- Status -->
+                        <td onclick="event.stopPropagation()">
                             {% if session.status == 'OPEN' %}
-                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
-                                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-sky-50 dark:bg-sky-950/50 text-xs font-medium text-sky-700 dark:text-sky-300">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                    </svg>
                                     {{ _('Open') }}
                                 </span>
-                            {% elif session.flagged %}
-                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-error/15 text-error text-xs font-semibold">
-                                    <span class="w-2 h-2 rounded-full bg-error"></span>
+                            {% elif session.status == 'CLOSED' and session.flagged %}
+                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950/50 text-xs font-medium text-amber-700 dark:text-amber-300">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
                                     {{ _('Review') }}
                                 </span>
                             {% else %}
-                                <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-base-300/50 text-base-content/70 text-xs font-semibold">
-                                    <span class="w-2 h-2 rounded-full bg-base-content/70"></span>
+                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    </svg>
                                     {{ _('Closed') }}
                                 </span>
                             {% endif %}
                         </td>
+                        <!-- Cashier -->
                         <td class="font-semibold text-sm">{{ session.cashier.display_name }}</td>
+                        <!-- Business -->
                         <td class="text-sm">{{ session.business.name }}</td>
+                        <!-- Date & Time -->
                         <td class="text-xs text-base-content/70 font-mono">
                             <div>{{ session.session_date.strftime('%d/%m/%Y') }}</div>
                             <div class="opacity-80">
@@ -55,56 +97,82 @@
                                 {% if session.closed_time %}
                                     → {{ session.closed_time.strftime('%H:%M') }}
                                 {% else %}
-                                    → <span class="text-warning">{{ _('Open') }}</span>
+                                    → <span class="text-sky-600 dark:text-sky-400">{{ _('Open') }}</span>
                                 {% endif %}
                             </div>
                         </td>
-                        <td class="text-right text-sm text-base-content/80">Gs {{ session.initial_cash | format_currency_py }}</td>
-                        <td class="text-right text-sm text-base-content/80">Gs {{ session.final_cash | format_currency_py if session.final_cash else '—' }}</td>
-                        <td class="text-right text-sm font-semibold">Gs {{ session.cash_sales | format_currency_py }}</td>
-                        <td class="text-right text-sm font-semibold">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</td>
-                        <td class="text-right text-sm font-semibold">Gs {{ session.bank_transfer_total | format_currency_py }}</td>
-                        <td class="text-right text-sm font-bold {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
-                            {% if session.net_earnings >= 0 %}+{% endif %}Gs {{ session.net_earnings | format_currency_py }}
+                        <!-- Initial → Final Cash -->
+                        <td class="text-right text-sm font-semibold">
+                            <span class="text-base-content/80">Gs {{ session.initial_cash | format_currency_py }}</span>
+                            <span class="text-base-content/50 mx-1">→</span>
+                            {% if session.final_cash %}
+                                <span class="text-base-content/80">Gs {{ session.final_cash | format_currency_py }}</span>
+                            {% else %}
+                                <span class="text-sky-600 dark:text-sky-400 italic">{{ _('Active') }}</span>
+                            {% endif %}
                         </td>
-                        <td class="text-center">
+                        <!-- Cash Sales -->
+                        <td class="text-right text-sm">Gs {{ session.cash_sales | format_currency_py }}</td>
+                        <!-- Bank Transfer -->
+                        <td class="text-right text-sm">Gs {{ session.bank_transfer_total | format_currency_py }}</td>
+                        <!-- Card Sales -->
+                        <td class="text-right text-sm">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</td>
+                        <!-- Sales Total -->
+                        <td class="text-right text-sm font-bold text-base-content">Gs {{ (session.cash_sales + session.credit_card_total + session.debit_card_total + session.bank_transfer_total) | format_currency_py }}</td>
+                        <!-- Actions -->
+                        <td class="text-center" onclick="event.stopPropagation()">
                             <div class="flex gap-1 justify-center">
-                                <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs btn-circle" title="{{ _('View details') }}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
-                                </a>
                                 {% if session.status == 'OPEN' %}
                                     {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
-                                        <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs btn-circle hover:bg-info/20" title="{{ _('Edit session') }}">
+                                        <!-- Edit icon -->
+                                        <a href="/sessions/{{ session.id|string }}/edit-open" 
+                                           class="btn btn-ghost btn-xs btn-circle hover:!bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/30" 
+                                           title="{{ _('Edit session') }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </a>
+                                        <!-- Close icon -->
+                                        <a href="/sessions/{{ session.id|string }}/edit" 
+                                           class="btn btn-ghost btn-xs btn-circle hover:!bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/30" 
+                                           title="{{ _('Close session') }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                             </svg>
                                         </a>
                                     {% else %}
-                                        <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can edit') }}">
+                                        <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" 
+                                                title="{{ _('Only admins and session creator can edit') }}">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </button>
+                                        <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" 
+                                                title="{{ _('Only admins and session creator can close') }}">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                             </svg>
                                         </button>
                                     {% endif %}
                                 {% endif %}
+                                
+                                <!-- Delete icon -->
                                 {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
                                     <button
                                         hx-delete="/cash-sessions/{{ session.id|string }}"
                                         hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
                                         hx-on="htmx:afterRequest: if(event.detail.successful) window.location.reload()"
-                                        class="btn btn-ghost btn-xs btn-circle hover:bg-error/20"
+                                        class="btn btn-ghost btn-xs btn-circle hover:!bg-error/20 focus-visible:ring-2 focus-visible:ring-error/30"
                                         title="{{ _('Delete session') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
                                     </button>
                                 {% else %}
-                                    <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can delete') }}">
+                                    <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" 
+                                            title="{{ _('Only admins and session creator can delete') }}">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
                                     </button>
                                 {% endif %}
@@ -117,84 +185,96 @@
         </div>
 
         <!-- Mobile Card Layout (visible on mobile only) -->
-        <div class="md:hidden space-y-4">
+        <div class="lg:hidden grid grid-cols-1 gap-4">
             {% for session in sessions %}
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
-                <!-- Header: Cashier + Status -->
-                <div class="flex justify-between items-start gap-3">
+            <div class="border border-base-300 rounded-lg p-4 space-y-3 bg-base-100 cursor-pointer hover:shadow-lg transition-shadow{% if session.status == 'CLOSED' and session.flagged %} bg-error/10 border-l-4 border-error{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();window.location.href='/sessions/{{ session.id|string }}';}">
+                <!-- Status Badge -->
+                <div class="flex justify-between items-start">
                     <div>
-                        <h3 class="font-bold text-sm">{{ session.cashier.display_name }}</h3>
-                        <p class="text-xs text-base-content/60">{{ session.business.name }}</p>
+                        <h3 class="font-bold text-base text-base-content">{{ session.business.name }}</h3>
+                        <p class="text-sm text-base-content/70">{{ session.cashier.display_name }}</p>
                     </div>
                     {% if session.status == 'OPEN' %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
-                            <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
+                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-sky-50 dark:bg-sky-950/50 text-xs font-medium text-sky-700 dark:text-sky-300">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            </svg>
                             {{ _('Open') }}
                         </span>
-                    {% elif session.flagged %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error/15 text-error text-xs font-semibold">
-                            <span class="w-2 h-2 rounded-full bg-error"></span>
+                    {% elif session.status == 'CLOSED' and session.flagged %}
+                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950/50 text-xs font-medium text-amber-700 dark:text-amber-300">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
                             {{ _('Review') }}
                         </span>
                     {% else %}
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-base-300/50 text-base-content/70 text-xs font-semibold">
-                            <span class="w-2 h-2 rounded-full bg-base-content/70"></span>
+                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
                             {{ _('Closed') }}
                         </span>
                     {% endif %}
                 </div>
 
-                <!-- Date/Time -->
-                <div class="text-xs text-base-content/60 font-mono flex gap-2">
-                    <span>{{ session.session_date.strftime('%d/%m/%Y') }}</span>
-                    <span>•</span>
-                    <span>
+                <!-- Date & Period -->
+                <div class="space-y-1">
+                    <p class="text-sm text-base-content/70">
+                        <span class="font-semibold">{{ _('Date') }}:</span> {{ session.session_date.strftime('%d/%m/%Y') }}
+                    </p>
+                    <p class="text-sm text-base-content/70 font-mono">
+                        <span class="font-semibold">{{ _('Period') }}:</span>
                         {{ session.opened_time.strftime('%H:%M') }}
+                        →
                         {% if session.closed_time %}
-                            → {{ session.closed_time.strftime('%H:%M') }}
+                            {{ session.closed_time.strftime('%H:%M') }}
                         {% else %}
-                            → <span class="text-warning">{{ _('Open') }}</span>
+                            <span class="text-sky-600 dark:text-sky-400">{{ _('Open') }}</span>
                         {% endif %}
-                    </span>
+                    </p>
                 </div>
 
-                <!-- Key Numbers Grid -->
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">💰 {{ _('Cash') }}</p>
-                        <p class="font-bold text-sm">Gs {{ session.cash_sales | format_currency_py }}</p>
+                <!-- Financial Summary -->
+                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-base-200">
+                    <div>
+                        <p class="text-xs text-base-content/60 mb-0.5">{{ _('Initial Cash') }}</p>
+                        <p class="font-semibold text-sm">Gs {{ session.initial_cash | format_currency_py }}</p>
                     </div>
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">💳 {{ _('Cards') }}</p>
-                        <p class="font-bold text-sm">Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}</p>
+                    <div>
+                        <p class="text-xs text-base-content/60 mb-0.5">{{ _('Final Cash') }}</p>
+                        <p class="font-semibold text-sm">Gs {{ session.final_cash | format_currency_py if session.final_cash else '—' }}</p>
                     </div>
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">🏦 {{ _('Bank') }}</p>
-                        <p class="font-bold text-sm">Gs {{ session.bank_transfer_total | format_currency_py }}</p>
-                    </div>
-                    <div class="bg-base-50 p-2.5 rounded-md">
-                        <p class="text-xs text-base-content/60 mb-1">📊 {{ _('Net') }}</p>
-                        <p class="font-bold text-sm {% if session.net_earnings >= 0 %}text-success{% else %}text-error{% endif %}">
-                            {% if session.net_earnings >= 0 %}+{% endif %}Gs {{ session.net_earnings | format_currency_py }}
-                        </p>
+                    <div class="col-span-2">
+                        <p class="text-xs text-base-content/60 mb-0.5">{{ _('Sales Total') }}</p>
+                        <p class="font-bold text-base text-base-content">Gs {{ (session.cash_sales + session.credit_card_total + session.debit_card_total + session.bank_transfer_total) | format_currency_py }}</p>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex gap-2 justify-end pt-2 border-t border-base-200">
-                    <a href="/sessions/{{ session.id|string }}" class="btn btn-ghost btn-xs gap-1 text-xs">
-                        👁️ {{ _('View') }}
-                    </a>
+                <div class="flex gap-2 pt-2 border-t border-base-200" onclick="event.stopPropagation()">
                     {% if session.status == 'OPEN' %}
                         {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
-                            <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-info btn-xs gap-1 text-xs">
-                                ✏️ {{ _('Edit') }}
-                            </a>
+                            <a href="/sessions/{{ session.id|string }}/edit-open" class="btn btn-ghost btn-xs flex-1 hover:!bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/30">{{ _('Edit') }}</a>
+                            <a href="/sessions/{{ session.id|string }}/edit" class="btn btn-primary btn-xs flex-1">{{ _('Close') }}</a>
                         {% else %}
-                            <button disabled class="btn btn-info btn-xs gap-1 text-xs opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can edit') }}">
-                                ✏️ {{ _('Edit') }}
-                            </button>
+                            <button disabled class="btn btn-ghost btn-xs flex-1 opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can edit') }}">{{ _('Edit') }}</button>
+                            <button disabled class="btn btn-primary btn-xs flex-1 opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can close') }}">{{ _('Close') }}</button>
                         {% endif %}
+                    {% endif %}
+                    {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
+                        <button
+                            hx-delete="/cash-sessions/{{ session.id|string }}"
+                            hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
+                            hx-on="htmx:afterRequest: if(event.detail.successful) window.location.reload()"
+                            class="btn btn-ghost btn-xs flex-1 hover:!bg-error/20 focus-visible:ring-2 focus-visible:ring-error/30"
+                            title="{{ _('Delete session') }}">
+                            {{ _('Delete') }}
+                        </button>
+                    {% else %}
+                        <button disabled class="btn btn-ghost btn-xs flex-1 opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can delete') }}">
+                            {{ _('Delete') }}
+                        </button>
                     {% endif %}
                 </div>
             </div>
@@ -228,7 +308,7 @@
         </div>
 
         {% else %}
-        <div class="bg-base-50 border-l-4 border-info p-4 rounded-md">
+        <div class="bg-base-200/50 border-l-4 border-primary p-4 rounded-md">
             <p class="text-sm text-base-content/70">
                 {{ _('No sessions found.') }} <a href="/sessions/create" class="link link-primary font-semibold">{{ _('Create one') }}</a>
             </p>
