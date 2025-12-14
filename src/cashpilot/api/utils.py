@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from cashpilot.models import Business, CashSession, User, UserRole
 
@@ -187,8 +187,8 @@ async def _get_paginated_sessions(
     skip = (page - 1) * per_page
 
     stmt = select(CashSession).options(
-        joinedload(CashSession.business),
-        joinedload(CashSession.cashier),
+        selectinload(CashSession.business),
+        selectinload(CashSession.cashier),
     )
     count_stmt = select(func.count(CashSession.id))
 
@@ -220,7 +220,7 @@ async def _get_paginated_sessions(
         .limit(per_page)
     )
     result = await db.execute(stmt)
-    sessions = result.scalars().unique().all()
+    sessions = result.scalars().all()
 
     return list(sessions), total, total_pages
 
