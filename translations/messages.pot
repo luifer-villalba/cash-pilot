@@ -1496,3 +1496,6 @@ msgstr ""
 
 msgid "Yesterday"
 msgstr ""
+
+msgid "Monitor cash sessions and reconciliation"
+msgstr ""

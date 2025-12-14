@@ -1507,3 +1507,6 @@ msgstr "¿Remover marca de esta sesión?"
 
 msgid "Yesterday"
 msgstr "Ayer"
+
+msgid "Monitor cash sessions and reconciliation"
+msgstr "Monitoreo de caja y reconciliación"
