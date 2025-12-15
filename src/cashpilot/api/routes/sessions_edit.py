@@ -159,7 +159,7 @@ async def edit_closed_session_form(
     edit_expired_msg = None
 
     if current_user.role == UserRole.CASHIER and session.status == "CLOSED":
-        time_since_close = datetime.now() - session.closed_time
+        time_since_close = datetime.now() - session.closed_at if session.closed_at else timedelta(0)
         if time_since_close > timedelta(hours=12):
             can_edit = False
             edit_expired_msg = _("Edit window expired (12 hours passed)")
