@@ -1,6 +1,6 @@
 """Authentication endpoints and dependencies."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -45,22 +45,38 @@ async def get_current_user(
     # Enforce role-based inactivity timeout for roles with configured timeouts
     if user_role in ROLE_TIMEOUTS:
         timeout = ROLE_TIMEOUTS[user_role]
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         last_activity_raw = request.session.get("last_activity")
 
         try:
             last_activity = datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
+            # Ensure timezone-aware for comparison (old sessions may be naive)
+            if last_activity and last_activity.tzinfo is None:
+                last_activity = last_activity.replace(tzinfo=timezone.utc)
         except (ValueError, TypeError):
             last_activity = None
 
         if last_activity and (now - last_activity) > timedelta(seconds=timeout):
             # Expired: clear session and redirect to login with message
             request.session.clear()
-            raise HTTPException(
-                status_code=302,
-                detail="Session expired",
-                headers={"Location": "/login?expired=1"},
-            )
+
+            # Detect if HTMX request
+            is_htmx = request.headers.get("HX-Request") == "true"
+
+            if is_htmx:
+                # HTMX requires HX-Redirect header
+                raise HTTPException(
+                    status_code=status.HTTP_200_OK,
+                    detail="Session expired",
+                    headers={"HX-Redirect": "/login?expired=1"},
+                )
+            else:
+                # Regular request: use 303 See Other
+                raise HTTPException(
+                    status_code=status.HTTP_303_SEE_OTHER,
+                    detail="Session expired",
+                    headers={"Location": "/login?expired=1"},
+                )
         else:
             # Refresh last_activity on each authenticated request
             request.session["last_activity"] = now.isoformat()
@@ -103,9 +119,7 @@ async def login(
 
     if not user.is_active:
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
-        return RedirectResponse(
-            url="/login?error=disabled", status_code=302
-        )  # ← Changed from HTTPException
+        return RedirectResponse(url="/login?error=disabled", status_code=302)
 
     # Store user_id and role in session
     request.session["user_id"] = str(user.id)
@@ -113,7 +127,7 @@ async def login(
     request.session["user_display_name"] = user.display_name
     # Set last_activity for roles with configured timeouts
     if user.role in ROLE_TIMEOUTS:
-        request.session["last_activity"] = datetime.utcnow().isoformat()
+        request.session["last_activity"] = datetime.now(timezone.utc).isoformat()
     logger.info(
         "auth.login_success",
         email=user.email,

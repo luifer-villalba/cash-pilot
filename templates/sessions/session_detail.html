@@ -92,29 +92,37 @@
                         {% endif %}
 
                     {% elif session.status == 'CLOSED' %}
-                        {% if current_user.role == 'ADMIN' %}
-                            <a href="/sessions/{{ session.id }}/edit-closed"
-                               class="btn btn-outline btn-sm gap-1 hidden sm:flex">
+                        {% if current_user.role == 'ADMIN' or (current_user.id == session.cashier_id and can_edit) %}
+                        <a href="/sessions/{{ session.id }}/edit-closed" class="btn btn-outline btn-sm gap-1 hidden sm:flex">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span class="hidden lg:inline">{{ _('Edit') }}</span>
+                        </a>
+                        {% elif current_user.id == session.cashier_id and not can_edit %}
+                        <div class="tooltip tooltip-left hidden sm:inline-flex" data-tip="{{ edit_expired_msg }}">
+                            <button disabled class="btn btn-outline btn-sm gap-1 bg-base-200 dark:bg-base-700 text-base-content/60 dark:text-base-content/50 border-base-300 dark:border-base-600 cursor-not-allowed">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                                 <span class="hidden lg:inline">{{ _('Edit') }}</span>
-                            </a>
-                        {% endif %}
-
-                        {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
-                            <button
-                                hx-delete="/cash-sessions/{{ session.id }}"
-                                hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
-                                hx-on="htmx:afterRequest: if(event.detail.successful) window.location.href = '/'"
-                                class="btn btn-error btn-sm gap-1 hidden sm:flex">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                                <span class="hidden lg:inline">{{ _('Delete') }}</span>
                             </button>
+                        </div>
+                        {% endif %}
+                        
+                        {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
+                        <button hx-delete="/cash-sessions/{{ session.id }}"
+                            hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
+                            hx-on="htmx:afterRequest: if(event.detail.successful) window.location.href = '/'"
+                            class="btn btn-error btn-sm gap-1 hidden sm:flex">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span class="hidden lg:inline">{{ _('Delete') }}</span>
+                        </button>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -192,73 +200,73 @@
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Efectivo Inicial -->
                         <div class="bg-gradient-to-br from-blue-500/10 to-base-100 dark:from-blue-500/20 dark:to-base-200 rounded-lg border border-blue-200 dark:border-blue-800 shadow p-4">
-                            <p class="text-xs text-blue-700 dark:text-blue-400 uppercase tracking-wider font-semibold">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                                 {{ _('Initial Cash') }}
                             </p>
-                            <p class="text-2xl font-bold mt-2 text-blue-900 dark:text-blue-100">Gs {{ session.initial_cash | format_currency_py }}</p>
-                            <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ _('Opening amount') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-base-content">Gs {{ session.initial_cash | format_currency_py }}</p>
+                            <p class="text-xs text-base-content/70 mt-1">{{ _('Opening amount') }}</p>
                         </div>
 
                         <!-- Efectivo Final -->
                         <div class="bg-gradient-to-br from-blue-500/10 to-base-100 dark:from-blue-500/20 dark:to-base-200 rounded-lg border border-blue-200 dark:border-blue-800 shadow p-4">
-                            <p class="text-xs text-blue-700 dark:text-blue-400 uppercase tracking-wider font-semibold">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                                 {{ _('Final Cash') }}
                             </p>
-                            <p class="text-2xl font-bold mt-2 text-blue-900 dark:text-blue-100">
+                            <p class="text-2xl font-bold mt-2 text-base-content">
                                 {% if session.final_cash %}Gs {{ session.final_cash | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ _('Closing amount') }}</p>
+                            <p class="text-xs text-base-content/70 mt-1">{{ _('Closing amount') }}</p>
                         </div>
 
                         <!-- Sobre -->
                         <div class="bg-gradient-to-br from-purple-500/10 to-base-100 dark:from-purple-500/20 dark:to-base-200 rounded-lg border border-purple-200 dark:border-purple-800 shadow p-4">
-                            <p class="text-xs text-purple-700 dark:text-purple-400 uppercase tracking-wider font-semibold">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                                 {{ _('Envelope Amount') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-purple-900 dark:text-purple-100">
+                            <p class="text-2xl font-bold mt-2 text-base-content">
                                 {% if session.envelope_amount %}Gs {{ session.envelope_amount | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-purple-600/70 dark:text-purple-400/70 mt-1">{{ _('Set aside') }}</p>
+                            <p class="text-xs text-base-content/70 mt-1">{{ _('Set aside') }}</p>
                         </div>
 
                         <!-- Transferencia Bancaria -->
                         <div class="bg-gradient-to-br from-amber-500/10 to-base-100 dark:from-amber-500/20 dark:to-base-200 rounded-lg border border-amber-200 dark:border-amber-800 shadow p-4">
-                            <p class="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wider font-semibold">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                                 {{ _('Bank Transfer') }}
                             </p>
-                            <p class="text-2xl font-bold mt-2 text-amber-900 dark:text-amber-100">
+                            <p class="text-2xl font-bold mt-2 text-base-content">
                                 {% if session.bank_transfer_total %}Gs {{ session.bank_transfer_total | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-amber-600/70 dark:text-amber-400/70 mt-1">{{ _('Direct account transfers') }}</p>
+                            <p class="text-xs text-base-content/70 mt-1">{{ _('Direct account transfers') }}</p>
                         </div>
 
                         <!-- Gastos -->
                         <div class="bg-gradient-to-br from-red-500/10 to-base-100 dark:from-red-500/20 dark:to-base-200 rounded-lg border border-red-200 dark:border-red-800 shadow p-4">
-                            <p class="text-xs text-red-700 dark:text-red-400 uppercase tracking-wider font-semibold">{{ _('Expenses') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-red-900 dark:text-red-100">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">{{ _('Expenses') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-base-content">
                                 {% if session.expenses %}−Gs {{ session.expenses | format_currency_py }}{% else %}—{% endif %}
                             </p>
-                            <p class="text-xs text-red-600/70 dark:text-red-400/70 mt-1">{{ _('Business expenses during shift') }}</p>
+                            <p class="text-xs text-base-content/70 mt-1">{{ _('Business expenses during shift') }}</p>
                         </div>
 
                         <!-- Credit Sales (OPEN session) -->
                         {% if session.credit_sales_total and session.credit_sales_total > 0 %}
                         <div class="bg-gradient-to-br from-blue-500/10 to-base-100 dark:from-blue-500/20 dark:to-base-200 rounded-lg border border-blue-200 dark:border-blue-800 shadow p-4">
-                            <p class="text-xs text-blue-700 dark:text-blue-400 uppercase tracking-wider font-semibold">{{ _('Credit Sales') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-blue-900 dark:text-blue-100">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">{{ _('Credit Sales') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-base-content">
                                 Gs {{ session.credit_sales_total | format_currency_py }}
                             </p>
-                            <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ _('New customer debt created') }}</p>
+                            <p class="text-xs text-base-content/70 mt-1">{{ _('New customer debt created') }}</p>
                         </div>
                         {% endif %}
 
                         <!-- Credit Payments (OPEN session) -->
                         {% if session.credit_payments_collected and session.credit_payments_collected > 0 %}
                         <div class="bg-gradient-to-br from-green-500/10 to-base-100 dark:from-green-500/20 dark:to-base-200 rounded-lg border border-green-200 dark:border-green-800 shadow p-4">
-                            <p class="text-xs text-green-700 dark:text-green-400 uppercase tracking-wider font-semibold">{{ _('Debt Collected') }}</p>
-                            <p class="text-2xl font-bold mt-2 text-green-900 dark:text-green-100">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">{{ _('Debt Collected') }}</p>
+                            <p class="text-2xl font-bold mt-2 text-base-content">
                                 +Gs {{ session.credit_payments_collected | format_currency_py }}
                             </p>
-                            <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-1">{{ _('Customer paid old debt') }}</p>
+                            <p class="text-xs text-base-content/70 mt-1">{{ _('Customer paid old debt') }}</p>
                         </div>
                         {% endif %}
                     </div>

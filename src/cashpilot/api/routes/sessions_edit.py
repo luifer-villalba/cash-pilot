@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/routes/sessions_edit.py
 """Session edit routes (edit-open, edit-closed)."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -22,7 +22,7 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
-from cashpilot.models.user import User
+from cashpilot.models.user import User, UserRole
 
 logger = get_logger(__name__)
 
@@ -147,21 +147,34 @@ async def edit_closed_session_form(
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
 ):
-    """Form to edit a CLOSED cash session (with permission check).
-
-    Admin: can edit any closed session
-    Cashier: can edit only their own closed session
-    """
+    """Form to edit a CLOSED cash session (with permission check)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     if session.status != "CLOSED":
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
+    # Calculate edit window for cashiers
+    can_edit = True
+    edit_expired_msg = None
+
+    if current_user.role == UserRole.CASHIER and session.status == "CLOSED":
+        time_since_close = datetime.now() - session.closed_time
+        if time_since_close > timedelta(hours=12):
+            can_edit = False
+            edit_expired_msg = _("Edit window expired (12 hours passed)")
+
     return templates.TemplateResponse(
         request,
         "sessions/edit_closed_session.html",
-        {"current_user": current_user, "session": session, "locale": locale, "_": _},
+        {
+            "current_user": current_user,
+            "session": session,
+            "locale": locale,
+            "can_edit": can_edit,
+            "edit_expired_msg": edit_expired_msg,
+            "_": _,
+        },
     )
 
 
