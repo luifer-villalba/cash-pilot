@@ -87,7 +87,7 @@ async def client(db_session):
 
     app = create_app()
 
-    # Create a test user
+    # Create a test user (CASHIER by default)
     test_user = await UserFactory.create(
         db_session,
         email="testclient@example.com",

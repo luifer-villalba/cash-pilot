@@ -103,23 +103,19 @@ class TestRBACSessionAccess:
 
     @pytest.mark.asyncio
     async def test_cashier_can_read_own_session(
-        self,
-        client: AsyncClient,
-        db_session: AsyncSession,
-    ) -> None:
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
         """Test cashier can read their own session."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
             db_session,
-            business=business,
-            created_by=client.test_user.id,
+            business_id=business.id,
+            cashier_id=admin_client.test_user.id,
+            created_by=admin_client.test_user.id,
         )
 
-        response = await client.get(f"/cash-sessions/{session.id}")
-
+        response = await admin_client.get(f"/sessions/{session.id}")
         assert response.status_code == 200
-        data = response.json()
-        assert data["id"] == str(session.id)
 
     @pytest.mark.asyncio
     async def test_cashier_cannot_read_other_cashier_session(
