@@ -1,4 +1,4 @@
-<!-- File: src/cashpilot/templates/partials/sessions_table.html -->
+<!-- File: templates/partials/sessions_table.html -->
 <div class="bg-base-100 border border-base-300 rounded-lg shadow">
     <div class="p-4 md:p-6">
         <!-- Header -->
@@ -154,6 +154,28 @@
                                             </svg>
                                         </button>
                                     {% endif %}
+                                
+                                {% elif session.status == 'CLOSED' %}
+                                    <!-- Edit closed session -->
+                                    {% if current_user.role == 'ADMIN' or (current_user.id == session.cashier_id) %}
+                                        {% if can_edit_closed %}
+                                            <a href="/sessions/{{ session.id|string }}/edit-closed" 
+                                               class="btn btn-ghost btn-xs btn-circle hover:!bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/30" 
+                                               title="{{ _('Edit session') }}">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                </svg>
+                                            </a>
+                                        {% else %}
+                                            <div class="tooltip tooltip-left" data-tip="{{ _('Edit window expired (12 hours passed)') }}">
+                                                <button disabled class="btn btn-ghost btn-xs btn-circle opacity-50 cursor-not-allowed">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
                                 {% endif %}
                                 
                                 <!-- Delete icon -->
@@ -261,7 +283,16 @@
                             <button disabled class="btn btn-ghost btn-xs flex-1 opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can edit') }}">{{ _('Edit') }}</button>
                             <button disabled class="btn btn-primary btn-xs flex-1 opacity-40 cursor-not-allowed" title="{{ _('Only admins and session creator can close') }}">{{ _('Close') }}</button>
                         {% endif %}
+                    {% elif session.status == 'CLOSED' %}
+                        {% if current_user.role == 'ADMIN' or (current_user.id == session.cashier_id) %}
+                            {% if can_edit_closed %}
+                                <a href="/sessions/{{ session.id|string }}/edit-closed" class="btn btn-ghost btn-xs flex-1 hover:!bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/30">{{ _('Edit') }}</a>
+                            {% else %}
+                                <button disabled class="btn btn-ghost btn-xs flex-1 opacity-50 cursor-not-allowed" title="{{ _('Edit window expired (12 hours passed)') }}">{{ _('Edit') }}</button>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
+
                     {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
                         <button
                             hx-delete="/cash-sessions/{{ session.id|string }}"

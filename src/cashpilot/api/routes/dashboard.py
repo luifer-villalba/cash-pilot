@@ -2,6 +2,7 @@
 """Dashboard routes (HTML endpoints)."""
 
 from datetime import date as date_type
+from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
 from uuid import UUID
@@ -113,6 +114,7 @@ async def dashboard(
             "request": request,
             "current_user": current_user,
             "sessions": sessions,
+            "now": datetime.now(),
             "active_sessions_count": active_count,
             "businesses_count": businesses_count,
             "businesses": businesses,
@@ -190,6 +192,7 @@ async def sessions_table(
             },
             "query_string": query_string,
             "locale": locale,
+            "now": datetime.now(),
             "_": _,
         },
     )
