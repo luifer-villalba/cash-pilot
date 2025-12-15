@@ -56,7 +56,7 @@ async def require_own_session(
         raise HTTPException(status_code=403, detail="Permission denied")
 
     if session.status == "CLOSED":
-        if datetime.now() - session.closed_time > timedelta(hours=12):
+        if session.closed_at and datetime.now() - session.closed_at > timedelta(hours=12):
             raise HTTPException(status_code=403, detail="Edit window expired (12 hours)")
 
     return session
