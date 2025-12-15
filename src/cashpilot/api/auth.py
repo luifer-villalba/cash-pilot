@@ -50,26 +50,35 @@ async def get_current_user(
 
         try:
             last_activity = datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
+            # Ensure timezone-aware for comparison (old sessions may be naive)
+            if last_activity and last_activity.tzinfo is None:
+                last_activity = last_activity.replace(tzinfo=timezone.utc)
         except (ValueError, TypeError):
             last_activity = None
 
         if last_activity and (now - last_activity) > timedelta(seconds=timeout):
+            # Expired: clear session and redirect to login with message
             request.session.clear()
+
+            # Detect if HTMX request
             is_htmx = request.headers.get("HX-Request") == "true"
 
             if is_htmx:
+                # HTMX requires HX-Redirect header
                 raise HTTPException(
                     status_code=status.HTTP_200_OK,
                     detail="Session expired",
                     headers={"HX-Redirect": "/login?expired=1"},
                 )
             else:
+                # Regular request: use 303 See Other
                 raise HTTPException(
                     status_code=status.HTTP_303_SEE_OTHER,
                     detail="Session expired",
                     headers={"Location": "/login?expired=1"},
                 )
         else:
+            # Refresh last_activity on each authenticated request
             request.session["last_activity"] = now.isoformat()
 
     try:
