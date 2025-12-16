@@ -44,6 +44,8 @@ class CashSessionAuditLog(Base):
     # WHEN
     changed_at: Mapped[datetime] = mapped_column(
         default=now_utc_naive,
+        nullable=False,
+        index=True,
     )
 
     # WHAT
