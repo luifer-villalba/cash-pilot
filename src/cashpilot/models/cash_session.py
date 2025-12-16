@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
+from cashpilot.utils.datetime import current_time_local, today_local  # ← NEW IMPORT
 
 
 class CashSession(Base):
@@ -81,12 +82,12 @@ class CashSession(Base):
 
     session_date: Mapped[date_type] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now().date(),
+        default=today_local,
     )
 
     opened_time: Mapped[time] = mapped_column(
         nullable=False,
-        default=lambda: datetime.now().time(),
+        default=current_time_local,
     )
 
     closed_time: Mapped[time | None] = mapped_column(nullable=True)

@@ -12,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cashpilot.core.db import AsyncSessionLocal
 from cashpilot.models import Business, CashSession, User
 from cashpilot.models.user import UserRole
+from cashpilot.utils.datetime import today_local
+
 
 SHIFT_PATTERNS = [
     {"start_time": time(7, 0), "end_time": time(15, 0), "name": "Turno Mañana"},
@@ -101,7 +103,7 @@ async def seed_cash_sessions(
     sessions = []
     user_list = list(users.values())
 
-    base_date = datetime.now().date() - timedelta(days=30)
+    base_date = today_local() - timedelta(days=30)
 
     for business in businesses:
         for day_offset in range(30):

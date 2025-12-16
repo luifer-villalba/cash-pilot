@@ -5,6 +5,8 @@ import re
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
+from cashpilot.utils.datetime import today_local
+
 
 def validate_currency(
     value: Decimal | float | str, max_value: Decimal = Decimal("999999999")
@@ -137,7 +139,7 @@ def validate_no_future_date(value: date, field_name: str = "Date") -> date:
     Raises:
         ValueError: If date is in the future
     """
-    if value > date.today():
+    if value > today_local():
         raise ValueError(f"{field_name} cannot be in the future")
     return value
 

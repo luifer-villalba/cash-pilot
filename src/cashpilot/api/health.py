@@ -23,6 +23,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
+from cashpilot.utils.datetime import now_utc
 
 router = APIRouter(tags=["health"])
 
@@ -40,7 +41,7 @@ def get_uptime_seconds() -> int:
     """Calculate seconds since app start."""
     if _app_start_time is None:
         return 0
-    return int((datetime.now() - _app_start_time).total_seconds())
+    return int((now_utc() - _app_start_time).total_seconds())
 
 
 async def check_database(db: AsyncSession) -> dict[str, Any]:

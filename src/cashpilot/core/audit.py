@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
+from cashpilot.utils.datetime import now_utc
 
 
 async def log_session_edit(
@@ -50,7 +51,7 @@ async def log_session_edit(
         old_values={k: serialize_value(old_values[k]) for k in changed_fields},
         new_values={k: serialize_value(new_values.get(k)) for k in changed_fields},
         reason=reason,
-        changed_at=datetime.now(),
+        changed_at=now_utc(),
     )
 
     db.add(audit_log)

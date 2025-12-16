@@ -23,6 +23,7 @@ from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.user import User, UserRole
+from cashpilot.utils.datetime import now_utc, now_local
 
 logger = get_logger(__name__)
 
@@ -89,7 +90,7 @@ async def edit_open_session_post(
             notes,
         )
 
-        session.last_modified_at = datetime.now()
+        session.last_modified_at = now_utc()
         session.last_modified_by = current_user.display_name
         db.add(session)
         await db.commit()
@@ -159,7 +160,11 @@ async def edit_closed_session_form(
     edit_expired_msg = None
 
     if current_user.role == UserRole.CASHIER and session.status == "CLOSED":
-        time_since_close = datetime.now() - session.closed_at if session.closed_at else timedelta(0)
+        time_since_close = (
+            now_local().replace(tzinfo=None) - session.closed_at
+            if session.closed_at
+            else timedelta(0)
+        )
         if time_since_close > timedelta(hours=12):
             can_edit = False
             edit_expired_msg = _("Edit window expired (12 hours passed)")
@@ -346,7 +351,7 @@ async def edit_closed_session_post(
             notes,
         )
 
-        session.last_modified_at = datetime.now()
+        session.last_modified_at = now_utc()
         session.last_modified_by = current_user.display_name
         db.add(session)
         await db.commit()

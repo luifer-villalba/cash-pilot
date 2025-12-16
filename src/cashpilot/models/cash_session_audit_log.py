@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
+from cashpilot.utils.datetime import now_utc, now_utc_naive
 
 if TYPE_CHECKING:
     from cashpilot.models.cash_session import CashSession
@@ -42,9 +43,7 @@ class CashSessionAuditLog(Base):
 
     # WHEN
     changed_at: Mapped[datetime] = mapped_column(
-        nullable=False,
-        default=lambda: datetime.now(),
-        index=True,
+        default=now_utc_naive,
     )
 
     # WHAT

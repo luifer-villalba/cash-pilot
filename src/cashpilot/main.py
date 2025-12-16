@@ -16,6 +16,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 
 from cashpilot.core.logging import configure_logging, get_logger
+from cashpilot.utils.datetime import now_utc
 
 configure_logging()
 logger = get_logger(__name__)
@@ -55,7 +56,7 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Lifespan context manager for startup and shutdown events."""
-    start_time = datetime.now()
+    start_time = now_utc()
     logger.info("app.startup", message="CashPilot starting up", timestamp=start_time.isoformat())
 
     from cashpilot.api.health import set_app_start_time

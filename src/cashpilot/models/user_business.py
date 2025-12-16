@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
+from cashpilot.utils.datetime import now_utc, now_utc_naive
 
 if TYPE_CHECKING:
     from cashpilot.models.business import Business
@@ -42,8 +43,7 @@ class UserBusiness(Base):
     )
 
     assigned_at: Mapped[datetime] = mapped_column(
-        nullable=False,
-        default=lambda: datetime.now(),
+        default=now_utc_naive,
     )
 
     # Relationships
