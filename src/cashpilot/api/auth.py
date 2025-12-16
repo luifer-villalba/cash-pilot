@@ -14,7 +14,7 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_utc_naive # <--- ADDED IMPORT
+from cashpilot.utils.datetime import now_utc_naive  # <--- ADDED IMPORT
 
 logger = get_logger(__name__)
 
@@ -47,26 +47,21 @@ async def get_current_user(
     if user_role in ROLE_TIMEOUTS:
         timeout = ROLE_TIMEOUTS[user_role]
         # CHANGE: Use now_utc_naive() instead of datetime.now(timezone.utc)
-        now_naive = now_utc_naive() # <--- MODIFIED
+        now_naive = now_utc_naive()  # <--- MODIFIED
 
         last_activity_raw = request.session.get("last_activity")
 
         try:
-            # Note: We continue to use datetime.fromisoformat which handles the ISO string correctly.
-            last_activity_naive = datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
-
-            # The session value is stored as naive UTC (now_utc_naive().isoformat() or datetime.now(timezone.utc).isoformat()).
-            # The issue with old sessions having naive values is still relevant.
-            # We must ensure both `now` and `last_activity` are comparable (either both naive or both timezone-aware)
-            # to calculate the timedelta. Since `now_utc_naive()` returns naive, we should convert both to timezone-aware UTC
-            # for *robust comparison*, especially if the stored `last_activity` *might* have been tz-aware in the past, or if we want to
-            # strictly follow time rules for subtraction.
+            # We continue to use datetime.fromisoformat which handles the ISO string correctly.
+            last_activity_naive = (
+                datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
+            )
 
             # For comparison: Convert naive times to aware UTC for accurate subtraction
-            now = now_naive.replace(tzinfo=timezone.utc) # <--- MODIFIED
+            now = now_naive.replace(tzinfo=timezone.utc)  # <--- MODIFIED
 
             if last_activity_naive:
-                # Ensure it's treated as UTC for comparison, whether it was stored naive or maybe had a timezone string
+                # Ensure it's treated as UTC for comparison
                 last_activity = last_activity_naive.replace(tzinfo=timezone.utc)
             else:
                 last_activity = None
@@ -74,7 +69,9 @@ async def get_current_user(
         except (ValueError, TypeError):
             last_activity = None
 
-        if last_activity and (now - last_activity) > timedelta(seconds=timeout): # Comparison remains the same
+        if last_activity and (now - last_activity) > timedelta(
+            seconds=timeout
+        ):  # Comparison remains the same
             # Expired: clear session and redirect to login with message
             request.session.clear()
 
@@ -112,7 +109,7 @@ async def get_current_user(
         else:
             # Refresh last_activity on each authenticated request
             # Store NAIVE time's ISO format
-            request.session["last_activity"] = now_naive.isoformat() # <--- MODIFIED
+            request.session["last_activity"] = now_naive.isoformat()  # <--- MODIFIED
 
     try:
         user_uuid = UUID(user_id)
@@ -161,7 +158,7 @@ async def login(
     # Set last_activity for roles with configured timeouts
     if user.role in ROLE_TIMEOUTS:
         # CHANGE: Use now_utc_naive() instead of datetime.now(timezone.utc)
-        request.session["last_activity"] = now_utc_naive().isoformat() # <--- MODIFIED
+        request.session["last_activity"] = now_utc_naive().isoformat()  # <--- MODIFIED
 
     logger.info(
         "auth.login_success",

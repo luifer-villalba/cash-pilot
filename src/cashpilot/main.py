@@ -75,6 +75,7 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
 
     # 1. RequestIDMiddleware (Added First, Runs LAST)
     from cashpilot.middleware.logging import RequestIDMiddleware
+
     app.add_middleware(RequestIDMiddleware)
 
     # 2. AdminRedirectMiddleware (Runs THIRD)
@@ -83,7 +84,7 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
     # 3. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
     app.add_middleware(AuthRedirectMiddleware)
 
-    # 4. SessionMiddleware (Added Last, Runs FIRST - Must initialize session before AuthRedirect reads it)
+    # 4. SessionMiddleware
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
