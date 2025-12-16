@@ -3,7 +3,7 @@
 
 from datetime import date, datetime, time, timezone
 from zoneinfo import ZoneInfo
-
+# Paraguay timezone (ZoneInfo handles DST transitions automatically)
 # Paraguay timezone: UTC-3 year-round (no DST since 2016)
 APP_TIMEZONE = ZoneInfo("America/Asuncion")
 
