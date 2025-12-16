@@ -161,7 +161,7 @@ async def edit_closed_session_form(
 
     if current_user.role == UserRole.CASHIER and session.status == "CLOSED":
         time_since_close = (
-            now_local().replace(tzinfo=None) - session.closed_at
+            now_utc() - session.closed_at
             if session.closed_at
             else timedelta(0)
         )
