@@ -314,7 +314,7 @@
 
                     <!-- Hero: Cash Sales & Bank Transfer -->
                     <div class="bg-gradient-to-br from-primary/10 to-base-100 dark:from-primary/20 dark:to-base-200 rounded-lg border-2 border-primary shadow-lg p-8 mb-4">
-                        <p class="text-xs text-primary/70 dark:text-primary uppercase tracking-wider font-bold">
+                        <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                             {{ _('CASH SALES & BANK TRANSFER') }}
                         </p>
                         <div class="mt-4 flex items-baseline gap-2">
@@ -327,43 +327,43 @@
 
                     <!-- Secondary Stats (3-column grid) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-4">
-                        <!-- Cash Profit -->
-                        <div class="{% if cash_profit >= 0 %}bg-gradient-to-br from-emerald-500/10 to-base-100 dark:from-emerald-500/20 dark:to-base-200 border-emerald-200 dark:border-emerald-800{% else %}bg-gradient-to-br from-red-500/10 to-base-100 dark:from-red-500/20 dark:to-base-200 border-red-200 dark:border-red-800{% endif %} rounded-lg border shadow p-3 md:p-4">
-                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-700 dark:text-emerald-400{% else %}text-red-700 dark:text-red-400{% endif %} uppercase tracking-wider font-semibold">
+                        <!-- Cash Profit card -->
+                        <div class="{% if cash_profit >= 0 %}bg-gradient-to-br from-emerald-500/20 to-base-100 dark:from-emerald-500/20 dark:to-base-200 border-emerald-300 dark:border-emerald-800{% else %}bg-gradient-to-br from-red-500/20 to-base-100 dark:from-red-500/20 dark:to-base-200 border-red-300 dark:border-red-800{% endif %} rounded-lg border shadow p-3 md:p-4">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                                 {{ _('Cash Profit') }}</p>
-                            <p class="text-2xl sm:text-3xl font-bold mt-2 {% if cash_profit >= 0 %}text-emerald-900 dark:text-emerald-100{% else %}text-red-900 dark:text-red-100{% endif %}">
-                                {% if cash_profit >= 0 %}+{% endif %}Gs {{ (net_cash_movement - session.expenses) | format_currency_py }}
+                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-base-content">
+                                {% if cash_profit >= 0 %}+{% endif %}Gs {{ (net_cash_movement - session.expenses) |
+                                format_currency_py }}
                             </p>
-                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/70 dark:text-emerald-400/70{% else %}text-red-600/70 dark:text-red-400/70{% endif %} mt-3">
-                                {{ _('Cash only') }}</p>
-                            <p class="text-xs {% if cash_profit >= 0 %}text-emerald-600/50 dark:text-emerald-400/50{% else %}text-red-600/50 dark:text-red-400/50{% endif %} mt-2 font-mono break-words">
+                            <p class="text-xs text-base-content/70 mt-3">{{ _('Cash only') }}</p>
+                            <p class="text-xs text-base-content/60 mt-2 font-mono break-words">
                                 {{ _('Cash Sales') }} + {{ _('Transfer') }} − {{ _('Expenses') }}</p>
                         </div>
 
-                        <!-- Digital -->
-                        <div class="bg-gradient-to-br from-sky-500/10 to-base-100 dark:from-sky-500/20 dark:to-base-200 rounded-lg border border-sky-200 dark:border-sky-800 shadow p-3 md:p-4">
-                            <p class="text-xs text-sky-700 dark:text-sky-400 uppercase tracking-wider font-semibold">
+                        <!-- Digital card -->
+                        <div class="bg-gradient-to-br from-sky-500/20 to-base-100 dark:from-sky-500/20 dark:to-base-200 rounded-lg border border-sky-300 dark:border-sky-800 shadow p-3 md:p-4">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                                 {{ _('Card Payments') }}
                             </p>
-                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-sky-900 dark:text-sky-100">
+                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-base-content">
                                 +Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}
                             </p>
-                            <p class="text-xs text-sky-600/70 dark:text-sky-400/70 mt-3">{{ _('Cards') }}</p>
-                            <p class="text-xs text-sky-600/50 dark:text-sky-400/50 mt-2 font-mono break-words">
+                            <p class="text-xs text-base-content/70 mt-3">{{ _('Cards') }}</p>
+                            <p class="text-xs text-base-content/60 mt-2 font-mono break-words">
                                 {{ _('Credit') }} + {{ _('Debit') }}
                             </p>
                         </div>
 
-                        <!-- Revenue -->
-                        <div class="bg-gradient-to-br from-green-500/10 to-base-100 dark:from-green-500/20 dark:to-base-200 rounded-lg border border-green-200 dark:border-green-800 shadow p-3 md:p-4">
-                            <p class="text-xs text-green-700 dark:text-green-400 uppercase tracking-wider font-semibold">
+                        <!-- Revenue card -->
+                        <div class="bg-gradient-to-br from-green-500/20 to-base-100 dark:from-green-500/20 dark:to-base-200 rounded-lg border border-green-300 dark:border-green-800 shadow p-3 md:p-4">
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold">
                                 {{ _('Total Sales') }}
                             </p>
-                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-green-900 dark:text-green-100">
+                            <p class="text-2xl sm:text-3xl font-bold mt-2 text-base-content">
                                 +Gs {{ session.total_sales | format_currency_py }}
                             </p>
-                            <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-3">{{ _('All sales') }}</p>
-                            <p class="text-xs text-green-600/50 dark:text-green-400/50 mt-2 font-mono break-words">
+                            <p class="text-xs text-base-content/70 mt-3">{{ _('All sales') }}</p>
+                            <p class="text-xs text-base-content/60 mt-2 font-mono break-words">
                                 {{ _('Cash Sales') }} + {{ _('Cards') }} + {{ _('Transfer') }}
                             </p>
                         </div>

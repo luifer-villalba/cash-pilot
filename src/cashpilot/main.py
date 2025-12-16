@@ -1,4 +1,3 @@
-# File: src/cashpilot/main.py
 """FastAPI application factory with frontend support + i18n."""
 
 import os
@@ -40,6 +39,7 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Check session (access via scope, not request.session)
+        # NOTE: Session is now guaranteed to be loaded by SessionMiddleware which runs before this.
         session = request.scope.get("session", {})
         user_id = session.get("user_id")
 
@@ -68,21 +68,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -> None:
-    """Configure all middleware in correct order."""
-    # Add in REVERSE order (last added = first executed)
+    """
+    Configure all middleware in correct order.
+    Execution order is REVERSE of the order they are added (LIFO).
+    """
 
-    # 1. RequestIDMiddleware (runs FIRST)
+    # 1. RequestIDMiddleware (Added First, Runs LAST)
     from cashpilot.middleware.logging import RequestIDMiddleware
-
     app.add_middleware(RequestIDMiddleware)
 
-    # 2. AuthRedirectMiddleware (runs SECOND, needs session)
-    app.add_middleware(AuthRedirectMiddleware)
-
-    # 3. AdminRedirectMiddleware (runs THIRD)
+    # 2. AdminRedirectMiddleware (Runs THIRD)
     app.add_middleware(AdminRedirectMiddleware)
 
-    # 4. SessionMiddleware (runs FOURTH, creates session)
+    # 3. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
+    app.add_middleware(AuthRedirectMiddleware)
+
+    # 4. SessionMiddleware (Added Last, Runs FIRST - Must initialize session before AuthRedirect reads it)
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
