@@ -1,6 +1,5 @@
 """CashSession edit endpoints (patch open/closed sessions)."""
 
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -16,6 +15,7 @@ from cashpilot.models import (
     CashSessionPatchOpen,
     CashSessionRead,
 )
+from cashpilot.utils.datetime import now_utc
 
 FREEZE_PERIOD_DAYS = 30
 
@@ -67,7 +67,7 @@ async def edit_open_session(
         session.notes = patch.notes
 
     # Update audit fields
-    session.last_modified_at = datetime.now()
+    session.last_modified_at = now_utc()
     session.last_modified_by = changed_by
 
     # Capture new values
@@ -162,7 +162,7 @@ async def edit_closed_session(
     _apply_patch_updates(session, patch)
 
     # Update audit fields
-    session.last_modified_at = datetime.now()
+    session.last_modified_at = now_utc()
     session.last_modified_by = changed_by
 
     # Capture new values

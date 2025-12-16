@@ -1,7 +1,5 @@
 """CashSession CRUD endpoints (list, get, open, close)."""
 
-from datetime import date as date_type
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -24,6 +22,7 @@ from cashpilot.models import (
 )
 from cashpilot.models.enums import SessionStatus
 from cashpilot.models.user import UserRole
+from cashpilot.utils.datetime import current_time_local, now_utc, today_local
 
 logger = get_logger(__name__)
 
@@ -165,8 +164,8 @@ async def open_shift(
         overlap_error = await check_session_overlap(
             db=db,
             business_id=session.business_id,
-            session_date=session.session_date or date_type.today(),
-            opened_time=session.opened_time or datetime.now().time(),
+            session_date=session.session_date or today_local(),
+            opened_time=session.opened_time or current_time_local(),
             closed_time=None,
         )
         if overlap_error:
@@ -281,7 +280,7 @@ async def delete_session(
 ):
     """Soft delete a cash session."""
     session.is_deleted = True
-    session.deleted_at = datetime.now()
+    session.deleted_at = now_utc()
     session.deleted_by = current_user.display_name
 
     db.add(session)

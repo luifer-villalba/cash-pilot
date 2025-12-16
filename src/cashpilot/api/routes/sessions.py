@@ -1,7 +1,6 @@
 # File: src/cashpilot/api/routes/sessions.py
 """Session management routes (HTML endpoints)."""
 
-from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
@@ -26,6 +25,7 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.user import User
+from cashpilot.utils.datetime import current_time_local, today_local
 
 logger = get_logger(__name__)
 
@@ -62,7 +62,7 @@ async def create_session_form(
             "businesses": businesses,
             "locale": locale,
             "_": _,
-            "today": date_type.today().isoformat(),
+            "today": today_local().isoformat(),
         },
     )
 
@@ -87,10 +87,10 @@ async def create_session_post(
             raise ValueError("Initial cash required")
 
         session_date_val = (
-            datetime.fromisoformat(session_date).date() if session_date else date_type.today()
+            datetime.fromisoformat(session_date).date() if session_date else today_local()
         )
         opened_time_val = (
-            datetime.strptime(opened_time, "%H:%M").time() if opened_time else datetime.now().time()
+            datetime.strptime(opened_time, "%H:%M").time() if opened_time else current_time_local()
         )
 
         session = CashSession(

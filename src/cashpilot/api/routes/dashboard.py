@@ -1,8 +1,7 @@
 # File: src/cashpilot/api/routes/dashboard.py
 """Dashboard routes (HTML endpoints)."""
 
-from datetime import date as date_type
-from datetime import datetime
+from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 from uuid import UUID
@@ -23,7 +22,8 @@ from cashpilot.api.utils import (
 )
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
-from cashpilot.models.user import User
+from cashpilot.models.user import User, UserRole
+from cashpilot.utils.datetime import now_local, now_utc, today_local
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -31,6 +31,24 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(tags=["dashboard"])
+
+
+def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
+    """Check if current user can edit a closed session (12-hour window for cashiers)."""
+    if current_user.role == UserRole.ADMIN:
+        return True
+
+    if session.status != "CLOSED":
+        return False
+
+    if session.cashier_id != current_user.id:
+        return False
+
+    if not session.closed_at:
+        return False
+
+    time_since_close = now_utc() - session.closed_at
+    return time_since_close <= timedelta(hours=12)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -72,7 +90,7 @@ async def dashboard(
     businesses = result_businesses.scalars().all()
     businesses_count = len(list(businesses))
 
-    today = date_type.today()
+    today = today_local()
     stmt_today = select(
         func.sum(
             CashSession.final_cash
@@ -108,13 +126,17 @@ async def dashboard(
         result_user = await db.execute(stmt_user)
         current_user = result_user.scalar_one_or_none()
 
+    # ✅ Add can_edit_closed for each session
+    for session in sessions:
+        session.can_edit_closed = _can_edit_closed_session(session, current_user)
+
     return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
             "current_user": current_user,
             "sessions": sessions,
-            "now": datetime.now(),
+            "now": now_local(),
             "active_sessions_count": active_count,
             "businesses_count": businesses_count,
             "businesses": businesses,
@@ -174,6 +196,10 @@ async def sessions_table(
     if query_string:
         query_string = "&" + query_string
 
+    # ✅ Add can_edit_closed for each session
+    for session in sessions:
+        session.can_edit_closed = _can_edit_closed_session(session, current_user)
+
     return templates.TemplateResponse(
         "partials/sessions_table.html",
         {
@@ -192,7 +218,7 @@ async def sessions_table(
             },
             "query_string": query_string,
             "locale": locale,
-            "now": datetime.now(),
+            "now": now_local(),
             "_": _,
         },
     )

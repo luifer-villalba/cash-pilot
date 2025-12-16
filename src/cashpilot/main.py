@@ -1,9 +1,7 @@
-# File: src/cashpilot/main.py
 """FastAPI application factory with frontend support + i18n."""
 
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime
 from pathlib import Path
 from typing import AsyncIterator
 
@@ -16,6 +14,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 
 from cashpilot.core.logging import configure_logging, get_logger
+from cashpilot.utils.datetime import now_utc
 
 configure_logging()
 logger = get_logger(__name__)
@@ -40,6 +39,7 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Check session (access via scope, not request.session)
+        # NOTE: Session is now guaranteed to be loaded by SessionMiddleware which runs before this.
         session = request.scope.get("session", {})
         user_id = session.get("user_id")
 
@@ -55,7 +55,7 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Lifespan context manager for startup and shutdown events."""
-    start_time = datetime.now()
+    start_time = now_utc()
     logger.info("app.startup", message="CashPilot starting up", timestamp=start_time.isoformat())
 
     from cashpilot.api.health import set_app_start_time
@@ -68,21 +68,23 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -> None:
-    """Configure all middleware in correct order."""
-    # Add in REVERSE order (last added = first executed)
+    """
+    Configure all middleware in correct order.
+    Execution order is REVERSE of the order they are added (LIFO).
+    """
 
-    # 1. RequestIDMiddleware (runs FIRST)
+    # 1. RequestIDMiddleware (Added First, Runs LAST)
     from cashpilot.middleware.logging import RequestIDMiddleware
 
     app.add_middleware(RequestIDMiddleware)
 
-    # 2. AuthRedirectMiddleware (runs SECOND, needs session)
-    app.add_middleware(AuthRedirectMiddleware)
-
-    # 3. AdminRedirectMiddleware (runs THIRD)
+    # 2. AdminRedirectMiddleware (Runs THIRD)
     app.add_middleware(AdminRedirectMiddleware)
 
-    # 4. SessionMiddleware (runs FOURTH, creates session)
+    # 3. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
+    app.add_middleware(AuthRedirectMiddleware)
+
+    # 4. SessionMiddleware
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
