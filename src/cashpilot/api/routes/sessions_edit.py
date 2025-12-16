@@ -23,7 +23,7 @@ from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_local, now_utc
+from cashpilot.utils.datetime import now_utc
 
 logger = get_logger(__name__)
 
@@ -160,11 +160,7 @@ async def edit_closed_session_form(
     edit_expired_msg = None
 
     if current_user.role == UserRole.CASHIER and session.status == "CLOSED":
-        time_since_close = (
-            now_utc() - session.closed_at
-            if session.closed_at
-            else timedelta(0)
-        )
+        time_since_close = now_utc() - session.closed_at if session.closed_at else timedelta(0)
         if time_since_close > timedelta(hours=12):
             can_edit = False
             edit_expired_msg = _("Edit window expired (12 hours passed)")
