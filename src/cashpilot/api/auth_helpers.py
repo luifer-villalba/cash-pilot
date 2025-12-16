@@ -36,9 +36,9 @@ async def require_admin(current_user: User = Depends(get_current_user)) -> User:
 
 
 async def require_own_session(
-        session_id: str,
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ) -> CashSession:
     """Check if user owns the session OR is admin. Cashiers have 12-hour window."""
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))

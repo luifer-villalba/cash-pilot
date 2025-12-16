@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/routes/sessions_edit.py
 """Session edit routes (edit-open, edit-closed)."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 
@@ -23,7 +23,7 @@ from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_utc, now_local
+from cashpilot.utils.datetime import now_local, now_utc
 
 logger = get_logger(__name__)
 

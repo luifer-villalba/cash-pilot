@@ -1,7 +1,6 @@
 # File: src/cashpilot/api/routes/sessions.py
 """Session management routes (HTML endpoints)."""
 
-from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path

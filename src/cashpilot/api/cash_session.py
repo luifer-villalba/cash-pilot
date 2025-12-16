@@ -1,7 +1,5 @@
 """CashSession CRUD endpoints (list, get, open, close)."""
 
-from datetime import date as date_type
-from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -24,7 +22,7 @@ from cashpilot.models import (
 )
 from cashpilot.models.enums import SessionStatus
 from cashpilot.models.user import UserRole
-from cashpilot.utils.datetime import today_local, current_time_local, now_utc
+from cashpilot.utils.datetime import current_time_local, now_utc, today_local
 
 logger = get_logger(__name__)
 

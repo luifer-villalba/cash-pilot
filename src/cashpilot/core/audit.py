@@ -1,6 +1,5 @@
 """Audit logging utilities for tracking CashSession changes."""
 
-from datetime import datetime
 from decimal import Decimal
 from typing import Any
 

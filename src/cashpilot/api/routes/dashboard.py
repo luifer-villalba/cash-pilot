@@ -1,8 +1,7 @@
 # File: src/cashpilot/api/routes/dashboard.py
 """Dashboard routes (HTML endpoints)."""
 
-from datetime import date as date_type
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 from uuid import UUID
@@ -24,7 +23,7 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import today_local, now_local, now_utc
+from cashpilot.utils.datetime import now_local, now_utc, today_local
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -54,15 +53,15 @@ def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
-        request: Request,
-        page: int = Query(1, ge=1),
-        from_date: str | None = Query(None),
-        to_date: str | None = Query(None),
-        cashier_name: str | None = Query(None),
-        business_id: str | None = Query(None),
-        status: str | None = Query(None),
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    page: int = Query(1, ge=1),
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    status: str | None = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Dashboard with paginated, filterable session list."""
     user_id = request.session.get("user_id")
@@ -162,15 +161,15 @@ async def dashboard(
 
 @router.get("/sessions/table", response_class=HTMLResponse)
 async def sessions_table(
-        request: Request,
-        page: int = Query(1, ge=1),
-        from_date: str | None = Query(None),
-        to_date: str | None = Query(None),
-        cashier_name: str | None = Query(None),
-        business_id: str | None = Query(None),
-        status: str | None = Query(None),
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    page: int = Query(1, ge=1),
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    status: str | None = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Paginated sessions table partial (HTMX endpoint)."""
     locale = get_locale(request)
@@ -227,14 +226,14 @@ async def sessions_table(
 
 @router.get("/stats", response_class=HTMLResponse)
 async def get_dashboard_stats(
-        request: Request,
-        from_date: str | None = Query(None),
-        to_date: str | None = Query(None),
-        cashier_name: str | None = Query(None),
-        business_id: str | None = Query(None),
-        status: str | None = Query(None),
-        current_user: User = Depends(get_current_user),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    from_date: str | None = Query(None),
+    to_date: str | None = Query(None),
+    cashier_name: str | None = Query(None),
+    business_id: str | None = Query(None),
+    status: str | None = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Return dashboard stats as HTML partial."""
     locale = get_locale(request)

@@ -3,7 +3,7 @@
 
 from typing import TYPE_CHECKING
 
-from cashpilot.utils.datetime import now_utc, now_utc_naive
+from cashpilot.utils.datetime import now_utc_naive
 
 if TYPE_CHECKING:
     from cashpilot.models.cash_session import CashSession

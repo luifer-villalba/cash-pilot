@@ -2,7 +2,7 @@
 
 import asyncio
 import random
-from datetime import datetime, time, timedelta
+from datetime import time, timedelta
 from decimal import Decimal
 from uuid import uuid4
 
@@ -13,7 +13,6 @@ from cashpilot.core.db import AsyncSessionLocal
 from cashpilot.models import Business, CashSession, User
 from cashpilot.models.user import UserRole
 from cashpilot.utils.datetime import today_local
-
 
 SHIFT_PATTERNS = [
     {"start_time": time(7, 0), "end_time": time(15, 0), "name": "Turno Mañana"},
