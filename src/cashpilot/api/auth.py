@@ -46,22 +46,18 @@ async def get_current_user(
     # Enforce role-based inactivity timeout for roles with configured timeouts
     if user_role in ROLE_TIMEOUTS:
         timeout = ROLE_TIMEOUTS[user_role]
-        # CHANGE: Use now_utc_naive() instead of datetime.now(timezone.utc)
-        now_naive = now_utc_naive()  # <--- MODIFIED
+        now_naive = now_utc_naive()
 
         last_activity_raw = request.session.get("last_activity")
 
         try:
-            # We continue to use datetime.fromisoformat which handles the ISO string correctly.
             last_activity_naive = (
                 datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
             )
 
-            # For comparison: Convert naive times to aware UTC for accurate subtraction
-            now = now_naive.replace(tzinfo=timezone.utc)  # <--- MODIFIED
+            now = now_naive.replace(tzinfo=timezone.utc)
 
             if last_activity_naive:
-                # Ensure it's treated as UTC for comparison
                 last_activity = last_activity_naive.replace(tzinfo=timezone.utc)
             else:
                 last_activity = None
@@ -69,14 +65,9 @@ async def get_current_user(
         except (ValueError, TypeError):
             last_activity = None
 
-        if last_activity and (now - last_activity) > timedelta(
-            seconds=timeout
-        ):  # Comparison remains the same
-            # Expired: clear session and redirect to login with message
+        if last_activity and (now - last_activity) > timedelta(seconds=timeout):
             request.session.clear()
 
-            # --- START DEBUGGER CODE ---
-            # 💡 SESSION EXPIRATION DEBUGGER LOGGING
             time_elapsed = now - last_activity
             logger.info(
                 "auth.session_expired",
@@ -87,29 +78,23 @@ async def get_current_user(
                 last_activity_utc=last_activity.isoformat(),
                 current_time_utc=now.isoformat(),
             )
-            # --- END DEBUGGER CODE ---
 
-            # Detect if HTMX request
             is_htmx = request.headers.get("HX-Request") == "true"
 
             if is_htmx:
-                # HTMX requires HX-Redirect header
                 raise HTTPException(
                     status_code=status.HTTP_200_OK,
                     detail="Session expired",
                     headers={"HX-Redirect": "/login?expired=1"},
                 )
             else:
-                # Regular request: use 303 See Other
                 raise HTTPException(
                     status_code=status.HTTP_303_SEE_OTHER,
                     detail="Session expired",
                     headers={"Location": "/login?expired=1"},
                 )
         else:
-            # Refresh last_activity on each authenticated request
-            # Store NAIVE time's ISO format
-            request.session["last_activity"] = now_naive.isoformat()  # <--- MODIFIED
+            request.session["last_activity"] = now_naive.isoformat()
 
     try:
         user_uuid = UUID(user_id)
@@ -139,6 +124,7 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
+    # YOUR USERNAME LOGIN CODE (kept from your branch)
     stmt = select(User).where(
         or_(
             User.username == form_data.username.lower(),
@@ -156,14 +142,12 @@ async def login(
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
         return RedirectResponse(url="/login?error=disabled", status_code=302)
 
-    # Store user_id and role in session
     request.session["user_id"] = str(user.id)
     request.session["user_role"] = user.role
     request.session["user_display_name"] = user.display_name
-    # Set last_activity for roles with configured timeouts
+
     if user.role in ROLE_TIMEOUTS:
-        # CHANGE: Use now_utc_naive() instead of datetime.now(timezone.utc)
-        request.session["last_activity"] = now_utc_naive().isoformat()  # <--- MODIFIED
+        request.session["last_activity"] = now_utc_naive().isoformat()
 
     logger.info(
         "auth.login_success",
