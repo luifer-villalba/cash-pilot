@@ -19,22 +19,28 @@ class UserFactory:
 
     @staticmethod
     async def create(
-        session: AsyncSession,
-        email: str = "test@example.com",
-        hashed_password: Optional[str] = None,
-        first_name: str = "Test",
-        last_name: str = "User",
-        role: str = "CASHIER",
-        is_active: bool = True,
-        **kwargs,
+            session: AsyncSession,
+            email: str = "test@example.com",
+            username: Optional[str] = None,
+            hashed_password: Optional[str] = None,
+            first_name: str = "Test",
+            last_name: str = "User",
+            role: str = "CASHIER",
+            is_active: bool = True,
+            **kwargs,
     ) -> User:
         """Create a test user."""
         if hashed_password is None:
             hashed_password = hash_password("testpass123")
 
+        if username is None:
+            # Generate from email prefix, truncate to 50 chars
+            username = email.split('@')[0].lower()[:50]
+
         user = User(
             id=kwargs.get("id", uuid.uuid4()),
-            email=email,
+            email=email.lower(),
+            username=username[:50],  # Ensure truncation
             hashed_password=hashed_password,
             first_name=first_name,
             last_name=last_name,

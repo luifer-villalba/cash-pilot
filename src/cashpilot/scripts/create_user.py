@@ -1,10 +1,10 @@
-# File: src/cashpilot/scripts/create-user.py
-
+# File: src/cashpilot/scripts/create_user.py
 """Script to create a new user via CLI."""
 
 import asyncio
 
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import AsyncSessionLocal
 from cashpilot.core.security import hash_password
@@ -34,10 +34,28 @@ async def check_user_exists(db, email):
     return result.scalar_one_or_none() is not None
 
 
+async def generate_unique_username(db: AsyncSession, email: str) -> str:
+    """Generate unique username from email prefix."""
+    base_username = email.split('@')[0].lower()[:50]
+    username = base_username
+    counter = 2
+
+    while True:
+        stmt = select(User).where(User.username == username)
+        result = await db.execute(stmt)
+        if result.scalar_one_or_none() is None:
+            return username
+        username = f"{base_username}{counter}"[:50]
+        counter += 1
+
+
 async def create_user_record(db, email, password, first_name, last_name, role):
     """Create and return new user record."""
+    username = await generate_unique_username(db, email)
+
     user = User(
-        email=email,
+        email=email.lower(),
+        username=username,
         hashed_password=hash_password(password),
         first_name=first_name,
         last_name=last_name,
@@ -52,7 +70,7 @@ async def create_user_record(db, email, password, first_name, last_name, role):
 
 async def fetch_businesses(db):
     """Fetch all active businesses."""
-    stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -138,6 +156,7 @@ async def create_user():
         user = await create_user_record(db, email, password, first_name, last_name, role)
 
         print(f"\n✅ User created: {user.display_name} ({user.email})")
+        print(f"   Username: {user.username}")
         print(f"   Role: {user.role.value}")
         print(f"   ID: {user.id}")
 

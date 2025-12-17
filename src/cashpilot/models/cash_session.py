@@ -222,7 +222,7 @@ class CashSession(Base):
                     CashSession.session_date == self.session_date,
                     CashSession.status == "OPEN",
                     CashSession.id != self.id,
-                    CashSession.is_deleted is False,
+                    ~CashSession.is_deleted,
                 )
             )
         else:
@@ -232,7 +232,7 @@ class CashSession(Base):
                     CashSession.business_id == self.business_id,
                     CashSession.session_date == self.session_date,
                     CashSession.id != self.id,
-                    CashSession.is_deleted is False,
+                    ~CashSession.is_deleted,
                     CashSession.closed_time.isnot(None),
                     # Time overlap logic
                     or_(
@@ -284,7 +284,7 @@ class CashSession(Base):
                 CashSession.session_date == session_date,
                 CashSession.cashier_id == cashier_id,
                 CashSession.status == "OPEN",
-                CashSession.is_deleted is False,
+                ~CashSession.is_deleted,
             )
         )
 

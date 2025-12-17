@@ -123,10 +123,13 @@ async def test_user(db_session: AsyncSession, request) -> User:
     # Generate unique email per test
     test_name = request.node.name
     email = f"testuser_{test_name}@example.com"
+    # Truncate username from email prefix to 50 chars
+    username = email.split('@')[0].lower()[:50]
 
     user = await UserFactory.create(
         db_session,
         email=email,
+        username=username,
         first_name="Test",
         last_name="User",
         hashed_password=hash_password("testpass123"),
@@ -140,7 +143,15 @@ async def unauthenticated_client(
         db_session: AsyncSession,
 ) -> AsyncClient:
     """AsyncClient without authentication overrides (for testing auth failures)."""
+    from cashpilot.core.db import get_db
+
     app = create_app()
+
+    # Override get_db to use test session
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
 
     async with AsyncClient(
             transport=ASGITransport(app=app),

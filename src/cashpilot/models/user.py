@@ -43,6 +43,13 @@ class User(Base):
         index=True,
     )
 
+    username: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
     hashed_password: Mapped[str] = mapped_column(
         String,
         nullable=False,

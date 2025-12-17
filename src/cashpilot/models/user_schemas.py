@@ -27,9 +27,9 @@ class UserCreate(BaseModel):
 
     @field_validator("email")
     @classmethod
-    def validate_email_format(cls, v: str) -> str:
-        """Validate and normalize email."""
-        return validate_email(v)
+    def validate_and_lowercase_email(cls, v: str) -> str:
+        """Validate and lowercase email."""
+        return validate_email(v).lower()
 
     @field_validator("first_name", "last_name")
     @classmethod

@@ -38,17 +38,17 @@
             <form method="POST" action="/login" class="space-y-5">
                 <!-- Email -->
                 <div class="form-control">
-                    <label class="label pb-2" for="email">
-                        <span class="label-text font-semibold text-sm text-base-content">{{ _('Email Address') }}</span>
+                    <label class="label pb-2" for="username">
+                        <span class="label-text font-semibold text-sm text-base-content">{{ _('Username or Email') }}</span>
                     </label>
                     <input
-                        type="email"
-                        id="email"
-                        name="username"
-                        required
-                        autofocus
-                        class="input input-bordered input-sm w-full border-base-300 focus:border-base-300 focus:ring-1 focus:ring-base-300"
-                        placeholder="your@email.com"
+                            type="text"
+                            id="username"
+                            name="username"
+                            required
+                            autofocus
+                            class="input input-bordered input-sm w-full border-base-300 focus:border-base-300 focus:ring-1 focus:ring-base-300"
+                            placeholder="username or email"
                     />
                 </div>
 

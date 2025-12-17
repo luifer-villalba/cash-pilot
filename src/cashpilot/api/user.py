@@ -43,6 +43,20 @@ def generate_password(length: int = 12) -> str:
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
+async def generate_unique_username(db: AsyncSession, email: str) -> str:
+    """Generate unique username from email prefix."""
+    base_username = email.split('@')[0].lower()
+    username = base_username
+    counter = 2
+
+    while True:
+        stmt = select(User).where(User.username == username)
+        result = await db.execute(stmt)
+        if result.scalar_one_or_none() is None:
+            return username
+        username = f"{base_username}{counter}"
+        counter += 1
+
 @router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: UserCreate,
@@ -68,8 +82,10 @@ async def create_user(
         password_to_hash = user.password
 
     # Create user
+    username = await generate_unique_username(db, user.email.lower())
     user_obj = User(
-        email=user.email,
+        email=user.email.lower(),
+        username=username,
         hashed_password=hash_password(password_to_hash),
         first_name=user.first_name,
         last_name=user.last_name,
@@ -184,7 +200,7 @@ async def list_users(
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    stmt = select(User).where(User.is_active is True)
+    stmt = select(User).where(User.is_active)
     if role:
         stmt = stmt.where(User.role == role)
 

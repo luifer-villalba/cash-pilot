@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
@@ -14,7 +14,7 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_utc_naive  # <--- ADDED IMPORT
+from cashpilot.utils.datetime import now_utc_naive
 
 logger = get_logger(__name__)
 
@@ -139,7 +139,12 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
-    stmt = select(User).where(User.email == form_data.username)
+    stmt = select(User).where(
+        or_(
+            User.username == form_data.username.lower(),
+            User.email == form_data.username.lower()
+        )
+    )
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
