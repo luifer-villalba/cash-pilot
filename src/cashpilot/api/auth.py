@@ -6,7 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import select, or_
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
@@ -126,10 +126,7 @@ async def login(
     """Login endpoint - validates credentials and creates session."""
     # YOUR USERNAME LOGIN CODE (kept from your branch)
     stmt = select(User).where(
-        or_(
-            User.username == form_data.username.lower(),
-            User.email == form_data.username.lower()
-        )
+        or_(User.username == form_data.username.lower(), User.email == form_data.username.lower())
     )
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()

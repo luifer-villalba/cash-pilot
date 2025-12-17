@@ -36,7 +36,7 @@ async def check_user_exists(db, email):
 
 async def generate_unique_username(db: AsyncSession, email: str) -> str:
     """Generate unique username from email prefix."""
-    base_username = email.split('@')[0].lower()[:50]
+    base_username = email.split("@")[0].lower()[:50]
     username = base_username
     counter = 2
 

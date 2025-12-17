@@ -45,7 +45,7 @@ def generate_password(length: int = 12) -> str:
 
 async def generate_unique_username(db: AsyncSession, email: str) -> str:
     """Generate unique username from email prefix."""
-    base_username = email.split('@')[0].lower()
+    base_username = email.split("@")[0].lower()
     username = base_username
     counter = 2
 
@@ -56,6 +56,7 @@ async def generate_unique_username(db: AsyncSession, email: str) -> str:
             return username
         username = f"{base_username}{counter}"
         counter += 1
+
 
 @router.post("", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_user(
