@@ -11,12 +11,12 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.utils import get_locale, get_translation_function
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
 from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import now_utc_naive
-from cashpilot.api.utils import get_locale, get_translation_function
 
 logger = get_logger(__name__)
 
@@ -40,16 +40,17 @@ async def login_page(request: Request, expired: str = None, error: str = None):
         "login.html",
         {
             "request": request,
+            "lang": locale,
             "expired": expired == "true",
             "error": error == "true",
             "_": _,
-        }
+        },
     )
 
 
 async def get_current_user(
-        request: Request,
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ) -> User:
     """Dependency to get current authenticated user from session."""
     user_id = request.session.get("user_id")
@@ -138,9 +139,9 @@ async def get_current_user(
 
 @router.post("/login")
 async def login(
-        request: Request,
-        form_data: OAuth2PasswordRequestForm = Depends(),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
     stmt = select(User).where(User.email == form_data.username)
