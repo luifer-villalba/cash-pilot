@@ -1,7 +1,10 @@
+# File: Makefile
+
 .PHONY: fmt lint sh hook-install run dev up down logs watch dev-watch test \
         migrate-create migrate-upgrade migrate-current migrate-history migrate-downgrade \
         check-db rebuild rebuild-quick fix-perms clean-branches seed seed-reset \
-        createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update
+        createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update \
+        build-css watch-css favicons
 
 # ---------- Code quality ----------
 fmt:
@@ -162,3 +165,9 @@ build-css:
 watch-css:
 	@echo "👀 Watching CSS for changes..."
 	docker compose run --rm css-builder npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch
+
+# ---------- Favicons ----------
+favicons:
+	@echo "🎨 Generating favicons..."
+	docker compose exec app python -m cashpilot.scripts.generate_favicons
+	@echo "✅ Favicons generated in static/"
