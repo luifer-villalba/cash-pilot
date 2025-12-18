@@ -71,7 +71,7 @@ class TestUsernameLogin:
             db_session: AsyncSession,
     ) -> None:
         """Test login is case insensitive for username."""
-        user = await UserFactory.create(
+        _user = await UserFactory.create(
             db_session,
             email="testcase@example.com",
             username="testcaseuser",
