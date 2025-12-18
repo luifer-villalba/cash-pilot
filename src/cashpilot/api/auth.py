@@ -40,6 +40,7 @@ async def login_page(request: Request, expired: str = None, error: str = None):
         "login.html",
         {
             "request": request,
+            "lang": locale,
             "expired": expired == "true",
             "error": error == "true",
             "_": _,
