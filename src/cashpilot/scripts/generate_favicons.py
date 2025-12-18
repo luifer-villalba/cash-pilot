@@ -1,7 +1,6 @@
 # File: scripts/generate_favicons.py
 """Generate PNG favicons from SVG using Pillow."""
 
-import os
 from pathlib import Path
 
 try:
@@ -18,13 +17,13 @@ def get_system_font(size):
         "/System/Library/Fonts/Helvetica.ttc",  # macOS
         "C:\\Windows\\Fonts\\arialbd.ttf",  # Windows
     ]
-    
+
     for font_path in font_paths:
         try:
             return ImageFont.truetype(font_path, size)
         except (OSError, IOError):
             continue
-    
+
     # Fallback to default font
     return ImageFont.load_default()
 
@@ -32,7 +31,7 @@ def get_system_font(size):
 def create_favicon(size, output_path):
     """Create a CP logo favicon at the specified size."""
     # Create image with gradient-like blue background
-    img = Image.new('RGB', (size, size), color='#3b82f6')
+    img = Image.new("RGB", (size, size), color="#3b82f6")
     draw = ImageDraw.Draw(img)
 
     # Draw a simple square background; any corner rounding will be handled by browser rendering
@@ -51,10 +50,10 @@ def create_favicon(size, output_path):
     y = (size - text_height) // 2 - int(size * 0.08)  # Adjust vertical alignment
 
     # Draw white text
-    draw.text((x, y), text, fill='white', font=font)
+    draw.text((x, y), text, fill="white", font=font)
 
     # Save
-    img.save(output_path, 'PNG')
+    img.save(output_path, "PNG")
     print(f"   ✅ {output_path}")
 
 
@@ -62,18 +61,18 @@ def main():
     """Generate all favicon sizes."""
     # Get absolute path to static directory
     script_dir = Path(__file__).parent.parent.parent.parent
-    static_dir = script_dir / 'static'
-    
+    static_dir = script_dir / "static"
+
     # Ensure static directory exists
     static_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Generate favicons with absolute paths
-    create_favicon(16, str(static_dir / 'favicon-16x16.png'))
-    create_favicon(32, str(static_dir / 'favicon-32x32.png'))
-    create_favicon(180, str(static_dir / 'apple-touch-icon.png'))
-    
+    create_favicon(16, str(static_dir / "favicon-16x16.png"))
+    create_favicon(32, str(static_dir / "favicon-32x32.png"))
+    create_favicon(180, str(static_dir / "apple-touch-icon.png"))
+
     print("\n✅ All favicons generated!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
