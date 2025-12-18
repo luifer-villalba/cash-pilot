@@ -124,7 +124,6 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
-    # YOUR USERNAME LOGIN CODE (kept from your branch)
     stmt = select(User).where(
         or_(User.username == form_data.username.lower(), User.email == form_data.username.lower())
     )
