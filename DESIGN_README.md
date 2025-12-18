@@ -57,7 +57,7 @@ Metric cards show key numbers at a glance. Used on dashboard + session detail.
     {{ _('TOTAL SALES') }}
   </p>
   <p class="text-xl md:text-2xl font-bold mt-2 text-primary">
-    ₲{{ 2_500_000 | format_currency_py }}
+    {{ 2_500_000 | format_currency_py }}
   </p>
   <p class="text-xs text-base-content/60 mt-2">
     {{ _('Cash + Cards + Transfers') }}
@@ -68,7 +68,7 @@ Metric cards show key numbers at a glance. Used on dashboard + session detail.
 **Structure:**
 1. **Colored border** — Indicates metric type (primary, success, warning, error)
 2. **Label** — UPPERCASE, tiny, muted (tracking-wider = letter-spacing)
-3. **Big number** — Font size grows on desktop (text-xl → text-2xl)
+3. **big number** — Font size grows on desktop (text-xl → text-2xl)
 4. **Helper text** — Small, gray, explains what the number includes
 
 **Responsive:** 
@@ -262,7 +262,7 @@ Forms should be simple and focused. One column on mobile, 2-3 on desktop.
 
 ## Empty States
 
-When there's no data, don't show nothing. Show a helpful message.
+When there's no data, don't leave the page blank. Show a helpful message.
 
 ```html
 <div class="flex flex-col items-center justify-center py-12 px-4">
@@ -441,7 +441,7 @@ OPEN (warning/amber) → CLOSED (success/green) → FLAGGED (error/red)
 
 ### Money Formatting
 ```jinja2
-{{ amount | format_currency_py }}  <!-- ₲ 2,500,000 -->
+{{ amount | format_currency_py }}  <!-- ₲ 2.500.000 -->
 ```
 
 ### Date/Time Display

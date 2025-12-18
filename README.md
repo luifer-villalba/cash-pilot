@@ -15,7 +15,7 @@ Pharmacy cash register reconciliation system built for 5-6 pharmacy locations in
 - System flags discrepancies instantly (short 15,000₲? it tells you)
 - Admins manage users, assign them to pharmacy locations, reset passwords
 - Complete audit trail of every edit (who changed what, when, why)
-- Works offline-first, syncs when connection back
+- Requires an internet connection; offline mode is not currently supported
 
 ---
 
@@ -72,7 +72,7 @@ make logs               # View live logs
 
 **Permission System**
 - **Admin:** Can create/edit/delete businesses, manage all sessions, reset passwords
-- **Cashier:** Can see assigned pharmacies only, edit own sessions (12hr window), can't see other cashiers' sessions
+- **Cashier:** Limited to assigned pharmacies only; within those, can create and view only their own sessions (edit within 12hr window) and cannot view sessions created by other cashiers
 
 ---
 
