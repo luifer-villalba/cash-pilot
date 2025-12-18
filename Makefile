@@ -167,6 +167,7 @@ watch-css:
 	docker compose run --rm css-builder npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch
 
 # ---------- Favicons ----------
+# Generate favicons (requires app container running and Pillow installed)
 favicons:
 	@echo "🎨 Generating favicons..."
 	docker compose exec app python -m cashpilot.scripts.generate_favicons

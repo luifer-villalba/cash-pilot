@@ -48,8 +48,8 @@ async def login_page(request: Request, expired: str = None, error: str = None):
 
 
 async def get_current_user(
-        request: Request,
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ) -> User:
     """Dependency to get current authenticated user from session."""
     user_id = request.session.get("user_id")
@@ -138,9 +138,9 @@ async def get_current_user(
 
 @router.post("/login")
 async def login(
-        request: Request,
-        form_data: OAuth2PasswordRequestForm = Depends(),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
     stmt = select(User).where(User.email == form_data.username)
