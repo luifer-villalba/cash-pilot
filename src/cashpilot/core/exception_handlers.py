@@ -1,9 +1,8 @@
 # File: src/cashpilot/core/exception_handlers.py
-
 """Global exception handlers for FastAPI."""
 
-from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi import Request, status
+from fastapi.responses import JSONResponse, RedirectResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from cashpilot.api.auth import logger
@@ -29,7 +28,27 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 
 
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    """Log and pass through HTTP exceptions."""
+    """Handle HTTP exceptions with redirect support for session expiration."""
+
+    # Handle 303 redirects (session expiration for regular requests)
+    if (
+        exc.status_code == status.HTTP_303_SEE_OTHER
+        and hasattr(exc, "headers")
+        and exc.headers
+        and "Location" in exc.headers
+    ):
+        return RedirectResponse(url=exc.headers["Location"], status_code=303)
+
+    # Handle HTMX redirects (session expiration for HTMX requests)
+    if (
+        exc.status_code == status.HTTP_200_OK
+        and hasattr(exc, "headers")
+        and exc.headers
+        and "HX-Redirect" in exc.headers
+    ):
+        return Response(status_code=200, headers={"HX-Redirect": exc.headers["HX-Redirect"]})
+
+    # Default: log and return JSON
     logger.error(
         "http_exception",
         status_code=exc.status_code,

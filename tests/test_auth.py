@@ -157,6 +157,6 @@ class TestUserCreationWithRoles:
             follow_redirects=False,
         )
 
-        assert response.status_code == 302
+        assert response.status_code == 303
         # Check that session contains role info
         assert client.cookies.get("session") is not None

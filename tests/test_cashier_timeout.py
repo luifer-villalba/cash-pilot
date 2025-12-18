@@ -80,7 +80,7 @@ async def test_cashier_session_expired_redirects_to_login(db_session):
 
     exc = excinfo.value
     assert exc.status_code == 303
-    assert exc.headers.get("Location") == "/login?expired=1"
+    assert exc.headers.get("Location") == "/login?expired=true"
     assert request.session == {}
 
 
@@ -149,5 +149,5 @@ async def test_admin_session_expired_redirects_to_login(db_session):
 
     exc = excinfo.value
     assert exc.status_code == 303
-    assert exc.headers.get("Location") == "/login?expired=1"
+    assert exc.headers.get("Location") == "/login?expired=true"
     assert request.session == {}

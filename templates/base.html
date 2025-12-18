@@ -6,24 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
-    <link rel="manifest" href="/static/site.webmanifest">
 
     <!-- SEO Meta Tags -->
     <meta name="description" content="CashPilot - Sistema de Reconciliación de Cajas Registradoras para Farmacias. Control de sesiones de caja, auditoría completa y gestión de múltiples sucursales.">
     <meta name="keywords" content="caja registradora, farmacia, reconciliación, cash register, pharmacy, audit">
     <meta name="author" content="Luis F. Villalba">
-    <meta name="theme-color" content="#22c55e">
+    <meta name="theme-color" content="#3b82f6">
 
     <!-- Open Graph -->
     <meta property="og:title" content="CashPilot - Business Cash Register System">
     <meta property="og:description" content="Sistema de Reconciliación de Cajas Registradoras para Farmacias">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://cash-pilot-production.up.railway.app">
-    <meta property="og:image" content="https://cash-pilot-production.up.railway.app/static/favicon-512.png">
+    <meta property="og:image" content="https://cash-pilot-production.up.railway.app/static/apple-touch-icon.png">
 
     <title>{% block title %}CashPilot{% endblock %}</title>
 
@@ -77,9 +76,9 @@
 
             <!-- Brand Logo -->
             <a href="/" class="btn btn-ghost normal-case hover:bg-base-200 gap-2 px-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow bg-emerald-600">
-                    CP
-                </div>
+                {% set gradient_id = 'nav-gradient' %}
+                {% set size_class = 'w-8 h-8' %}
+                {% include 'partials/logo.html' %}
                 <span class="hidden sm:inline font-bold text-base">CashPilot</span>
             </a>
         </div>

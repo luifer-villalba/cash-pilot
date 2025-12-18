@@ -1,31 +1,51 @@
+# File: src/cashpilot/api/auth.py
 """Authentication endpoints and dependencies."""
 
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.requests import Request
 
+from cashpilot.api.utils import get_locale, get_translation_function
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_utc_naive  # <--- ADDED IMPORT
+from cashpilot.utils.datetime import now_utc_naive
 
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["auth"])
-
+templates = Jinja2Templates(directory="templates")
 
 # Configurable inactivity timeout by role (seconds)
 ROLE_TIMEOUTS = {
     UserRole.CASHIER: 30 * 60,  # 30 minutes
     UserRole.ADMIN: 2 * 60 * 60,  # 2 hours
 }
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request, expired: str = None, error: str = None):
+    """Show login page."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "lang": locale,
+            "expired": expired == "true",
+            "error": error == "true",
+            "_": _,
+        },
+    )
 
 
 async def get_current_user(
@@ -43,25 +63,21 @@ async def get_current_user(
 
     user_role = request.session.get("user_role")
 
-    # Enforce role-based inactivity timeout for roles with configured timeouts
+    # Enforce role-based inactivity timeout
     if user_role in ROLE_TIMEOUTS:
         timeout = ROLE_TIMEOUTS[user_role]
-        # CHANGE: Use now_utc_naive() instead of datetime.now(timezone.utc)
-        now_naive = now_utc_naive()  # <--- MODIFIED
+        now_naive = now_utc_naive()
 
         last_activity_raw = request.session.get("last_activity")
 
         try:
-            # We continue to use datetime.fromisoformat which handles the ISO string correctly.
             last_activity_naive = (
                 datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
             )
 
-            # For comparison: Convert naive times to aware UTC for accurate subtraction
-            now = now_naive.replace(tzinfo=timezone.utc)  # <--- MODIFIED
+            now = now_naive.replace(tzinfo=timezone.utc)
 
             if last_activity_naive:
-                # Ensure it's treated as UTC for comparison
                 last_activity = last_activity_naive.replace(tzinfo=timezone.utc)
             else:
                 last_activity = None
@@ -69,14 +85,9 @@ async def get_current_user(
         except (ValueError, TypeError):
             last_activity = None
 
-        if last_activity and (now - last_activity) > timedelta(
-            seconds=timeout
-        ):  # Comparison remains the same
-            # Expired: clear session and redirect to login with message
+        if last_activity and (now - last_activity) > timedelta(seconds=timeout):
             request.session.clear()
 
-            # --- START DEBUGGER CODE ---
-            # 💡 SESSION EXPIRATION DEBUGGER LOGGING
             time_elapsed = now - last_activity
             logger.info(
                 "auth.session_expired",
@@ -87,29 +98,23 @@ async def get_current_user(
                 last_activity_utc=last_activity.isoformat(),
                 current_time_utc=now.isoformat(),
             )
-            # --- END DEBUGGER CODE ---
 
-            # Detect if HTMX request
             is_htmx = request.headers.get("HX-Request") == "true"
 
             if is_htmx:
-                # HTMX requires HX-Redirect header
                 raise HTTPException(
                     status_code=status.HTTP_200_OK,
                     detail="Session expired",
-                    headers={"HX-Redirect": "/login?expired=1"},
+                    headers={"HX-Redirect": "/login?expired=true"},
                 )
             else:
-                # Regular request: use 303 See Other
                 raise HTTPException(
                     status_code=status.HTTP_303_SEE_OTHER,
                     detail="Session expired",
-                    headers={"Location": "/login?expired=1"},
+                    headers={"Location": "/login?expired=true"},
                 )
         else:
-            # Refresh last_activity on each authenticated request
-            # Store NAIVE time's ISO format
-            request.session["last_activity"] = now_naive.isoformat()  # <--- MODIFIED
+            request.session["last_activity"] = now_naive.isoformat()
 
     try:
         user_uuid = UUID(user_id)
@@ -145,20 +150,18 @@ async def login(
 
     if not user or not verify_password(form_data.password, user.hashed_password):
         logger.warning("auth.login_failed", email=form_data.username)
-        return RedirectResponse(url="/login?error=1", status_code=302)
+        return RedirectResponse(url="/login?error=true", status_code=303)
 
     if not user.is_active:
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
-        return RedirectResponse(url="/login?error=disabled", status_code=302)
+        return RedirectResponse(url="/login?error=true", status_code=303)
 
-    # Store user_id and role in session
     request.session["user_id"] = str(user.id)
     request.session["user_role"] = user.role
     request.session["user_display_name"] = user.display_name
-    # Set last_activity for roles with configured timeouts
+
     if user.role in ROLE_TIMEOUTS:
-        # CHANGE: Use now_utc_naive() instead of datetime.now(timezone.utc)
-        request.session["last_activity"] = now_utc_naive().isoformat()  # <--- MODIFIED
+        request.session["last_activity"] = now_utc_naive().isoformat()
 
     logger.info(
         "auth.login_success",
@@ -166,7 +169,7 @@ async def login(
         user_id=str(user.id),
         role=user.role,
     )
-    return RedirectResponse(url="/", status_code=302)
+    return RedirectResponse(url="/", status_code=303)
 
 
 @router.post("/logout")
@@ -177,7 +180,7 @@ async def logout(request: Request):
         logger.info("auth.logout", user_id=user_id)
 
     request.session.clear()
-    return RedirectResponse(url="/login", status_code=302)
+    return RedirectResponse(url="/login", status_code=303)
 
 
 @router.get("/logout")
