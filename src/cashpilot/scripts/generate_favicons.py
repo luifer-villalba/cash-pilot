@@ -21,7 +21,7 @@ def get_system_font(size):
     for font_path in font_paths:
         try:
             return ImageFont.truetype(font_path, size)
-        except (OSError, IOError):
+        except (FileNotFoundError, OSError):
             continue
 
     # Fallback to default font
