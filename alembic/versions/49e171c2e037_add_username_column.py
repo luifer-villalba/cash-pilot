@@ -32,8 +32,8 @@ def upgrade() -> None:
                                             FROM users)
                UPDATE users
                SET username = CASE
-                                  WHEN uc.row_num = 1 THEN uc.base_username
-                                  ELSE uc.base_username || uc.row_num
+                                  WHEN uc.row_num = 1 THEN LEFT(uc.base_username, 50)
+                                  ELSE LEFT(uc.base_username, 50 - LENGTH(uc.row_num::text)) || uc.row_num::text
                    END FROM username_candidates uc
                WHERE users.id = uc.id
                """)
