@@ -23,35 +23,35 @@ def upgrade() -> None:
     # Create sequence
     op.execute("CREATE SEQUENCE IF NOT EXISTS cash_session_number_seq")
 
-    # Add column (SQLAlchemy handles sequence via model definition)
+    # Step 1: Add column as NULLABLE (allows existing rows)
     with op.batch_alter_table('cash_sessions', schema=None) as batch_op:
         batch_op.add_column(
             sa.Column(
                 'session_number',
                 sa.Integer(),
-                nullable=False,
+                nullable=True,  # Nullable initially
             )
         )
         batch_op.create_index(batch_op.f('ix_cash_sessions_session_number'), ['session_number'], unique=False)
 
-    # Backfill existing sessions with sequential numbers
+    # Step 2: Backfill existing sessions with sequential numbers
     connection = op.get_bind()
 
     sessions = connection.execute(
         sa.text("""
-            SELECT id
-            FROM cash_sessions
-            ORDER BY session_date, opened_time
-        """)
+                SELECT id
+                FROM cash_sessions
+                ORDER BY session_date, opened_time
+                """)
     ).fetchall()
 
     for idx, (session_id,) in enumerate(sessions, start=1):
         connection.execute(
             sa.text("""
-                UPDATE cash_sessions
-                SET session_number = :number
-                WHERE id = :session_id
-            """),
+                    UPDATE cash_sessions
+                    SET session_number = :number
+                    WHERE id = :session_id
+                    """),
             {"number": idx, "session_id": session_id}
         )
 
@@ -61,6 +61,10 @@ def upgrade() -> None:
             sa.text("SELECT setval('cash_session_number_seq', :count)"),
             {"count": len(sessions)},
         )
+
+    # Step 3: Make column NOT NULL after backfill
+    with op.batch_alter_table('cash_sessions', schema=None) as batch_op:
+        batch_op.alter_column('session_number', nullable=False)
 
 
 def downgrade() -> None:
