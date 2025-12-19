@@ -59,7 +59,8 @@ def upgrade() -> None:
     # Update sequence to continue from last assigned number
     if sessions:
         connection.execute(
-            sa.text(f"SELECT setval('cash_session_number_seq', {len(sessions)})")
+            sa.text("SELECT setval('cash_session_number_seq', :count)"),
+            {"count": len(sessions)},
         )
 
 

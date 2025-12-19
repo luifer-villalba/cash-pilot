@@ -173,7 +173,7 @@ class CashSessionRead(BaseModel):
 
     id: UUID
     business_id: UUID
-    session_number: int | None
+    session_number: int
     cashier_id: UUID
     cashier: UserResponse
     created_by_user: UserResponse | None = None
