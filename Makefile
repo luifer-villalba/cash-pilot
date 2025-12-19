@@ -1,10 +1,10 @@
 # File: Makefile
 
 .PHONY: fmt lint sh hook-install run dev up down logs watch dev-watch test \
-        migrate-create migrate-upgrade migrate-current migrate-history migrate-downgrade \
+        migrate migration migrate-up migrate-down migrate-current migrate-history \
         check-db rebuild rebuild-quick fix-perms clean-branches seed seed-reset \
         createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update \
-        build-css watch-css favicons
+        build-css watch-css favicons db-reset
 
 # ---------- Code quality ----------
 fmt:
@@ -80,21 +80,24 @@ test:
 	docker compose run --rm app bash -lc "pytest -q"
 
 # ---------- Alembic migrations ----------
-migrate-create:
+migration:  ## Create new migration (autogenerate)
 	@read -p "Migration name: " name; \
 	docker compose exec app alembic revision --autogenerate -m "$$name"
 
-migrate-upgrade:
+migrate:  ## Apply all pending migrations
 	docker compose exec app alembic upgrade head
 
-migrate-current:
+migrate-up:  ## Apply all pending migrations (alias)
+	@$(MAKE) migrate
+
+migrate-down:  ## Rollback one migration
+	docker compose exec app alembic downgrade -1
+
+migrate-current:  ## Show current migration version
 	docker compose exec app sh -c "cd /app && alembic current"
 
-migrate-history:
+migrate-history:  ## Show migration history
 	docker compose exec app alembic history
-
-migrate-downgrade:
-	docker compose exec app alembic downgrade -1
 
 # ---------- Database ----------
 check-db:
@@ -102,6 +105,15 @@ check-db:
 	docker compose exec db sh -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -c "\dt"'
 	@echo "🧩 Current Alembic version:"
 	docker compose exec db sh -lc 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -c "SELECT * FROM alembic_version;"'
+
+db-reset:  ## Reset database (drops volume, recreates, applies migrations)
+	@echo "🔄 Resetting database..."
+	docker compose down -v
+	docker compose up -d db app
+	@echo "⏳ Waiting for database to be ready..."
+	@sleep 5
+	@$(MAKE) migrate
+	@echo "✅ Database reset complete"
 
 # ---------- Rebuild ----------
 rebuild:
@@ -167,7 +179,6 @@ watch-css:
 	docker compose run --rm css-builder npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch
 
 # ---------- Favicons ----------
-# Generate favicons (requires app container running and Pillow installed)
 favicons:
 	@echo "🎨 Generating favicons..."
 	docker compose exec app python -m cashpilot.scripts.generate_favicons

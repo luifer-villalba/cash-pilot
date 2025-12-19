@@ -21,16 +21,15 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # Create sequence
-    op.execute("CREATE SEQUENCE cash_session_number_seq")
+    op.execute("CREATE SEQUENCE IF NOT EXISTS cash_session_number_seq")
 
-    # Add column with sequence default
+    # Add column (SQLAlchemy handles sequence via model definition)
     with op.batch_alter_table('cash_sessions', schema=None) as batch_op:
         batch_op.add_column(
             sa.Column(
                 'session_number',
                 sa.Integer(),
                 nullable=False,
-                server_default=sa.text("nextval('cash_session_number_seq')")
             )
         )
         batch_op.create_index(batch_op.f('ix_cash_sessions_session_number'), ['session_number'], unique=False)
@@ -40,19 +39,19 @@ def upgrade() -> None:
 
     sessions = connection.execute(
         sa.text("""
-                SELECT id
-                FROM cash_sessions
-                ORDER BY session_date, opened_time
-                """)
+            SELECT id
+            FROM cash_sessions
+            ORDER BY session_date, opened_time
+        """)
     ).fetchall()
 
     for idx, (session_id,) in enumerate(sessions, start=1):
         connection.execute(
             sa.text("""
-                    UPDATE cash_sessions
-                    SET session_number = :number
-                    WHERE id = :session_id
-                    """),
+                UPDATE cash_sessions
+                SET session_number = :number
+                WHERE id = :session_id
+            """),
             {"number": idx, "session_id": session_id}
         )
 

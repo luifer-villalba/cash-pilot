@@ -46,10 +46,9 @@ class CashSession(Base):
     )
 
     session_number: Mapped[int] = mapped_column(
-        Integer,
+        Sequence('cash_session_number_seq'),
         nullable=False,
         index=True,
-        server_default=Sequence("cash_session_number_seq").next_value(),
     )
 
     # Cashier who operated this session
