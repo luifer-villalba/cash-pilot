@@ -12,7 +12,7 @@ from datetime import date as date_type
 from datetime import datetime, time
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Numeric, Sequence, String, and_, or_, select
+from sqlalchemy import ForeignKey, Integer, Numeric, Sequence, String, and_, or_, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -46,9 +46,10 @@ class CashSession(Base):
     )
 
     session_number: Mapped[int] = mapped_column(
-        Sequence("cash_session_number_seq"),
+        Integer,
         nullable=False,
         index=True,
+        server_default=Sequence("cash_session_number_seq").next_value(),
     )
 
     # Cashier who operated this session
