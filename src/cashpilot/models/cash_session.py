@@ -12,13 +12,13 @@ from datetime import date as date_type
 from datetime import datetime, time
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, Numeric, String, and_, or_, select
+from sqlalchemy import ForeignKey, Numeric, Sequence, String, and_, or_, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
-from cashpilot.utils.datetime import current_time_local, today_local  # ← NEW IMPORT
+from cashpilot.utils.datetime import current_time_local, today_local
 
 
 class CashSession(Base):
@@ -43,6 +43,12 @@ class CashSession(Base):
         "Business",
         back_populates="cash_sessions",
         lazy="selectin",
+    )
+
+    session_number: Mapped[int] = mapped_column(
+        Sequence("cash_session_number_seq"),
+        nullable=False,
+        index=True,
     )
 
     # Cashier who operated this session

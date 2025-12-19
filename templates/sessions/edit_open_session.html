@@ -1,13 +1,15 @@
 <!-- File: templates/sessions/edit_open_session.html -->
 {% extends "base.html" %}
 
-{% block title %}{{ _('Edit Open Cash Session') }} - CashPilot{% endblock %}
+{% block title %}{{ _('Edit Open Cash Session') }} #{{ "%03d" | format(session.session_number) }} - CashPilot{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
     <!-- Header -->
     <div>
-        <h1 class="text-4xl md:text-5xl font-bold text-base-content">{{ _('Edit Open Cash Session') }}</h1>
+        <h1 class="text-4xl md:text-5xl font-bold text-base-content">
+            {{ _('Edit Open Cash Session') }} <span class="font-mono">#{{ "%03d" | format(session.session_number) }}</span>
+        </h1>
         <p class="text-sm text-base-content/60 mt-2">
             👤 <strong>{{ session.cashier.display_name }}</strong>
             <span class="mx-2">•</span>

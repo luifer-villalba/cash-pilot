@@ -49,7 +49,7 @@ async def seed_users(db: AsyncSession) -> dict[str, User]:
             is_active=True,
         )
         # Set a demo password hash (use a simple one for seeding)
-        user.password_hash = "demo_hash_change_in_prod"
+        user.hashed_password = "demo_hash_change_in_prod"
         users[f"{first_name} {last_name}"] = user
         db.add(user)
 

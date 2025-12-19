@@ -91,7 +91,7 @@
                         <td class="text-sm">{{ session.business.name }}</td>
                         <!-- Date & Time -->
                         <td class="text-xs text-base-content/70 font-mono">
-                            <div>{{ session.session_date.strftime('%d/%m/%Y') }}</div>
+                            <div><span class="font-semibold">#{{ "%03d" | format(session.session_number) }}</span> • {{ session.session_date.strftime('%d/%m/%Y') }}</div>
                             <div class="opacity-80">
                                 {{ session.opened_time.strftime('%H:%M') }}
                                 {% if session.closed_time %}
@@ -242,8 +242,8 @@
 
                 <!-- Date & Period -->
                 <div class="space-y-1">
-                    <p class="text-sm text-base-content/70">
-                        <span class="font-semibold">{{ _('Date') }}:</span> {{ session.session_date.strftime('%d/%m/%Y') }}
+                    <p class="text-sm text-base-content/70 font-mono">
+                        <span class="font-semibold">#{{ "%03d" | format(session.session_number) }}</span> • {{ session.session_date.strftime('%d/%m/%Y') }}
                     </p>
                     <p class="text-sm text-base-content/70 font-mono">
                         <span class="font-semibold">{{ _('Period') }}:</span>
