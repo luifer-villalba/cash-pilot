@@ -18,7 +18,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
                             <h1 class="text-base sm:text-2xl font-semibold truncate">
-                                {{ _('Shift') }} @ {{ session.business.name }}
+                                {{ _('Shift') }} <span class="font-mono">#{{ "%03d" | format(session.session_number) }}</span> @ {{ session.business.name }}
                             </h1>
                             {% if session.status == 'OPEN' %}
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 text-xs font-medium shrink-0 hidden sm:inline-flex lg:hidden">
