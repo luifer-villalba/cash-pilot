@@ -39,8 +39,18 @@ pg_dump "$DATABASE_PUBLIC_URL" | gzip > "$BACKUP_FILE"
 
 # Verify backup
 if [ -f "$BACKUP_FILE" ]; then
-    # Check file size (works on Linux and macOS)
-    SIZE_BYTES=$(stat -c%s "$BACKUP_FILE" 2>/dev/null || stat -f%z "$BACKUP_FILE")
+    # Check file size with explicit error handling for unsupported platforms
+    if SIZE_BYTES=$(stat -c%s "$BACKUP_FILE" 2>/dev/null); then
+        : # Linux
+    elif SIZE_BYTES=$(stat -f%z "$BACKUP_FILE" 2>/dev/null); then
+        : # macOS/BSD
+    else
+        echo "❌ Cannot determine backup file size"
+        echo "   Platform not supported - please verify backup manually:"
+        ls -lh "$BACKUP_FILE"
+        exit 1
+    fi
+
     SIZE_HUMAN=$(ls -lh "$BACKUP_FILE" | awk '{print $5}')
 
     if [ "$SIZE_BYTES" -lt 1024 ]; then
