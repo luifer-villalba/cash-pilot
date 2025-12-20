@@ -55,3 +55,10 @@ coverage.xml
 # Node.js
 node_modules/
 static/css/main.css
+
+# Database backups
+.env.backup
+backups/
+logs/
+*.sql
+*.sql.gz

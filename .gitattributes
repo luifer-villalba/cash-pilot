@@ -1,0 +1,8 @@
+# Shell scripts must use LF
+*.sh text eol=lf
+
+# Environment files must use LF
+.env* text eol=lf
+
+# Documentation
+*.md text eol=lf
