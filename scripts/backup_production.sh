@@ -1,4 +1,4 @@
-# File: scripts/backup_db.sh
+# File: scripts/backup_production.sh
 #!/bin/bash
 set -e
 
@@ -20,8 +20,8 @@ mkdir -p "$BACKUP_DIR"
 
 echo "🔄 Starting backup at $(date)"
 
-# Backup using public URL from environment
-pg_dump "$DATABASE_PUBLIC_URL" | gzip > "$BACKUP_FILE"
+# Backup using plain SQL format without ownership info
+pg_dump --format=plain --no-owner --no-acl "$DATABASE_PUBLIC_URL" | gzip > "$BACKUP_FILE"
 
 # Verify backup
 if [ -f "$BACKUP_FILE" ]; then

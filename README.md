@@ -30,7 +30,6 @@ Pharmacy cash register reconciliation system built for 5-6 pharmacy locations in
 ---
 
 ## Getting Started
-
 ```bash
 git clone https://github.com/luifer-villalba/cash-pilot.git
 cd cash-pilot
@@ -118,7 +117,6 @@ When something breaks, trace the exact request through the logs. Every log entry
 ---
 
 ## Project Structure
-
 ```
 src/cashpilot/
 ├── api/                    # FastAPI routers (auth, business, sessions, admin)
@@ -144,6 +142,7 @@ templates/                  # Jinja2 HTML + Tailwind
 
 alembic/                    # Database migrations
 translations/               # Spanish/English
+scripts/                    # Backup/restore scripts (Railway-specific)
 docker-compose.yml          # PostgreSQL + FastAPI
 Makefile                    # make test, make seed, etc.
 ```
@@ -153,7 +152,6 @@ Makefile                    # make test, make seed, etc.
 ## Deployment
 
 **Production:** Railway (auto-deploy from `main` branch)
-
 ```bash
 git push origin main
 # → GitHub webhook → Railway builds & deploys
@@ -174,8 +172,36 @@ ENVIRONMENT=production
 
 ---
 
-## Contributing
+## Database Backups (Optional)
 
+> **Note:** Backup scripts are configured for Railway deployments. Adapt for your hosting provider.
+
+Railway's Hobby plan doesn't include automated backups. The `scripts/` directory includes optional backup/restore tooling for production safety.
+
+### Quick Start (Railway)
+```bash
+# Setup (one-time)
+echo 'DATABASE_PUBLIC_URL=your_railway_public_url' > .env.backup
+
+# Weekly backup
+./scripts/backup_production.sh
+
+# Test restore locally
+./scripts/restore_to_local.sh backups/cashpilot_20251220_160224.sql.gz
+```
+
+**See [docs/backup_restore.md](docs/backup_restore.md) for complete setup guide.**
+
+**Critical moments to backup:**
+- Before schema migrations (`alembic upgrade`)
+- Before deploying to production
+- Weekly (recommended)
+
+**Other hosting providers:** Adapt scripts in `scripts/` directory or use provider's native backup features (Heroku Postgres, AWS RDS, etc).
+
+---
+
+## Contributing
 ```bash
 git checkout -b feature/your-feature
 make test       # Verify tests pass
