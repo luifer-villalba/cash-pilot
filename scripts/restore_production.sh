@@ -1,51 +1,70 @@
-# File: scripts/restore_production.sh
 #!/bin/bash
+# File: scripts/restore_production.sh
+
 set -e
 
-if [ -z "$1" ]; then
-    echo "Usage: ./scripts/restore_production.sh <backup_file.sql.gz>"
-    echo ""
-    echo "⚠️  WARNING: This restores to RAILWAY PRODUCTION database!"
-    echo "⚠️  For safe testing, use: ./scripts/restore_to_local.sh"
-    echo ""
-    echo "Available backups:"
-    ls -lht backups/*.sql.gz 2>/dev/null | head -n 5
+echo "⚠️  CashPilot Production Restore Script"
+echo "========================================"
+echo ""
+echo "🚨 WARNING: This will REPLACE your production database!"
+echo ""
+
+# Load DATABASE_PUBLIC_URL from .env.backup
+if [ -f .env.backup ]; then
+    set -a
+    source .env.backup
+    set +a
+else
+    echo "❌ .env.backup file not found"
+    echo "   Create it with: DATABASE_PUBLIC_URL=your_railway_url"
     exit 1
 fi
 
-BACKUP_FILE=$1
+if [ -z "$DATABASE_PUBLIC_URL" ]; then
+    echo "❌ DATABASE_PUBLIC_URL not set in .env.backup"
+    exit 1
+fi
+
+# Check if backup file provided
+if [ -z "$1" ]; then
+    echo "❌ No backup file specified"
+    echo "Usage: $0 backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz"
+    exit 1
+fi
+
+BACKUP_FILE="$1"
 
 if [ ! -f "$BACKUP_FILE" ]; then
     echo "❌ Backup file not found: $BACKUP_FILE"
     exit 1
 fi
 
-# Load DATABASE_PUBLIC_URL from .env.backup
-if [ -f .env.backup ]; then
-    export $(grep -v '^#' .env.backup | xargs)
-else
-    echo "❌ .env.backup file not found!"
-    exit 1
-fi
-
-echo "⚠️⚠️⚠️  DANGER ZONE  ⚠️⚠️⚠️"
-echo "This will OVERWRITE the RAILWAY PRODUCTION database!"
-echo "📁 Backup file: $BACKUP_FILE"
-echo "🌐 Target: Railway Production"
+echo "📦 Backup file: $BACKUP_FILE"
+echo "🎯 Target: PRODUCTION DATABASE"
 echo ""
-echo "💡 To test safely first, use:"
-echo "   ./scripts/restore_to_local.sh $BACKUP_FILE"
-echo ""
-read -p "Type 'RESTORE TO PRODUCTION' to confirm: " CONFIRM
+read -p "Type 'YES' to confirm restore to production: " CONFIRM
 
-if [ "$CONFIRM" != "RESTORE TO PRODUCTION" ]; then
+if [ "$CONFIRM" != "YES" ]; then
     echo "❌ Restore cancelled"
     exit 1
 fi
 
 echo ""
-echo "🔄 Restoring to PRODUCTION..."
+echo "🧹 Dropping and recreating schema on PRODUCTION..."
+psql "$DATABASE_PUBLIC_URL" <<'SQL'
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO CURRENT_USER;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+SQL
+
+echo "🔄 Restoring to PRODUCTION from backup..."
 gunzip -c "$BACKUP_FILE" | psql "$DATABASE_PUBLIC_URL"
 
-echo "✅ Production restore completed at $(date)"
-echo "⚠️  Verify application immediately!"
+echo ""
+echo "🔎 Verifying production restore..."
+psql "$DATABASE_PUBLIC_URL" -c "SELECT NOW() AS restore_verified_at;"
+
+echo ""
+echo "✅ Production restore complete!"
+echo "⚠️  Remember to run migrations if needed: alembic upgrade head"

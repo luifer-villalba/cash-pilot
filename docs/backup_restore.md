@@ -53,9 +53,13 @@ echo '.env.backup' >> .gitignore
 
 **Output:**
 ```
-🔄 Starting backup at Sat Dec 20 16:02:24 -03 2025
-✅ Backup created: backups/cashpilot_20251220_160224.sql.gz (12K)
-🧹 Cleaned backups older than 30 days
+🗄️  CashPilot Production Backup Script
+======================================
+📦 Creating backup: backups/cashpilot_20251220_161902.sql.gz
+✅ Backup created successfully: 12K
+📁 Location: backups/cashpilot_20251220_161902.sql.gz
+🧹 Cleaning up old backups (keeping last 30 days)...
+✅ Backup complete!
 ```
 
 **Storage:**
@@ -70,51 +74,71 @@ echo '.env.backup' >> .gitignore
 # 1. Backup first
 ./scripts/backup_production.sh
 
-# 2. Then migrate
+# 2. Verify backup succeeded (file exists and is non-empty)
+ls -lh backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz
+
+# 3. Optional but recommended: test restore locally in an isolated environment
+./scripts/restore_to_local.sh backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz
+
+# 4. Then migrate
 alembic upgrade head
 
-# 3. If migration fails, restore
+# 5. If migration fails, restore
 ./scripts/restore_production.sh backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz
 ```
 
 ---
 
-## Test Restore Locally (Safe)
+## Testing Backups Locally
+
+**⚠️ Docker-only:** The `restore_to_local.sh` script requires Docker Compose and won't work with native PostgreSQL installations.
 
 **Always test backups before trusting them:**
 ```bash
 # Restore to local Docker database
-./scripts/restore_to_local.sh backups/cashpilot_20251220_160224.sql.gz
+./scripts/restore_to_local.sh backups/cashpilot_20251220_161902.sql.gz
 ```
 
 **Output:**
 ```
-🧪 Restoring to LOCAL Docker database (safe testing)...
-📁 Backup: backups/cashpilot_20251220_160224.sql.gz
-💡 Production database will NOT be affected
+🧪 CashPilot Local Restore Script
+==================================
 
-🔄 Starting local PostgreSQL...
-🗑️  Dropping existing local database...
-🔄 Restoring backup to local...
-✅ Local restore completed!
+⚠️  This script is for Docker-based development only
 
-📊 Data verification:
-  table_name   | records 
----------------+---------
- businesses    |       5
- cash_sessions |      76
- users         |      15
+📦 Backup file: backups/cashpilot_20251220_161902.sql.gz
+🎯 Target: Local Docker database (cashpilot_dev)
 
-🌐 Start app to test restored data:
-   docker compose up app
-   Visit: http://localhost:8000
+🛑 Stopping app container to release database connections...
+🧹 Dropping and recreating local database...
+🔄 Restoring from backup...
+SET
+SET
+...
+🔎 Verifying local restore...
+      restore_verified_at      
+-------------------------------
+ 2025-12-20 19:19:58.794226+00
+(1 row)
+
+✅ Local restore complete!
+🧪 Test your application: make run
 ```
 
 **Verify restored data:**
 ```bash
-docker compose up app
+make run
 # Visit http://localhost:8000
 # Login and check data looks correct
+```
+
+### For Native PostgreSQL Users
+
+If you're not using Docker, manually restore with:
+```bash
+dropdb cashpilot_dev
+createdb cashpilot_dev -O cashpilot
+gunzip -c backups/cashpilot_20251220_161902.sql.gz | psql cashpilot_dev
 ```
 
 ---
@@ -137,7 +161,7 @@ docker compose up app
 ./scripts/restore_to_local.sh backups/cashpilot_20251220_160224.sql.gz
 
 # 2. Verify data in local app
-docker compose up app
+make run
 
 # 3. Only then restore to production
 ./scripts/restore_production.sh backups/cashpilot_20251220_160224.sql.gz
@@ -145,12 +169,15 @@ docker compose up app
 
 **Confirmation required:**
 ```
-⚠️⚠️⚠️  DANGER ZONE  ⚠️⚠️⚠️
-This will OVERWRITE the RAILWAY PRODUCTION database!
-📁 Backup file: backups/cashpilot_20251220_160224.sql.gz
-🌐 Target: Railway Production
+⚠️  CashPilot Production Restore Script
+========================================
 
-Type 'RESTORE TO PRODUCTION' to confirm:
+🚨 WARNING: This will REPLACE your production database!
+
+📦 Backup file: backups/cashpilot_20251220_160224.sql.gz
+🎯 Target: PRODUCTION DATABASE
+
+Type 'YES' to confirm restore to production:
 ```
 
 **After restore:**
@@ -267,11 +294,25 @@ cat .env.backup
 pg_dump --version  # Must be 17.x
 ```
 
-### "Backup file too small (20 bytes)"
+### "Backup file too small"
 
 - Check `.env.backup` has correct DATABASE_PUBLIC_URL
 - Verify Railway database is accessible
 - Check network connection
+
+### "Database is being accessed by other users" (Local Restore)
+
+The `restore_to_local.sh` script automatically handles this by:
+1. Stopping the app container
+2. Terminating active connections
+3. Dropping and recreating the database
+
+If issues persist, manually stop all containers:
+```bash
+docker compose down
+docker compose up -d db
+./scripts/restore_to_local.sh backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz
+```
 
 ---
 

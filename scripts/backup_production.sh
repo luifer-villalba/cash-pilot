@@ -1,45 +1,59 @@
-# File: scripts/backup_production.sh
 #!/bin/bash
+# File: scripts/backup_production.sh
+
 set -e
 
-BACKUP_DIR="backups"
-DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="${BACKUP_DIR}/cashpilot_${DATE}.sql.gz"
-KEEP_DAYS=30
+echo "🗄️  CashPilot Production Backup Script"
+echo "======================================"
 
 # Load DATABASE_PUBLIC_URL from .env.backup
 if [ -f .env.backup ]; then
-    export $(grep -v '^#' .env.backup | xargs)
+    set -a
+    source .env.backup
+    set +a
 else
-    echo "❌ .env.backup file not found!"
-    echo "Create .env.backup with: DATABASE_PUBLIC_URL=postgresql://..."
+    echo "❌ .env.backup file not found"
+    echo "   Create it with: DATABASE_PUBLIC_URL=your_railway_url"
     exit 1
 fi
 
-mkdir -p "$BACKUP_DIR"
+if [ -z "$DATABASE_PUBLIC_URL" ]; then
+    echo "❌ DATABASE_PUBLIC_URL not set in .env.backup"
+    exit 1
+fi
 
-echo "🔄 Starting backup at $(date)"
+# Create backups directory
+mkdir -p backups
 
-# Backup using plain SQL format without ownership info
-pg_dump --format=plain --no-owner --no-acl "$DATABASE_PUBLIC_URL" | gzip > "$BACKUP_FILE"
+# Generate filename with timestamp
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_FILE="backups/cashpilot_${TIMESTAMP}.sql.gz"
+
+echo "📦 Creating backup: $BACKUP_FILE"
+
+# Run pg_dump and compress
+pg_dump "$DATABASE_PUBLIC_URL" | gzip > "$BACKUP_FILE"
 
 # Verify backup
 if [ -f "$BACKUP_FILE" ]; then
-    SIZE=$(ls -lh "$BACKUP_FILE" | awk '{print $5}')
-    if [ "$SIZE" = "20" ]; then
-        echo "❌ Backup failed - file too small (likely empty)"
+    # Check file size (works on Linux and macOS)
+    SIZE_BYTES=$(stat -c%s "$BACKUP_FILE" 2>/dev/null || stat -f%z "$BACKUP_FILE")
+    SIZE_HUMAN=$(ls -lh "$BACKUP_FILE" | awk '{print $5}')
+
+    if [ "$SIZE_BYTES" -lt 1024 ]; then
+        echo "❌ Backup failed - file too small ($SIZE_HUMAN)"
         exit 1
     fi
-    echo "✅ Backup created: $BACKUP_FILE ($SIZE)"
+
+    echo "✅ Backup created successfully: $SIZE_HUMAN"
+    echo "📁 Location: $BACKUP_FILE"
 else
-    echo "❌ Backup failed!"
+    echo "❌ Backup file not created"
     exit 1
 fi
 
-# Clean old backups
-find "$BACKUP_DIR" -name "*.sql.gz" -mtime +$KEEP_DAYS -delete
-echo "🧹 Cleaned backups older than $KEEP_DAYS days"
+# Clean up old backups (keep last 30 days)
+echo "🧹 Cleaning up old backups (keeping last 30 days)..."
+find backups/ -name "cashpilot_*.sql.gz" -mtime +30 -delete
 
-echo ""
-echo "📊 Current backups:"
-ls -lht "$BACKUP_DIR" | head -n 6
+echo "✅ Backup complete!"
