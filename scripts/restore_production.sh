@@ -9,7 +9,7 @@ echo ""
 echo "🚨 WARNING: This will REPLACE your production database!"
 echo ""
 
-# Load DATABASE_PUBLIC_URL from .env.backup
+# Load environment variables from .env.backup
 if [ -f .env.backup ]; then
     set -a
     source .env.backup
@@ -27,8 +27,9 @@ fi
 
 # Check if backup file provided
 if [ -z "$1" ]; then
+    BACKUP_DIR="${BACKUP_DIR:-backups}"
     echo "❌ No backup file specified"
-    echo "Usage: $0 backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz"
+    echo "Usage: $0 ${BACKUP_DIR}/cashpilot_YYYYMMDD_HHMMSS.sql.gz"
     exit 1
 fi
 

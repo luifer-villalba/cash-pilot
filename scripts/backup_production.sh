@@ -6,7 +6,7 @@ set -e
 echo "🗄️  CashPilot Production Backup Script"
 echo "======================================"
 
-# Load DATABASE_PUBLIC_URL from .env.backup
+# Load environment variables from .env.backup
 if [ -f .env.backup ]; then
     set -a
     source .env.backup
@@ -22,12 +22,15 @@ if [ -z "$DATABASE_PUBLIC_URL" ]; then
     exit 1
 fi
 
-# Create backups directory
-mkdir -p backups
+# Use BACKUP_DIR from env or default to ./backups
+BACKUP_DIR="${BACKUP_DIR:-backups}"
+
+# Create backup directory
+mkdir -p "$BACKUP_DIR"
 
 # Generate filename with timestamp
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="backups/cashpilot_${TIMESTAMP}.sql.gz"
+BACKUP_FILE="${BACKUP_DIR}/cashpilot_${TIMESTAMP}.sql.gz"
 
 echo "📦 Creating backup: $BACKUP_FILE"
 
@@ -54,6 +57,6 @@ fi
 
 # Clean up old backups (keep last 30 days)
 echo "🧹 Cleaning up old backups (keeping last 30 days)..."
-find backups/ -name "cashpilot_*.sql.gz" -mtime +30 -delete
+find "$BACKUP_DIR" -name "cashpilot_*.sql.gz" -mtime +30 -delete
 
 echo "✅ Backup complete!"
