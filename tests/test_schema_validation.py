@@ -5,6 +5,7 @@ import pytest
 from datetime import date, timedelta
 from decimal import Decimal
 from pydantic import ValidationError
+from cashpilot.utils.datetime import today_local
 
 from cashpilot.models.user_schemas import UserCreate
 from cashpilot.models.business_schemas import BusinessCreate, BusinessUpdate
@@ -159,7 +160,7 @@ class TestCashSessionCreateValidation:
 
     def test_future_date_rejected(self):
         """Test future session date is rejected."""
-        tomorrow = date.today() + timedelta(days=1)
+        tomorrow = today_local() + timedelta(days=1)
 
         with pytest.raises(ValidationError) as exc:
             CashSessionCreate(
@@ -174,11 +175,11 @@ class TestCashSessionCreateValidation:
         session = CashSessionCreate(
             business_id=uuid4(),
             initial_cash=Decimal("100.00"),
-            session_date=date.today(),
+            session_date=today_local(),
         )
-        assert session.session_date == date.today()
+        assert session.session_date == today_local()
 
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = today_local() - timedelta(days=1)
         session = CashSessionCreate(
             business_id=uuid4(),
             initial_cash=Decimal("100.00"),

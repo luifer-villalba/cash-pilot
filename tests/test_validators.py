@@ -4,6 +4,7 @@
 import pytest
 from datetime import date, timedelta
 from decimal import Decimal
+from cashpilot.utils.datetime import today_local
 
 from cashpilot.core.validators import (
     validate_currency,
@@ -124,23 +125,23 @@ class TestValidateNoFutureDate:
 
     def test_today_passes(self):
         """Test today's date passes."""
-        today = date.today()
+        today = today_local()
         assert validate_no_future_date(today) == today
 
     def test_past_date_passes(self):
         """Test past date passes."""
-        yesterday = date.today() - timedelta(days=1)
+        yesterday = today_local() - timedelta(days=1)
         assert validate_no_future_date(yesterday) == yesterday
 
     def test_future_date_fails(self):
         """Test future date is rejected."""
-        tomorrow = date.today() + timedelta(days=1)
+        tomorrow = today_local() + timedelta(days=1)
         with pytest.raises(ValueError, match="cannot be in the future"):
             validate_no_future_date(tomorrow)
 
     def test_custom_field_name(self):
         """Test custom field name in error message."""
-        tomorrow = date.today() + timedelta(days=1)
+        tomorrow = today_local() + timedelta(days=1)
         with pytest.raises(ValueError, match="Session date cannot be in the future"):
             validate_no_future_date(tomorrow, field_name="Session date")
 
