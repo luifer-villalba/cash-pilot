@@ -24,7 +24,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Enter' && e.ctrlKey) {
       const form = target.closest('form');
       if (form) {
-        form.requestSubmit();
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit();
+        } else {
+          form.submit();
+        }
       }
       return;
     }
