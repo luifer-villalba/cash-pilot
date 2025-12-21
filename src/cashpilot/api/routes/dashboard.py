@@ -305,7 +305,7 @@ async def get_dashboard_stats(
     credit_payments_val = Decimal(aggs_row.credit_payments_collected or 0)
 
     # Card #1: Cash Sales
-    # Already calculated as cash_sales_val
+    cash_and_transfers = cash_sales_val + bank_val
 
     # Card #2: Bank Transfers
     # Already calculated as bank_val
@@ -342,7 +342,7 @@ async def get_dashboard_stats(
         {
             "request": request,
             # Card 1-5 (always visible)
-            "cash_sales": cash_sales_val,
+            "cash_sales": cash_and_transfers,
             "bank_transfer_total": bank_val,
             "total_expenses": total_expenses,
             "cash_profit": cash_profit,

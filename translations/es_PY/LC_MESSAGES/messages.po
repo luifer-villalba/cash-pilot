@@ -832,7 +832,7 @@ msgstr "Transferencia Bancaria"
 
 #: /app/templates/partials/stats_row.html:16
 msgid "Register"
-msgstr "Dif. Dinero en Caja"
+msgstr "Caja"
 
 #: /app/templates/partials/stats_row.html:16
 #: /app/templates/sessions/edit_closed_session.html:272
