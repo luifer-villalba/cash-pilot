@@ -49,14 +49,6 @@ class CurrencyFormatter {
 // Initialize global formatter instance
 const currencyFormatter = new CurrencyFormatter();
 
-// Debug: Log locale detection
-console.log('🌍 Locale Detection:', {
-    locale: window.LOCALE,
-    currencyLocale: window.CURRENCY_LOCALE,
-    browserLanguage: navigator.language,
-    formatter: currencyFormatter.numberFormatter
-});
-
 /**
  * Initialize currency input handlers on DOM ready
  * Handles formatting for: initial_cash, final_cash, envelope_amount, etc.
@@ -88,7 +80,6 @@ function initializeCurrencyInputs() {
     currencyFieldNames.forEach(fieldName => {
         // Skip calculator-enabled fields completely
         if (calculatorFields.has(fieldName)) {
-            console.log(`⚠️ Skipping currency formatter for calculator field: ${fieldName}`);
             return;
         }
 

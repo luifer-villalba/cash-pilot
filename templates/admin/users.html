@@ -340,7 +340,7 @@
             const data = await response.json();
             allBusinesses = data.businesses;
         } catch (error) {
-            console.error('Failed to load businesses:', error);
+            allBusinesses = [];
         }
     }
 
@@ -486,7 +486,6 @@
                 });
             }, 50);
         } catch (error) {
-            console.error('Failed to load users:', error);
             alert(i18n.loadingError);
         }
     }
@@ -568,8 +567,6 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                console.error('Full error:', error);
-                console.error('Error detail:', JSON.stringify(error, null, 2));
 
                 if (error.detail === 'Email already registered') {
                     alert(i18n.emailAlreadyExists);
@@ -593,7 +590,6 @@
             closeCreateUserModal();
             await loadUsers();
         } catch (error) {
-            console.error('Failed to create user:', error);
             alert(i18n.createError);
         }
     }
@@ -669,7 +665,6 @@
             closeAssignBusinessesModal();
             await loadUsers();
         } catch (error) {
-            console.error('Failed to assign businesses:', error);
             alert(i18n.operationError);
         }
     }
@@ -699,7 +694,6 @@
             alert(i18n.businessRemoved);
             await loadUsers();
         } catch (error) {
-            console.error('Failed to unassign business:', error);
             alert(i18n.operationError);
         }
     }
@@ -755,7 +749,6 @@
             closeResetPasswordModal();
             await loadUsers();
         } catch (error) {
-            console.error('Failed to reset password:', error);
             alert(i18n.resetError);
         }
     }
@@ -792,7 +785,6 @@
 
             await loadUsers();
         } catch (error) {
-            console.error('Failed to toggle user status:', error);
             alert(i18n.operationError);
         }
     }
