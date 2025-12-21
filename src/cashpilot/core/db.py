@@ -18,8 +18,6 @@ elif not DATABASE_URL:
         "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev"
     )
 
-print(f"DEBUG: DATABASE_URL = {DATABASE_URL}")
-
 engine = create_async_engine(DATABASE_URL)
 
 # Session factory
