@@ -304,7 +304,7 @@ async def get_dashboard_stats(
     credit_sales_val = Decimal(aggs_row.credit_sales_total or 0)
     credit_payments_val = Decimal(aggs_row.credit_payments_collected or 0)
 
-    # Card #1: Cash Sales
+    # Card #1: Cash Sales (includes bank transfers)
     cash_and_transfers = cash_sales_val + bank_val
 
     # Card #2: Bank Transfers
