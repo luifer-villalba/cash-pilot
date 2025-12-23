@@ -181,13 +181,14 @@ class CashSession(Base):
 
     @property
     def cash_sales(self) -> Decimal:
-        """Calculate cash sales: (final - initial) - envelope.
+        """Calculate cash sales: (final - initial) + envelope + expenses.
 
-        Envelope is SUBTRACTED because it's cash removed from register.
+        Expenses reduce physical cash but represent revenue that flowed through register.
+        Envelope is cash removed from register.
         """
         if self.final_cash is None:
             return Decimal("0.00")
-        return (self.final_cash - self.initial_cash) + self.envelope_amount
+        return (self.final_cash - self.initial_cash) + self.envelope_amount + self.expenses
 
     @property
     def total_sales(self) -> Decimal:
