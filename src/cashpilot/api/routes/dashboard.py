@@ -267,7 +267,8 @@ async def get_dashboard_stats(
                 (
                     and_(CashSession.status == "CLOSED", CashSession.final_cash.is_not(None)),
                     (CashSession.final_cash - CashSession.initial_cash)
-                    + func.coalesce(CashSession.envelope_amount, 0),
+                    + func.coalesce(CashSession.envelope_amount, 0)
+                    + func.coalesce(CashSession.expenses, 0),
                 ),
                 else_=0,
             )
