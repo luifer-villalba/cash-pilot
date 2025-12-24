@@ -181,23 +181,33 @@ class CashSession(Base):
 
     @property
     def cash_sales(self) -> Decimal:
-        """Calculate cash sales: (final - initial) + envelope + expenses.
+        """Calculate cash sales: (final - initial) + envelope + expenses
+        - credit_payments_collected.
 
         Expenses reduce physical cash but represent revenue that flowed through register.
         Envelope is cash removed from register.
+        Credit payments collected are from another day and are separated from the cash flow.
         """
         if self.final_cash is None:
             return Decimal("0.00")
-        return (self.final_cash - self.initial_cash) + self.envelope_amount + self.expenses
+        credit_payments = self.credit_payments_collected or Decimal("0.00")
+        return (
+            (self.final_cash - self.initial_cash)
+            + self.envelope_amount
+            + self.expenses
+            - credit_payments
+        )
 
     @property
     def total_sales(self) -> Decimal:
-        """All revenue across all payment methods."""
+        """All revenue across all payment methods: Cash Sales + Card Sales
+        + Bank Transfers + Credit Sales."""
         return (
             self.cash_sales
             + self.credit_card_total
             + self.debit_card_total
             + self.bank_transfer_total
+            + self.credit_sales_total
         )
 
     @property
