@@ -280,7 +280,6 @@ async def get_active_businesses(db: AsyncSession) -> list:
 async def update_open_session_fields(
     session: CashSession,
     initial_cash: str | None,
-    expenses: str | None,
     credit_sales_total: str | None,
     credit_payments_collected: str | None,
     opened_time: str | None,
@@ -293,7 +292,6 @@ async def update_open_session_fields(
     # Currency fields with parse_currency
     currency_fields = {
         "initial_cash": initial_cash,
-        "expenses": expenses,
         "credit_sales_total": credit_sales_total,
         "credit_payments_collected": credit_payments_collected,
     }
