@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from cashpilot.models.business import Business
+    from cashpilot.models.expense_item import ExpenseItem
+    from cashpilot.models.transfer_item import TransferItem
     from cashpilot.models.user import User
 
 import uuid
@@ -63,6 +65,21 @@ class CashSession(Base):
         "User",
         foreign_keys=[cashier_id],
         lazy="selectin",
+    )
+
+    # Line item relationships
+    transfer_items: Mapped[list["TransferItem"]] = relationship(
+        "TransferItem",
+        back_populates="session",
+        lazy="selectin",
+        order_by="TransferItem.created_at",
+    )
+
+    expense_items: Mapped[list["ExpenseItem"]] = relationship(
+        "ExpenseItem",
+        back_populates="session",
+        lazy="selectin",
+        order_by="ExpenseItem.created_at",
     )
 
     # User who created this session (for audit trail)

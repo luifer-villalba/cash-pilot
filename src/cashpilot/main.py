@@ -120,11 +120,13 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(settings.router)
 
     # Cash Sessions (UI)
+    from cashpilot.api.routes.line_items import router as line_items_router
     from cashpilot.api.routes.sessions import router as sessions_router
     from cashpilot.api.routes.sessions_edit import router as sessions_edit_router
 
     app.include_router(sessions_router)
     app.include_router(sessions_edit_router)
+    app.include_router(line_items_router)
 
     # Businesses (UI)
     from cashpilot.api.routes.businesses import router as businesses_router

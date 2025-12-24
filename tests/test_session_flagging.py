@@ -23,7 +23,7 @@ async def test_flag_session_creates_audit_log(
             "flagged": "true",
             "flag_reason": "High cash discrepancy detected",
         },
-        follow_redirects=False,  # ← Check redirect, not JSON
+        follow_redirects=False,
     )
 
     assert response.status_code == 302
