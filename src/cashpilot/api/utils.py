@@ -264,7 +264,7 @@ def _get_session_calculations(session: CashSession) -> dict:
     bank = session.bank_transfer_total or Decimal("0")
     expenses = session.expenses or Decimal("0")
     return {
-        "net_cash_movement": final_cash - session.initial_cash + envelope + bank,
+        "net_cash_movement": final_cash - session.initial_cash + envelope + bank + expenses,
         "net_earnings": (final_cash - session.initial_cash + envelope + bank) - expenses,
         "cash_profit": (final_cash - session.initial_cash + envelope) - expenses,
     }
