@@ -11,7 +11,9 @@
             {{ _('Edit Open Cash Session') }} <span class="font-mono">#{{ "%03d" | format(session.session_number) }}</span>
         </h1>
         <p class="text-sm text-base-content/60 mt-2">
-            👤 <strong>{{ session.cashier.display_name }}</strong>
+            <svg xmlns="http://www.w3.org/2000/svg" class="inline w-4 h-4 align-text-bottom text-base-content/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" focusable="false"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1112 21a9 9 0 01-6.879-3.196zM15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg> <strong>{{ session.cashier.display_name }}</strong>
+            <span class="mx-2">•</span>
+            <span class="font-mono text-xs">{{ session.session_date.strftime('%d/%m/%Y') }}</span>
             <span class="mx-2">•</span>
             <span class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-success/15 text-success text-xs font-semibold">
                 <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
@@ -28,101 +30,141 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form (Main) -->
-        <div class="lg:col-span-2">
-            <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
-                <form method="POST" action="/sessions/{{ session.id }}/edit-open" class="space-y-6">
+        <div class="lg:col-span-2 space-y-6">
+            <form method="POST" action="/sessions/{{ session.id }}/edit-open" onsubmit="document.getElementById('save-loading').classList.remove('hidden');">
+                <!-- STEP 1: Initial Cash & Line Items -->
+                <div class="bg-gradient-to-br from-primary/5 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
+                    <div class="flex items-center gap-3 pb-2 border-b border-primary/20">
+                        <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">1</div>
+                        <h2 class="text-lg font-bold text-base-content">{{ _('Initial Cash & Line Items') }}</h2>
+                    </div>
+
                     <!-- Initial Cash -->
                     <div class="form-control">
                         <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Initial Cash (Gs)') }}</span>
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Initial Cash') }}</span>
                         </label>
-                        <input
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                            <input
                                 type="text"
                                 name="initial_cash"
-                                class="input input-sm input-bordered w-full"
+                                id="initial_cash"
+                                class="input input-lg input-bordered w-full font-mono pl-10 text-lg focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                 value="{{ " {:,.0f}".format(session.initial_cash) }}"
                                 placeholder="500.000"
                                 inputmode="decimal"
-                        />
-                        <label class="label pt-2">
+                                required
+                                data-currency-input
+                                autocomplete="off"
+                                aria-describedby="initial-cash-help"
+                            />
+                        </div>
+                        <label class="label pt-2" id="initial-cash-help">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
                         </label>
                     </div>
 
-                    <!-- Expenses -->
+                    <!-- Bank Transfers (Line Items) -->
                     <div class="form-control">
                         <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💸 {{ _('Expenses (Gs)') }}</span>
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🏦 {{ _('Bank Transfers') }}</span>
                         </label>
-                        <input
-                            type="text"
-                            name="expenses"
-                            class="input input-sm input-bordered w-full"
-                            value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
-                            placeholder="0"
-                            inputmode="decimal"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses during shift') }}</span>
-                        </label>
+                        {% include 'partials/transfer_items_table.html' %}
                     </div>
 
-                    <!-- Divider: Credit Tracking -->
-                    <div class="divider my-4">{{ _('Credit Tracking (Optional)') }}</div>
-
-                    <!-- Credit Sales -->
+                    <!-- Expenses (Line Items) -->
                     <div class="form-control">
                         <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🧾 {{ _('Credit Sales (Gs)') }}</span>
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">📉 {{ _('Expenses') }}</span>
                         </label>
-                        <input
-                            type="text"
-                            name="credit_sales_total"
-                            class="input input-sm input-bordered w-full"
-                            value="{% if session.credit_sales_total and session.credit_sales_total > 0 %}{{ '{:,.0f}'.format(session.credit_sales_total) }}{% endif %}"
-                            placeholder="0"
-                            inputmode="decimal"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('New customer debt created') }}</span>
-                        </label>
+                        {% include 'partials/expense_items_table.html' %}
+                    </div>
+                </div>
+
+                <!-- STEP 2: Credit Tracking -->
+                <div class="bg-base-100 border-2 border-base-300 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
+                    <div class="flex items-center gap-3 pb-2 border-b border-base-300">
+                        <div class="w-8 h-8 rounded-full bg-info text-info-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">2</div>
+                        <h2 class="text-lg font-bold text-base-content">{{ _('Credit Tracking (Optional)') }}</h2>
                     </div>
 
-                    <!-- Credit Payments Collected -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💰 {{ _('Debt Collected (Gs)') }}</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="credit_payments_collected"
-                            class="input input-sm input-bordered w-full"
-                            value="{% if session.credit_payments_collected and session.credit_payments_collected > 0 %}{{ '{:,.0f}'.format(session.credit_payments_collected) }}{% endif %}"
-                            placeholder="0"
-                            inputmode="decimal"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Customer paid old debt') }}</span>
-                        </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Credit Sales -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🧾 {{ _('Credit Sales') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="credit_sales_total"
+                                    id="credit_sales_total"
+                                    class="input input-sm input-bordered w-full font-mono pl-8 focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{% if session.credit_sales_total and session.credit_sales_total > 0 %}{{ '{:,.0f}'.format(session.credit_sales_total) }}{% endif %}"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                />
+                            </div>
+                            <label class="label pt-1">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('New customer debt created') }}</span>
+                            </label>
+                        </div>
+
+                        <!-- Credit Payments Collected -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💰 {{ _('Debt Collected') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="credit_payments_collected"
+                                    id="credit_payments_collected"
+                                    class="input input-sm input-bordered w-full font-mono pl-8 focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{% if session.credit_payments_collected and session.credit_payments_collected > 0 %}{{ '{:,.0f}'.format(session.credit_payments_collected) }}{% endif %}"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                />
+                            </div>
+                            <label class="label pt-1">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Customer paid old debt') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Time & Notes -->
+                <div class="bg-base-100 border border-base-300 rounded-xl shadow p-6 space-y-6 transition-all duration-200">
+                    <div class="flex items-center gap-3 pb-2 border-b border-base-300">
+                        <div class="w-8 h-8 rounded-full bg-base-300 text-base-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">3</div>
+                        <h2 class="text-lg font-bold text-base-content/70">{{ _('Time & Notes') }}</h2>
                     </div>
 
-                    <!-- ADD Divider before Opened Time -->
-                    <div class="divider my-4">{{ _('Time & Notes') }}</div>
-
-                    <!-- Opened Time -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Opened At (Time)') }}</span>
-                        </label>
-                        <input
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Opened Time -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Opened At (Time)') }}</span>
+                            </label>
+                            <input
                                 type="time"
                                 name="opened_time"
-                                class="input input-sm input-bordered w-full"
+                                id="opened_time"
+                                class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
                                 value="{{ session.opened_time.strftime('%H:%M') if session.opened_time else '' }}"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Time session was opened') }}</span>
-                        </label>
+                                aria-describedby="opened-time-help"
+                            />
+                            <label class="label pt-1" id="opened-time-help">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Time session was opened') }}</span>
+                            </label>
+                        </div>
                     </div>
 
                     <!-- Notes -->
@@ -131,81 +173,152 @@
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Notes') }}</span>
                         </label>
                         <textarea
-                                name="notes"
-                                class="textarea textarea-sm textarea-bordered w-full h-20"
-                                placeholder="{{ _('Optional notes...') }}"
+                            name="notes"
+                            id="notes"
+                            class="textarea textarea-bordered w-full h-24 focus:ring-2 focus:ring-primary/20 transition-all resize-y"
+                            placeholder="{{ _('Optional notes...') }}"
+                            rows="4"
                         >{{ session.notes if session.notes else '' }}</textarea>
-                        <label class="label pt-2">
+                        <label class="label pt-1">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Any additional information') }}</span>
                         </label>
                     </div>
+                </div>
 
-                    <!-- Divider: Audit Trail -->
-                    <div class="divider my-4">{{ _('Audit Trail') }}</div>
+                <!-- STEP 4: Audit Trail -->
+                <div class="bg-base-100 border-2 border-warning/30 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
+                    <div class="flex items-center gap-3 pb-2 border-b border-warning/20">
+                        <div class="w-8 h-8 rounded-full bg-warning text-warning-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">4</div>
+                        <h2 class="text-lg font-bold text-base-content">{{ _('Audit Trail') }}</h2>
+                    </div>
 
                     <!-- Reason for Edit -->
                     <div class="form-control">
                         <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Reason for Edit') }}</span>
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">
+                                {{ _('Reason for Edit') }} <span class="text-error">*</span>
+                            </span>
                         </label>
                         <textarea
-                                name="reason"
-                                class="textarea textarea-sm textarea-bordered w-full h-20"
-                                placeholder="{{ _('e.g., Corrected initial count...') }}"
+                            name="reason"
+                            id="reason"
+                            class="textarea textarea-bordered w-full h-24 focus:ring-2 focus:ring-warning/20 transition-all resize-y"
+                            placeholder="{{ _('e.g., Corrected initial count...') }}"
+                            rows="4"
+                            required
+                            aria-describedby="reason-help"
                         ></textarea>
-                        <label class="label pt-2">
+                        <label class="label pt-1" id="reason-help">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Required for audit trail') }}</span>
                         </label>
                     </div>
+                </div>
 
-                    <!-- Divider -->
-                    <div class="divider my-4"></div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-success btn-sm flex-1 gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M5 13l4 4L19 7"/>
-                            </svg>
-                            {{ _('Save Changes') }}
-                        </button>
-                        <a href="/sessions/{{ session.id }}" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
-                    </div>
-                </form>
-            </div>
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="submit" 
+                        class="btn btn-success btn-lg flex-[2] gap-2 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-success/50"
+                        aria-label="{{ _('Save changes to open cash session') }}"
+                    >
+                        <span class="loading loading-spinner loading-sm hidden" id="save-loading"></span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span>{{ _('Save Changes') }}</span>
+                    </button>
+                    <a 
+                        href="/sessions/{{ session.id }}" 
+                        class="btn btn-outline btn-lg flex-1 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-base-content/20"
+                        aria-label="{{ _('Cancel and return to session details') }}"
+                    >
+                        {{ _('Cancel') }}
+                    </a>
+                </div>
+            </form>
         </div>
 
         <!-- Sidebar: Current Values & Tip -->
         <div class="lg:col-span-1 space-y-4">
             <!-- Current Values -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
-                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Current Values') }}</h3>
-                <div class="space-y-2 text-xs">
-                    <div>
-                        <p class="text-base-content/60">{{ _('Session Date') }}</p>
-                        <p class="font-mono font-semibold">{{ session.session_date.strftime('%d/%m/%Y') }}</p>
+            <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/30 rounded-xl p-5 space-y-4">
+                <div class="flex items-center gap-2 pb-2 border-b border-primary/20">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <h3 class="font-bold text-sm uppercase tracking-widest text-primary">{{ _('Current Values') }}</h3>
+                </div>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-base-content/60">{{ _('Session Date') }}</span>
+                        <span class="font-mono font-semibold tabular-nums">{{ session.session_date.strftime('%d/%m/%Y') }}</span>
                     </div>
-                    <div>
-                        <p class="text-base-content/60">{{ _('Opened At') }}</p>
-                        <p class="font-mono font-semibold">{{ session.opened_time.strftime('%H:%M') }}</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-base-content/60">{{ _('Opened At') }}</span>
+                        <span class="font-mono font-semibold tabular-nums">{{ session.opened_time.strftime('%H:%M') }}</span>
                     </div>
-                    <div>
-                        <p class="text-base-content/60">{{ _('Initial Cash') }}</p>
-                        <p class="font-mono font-semibold">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                    <div class="pt-2 border-t border-primary/20">
+                        <p class="text-xs text-base-content/60 mb-1">{{ _('Initial Cash') }}</p>
+                        <p class="font-mono font-bold text-xl text-primary tabular-nums">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
                     </div>
                 </div>
             </div>
 
             <!-- Tip -->
-            <div class="bg-info/10 border-l-4 border-info rounded-lg p-4">
-                <p class="font-bold text-sm text-info">💡 {{ _('Quick Tip') }}</p>
-                <p class="text-xs text-base-content/70 mt-2">
+            <div class="bg-gradient-to-br from-info/10 to-base-100 border border-info/30 rounded-xl p-5 space-y-3">
+                <div class="flex items-center gap-2 pb-2 border-b border-info/20">
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <h3 class="font-bold text-sm uppercase tracking-wider text-info">{{ _('Quick Tip') }}</h3>
+                </div>
+                <p class="text-xs text-base-content/70">
                     {{ _('All edits are logged with reason and timestamp for compliance.') }}
                 </p>
             </div>
         </div>
     </div>
 </div>
+<script>
+    // Currency formatter helper
+    function formatCurrency(value) {
+        if (!value && value !== 0) return 'Gs 0';
+        const num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
+        return `Gs ${num.toLocaleString('es-PY').replace(/,/g, '.')}`;
+    }
+
+    function parseCurrency(value) {
+        return parseInt(value?.toString().replace(/\D/g, '') || '0') || 0;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const openedTimeInput = document.getElementById('opened_time');
+
+        // Prefill with current time if empty
+        if (!openedTimeInput.value) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            openedTimeInput.value = `${hours}:${minutes}`;
+        }
+
+        // Auto-format currency inputs on blur
+        document.querySelectorAll('[data-currency-input]').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    const digits = this.value.replace(/\D/g, '');
+                    if (digits) {
+                        const num = parseInt(digits);
+                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                    }
+                }
+            });
+
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/[^\d.,]/g, '');
+            });
+        });
+    });
+</script>
 <script src="/static/js/edit-session.js"></script>
 {% endblock %}
