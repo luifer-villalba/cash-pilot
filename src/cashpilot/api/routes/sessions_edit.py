@@ -53,7 +53,13 @@ async def edit_open_session_form(
     return templates.TemplateResponse(
         request,
         "sessions/edit_open_session.html",
-        {"current_user": current_user, "session": session, "locale": locale, "_": _},
+        {
+            "current_user": current_user,
+            "session": session,
+            "locale": locale,
+            "_": _,
+            "editable": True,
+        },
     )
 
 
@@ -64,7 +70,6 @@ async def edit_open_session_post(
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
     initial_cash: str | None = Form(None),
-    expenses: str | None = Form(None),
     credit_sales_total: str | None = Form(None),
     credit_payments_collected: str | None = Form(None),
     opened_time: str | None = Form(None),
@@ -83,7 +88,6 @@ async def edit_open_session_post(
         changed_fields, old_values, new_values = await update_open_session_fields(
             session,
             initial_cash,
-            expenses,
             credit_sales_total,
             credit_payments_collected,
             opened_time,
@@ -175,6 +179,7 @@ async def edit_closed_session_form(
             "can_edit": can_edit,
             "edit_expired_msg": edit_expired_msg,
             "_": _,
+            "editable": True,
         },
     )
 
@@ -208,8 +213,6 @@ async def update_closed_session_fields(
     envelope_amount: str | None = None,
     credit_card_total: str | None = None,
     debit_card_total: str | None = None,
-    bank_transfer_total: str | None = None,
-    expenses: str | None = None,
     credit_sales_total: str | None = None,
     credit_payments_collected: str | None = None,
     closing_ticket: str | None = None,
@@ -258,24 +261,6 @@ async def update_closed_session_fields(
     )
     _update_field(
         session,
-        "bank_transfer_total",
-        parse_currency(bank_transfer_total) or Decimal("0"),
-        session.bank_transfer_total,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "expenses",
-        parse_currency(expenses) or Decimal("0"),
-        session.expenses,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
         "credit_sales_total",
         parse_currency(credit_sales_total) or Decimal("0"),
         session.credit_sales_total,
@@ -316,8 +301,6 @@ async def edit_closed_session_post(
     envelope_amount: str | None = Form(None),
     credit_card_total: str | None = Form(None),
     debit_card_total: str | None = Form(None),
-    bank_transfer_total: str | None = Form(None),
-    expenses: str | None = Form(None),
     credit_sales_total: str | None = Form(None),
     credit_payments_collected: str | None = Form(None),
     closing_ticket: str | None = Form(None),
@@ -339,8 +322,6 @@ async def edit_closed_session_post(
             envelope_amount,
             credit_card_total,
             debit_card_total,
-            bank_transfer_total,
-            expenses,
             credit_sales_total,
             credit_payments_collected,
             closing_ticket,

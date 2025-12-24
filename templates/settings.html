@@ -44,7 +44,7 @@
         <div class="card-body">
             <h2 class="card-title text-2xl mb-6">🔐 {{ _('Change Password') }}</h2>
             
-            <form method="POST" action="/settings/change-password" class="space-y-5">
+            <form method="POST" action="/settings/change-password" class="space-y-5" onsubmit="document.getElementById('password-loading').classList.remove('hidden');">
                 <!-- Current Password -->
                 <div class="form-control">
                     <label class="label">
@@ -93,6 +93,7 @@
                 <!-- Submit Button -->
                 <div class="form-control pt-4">
                     <button type="submit" class="btn btn-primary gap-2">
+                        <span class="loading loading-spinner loading-sm hidden" id="password-loading"></span>
                         <span>✓</span>
                         <span>{{ _('Update Password') }}</span>
                     </button>

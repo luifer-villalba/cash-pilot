@@ -324,7 +324,10 @@
         emailAlreadyExists: "{{ _('Email already registered') }}",
         passwordTooShort: "{{ _('Password must be at least 8 characters') }}",
         createError: "{{ _('Failed to create user') }}",
-        fillRequired: "{{ _('Please fill all required fields') }}"
+        fillRequired: "{{ _('Please fill all required fields') }}",
+        currentUser: "{{ _('(You)') }}",
+        adminRole: "{{ _('ADMIN') }}",
+        cashierRole: "{{ _('CASHIER') }}"
     };
 
     let allBusinesses = [];
@@ -367,7 +370,7 @@
                         </span>`
                     : ''
                 }
-                    ${isCurrentUser ? '<span class="badge badge-sm badge-info">(Tú)</span>' : ''}
+                    ${isCurrentUser ? `<span class="badge badge-sm badge-info">${i18n.currentUser}</span>` : ''}
                 </div>
             </td>
             <td class="text-gray-600">${user.email || '-'}</td>
@@ -377,13 +380,13 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
-                        ADMIN
+                        ${i18n.adminRole}
                     </span>`
                     : `<span class="badge bg-blue-100 text-blue-700 border-blue-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        CASHIER
+                        ${i18n.cashierRole}
                     </span>`
                 }
             </td>
