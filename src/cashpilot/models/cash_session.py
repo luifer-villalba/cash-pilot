@@ -204,16 +204,17 @@ class CashSession(Base):
         + Bank Transfers + Credit Sales."""
         return (
             self.cash_sales
-            + self.credit_card_total
-            + self.debit_card_total
-            + self.bank_transfer_total
-            + self.credit_sales_total
+            + (self.credit_card_total or Decimal("0.00"))
+            + (self.debit_card_total or Decimal("0.00"))
+            + (self.bank_transfer_total or Decimal("0.00"))
+            + (self.credit_sales_total or Decimal("0.00"))
         )
 
     @property
     def net_earnings(self) -> Decimal:
         """Total sales minus business expenses."""
-        return self.total_sales - self.expenses
+        expenses = self.expenses or Decimal("0.00")
+        return self.total_sales - expenses
 
     @property
     def shortage_surplus(self) -> Decimal:
