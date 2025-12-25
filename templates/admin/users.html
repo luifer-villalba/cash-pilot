@@ -160,7 +160,7 @@
 
         <div class="form-control mb-4">
             <label class="label cursor-pointer justify-start gap-3">
-                <input type="radio" name="reset-type" class="radio radio-primary" checked
+                <input type="radio" name="reset-type" class="radio radio-primary" value="generate" checked
                        onchange="document.getElementById('custom-password').disabled = true; document.getElementById('custom-password').value = '';">
                 <span class="label-text">{{ _('Generate secure password') }}</span>
             </label>
@@ -168,7 +168,7 @@
 
         <div class="form-control mb-4">
             <label class="label cursor-pointer justify-start gap-3">
-                <input type="radio" name="reset-type" class="radio radio-primary"
+                <input type="radio" name="reset-type" class="radio radio-primary" value="custom"
                        onchange="document.getElementById('custom-password').disabled = false; document.getElementById('custom-password').focus();">
                 <span class="label-text">{{ _('Enter custom password') }}</span>
             </label>
@@ -188,7 +188,7 @@
         <div class="modal-action">
             <button type="button" class="btn btn-ghost" onclick="closeResetPasswordModal()">{{ _('Cancel') }}</button>
             <button type="button" class="btn btn-primary"
-                    onclick="submitPasswordReset(document.querySelector('input[name=reset-type]:checked').previousElementSibling === null)">
+                    onclick="submitPasswordReset(document.querySelector('input[name=reset-type]:checked').value === 'generate')">
                 {{ _('Reset Password') }}
             </button>
         </div>

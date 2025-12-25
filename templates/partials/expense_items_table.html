@@ -87,7 +87,7 @@
                 {% if editable %}
                 <button
                     type="button"
-                    class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/20 focus:bg-error/20 focus:outline-none focus:ring-2 focus:ring-error/50 transition-all opacity-0 group-hover:opacity-100"
+                    class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/20 focus:bg-error/20 focus:outline-none focus:ring-2 focus:ring-error/50 transition-all"
                     aria-label="{{ _('Delete expense') }}: {{ item.description }}"
                     hx-delete="/sessions/{{ session.id }}/expense-items/{{ item.id }}"
                     hx-target="#expense-items-container"
