@@ -214,10 +214,12 @@ class CashSession(Base):
         if self.final_cash is None:
             return Decimal("0.00")
         credit_payments = self.credit_payments_collected or Decimal("0.00")
+        envelope_amount = self.envelope_amount or Decimal("0.00")
+        expenses = self.expenses or Decimal("0.00")
         return (
             (self.final_cash - self.initial_cash)
-            + self.envelope_amount
-            + self.expenses
+            + envelope_amount
+            + expenses
             - credit_payments
         )
 
