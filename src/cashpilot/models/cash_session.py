@@ -198,29 +198,50 @@ class CashSession(Base):
 
     @property
     def cash_sales(self) -> Decimal:
-        """Calculate cash sales: (final - initial) + envelope + expenses.
+        """Calculate cash sales: (final - initial) + envelope + expenses
+        - credit_payments_collected.
 
-        Expenses reduce physical cash but represent revenue that flowed through register.
-        Envelope is cash removed from register.
+        Expenses are added back because they reduce physical cash but represent
+        sales revenue that was used for business expenses (for example, cash paid
+        out for supplies during the shift). The envelope amount is cash that was
+        intentionally removed from the register (such as deposits or drops) and
+        therefore must be included to reconstruct total cash sales.
+
+        Credit payments collected represent cash received today for prior credit
+        sales. They are subtracted so that this cash is not counted again as
+        today's sales revenue.
         """
         if self.final_cash is None:
             return Decimal("0.00")
-        return (self.final_cash - self.initial_cash) + self.envelope_amount + self.expenses
+        credit_payments = self.credit_payments_collected or Decimal("0.00")
+        envelope_amount = self.envelope_amount or Decimal("0.00")
+        expenses = self.expenses or Decimal("0.00")
+        return (
+            (self.final_cash - self.initial_cash)
+            + envelope_amount
+            + expenses
+            - credit_payments
+        )
 
     @property
     def total_sales(self) -> Decimal:
-        """All revenue across all payment methods."""
+        """All revenue across all payment methods: Cash Sales + Card Sales
+        + Bank Transfers + Credit Sales on account (sales made on credit terms,
+        not credit card transactions, which are tracked via credit_card_total
+        and debit_card_total)."""
         return (
             self.cash_sales
-            + self.credit_card_total
-            + self.debit_card_total
-            + self.bank_transfer_total
+            + (self.credit_card_total or Decimal("0.00"))
+            + (self.debit_card_total or Decimal("0.00"))
+            + (self.bank_transfer_total or Decimal("0.00"))
+            + (self.credit_sales_total or Decimal("0.00"))
         )
 
     @property
     def net_earnings(self) -> Decimal:
         """Total sales minus business expenses."""
-        return self.total_sales - self.expenses
+        expenses = self.expenses or Decimal("0.00")
+        return self.total_sales - expenses
 
     @property
     def shortage_surplus(self) -> Decimal:
