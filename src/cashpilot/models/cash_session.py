@@ -201,9 +201,15 @@ class CashSession(Base):
         """Calculate cash sales: (final - initial) + envelope + expenses
         - credit_payments_collected.
 
-        Expenses reduce physical cash but represent revenue that flowed through register.
-        Envelope is cash removed from register.
-        Credit payments collected are from another day and are separated from the cash flow.
+        Expenses are added back because they reduce physical cash but represent
+        sales revenue that was used for business expenses (for example, cash paid
+        out for supplies during the shift). The envelope amount is cash that was
+        intentionally removed from the register (such as deposits or drops) and
+        therefore must be included to reconstruct total cash sales.
+
+        Credit payments collected represent cash received today for prior credit
+        sales. They are subtracted so that this cash is not counted again as
+        today's sales revenue.
         """
         if self.final_cash is None:
             return Decimal("0.00")
