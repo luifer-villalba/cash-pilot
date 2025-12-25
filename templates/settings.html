@@ -4,65 +4,79 @@
 {% block title %}{{ _('Settings') }} - CashPilot{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
+<div class="max-w-2xl mx-auto space-y-8">
     <!-- Page Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold mb-2">⚙️ {{ _('Settings') }}</h1>
-        <p class="text-base-content/70">{{ _('Manage your account') }}</p>
+    <div class="flex items-center gap-3">
+        <div class="p-2 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 shadow-sm">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+        </div>
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Settings') }}</h1>
+            <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Manage your account') }}</p>
+        </div>
     </div>
 
     <!-- Alert Messages -->
     {% if success == 'password_changed' %}
-    <div class="alert alert-success mb-6 shadow-md">
+    <div class="alert alert-success mb-6 shadow-lg rounded-xl border-none animate-in fade-in slide-in-from-top-2 duration-300">
         <svg class="stroke-current shrink-0 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
-        <span>{{ _('Password changed successfully') }}</span>
+        <span class="text-sm font-medium">{{ _('Password changed successfully') }}</span>
     </div>
     {% endif %}
 
     {% if error == 'invalid_current_password' %}
-    <div class="alert alert-error mb-6 shadow-md">
+    <div class="alert alert-error mb-6 shadow-lg rounded-xl border-none animate-in fade-in slide-in-from-top-2 duration-300">
         <svg class="stroke-current shrink-0 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2M9 3h6a3 3 0 013 3v9a3 3 0 01-3 3H9a3 3 0 01-3-3V6a3 3 0 013-3z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span>{{ _('Current password is incorrect') }}</span>
+        <span class="text-sm font-medium">{{ _('Current password is incorrect') }}</span>
     </div>
     {% endif %}
 
     {% if error == 'password_mismatch' %}
-    <div class="alert alert-error mb-6 shadow-md">
+    <div class="alert alert-error mb-6 shadow-lg rounded-xl border-none animate-in fade-in slide-in-from-top-2 duration-300">
         <svg class="stroke-current shrink-0 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2M9 3h6a3 3 0 013 3v9a3 3 0 01-3 3H9a3 3 0 01-3-3V6a3 3 0 013-3z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span>{{ _('Passwords do not match') }}</span>
+        <span class="text-sm font-medium">{{ _('Passwords do not match') }}</span>
     </div>
     {% endif %}
 
     <!-- Change Password Card -->
-    <div class="card bg-base-100 shadow-lg border border-base-200">
-        <div class="card-body">
-            <h2 class="card-title text-2xl mb-6">🔐 {{ _('Change Password') }}</h2>
+    <div class="card bg-base-100 shadow-xl border border-base-300 rounded-xl">
+        <div class="card-body p-6 md:p-8">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-base-300">
+                <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">🔐</div>
+                <h2 class="text-xl font-bold text-base-content">{{ _('Change Password') }}</h2>
+            </div>
             
-            <form method="POST" action="/settings/change-password" class="space-y-5" onsubmit="document.getElementById('password-loading').classList.remove('hidden');">
+            <form method="POST" action="/settings/change-password" class="space-y-6" onsubmit="document.getElementById('password-loading').classList.remove('hidden');">
                 <!-- Current Password -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text text-sm font-semibold uppercase tracking-wider">{{ _('Current Password') }}</span>
+                    <label class="label pb-2">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Current Password') }}</span>
                     </label>
                     <input 
                         type="password" 
                         name="current_password"
                         placeholder="{{ _('Enter your current password') }}"
                         required
-                        class="input input-bordered input-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
                     />
+                    <label class="label pt-2">
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Your existing password') }}</span>
+                    </label>
                 </div>
 
                 <!-- New Password -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text text-sm font-semibold uppercase tracking-wider">{{ _('New Password') }}</span>
+                    <label class="label pb-2">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('New Password') }}</span>
                         <span class="label-text-alt text-xs text-base-content/60">{{ _('Minimum 8 characters') }}</span>
                     </label>
                     <input 
@@ -71,14 +85,17 @@
                         placeholder="{{ _('Enter new password') }}"
                         minlength="8"
                         required
-                        class="input input-bordered input-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
                     />
+                    <label class="label pt-2">
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Choose a strong password') }}</span>
+                    </label>
                 </div>
 
                 <!-- Confirm Password -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text text-sm font-semibold uppercase tracking-wider">{{ _('Confirm Password') }}</span>
+                    <label class="label pb-2">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Confirm Password') }}</span>
                     </label>
                     <input 
                         type="password" 
@@ -86,15 +103,20 @@
                         placeholder="{{ _('Confirm new password') }}"
                         minlength="8"
                         required
-                        class="input input-bordered input-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
                     />
+                    <label class="label pt-2">
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Re-enter your new password') }}</span>
+                    </label>
                 </div>
 
                 <!-- Submit Button -->
                 <div class="form-control pt-4">
-                    <button type="submit" class="btn btn-primary gap-2">
+                    <button type="submit" class="btn btn-primary gap-2 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">
                         <span class="loading loading-spinner loading-sm hidden" id="password-loading"></span>
-                        <span>✓</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
                         <span>{{ _('Update Password') }}</span>
                     </button>
                 </div>
@@ -103,9 +125,11 @@
     </div>
 
     <!-- Back to Dashboard -->
-    <div class="mt-8 text-center">
-        <a href="/" class="btn btn-ghost gap-2">
-            <span>←</span>
+    <div class="text-center">
+        <a href="/" class="btn btn-ghost gap-2 transition-all duration-200 hover:scale-105 active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
             <span>{{ _('Back to Dashboard') }}</span>
         </a>
     </div>
