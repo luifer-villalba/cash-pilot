@@ -224,7 +224,9 @@ class CashSession(Base):
     @property
     def total_sales(self) -> Decimal:
         """All revenue across all payment methods: Cash Sales + Card Sales
-        + Bank Transfers + Credit Sales."""
+        + Bank Transfers + Credit Sales on account (sales made on credit terms,
+        not credit card transactions, which are tracked via credit_card_total
+        and debit_card_total)."""
         return (
             self.cash_sales
             + (self.credit_card_total or Decimal("0.00"))
