@@ -333,7 +333,7 @@ async def get_dashboard_stats(
     # Already calculated as credit_payments_val
 
     # Card #9: Payment Mix % (for collapsible section)
-    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val
+    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val + credit_sales_val
     cash_pct = (cash_sales_val / total_income * 100) if total_income > 0 else 0
     card_pct = (card_payments_total / total_income * 100) if total_income > 0 else 0
     bank_pct = (bank_val / total_income * 100) if total_income > 0 else 0
