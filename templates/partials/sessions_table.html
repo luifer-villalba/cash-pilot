@@ -1,5 +1,5 @@
 <!-- File: templates/partials/sessions_table.html -->
-<div class="bg-base-100 border border-base-300 rounded-lg shadow">
+<div class="bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
     <div class="p-4 md:p-6">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6">
@@ -9,7 +9,7 @@
                 </svg>
                 {{ _('Cash Sessions') }}
             </h2>
-            <a href="/sessions/create" class="btn btn-primary btn-sm gap-2">
+            <a href="/sessions/create" class="btn btn-primary btn-sm gap-2 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
@@ -59,7 +59,7 @@
                 </thead>
                 <tbody>
                     {% for session in sessions %}
-                    <tr class="session-row transition-all cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" aria-label="{{ _('View session') }}" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}';}">
+                    <tr class="session-row transition-all duration-200 cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" aria-label="{{ _('View session') }}" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}';}">
                         <!-- Status -->
                         <td onclick="event.stopPropagation()">
                             {% if session.status == 'OPEN' %}
@@ -209,7 +209,7 @@
         <!-- Mobile Card Layout (visible on mobile only) -->
         <div class="lg:hidden grid grid-cols-1 gap-4">
             {% for session in sessions %}
-            <div class="border border-base-300 rounded-lg p-4 space-y-3 bg-base-100 cursor-pointer hover:shadow-lg transition-shadow{% if session.status == 'CLOSED' and session.flagged %} bg-error/10 border-l-4 border-error{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();window.location.href='/sessions/{{ session.id|string }}';}">
+            <div class="border border-base-300 rounded-lg p-4 space-y-3 bg-base-100 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.01]{% if session.status == 'CLOSED' and session.flagged %} bg-error/10 border-l-4 border-error{% endif %}" onclick="window.location.href='/sessions/{{ session.id|string }}'" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();window.location.href='/sessions/{{ session.id|string }}';}">
                 <!-- Status Badge -->
                 <div class="flex justify-between items-start">
                     <div>
