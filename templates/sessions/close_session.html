@@ -18,266 +18,468 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form (Main) -->
-        <div class="lg:col-span-2">
-            <div class="bg-base-100 border border-base-300 rounded-lg shadow p-4 md:p-6">
-                <form method="POST" action="/sessions/{{ session.id }}" class="space-y-6">
-                    <input type="hidden" name="_method" value="PUT"/>
+        <div class="lg:col-span-2 space-y-6">
+            <form method="POST" action="/sessions/{{ session.id }}" onsubmit="document.getElementById('close-loading').classList.remove('hidden');">
+                <input type="hidden" name="_method" value="PUT"/>
 
-                    <!-- Final Cash Count -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Final Cash Count (Gs)') }}</span>
-                        </label>
-                        <input
-                                type="text"
-                                name="final_cash"
-                                class="input input-sm input-bordered w-full"
-                                value="{{ " {:,.0f}".format(session.final_cash) if session.final_cash else '' }}"
-                        placeholder="1.250.000"
-                        inputmode="decimal"
-                        required
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Total counted in drawer') }}</span>
-                        </label>
+                <!-- STEP 1: Cash Count (Most Important) -->
+                <div class="bg-gradient-to-br from-primary/5 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
+                    <div class="flex items-center gap-3 pb-2 border-b border-primary/20">
+                        <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">1</div>
+                        <h2 class="text-lg font-bold text-base-content">{{ _('Cash Count') }}</h2>
                     </div>
 
-                    <!-- Envelope Amount -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Envelope Amount (Gs)') }}</span>
-                        </label>
-                        <input
-                                type="text"
-                                name="envelope_amount"
-                                class="input input-sm input-bordered w-full"
-                                value="{{ " {:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0'
-                        }}"
-                        placeholder="0"
-                        inputmode="decimal"
-                        required
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Cash removed from register (if any)') }}</span>
-                        </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Final Cash Count -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Final Cash Count') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="final_cash"
+                                    id="final_cash"
+                                    class="input input-lg input-bordered w-full font-mono pl-10 text-lg focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{{ " {:,.0f}".format(session.final_cash) if session.final_cash else '' }}"
+                                    placeholder="1.250.000"
+                                    inputmode="decimal"
+                                    required
+                                    data-currency-input
+                                    autocomplete="off"
+                                    aria-describedby="final-cash-help"
+                                />
+                            </div>
+                            <label class="label pt-2" id="final-cash-help">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Total counted in drawer') }}</span>
+                            </label>
+                        </div>
+
+                        <!-- Envelope Amount -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Envelope Amount') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="envelope_amount"
+                                    id="envelope_amount"
+                                    class="input input-lg input-bordered w-full font-mono pl-10 text-lg focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{{ " {:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0' }}"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    required
+                                    data-currency-input
+                                    autocomplete="off"
+                                    aria-describedby="envelope-help"
+                                />
+                            </div>
+                            <label class="label pt-2" id="envelope-help">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Cash removed from register (if any)') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Payment Methods -->
+                <div class="bg-base-100 border-2 border-base-300 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
+                    <div class="flex items-center gap-3 pb-2 border-b border-base-300">
+                        <div class="w-8 h-8 rounded-full bg-info text-info-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">2</div>
+                        <h2 class="text-lg font-bold text-base-content">{{ _('Payment Methods') }}</h2>
                     </div>
 
-                    <!-- Divider: Payment Methods -->
-                    <div class="divider my-4">{{ _('Payment Methods') }}</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Credit Card -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💳 {{ _('Credit Card Total') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-base font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="credit_card_total"
+                                    id="credit_card_total"
+                                    class="input input-bordered w-full font-mono pl-10 focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{% if session.credit_card_total and session.credit_card_total > 0 %}{{ '{:,.0f}'.format(session.credit_card_total) }}{% endif %}"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                />
+                            </div>
+                        </div>
 
-                    <!-- Credit Card -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💳 {{ _('Credit Card Total (Gs)') }}</span>
-                        </label>
-                        <input
-                                type="text"
-                                name="credit_card_total"
-                                class="input input-sm input-bordered w-full"
-                                value="{% if session.credit_card_total and session.credit_card_total > 0 %}{{ '{:,.0f}'.format(session.credit_card_total) }}{% endif %}"
-                                placeholder="0"
-                                inputmode="decimal"
-                        />
+                        <!-- Debit Card -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">⚡ {{ _('Debit Card Total') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-base font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="debit_card_total"
+                                    id="debit_card_total"
+                                    class="input input-bordered w-full font-mono pl-10 focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{% if session.debit_card_total and session.debit_card_total > 0 %}{{ '{:,.0f}'.format(session.debit_card_total) }}{% endif %}"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                />
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Debit Card -->
+                    <!-- Bank Transfers (Line Items) -->
                     <div class="form-control">
                         <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">⚡ {{ _('Debit Card Total (Gs)') }}</span>
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🏦 {{ _('Bank Transfers') }}</span>
                         </label>
-                        <input
-                                type="text"
-                                name="debit_card_total"
-                                class="input input-sm input-bordered w-full"
-                                value="{% if session.debit_card_total and session.debit_card_total > 0 %}{{ '{:,.0f}'.format(session.debit_card_total) }}{% endif %}"
-                                placeholder="0"
-                                inputmode="decimal"
-                        />
+                        {% include 'partials/transfer_items_table.html' %}
                     </div>
 
-                    <!-- Bank Transfer -->
+                    <!-- Expenses (Line Items) -->
                     <div class="form-control">
                         <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🏦 {{ _('Bank Transfer Total (Gs)') }}</span>
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">📉 {{ _('Expenses') }}</span>
                         </label>
-                        <input
-                                type="text"
-                                name="bank_transfer_total"
-                                class="input input-sm input-bordered w-full"
-                                value="{% if session.bank_transfer_total and session.bank_transfer_total > 0 %}{{ '{:,.0f}'.format(session.bank_transfer_total) }}{% endif %}"
-                                placeholder="0"
-                                inputmode="decimal"
-                        />
+                        {% include 'partials/expense_items_table.html' %}
+                    </div>
+                </div>
+
+                <!-- STEP 3: Optional Information -->
+                <div class="bg-base-100 border border-base-300 rounded-xl shadow p-6 space-y-6 transition-all duration-200">
+                    <div class="flex items-center gap-3 pb-2 border-b border-base-300">
+                        <div class="w-8 h-8 rounded-full bg-base-300 text-base-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">3</div>
+                        <h2 class="text-lg font-bold text-base-content/70">{{ _('Optional Information') }}</h2>
                     </div>
 
-                    <!-- Expenses -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">📉 {{ _('Expenses (Gs)') }}</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="expenses"
-                            class="input input-sm input-bordered w-full"
-                            value="{% if session.expenses and session.expenses > 0 %}{{ '{:,.0f}'.format(session.expenses) }}{% endif %}"
-                            placeholder="0"
-                            inputmode="decimal"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Business expenses') }}</span>
-                        </label>
+                    <!-- Credit Tracking -->
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-semibold text-base-content/70">{{ _('Credit Tracking') }}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Credit Sales -->
+                            <div class="form-control">
+                                <label class="label pb-2">
+                                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🧾 {{ _('Credit Sales') }}</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                    <input
+                                        type="text"
+                                        name="credit_sales_total"
+                                        id="credit_sales_total"
+                                        class="input input-sm input-bordered w-full font-mono pl-8 focus:ring-2 focus:ring-primary/20 transition-all"
+                                        value="{% if session.credit_sales_total and session.credit_sales_total > 0 %}{{ '{:,.0f}'.format(session.credit_sales_total) }}{% endif %}"
+                                        placeholder="0"
+                                        inputmode="decimal"
+                                        data-currency-input
+                                        autocomplete="off"
+                                    />
+                                </div>
+                                <label class="label pt-1">
+                                    <span class="label-text-alt text-xs text-base-content/60">{{ _('New customer debt created') }}</span>
+                                </label>
+                            </div>
+
+                            <!-- Credit Payments Collected -->
+                            <div class="form-control">
+                                <label class="label pb-2">
+                                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💰 {{ _('Debt Collected') }}</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                    <input
+                                        type="text"
+                                        name="credit_payments_collected"
+                                        id="credit_payments_collected"
+                                        class="input input-sm input-bordered w-full font-mono pl-8 focus:ring-2 focus:ring-primary/20 transition-all"
+                                        value="{% if session.credit_payments_collected and session.credit_payments_collected > 0 %}{{ '{:,.0f}'.format(session.credit_payments_collected) }}{% endif %}"
+                                        placeholder="0"
+                                        inputmode="decimal"
+                                        data-currency-input
+                                        autocomplete="off"
+                                    />
+                                </div>
+                                <label class="label pt-1">
+                                    <span class="label-text-alt text-xs text-base-content/60">{{ _('Old customer debt collected') }}</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Divider: Credit Tracking -->
-                    <div class="divider my-4">{{ _('Credit Tracking (Optional)') }}</div>
+                    <!-- Time & Additional Info -->
+                    <div class="space-y-4 pt-4 border-t border-base-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Closed Time -->
+                            <div class="form-control">
+                                <label class="label pb-2">
+                                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Closed At (Time)') }}</span>
+                                </label>
+                                <input
+                                    type="time"
+                                    name="closed_time"
+                                    class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                                    id="closed-time"
+                                    value="{{ session.closed_time.strftime('%H:%M') if session.closed_time else '' }}"
+                                    aria-describedby="closed-time-help"
+                                />
+                                <label class="label pt-1" id="closed-time-help">
+                                    <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for current time') }}</span>
+                                </label>
+                            </div>
 
-                    <!-- Credit Sales -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">🧾 {{ _('Credit Sales (Gs)') }}</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="credit_sales_total"
-                            class="input input-sm input-bordered w-full"
-                            value="{% if session.credit_sales_total and session.credit_sales_total > 0 %}{{ '{:,.0f}'.format(session.credit_sales_total) }}{% endif %}"
-                            placeholder="0"
-                            inputmode="decimal"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('New customer debt created') }}</span>
-                        </label>
-                    </div>
+                            <!-- Closing Ticket -->
+                            <div class="form-control">
+                                <label class="label pb-2">
+                                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Closing Ticket #') }}</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="closing_ticket"
+                                    id="closing_ticket"
+                                    class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{{ session.closing_ticket or '' }}"
+                                    placeholder="{{ _('e.g., T-20251112-001') }}"
+                                    autocomplete="off"
+                                />
+                                <label class="label pt-1">
+                                    <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: POS ticket number') }}</span>
+                                </label>
+                            </div>
+                        </div>
 
-                    <!-- Credit Payments Collected -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">💰 {{ _('Debt Collected (Gs)') }}</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="credit_payments_collected"
-                            class="input input-sm input-bordered w-full"
-                            value="{% if session.credit_payments_collected and session.credit_payments_collected > 0 %}{{ '{:,.0f}'.format(session.credit_payments_collected) }}{% endif %}"
-                            placeholder="0"
-                            inputmode="decimal"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Old customer debt collected') }}</span>
-                        </label>
-                    </div>
-
-                    <!-- Closed Time -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Closed At (Time)') }}</span>
-                        </label>
-                        <input
-                                type="time"
-                                name="closed_time"
-                                class="input input-sm input-bordered w-full"
-                                id="closed-time"
-                                value="{{ session.closed_time.strftime('%H:%M') if session.closed_time else '' }}"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for current time') }}</span>
-                        </label>
-                    </div>
-
-                    <!-- Divider: Additional Info -->
-                    <div class="divider my-4">{{ _('Additional Info') }}</div>
-
-                    <!-- Closing Ticket -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Closing Ticket #') }}</span>
-                        </label>
-                        <input
-                                type="text"
-                                name="closing_ticket"
-                                class="input input-sm input-bordered w-full"
-                                value="{{ session.closing_ticket or '' }}"
-                                placeholder="{{ _('e.g., T-20251112-001') }}"
-                        />
-                        <label class="label pt-2">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: POS ticket number') }}</span>
-                        </label>
-                    </div>
-
-                    <!-- Notes -->
-                    <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Notes') }}</span>
-                        </label>
-                        <textarea
+                        <!-- Notes -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Notes') }}</span>
+                            </label>
+                            <textarea
                                 name="notes"
-                                class="textarea textarea-sm textarea-bordered w-full h-24"
+                                id="notes"
+                                class="textarea textarea-bordered w-full h-24 focus:ring-2 focus:ring-primary/20 transition-all resize-y"
                                 placeholder="{{ _('Any discrepancies or notes...') }}"
-                        >{{ session.notes or '' }}</textarea>
+                                rows="4"
+                            >{{ session.notes or '' }}</textarea>
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Divider -->
-                    <div class="divider my-4"></div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex gap-3">
-                        <button type="submit" class="btn btn-error btn-sm flex-1 gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                            </svg>
-                            {{ _('Close Session') }}
-                        </button>
-                        <a href="/sessions/{{ session.id }}" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
-                    </div>
-                </form>
-            </div>
+                <!-- Action Buttons -->
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="submit" 
+                        class="btn btn-error btn-lg flex-[2] gap-2 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-error/50"
+                        aria-label="{{ _('Close cash session') }}"
+                    >
+                        <span class="loading loading-spinner loading-sm hidden" id="close-loading"></span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        <span>{{ _('Close Session') }}</span>
+                    </button>
+                    <a 
+                        href="/sessions/{{ session.id }}" 
+                        class="btn btn-outline btn-lg flex-1 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-base-content/20"
+                        aria-label="{{ _('Cancel and return to session details') }}"
+                    >
+                        {{ _('Cancel') }}
+                    </a>
+                </div>
+            </form>
         </div>
 
         <!-- Sidebar: Opening Info & Reconciliation Preview -->
         <div class="lg:col-span-1 space-y-4">
             <!-- Opening Summary -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 space-y-3">
-                <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">📋 {{ _('Opening Info')
-                    }}</h3>
+            <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/30 rounded-xl p-5 space-y-4">
+                <div class="flex items-center gap-2 pb-2 border-b border-primary/20">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <h3 class="font-bold text-sm uppercase tracking-widest text-primary">{{ _('Opening Info') }}</h3>
+                </div>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="text-base-content/60">{{ _('Session Date') }}</span>
+                        <span class="font-mono font-semibold">{{ session.session_date.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-base-content/60">{{ _('Opened At') }}</span>
+                        <span class="font-mono font-semibold">{{ session.opened_time.strftime('%H:%M') }}</span>
+                    </div>
+                    <div class="pt-2 border-t border-primary/20">
+                        <p class="text-xs text-base-content/60 mb-1">{{ _('Initial Cash') }}</p>
+                        <p class="font-mono font-bold text-xl text-primary">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Reconciliation Preview -->
+            <div class="bg-gradient-to-br from-success/10 to-base-100 border-2 border-success/30 rounded-xl p-5 space-y-4">
+                <div class="flex items-center gap-2 pb-2 border-b border-success/20">
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <h3 class="font-bold text-sm uppercase tracking-wider text-success">{{ _('Live Reconciliation') }}</h3>
+                </div>
+                <div class="space-y-4" id="preview">
+                    <div class="text-center py-4">
+                        <svg class="w-12 h-12 mx-auto text-base-content/20 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <p class="text-xs text-base-content/60">{{ _('Fill form fields to see live calculations...') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Reference -->
+            <div class="bg-base-100 border border-base-300 rounded-xl p-5 space-y-3">
+                <div class="flex items-center gap-2 pb-2 border-b border-base-300">
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70">{{ _('Quick Reference') }}</h3>
+                </div>
                 <div class="space-y-2 text-xs">
-                    <div>
-                        <p class="text-base-content/60">{{ _('Session Date') }}</p>
-                        <p class="font-mono font-semibold">{{ session.session_date.strftime('%d/%m/%Y') }}</p>
+                    <div class="flex items-start gap-2">
+                        <span class="text-primary font-bold">💰</span>
+                        <div>
+                            <p class="font-semibold text-base-content/80">{{ _('Cash Sales') }}</p>
+                            <p class="text-base-content/60 font-mono">({{ _('final') }} − {{ _('initial') }}) + {{ _('envelope') }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-base-content/60">{{ _('Opened At') }}</p>
-                        <p class="font-mono font-semibold">{{ session.opened_time.strftime('%H:%M') }}</p>
+                    <div class="flex items-start gap-2">
+                        <span class="text-info font-bold">💳</span>
+                        <div>
+                            <p class="font-semibold text-base-content/80">{{ _('Card Payments') }}</p>
+                            <p class="text-base-content/60 font-mono">{{ _('credit') }} + {{ _('debit') }}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-base-content/60">{{ _('Initial Cash') }}</p>
-                        <p class="font-mono font-bold text-lg">Gs {{ "{:,.0f}".format(session.initial_cash) }}</p>
+                    <div class="flex items-start gap-2">
+                        <span class="text-success font-bold">📊</span>
+                        <div>
+                            <p class="font-semibold text-base-content/80">{{ _('Net Earnings') }}</p>
+                            <p class="text-base-content/60 font-mono">{{ _('total') }} − {{ _('expenses') }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Reconciliation Preview -->
-            <div class="bg-success/10 border-l-4 border-success rounded-lg p-4 space-y-2">
-                <h3 class="font-bold text-sm uppercase tracking-wider text-success">📊 {{ _('Reconciliation Preview')
-                    }}</h3>
-                <div class="space-y-1 text-xs text-base-content/70" id="preview">
-                    <p>{{ _('Fill form fields to see preview...') }}</p>
-                </div>
-            </div>
-
-            <!-- Formula Reference -->
-            <div class="bg-accent/10 border-l-4 border-accent rounded-lg p-4 space-y-2">
-                <h3 class="font-bold text-sm uppercase tracking-wider text-accent">🧮 {{ _('Formula') }}</h3>
-                <ul class="space-y-1 text-xs text-base-content/70 font-mono">
-                    <li><strong>💰</strong> {{ _('(final − initial) + envelope') }}</li>
-                    <li><strong>💳</strong> {{ _('credit + debit + bank') }}</li>
-                    <li><strong>📊</strong> {{ _('total − expenses') }}</li>
-                </ul>
             </div>
         </div>
     </div>
 </div>
 <script>
+    // Currency formatter helper
+    function formatCurrency(value) {
+        if (!value && value !== 0) return 'Gs 0';
+        const num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
+        return `Gs ${num.toLocaleString('es-PY').replace(/,/g, '.')}`;
+    }
+
+    function parseCurrency(value) {
+        return parseInt(value?.toString().replace(/\D/g, '') || '0') || 0;
+    }
+
+    // Live reconciliation calculator
+    function updateReconciliationPreview() {
+        const initialCash = {{ session.initial_cash }};
+        const finalCash = parseCurrency(document.querySelector('[name="final_cash"]')?.value);
+        const envelope = parseCurrency(document.querySelector('[name="envelope_amount"]')?.value);
+        const creditCard = parseCurrency(document.querySelector('[name="credit_card_total"]')?.value);
+        const debitCard = parseCurrency(document.querySelector('[name="debit_card_total"]')?.value);
+        
+        // Get totals from data attributes
+        const bankTransferEl = document.querySelector('[data-bank-transfer-total]');
+        const expensesEl = document.querySelector('[data-expenses-total]');
+        const bankTransfer = bankTransferEl ? parseInt(bankTransferEl.dataset.bankTransferTotal || '0') : 0;
+        const expenses = expensesEl ? parseInt(expensesEl.dataset.expensesTotal || '0') : 0;
+
+        // Calculations
+        const cashSales = (finalCash - initialCash) + envelope;
+        const cardPayments = creditCard + debitCard;
+        const totalSales = cashSales + cardPayments + bankTransfer;
+        const netEarnings = totalSales - expenses;
+        const cashProfit = cashSales - expenses;
+
+        const preview = document.getElementById('preview');
+        if (!preview) return;
+
+        // Only show if at least one field has been filled
+        if (finalCash === 0 && envelope === 0 && creditCard === 0 && debitCard === 0 && bankTransfer === 0 && expenses === 0) {
+            preview.innerHTML = `
+                <div class="text-center py-4">
+                    <svg class="w-12 h-12 mx-auto text-base-content/20 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <p class="text-xs text-base-content/60">{{ _('Fill form fields to see live calculations...') }}</p>
+                </div>
+            `;
+            return;
+        }
+
+        preview.innerHTML = `
+            <!-- Cash Sales -->
+            <div class="bg-base-100 rounded-lg p-3 border border-primary/20">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-semibold text-base-content/70">💰 {{ _('Cash Sales') }}</span>
+                    <span class="text-base font-bold font-mono text-primary">${formatCurrency(cashSales)}</span>
+                </div>
+                <p class="text-xs text-base-content/50 font-mono">(${formatCurrency(finalCash)} − ${formatCurrency(initialCash)}) + ${formatCurrency(envelope)}</p>
+            </div>
+
+            <!-- Card Payments -->
+            <div class="bg-base-100 rounded-lg p-3 border border-info/20">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-semibold text-base-content/70">💳 {{ _('Card Payments') }}</span>
+                    <span class="text-base font-bold font-mono text-info">${formatCurrency(cardPayments)}</span>
+                </div>
+                <p class="text-xs text-base-content/50 font-mono">${formatCurrency(creditCard)} + ${formatCurrency(debitCard)}</p>
+            </div>
+
+            <!-- Bank Transfers -->
+            ${bankTransfer > 0 ? `
+            <div class="bg-base-100 rounded-lg p-3 border border-info/20">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-base-content/70">🏦 {{ _('Bank Transfers') }}</span>
+                    <span class="text-base font-bold font-mono text-info">${formatCurrency(bankTransfer)}</span>
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Total Sales -->
+            <div class="bg-gradient-to-r from-success/20 to-success/10 rounded-lg p-3 border border-success/30">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-bold uppercase tracking-wider text-success">{{ _('Total Sales') }}</span>
+                    <span class="text-lg font-bold font-mono text-success">${formatCurrency(totalSales)}</span>
+                </div>
+            </div>
+
+            <!-- Expenses -->
+            ${expenses > 0 ? `
+            <div class="bg-base-100 rounded-lg p-3 border border-error/20">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-semibold text-base-content/70">📉 {{ _('Expenses') }}</span>
+                    <span class="text-base font-bold font-mono text-error">−${formatCurrency(expenses)}</span>
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Net Earnings (Hero) -->
+            <div class="bg-gradient-to-r ${netEarnings >= 0 ? 'from-success/30 to-success/20' : 'from-error/30 to-error/20'} rounded-lg p-4 border-2 ${netEarnings >= 0 ? 'border-success' : 'border-error'}">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-bold uppercase tracking-wider ${netEarnings >= 0 ? 'text-success' : 'text-error'}">{{ _('Net Earnings') }}</span>
+                    <span class="text-2xl font-black font-mono ${netEarnings >= 0 ? 'text-success' : 'text-error'}">${formatCurrency(netEarnings)}</span>
+                </div>
+            </div>
+        `;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const closedTimeInput = document.getElementById('closed-time');
 
@@ -288,7 +490,43 @@
             const minutes = String(now.getMinutes()).padStart(2, '0');
             closedTimeInput.value = `${hours}:${minutes}`;
         }
+
+        // Auto-format currency inputs on blur
+        document.querySelectorAll('[data-currency-input]').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value) {
+                    const digits = this.value.replace(/\D/g, '');
+                    if (digits) {
+                        const num = parseInt(digits);
+                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                    }
+                }
+                updateReconciliationPreview();
+            });
+
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/[^\d.,]/g, '');
+                updateReconciliationPreview();
+            });
+        });
+
+        // Watch for changes in main form fields
+        document.querySelectorAll('[name="final_cash"], [name="envelope_amount"], [name="credit_card_total"], [name="debit_card_total"]').forEach(input => {
+            input.addEventListener('input', updateReconciliationPreview);
+            input.addEventListener('blur', updateReconciliationPreview);
+        });
+
+        // Watch for HTMX updates to transfer/expense totals
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            if (event.detail.target.id === 'transfer-items-container' || event.detail.target.id === 'expense-items-container') {
+                updateReconciliationPreview();
+            }
+        });
+
+        // Initial update
+        updateReconciliationPreview();
     });
 </script>
 <script src="/static/js/close-session.js"></script>
 {% endblock %}
+

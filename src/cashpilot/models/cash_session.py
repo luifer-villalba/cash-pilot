@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from cashpilot.models.business import Business
+    from cashpilot.models.expense_item import ExpenseItem
+    from cashpilot.models.transfer_item import TransferItem
     from cashpilot.models.user import User
 
 import uuid
@@ -63,6 +65,21 @@ class CashSession(Base):
         "User",
         foreign_keys=[cashier_id],
         lazy="selectin",
+    )
+
+    # Line item relationships
+    transfer_items: Mapped[list["TransferItem"]] = relationship(
+        "TransferItem",
+        back_populates="session",
+        lazy="selectin",
+        order_by="TransferItem.created_at",
+    )
+
+    expense_items: Mapped[list["ExpenseItem"]] = relationship(
+        "ExpenseItem",
+        back_populates="session",
+        lazy="selectin",
+        order_by="ExpenseItem.created_at",
     )
 
     # User who created this session (for audit trail)
@@ -184,24 +201,34 @@ class CashSession(Base):
         """Calculate cash sales: (final - initial) + envelope + expenses
         - credit_payments_collected.
 
-        Expenses reduce physical cash but represent revenue that flowed through register.
-        Envelope is cash removed from register.
-        Credit payments collected are from another day and are separated from the cash flow.
+        Expenses are added back because they reduce physical cash but represent
+        sales revenue that was used for business expenses (for example, cash paid
+        out for supplies during the shift). The envelope amount is cash that was
+        intentionally removed from the register (such as deposits or drops) and
+        therefore must be included to reconstruct total cash sales.
+
+        Credit payments collected represent cash received today for prior credit
+        sales. They are subtracted so that this cash is not counted again as
+        today's sales revenue.
         """
         if self.final_cash is None:
             return Decimal("0.00")
         credit_payments = self.credit_payments_collected or Decimal("0.00")
+        envelope_amount = self.envelope_amount or Decimal("0.00")
+        expenses = self.expenses or Decimal("0.00")
         return (
             (self.final_cash - self.initial_cash)
-            + self.envelope_amount
-            + self.expenses
+            + envelope_amount
+            + expenses
             - credit_payments
         )
 
     @property
     def total_sales(self) -> Decimal:
         """All revenue across all payment methods: Cash Sales + Card Sales
-        + Bank Transfers + Credit Sales."""
+        + Bank Transfers + Credit Sales on account (sales made on credit terms,
+        not credit card transactions, which are tracked via credit_card_total
+        and debit_card_total)."""
         return (
             self.cash_sales
             + (self.credit_card_total or Decimal("0.00"))

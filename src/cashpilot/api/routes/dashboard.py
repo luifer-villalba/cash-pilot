@@ -91,14 +91,25 @@ async def dashboard(
     businesses_count = len(list(businesses))
 
     today = today_local()
+    # Calculate total_revenue to match model's total_sales property:
+    # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses - credit_payments_collected
+    # total_sales = cash_sales + credit_card + debit_card + bank_transfer + credit_sales_total
     stmt_today = select(
         func.sum(
-            CashSession.final_cash
-            + CashSession.envelope_amount
-            + CashSession.credit_card_total
-            + CashSession.debit_card_total
-            + CashSession.bank_transfer_total
-            - CashSession.initial_cash
+            case(
+                (
+                    CashSession.final_cash.is_not(None),
+                    (CashSession.final_cash - CashSession.initial_cash)
+                    + func.coalesce(CashSession.envelope_amount, 0)
+                    + func.coalesce(CashSession.expenses, 0)
+                    - func.coalesce(CashSession.credit_payments_collected, 0)
+                    + func.coalesce(CashSession.credit_card_total, 0)
+                    + func.coalesce(CashSession.debit_card_total, 0)
+                    + func.coalesce(CashSession.bank_transfer_total, 0)
+                    + func.coalesce(CashSession.credit_sales_total, 0),
+                ),
+                else_=0,
+            )
         )
     ).where(
         CashSession.session_date == today,
@@ -262,7 +273,8 @@ async def get_dashboard_stats(
     # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses
     #              - credit_payments_collected
     # Note: Only include sessions where final_cash is not NULL
-    # Credit payments collected are from another day and are separated from the cash flow
+    # credit_payments_collected is cash received today for prior credit sales and is
+    # subtracted here so it is not counted as today's cash sales revenue.
     stmt_aggs = select(
         func.sum(
             case(
@@ -333,7 +345,7 @@ async def get_dashboard_stats(
     # Already calculated as credit_payments_val
 
     # Card #9: Payment Mix % (for collapsible section)
-    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val
+    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val + credit_sales_val
     cash_pct = (cash_sales_val / total_income * 100) if total_income > 0 else 0
     card_pct = (card_payments_total / total_income * 100) if total_income > 0 else 0
     bank_pct = (bank_val / total_income * 100) if total_income > 0 else 0

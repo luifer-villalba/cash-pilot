@@ -10,47 +10,59 @@
             <div class="card-body">
                 <h2 class="card-title">{{ _('Create New Business') }}</h2>
 
-                <form method="POST" action="/businesses" class="space-y-4">
+                <form method="POST" action="/businesses" class="space-y-4" onsubmit="document.getElementById('create-loading').classList.remove('hidden');">
                     <!-- Name -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Name') }} *</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Name') }} *</span>
                         </label>
-                        <input type="text" name="name" class="input input-bordered"
+                        <input type="text" name="name" class="input input-sm input-bordered w-full"
                            placeholder="{{ _('e.g., Farmacia Central') }}"
                            required
                            minlength="1"
                            maxlength="200"
                            pattern="[a-zA-Z0-9\sáéíóúñÁÉÍÓÚÑ.,\-]+"
                            title="{{ _('Only letters, numbers, spaces, and basic punctuation allowed') }}" />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Pharmacy location name') }}</span>
+                        </label>
                     </div>
 
                     <!-- Address -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Address') }}</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Address') }}</span>
                         </label>
-                        <input type="text" name="address" class="input input-bordered"
+                        <input type="text" name="address" class="input input-sm input-bordered w-full"
                                placeholder="{{ _('e.g., Av. España 123') }}"
                                maxlength="500" />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: Street address') }}</span>
+                        </label>
                     </div>
 
                     <!-- Phone -->
                     <div class="form-control">
-                        <label class="label">
-                            <span class="label-text font-semibold">{{ _('Phone') }}</span>
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Phone') }}</span>
                         </label>
-                        <input type="tel" name="phone" class="input input-bordered"
+                        <input type="tel" name="phone" class="input input-sm input-bordered w-full"
                            placeholder="{{ _('+595 21 123456') }}"
                            maxlength="50"
                            pattern="[0-9\s+\-()]+"
                            title="{{ _('Only digits, spaces, +, -, (, ) allowed') }}" />
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: Contact phone number') }}</span>
+                        </label>
                     </div>
 
                     <!-- Buttons -->
-                    <div class="flex gap-2 pt-4">
-                        <button type="submit" class="btn btn-primary">{{ _('Create Business') }}</button>
-                        <a href="/businesses" class="btn btn-outline">{{ _('Cancel') }}</a>
+                    <div class="flex gap-3 pt-4">
+                        <button type="submit" class="btn btn-primary btn-sm flex-[2]">
+                            <span class="loading loading-spinner loading-sm hidden" id="create-loading"></span>
+                            {{ _('Create Business') }}
+                        </button>
+                        <a href="/businesses" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
                     </div>
                 </form>
             </div>
