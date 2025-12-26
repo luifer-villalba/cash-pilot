@@ -24,7 +24,7 @@ Pharmacy cash register reconciliation system built for 5-6 pharmacy locations in
 **Backend:** FastAPI • SQLAlchemy 2.0 async • PostgreSQL • asyncpg  
 **Frontend:** Jinja2 templates • Tailwind CSS • DaisyUI • HTMX pagination  
 **DevOps:** Docker • Alembic migrations • Railway deployment • GitHub auto-deploy  
-**Testing:** pytest • 160+ async tests • RBAC coverage  
+**Testing:** pytest • 167+ async tests • RBAC coverage  
 **i18n:** Spanish/English (Babel)
 
 ---
@@ -33,14 +33,16 @@ Pharmacy cash register reconciliation system built for 5-6 pharmacy locations in
 ```bash
 git clone https://github.com/luifer-villalba/cash-pilot.git
 cd cash-pilot
-cp .env.example .env
+
+# Create .env file (see docker-compose.yml for required variables)
+# Required: DATABASE_URL, SESSION_SECRET_KEY, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
 
 # All commands via Makefile
 make build              # Build containers
 make up                 # Start services
 make migrate            # Run migrations
 make seed               # Create demo data (3 pharmacies, 87 sessions)
-make test               # Run 160+ tests
+make test               # Run 167+ tests
 make logs               # View live logs
 
 # Visit http://localhost:8000
@@ -59,6 +61,9 @@ make logs               # View live logs
 **Session Lifecycle**
 1. **Create** — Cashier selects pharmacy, enters initial cash, optional expenses
 2. **Track** — Log cash/card/transfer amounts throughout shift
+   - Add multiple expense line items (description + amount)
+   - Add multiple bank transfer line items (description + amount)
+   - Totals auto-calculate from line items
 3. **Close** — Auto-calculates: `cash_sales = (final_cash + envelope) - initial_cash`
 4. **Edit** — Corrections within 12 hours (admins anytime)
 5. **Flag** — Mark discrepancies with reason for follow-up
@@ -89,7 +94,7 @@ This isn't a toy app. It's solving a real business problem for real pharmacies. 
 
 ## Code Quality
 
-- **160+ Tests** — Every RBAC rule tested, async patterns verified, edge cases covered
+- **167+ Tests** — Every RBAC rule tested, async patterns verified, edge cases covered
 - **Type Hints** — Full coverage with Pydantic v2, SQLAlchemy Mapped types
 - **Linting** — ruff, black, isort with pre-commit hooks
 - **Error Handling** — Custom exceptions with context, structured JSON logging
@@ -119,14 +124,16 @@ When something breaks, trace the exact request through the logs. Every log entry
 ## Project Structure
 ```
 src/cashpilot/
-├── api/                    # FastAPI routers (auth, business, sessions, admin)
+├── api/                    # FastAPI routers
+│   ├── routes/             # Frontend routes (dashboard, sessions, businesses)
+│   └── *.py                # API endpoints (auth, business, sessions, admin, user)
 ├── models/                 # SQLAlchemy ORM + Pydantic schemas
 ├── core/                   # Database, security, errors, logging, validation
 ├── middleware/             # Request ID correlation
 ├── utils/                  # Timezone helpers (Paraguay-specific)
-└── scripts/                # seed.py, createuser.py
+└── scripts/                # seed.py, createuser.py, assign_cashiers.py
 
-tests/                      # 160+ async pytest tests
+tests/                      # 167+ async pytest tests
 ├── test_rbac.py           # 40+ permission tests
 ├── test_session_form_rbac.py
 ├── test_user_business_assignment.py
@@ -224,6 +231,8 @@ Use Linear for ticket tracking (MIZ-XXX prefix). Reference in commit messages.
 - `businesses` — Name, address, phone, is_active flag
 - `user_businesses` — M:N assignment (which cashier works at which pharmacy)
 - `cash_sessions` — Initial/final cash, payments, reconciliation, is_deleted flag
+- `expense_items` — Line items for expenses (description, amount) linked to sessions
+- `transfer_items` — Line items for bank transfers (description, amount) linked to sessions
 - `cash_session_audit_logs` — Edit history (timestamp, user, old/new values, reason)
 
 **Timezone:** America/Asuncion (Paraguay). All times stored UTC, displayed in local.

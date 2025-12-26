@@ -7,53 +7,72 @@
 <div class="container mx-auto px-4 py-6 max-w-2xl">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold">{{ _('Edit Business') }}</h1>
+        <a href="/businesses" class="btn btn-ghost btn-sm">{{ _('Back') }}</a>
     </div>
 
     <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
             <!-- Business Info Form -->
-            <form method="POST" action="/businesses/{{ business.id }}" class="space-y-4">
+            <form method="POST" action="/businesses/{{ business.id }}" class="space-y-4" onsubmit="document.getElementById('save-loading').classList.remove('hidden');">
                 <!-- Name -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{ _('Name') }} *</span>
+                    <label class="label pb-2">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Name') }} *</span>
                     </label>
-                    <input type="text" name="name" class="input input-bordered"
+                    <input type="text" name="name" class="input input-sm input-bordered w-full"
                            value="{{ business.name }}"
                            required minlength="1" maxlength="200" />
+                    <label class="label pt-2">
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Pharmacy location name') }}</span>
+                    </label>
                 </div>
 
                 <!-- Address -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{ _('Address') }}</span>
+                    <label class="label pb-2">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Address') }}</span>
                     </label>
-                    <input type="text" name="address" class="input input-bordered"
+                    <input type="text" name="address" class="input input-sm input-bordered w-full"
                            value="{{ business.address or '' }}"
                            maxlength="500" />
+                    <label class="label pt-2">
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: Street address') }}</span>
+                    </label>
                 </div>
 
                 <!-- Phone -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{ _('Phone') }}</span>
+                    <label class="label pb-2">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Phone') }}</span>
                     </label>
-                    <input type="tel" name="phone" class="input input-bordered"
+                    <input type="tel" name="phone" class="input input-sm input-bordered w-full"
                            value="{{ business.phone or '' }}"
                            maxlength="50" />
+                    <label class="label pt-2">
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: Contact phone number') }}</span>
+                    </label>
                 </div>
 
                 <!-- Status -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">{{ _('Active') }}</span>
+                    <label class="label pb-2">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Active') }}</span>
                     </label>
                     <input type="checkbox" name="is_active" class="toggle toggle-primary"
                            {% if business.is_active %}checked{% endif %} />
+                    <label class="label pt-2">
+                        <span class="label-text-alt text-xs text-base-content/60">{{ _('Enable or disable this business location') }}</span>
+                    </label>
                 </div>
 
                 <!-- Save Button -->
-                <button type="submit" class="btn btn-primary w-full">{{ _('Save Changes') }}</button>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="btn btn-primary btn-sm flex-[2]">
+                        <span class="loading loading-spinner loading-sm hidden" id="save-loading"></span>
+                        {{ _('Save Changes') }}
+                    </button>
+                    <a href="/businesses" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
+                </div>
             </form>
 
             <div class="divider"></div>

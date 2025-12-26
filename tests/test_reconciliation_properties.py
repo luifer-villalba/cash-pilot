@@ -1,7 +1,6 @@
 # File: tests/test_reconciliation_properties.py
 """Tests for CashSession reconciliation properties."""
 
-import pytest
 from decimal import Decimal
 from uuid import uuid4
 

@@ -2,7 +2,7 @@
 
 .PHONY: fmt lint sh hook-install run dev up down logs watch dev-watch test \
         migrate migration migrate-up migrate-down migrate-current migrate-history \
-        check-db rebuild rebuild-quick fix-perms clean-branches seed seed-reset \
+        check-db rebuild rebuild-quick fix-perms fix-line-endings clean-branches seed seed-reset \
         createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update \
         build-css watch-css favicons db-reset
 
@@ -19,6 +19,8 @@ sh:
 
 hook-install:
 	git config core.hooksPath .githooks
+	@echo "🔧 Fixing line endings in git hooks..."
+	@find .githooks -type f -exec sed -i 's/\r$$//' {} \;
 	chmod +x .githooks/pre-commit
 	@echo '✔ Pre-commit hook installed.'
 
@@ -27,6 +29,12 @@ fix-perms:
 	sudo chown -R $$USER:$$USER .
 	chmod -R u+w src/
 	@echo "✅ File permissions fixed"
+
+fix-line-endings:
+	@echo "🔧 Fixing line endings in git hooks and shell scripts..."
+	@find .githooks -type f -exec sed -i 's/\r$$//' {} \; 2>/dev/null || true
+	@find scripts -name "*.sh" -type f -exec sed -i 's/\r$$//' {} \; 2>/dev/null || true
+	@echo "✅ Line endings fixed"
 
 # ---------- Git ----------
 clean-branches:

@@ -56,26 +56,26 @@
 </head>
 <body class="flex flex-col min-h-screen bg-base-100">
     <!-- Navbar -->
-    <nav class="navbar bg-base-100 shadow-md sticky top-0 z-50 border-b border-base-200">
+    <nav class="navbar bg-base-100 shadow-md sticky top-0 z-50 border-b border-base-200 backdrop-blur-sm bg-base-100/95">
         <div class="flex-1">
             <!-- Mobile Menu Button -->
             <div class="dropdown lg:hidden">
-                <button tabindex="0" class="btn btn-ghost btn-circle" aria-label="Menu">
+                <button tabindex="0" class="btn btn-ghost btn-circle transition-all hover:scale-105 active:scale-95" aria-label="Menu">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
-                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-lg w-52 border border-base-200">
-                    <li><a href="/" class="text-sm">{{ _('Dashboard') }}</a></li>
-                    <li><a href="/businesses" class="text-sm">{{ _('Businesses') }}</a></li>
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-52 border border-base-200 mt-2">
+                    <li><a href="/" class="text-sm transition-colors hover:bg-primary/10">{{ _('Dashboard') }}</a></li>
+                    <li><a href="/businesses" class="text-sm transition-colors hover:bg-primary/10">{{ _('Businesses') }}</a></li>
                     {% if current_user and current_user.role == 'ADMIN' %}
-                    <li class="border-t border-base-200 pt-2 mt-2"><a href="/admin/users-page" class="text-sm text-primary font-semibold">{{ _('Users') }}</a></li>
+                    <li class="border-t border-base-200 pt-2 mt-2"><a href="/admin/users-page" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Users') }}</a></li>
                     {% endif %}
                 </ul>
             </div>
 
             <!-- Brand Logo -->
-            <a href="/" class="btn btn-ghost normal-case hover:bg-base-200 gap-2 px-3">
+            <a href="/" class="btn btn-ghost normal-case hover:bg-base-200 gap-2 px-3 transition-all duration-200 hover:scale-105">
                 {% set gradient_id = 'nav-gradient' %}
                 {% set size_class = 'w-8 h-8' %}
                 {% include 'partials/logo.html' %}
@@ -85,20 +85,20 @@
 
         <!-- Desktop Navigation -->
         <div class="flex-none hidden lg:flex gap-1">
-            <a href="/" class="btn btn-sm rounded-full gap-2{% if request.path == '/' %} btn-active{% else %} btn-ghost{% endif %}">
+            <a href="/" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/' %} btn-active{% else %} btn-ghost{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 16l4-4m0 0l4 4m-4-4V5"/>
                 </svg>
                 <span class="text-sm">{{ _('Dashboard') }}</span>
             </a>
-            <a href="/businesses" class="btn btn-sm rounded-full gap-2{% if request.path == '/businesses' %} btn-active{% else %} btn-ghost{% endif %}">
+            <a href="/businesses" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/businesses' %} btn-active{% else %} btn-ghost{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
                 </svg>
                 <span class="text-sm">{{ _('Businesses') }}</span>
             </a>
             {% if current_user and current_user.role == 'ADMIN' %}
-            <a href="/admin/users-page" class="btn btn-sm rounded-full gap-2{% if request.path == '/admin/users-page' %} btn-active{% else %} btn-ghost{% endif %}">
+            <a href="/admin/users-page" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/admin/users-page' %} btn-active{% else %} btn-ghost{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
@@ -110,30 +110,30 @@
         <!-- Right Side Controls -->
         <div class="flex-none gap-2">
             <!-- Theme Toggle -->
-            <button id="theme-toggle" class="btn btn-ghost btn-circle btn-sm" title="{{ _('Toggle theme') }}" aria-label="Toggle theme">
-                <span id="theme-icon" class="text-lg">🌙</span>
+            <button id="theme-toggle" class="btn btn-ghost btn-circle btn-sm transition-all duration-200 hover:scale-110 active:scale-95" title="{{ _('Toggle theme') }}" aria-label="Toggle theme">
+                <span id="theme-icon" class="text-lg transition-transform duration-300">🌙</span>
             </button>
 
             <!-- User Menu -->
             {% if current_user %}
             <div class="dropdown dropdown-end">
-                <button tabindex="0" class="btn btn-ghost btn-circle btn-sm" aria-label="User menu">
+                <button tabindex="0" class="btn btn-ghost btn-circle btn-sm transition-all duration-200 hover:scale-110 active:scale-95" aria-label="User menu">
                     <div class="avatar placeholder">
-                        <div class="w-8 rounded-full text-white font-bold text-xs shadow bg-primary">
+                        <div class="w-8 rounded-full text-white font-bold text-xs shadow-lg bg-gradient-to-br from-primary to-primary-focus">
                             {{ current_user.email[0].upper() }}
                         </div>
                     </div>
                 </button>
-                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-lg w-56 border border-base-200">
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-56 border border-base-200 mt-2">
                     <li class="menu-title"><span class="text-xs text-base-content/60 truncate">{{ current_user.email }}</span></li>
-                    <li><a href="/settings" class="text-sm">{{ _('Settings') }}</a></li>
+                    <li><a href="/settings" class="text-sm transition-colors hover:bg-primary/10">{{ _('Settings') }}</a></li>
                     <li><form method="POST" action="/logout" onsubmit="return confirm('{{ _('Are you sure?') }}')">
-                        <button type="submit" class="text-sm text-error">{{ _('Logout') }}</button>
+                        <button type="submit" class="text-sm text-error transition-colors hover:bg-error/10 w-full text-left">{{ _('Logout') }}</button>
                     </form></li>
                 </ul>
             </div>
             {% else %}
-            <a href="/login" class="btn btn-primary btn-sm gap-2">
+            <a href="/login" class="btn btn-primary btn-sm gap-2 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
                 </svg>
@@ -149,9 +149,12 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer footer-center p-4 bg-base-200 text-base-content/70 border-t border-base-300 text-xs md:text-sm mt-12">
+    <footer class="footer footer-center p-4 bg-base-200/50 text-base-content/70 border-t border-base-300 text-xs md:text-sm mt-12 backdrop-blur-sm">
         <div>
-            <p>💎 CashPilot © 2025 — {{ _('Business Cash Register Reconciliation System') }}</p>
+            <p class="flex items-center justify-center gap-2">
+                <span>💎</span>
+                <span>CashPilot © 2025 — {{ _('Business Cash Register Reconciliation System') }}</span>
+            </p>
         </div>
     </footer>
 

@@ -149,7 +149,14 @@ async def session_detail(
     return templates.TemplateResponse(
         request,
         "sessions/session_detail.html",
-        {"current_user": current_user, "session": session, **calcs, "locale": locale, "_": _},
+        {
+            "current_user": current_user,
+            "session": session,
+            **calcs,
+            "locale": locale,
+            "_": _,
+            "editable": False,
+        },
     )
 
 
@@ -170,7 +177,13 @@ async def edit_session_form(
     return templates.TemplateResponse(
         request,
         "sessions/close_session.html",
-        {"current_user": current_user, "session": session, "locale": locale, "_": _},
+        {
+            "current_user": current_user,
+            "session": session,
+            "locale": locale,
+            "_": _,
+            "editable": True,
+        },
     )
 
 
@@ -184,8 +197,6 @@ async def close_session_post(
     envelope_amount: str = Form(...),
     credit_card_total: str = Form(...),
     debit_card_total: str = Form(...),
-    bank_transfer_total: str = Form(...),
-    expenses: str = Form("0"),
     credit_sales_total: str = Form("0"),
     credit_payments_collected: str = Form("0"),
     closed_time: str = Form(...),
@@ -202,8 +213,6 @@ async def close_session_post(
         session.envelope_amount = parse_currency(envelope_amount) or Decimal("0")
         session.credit_card_total = parse_currency(credit_card_total) or Decimal("0")
         session.debit_card_total = parse_currency(debit_card_total) or Decimal("0")
-        session.bank_transfer_total = parse_currency(bank_transfer_total) or Decimal("0")
-        session.expenses = parse_currency(expenses) or Decimal("0")
         session.credit_sales_total = parse_currency(credit_sales_total) or Decimal("0")
         session.credit_payments_collected = parse_currency(credit_payments_collected) or Decimal(
             "0"
@@ -238,6 +247,7 @@ async def close_session_post(
                 "session": session,
                 "error": str(e),
                 "locale": locale,
+                "editable": True,
                 "_": _,
             },
             status_code=400,
