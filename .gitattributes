@@ -1,8 +1,24 @@
 # Shell scripts must use LF
 *.sh text eol=lf
 
+# Git hooks must use LF (critical for WSL/Windows)
+.githooks/* text eol=lf
+.git/hooks/* text eol=lf
+
 # Environment files must use LF
 .env* text eol=lf
 
 # Documentation
 *.md text eol=lf
+
+# Python files (should use LF, but git will normalize)
+*.py text eol=lf
+
+# Configuration files
+Makefile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf

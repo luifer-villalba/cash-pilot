@@ -92,7 +92,8 @@ async def dashboard(
 
     today = today_local()
     # Calculate total_revenue to match model's total_sales property:
-    # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses - credit_payments_collected
+    # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses
+    #              - credit_payments_collected
     # total_sales = cash_sales + credit_card + debit_card + bank_transfer + credit_sales_total
     stmt_today = select(
         func.sum(
