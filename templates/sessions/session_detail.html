@@ -285,8 +285,11 @@
                     </h2>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-gradient-to-br from-info/10 to-base-100 border border-info/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
-                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2">
-                                💳 {{ _('Credit Card') }}
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                </svg>
+                                {{ _('Credit Card') }}
                             </p>
                             <p class="text-2xl font-bold font-mono mt-2 text-base-content tabular-nums">
                                 {% if session.status == 'CLOSED' %}Gs {{ session.credit_card_total | format_currency_py }}{% else %}—{% endif %}
@@ -294,8 +297,11 @@
                             <p class="text-xs text-base-content/60 mt-2">Visa/Mastercard</p>
                         </div>
                         <div class="bg-gradient-to-br from-info/10 to-base-100 border border-info/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
-                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2">
-                                ⚡ {{ _('Debit Card') }}
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                {{ _('Debit Card') }}
                             </p>
                             <p class="text-2xl font-bold font-mono mt-2 text-base-content tabular-nums">
                                 {% if session.status == 'CLOSED' %}Gs {{ session.debit_card_total | format_currency_py }}{% else %}—{% endif %}
@@ -344,8 +350,11 @@
 
                         <!-- Digital card -->
                         <div class="bg-gradient-to-br from-info/20 to-base-100 border border-info/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
-                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2">
-                                💳 {{ _('Card Payments') }}
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                </svg>
+                                {{ _('Card Payments') }}
                             </p>
                             <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-info tabular-nums">
                                 +Gs {{ (session.credit_card_total + session.debit_card_total) | format_currency_py }}
@@ -358,8 +367,11 @@
 
                         <!-- Revenue card -->
                         <div class="bg-gradient-to-br from-success/20 to-base-100 border border-success/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
-                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2">
-                                📊 {{ _('Total Sales') }}
+                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                {{ _('Total Sales') }}
                             </p>
                             <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-success tabular-nums">
                                 +Gs {{ session.total_sales | format_currency_py }}
@@ -517,9 +529,9 @@
                             }
 
                             const actionConfig = {
-                                'EDIT_OPEN': {label: 'Edited (Open)', color: 'badge-info', icon: '✏️'},
-                                'CLOSE': {label: 'Closed', color: 'badge-error', icon: '🔒'},
-                                'FLAG_SESSION': {label: 'Flagged', color: 'badge-warning', icon: '🚩'}
+                                'EDIT_OPEN': {label: 'Edited (Open)', color: 'badge-info', icon: '<svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'},
+                                'CLOSE': {label: 'Closed', color: 'badge-error', icon: '<svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>'},
+                                'FLAG_SESSION': {label: 'Flagged', color: 'badge-warning', icon: '<svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>'}
                             };
 
                             tbody.innerHTML = logs.map(log => {
@@ -528,7 +540,7 @@
                                     color: 'badge-ghost',
                                     icon: '•'
                                 };
-                                const reasonText = log.reason ? `<br><span class="text-xs text-base-content/50">💬 ${log.reason}</span>` : '';
+                                const reasonText = log.reason ? `<br><span class="text-xs text-base-content/50 flex items-center gap-1"><svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> ${log.reason}</span>` : '';
                                 return `
                                     <tr class="hover:bg-base-50">
                                         <td class="px-4 py-3 text-sm text-base-content/70 whitespace-nowrap">
@@ -538,7 +550,7 @@
                                         </td>
                                         <td class="px-4 py-3 text-sm font-mono text-base-content/70">${log.changed_by || 'system'}</td>
                                         <td class="px-4 py-3">
-                                            <span class="badge badge-sm ${config.color}">
+                                            <span class="badge badge-sm ${config.color} flex items-center gap-1">
                                                 ${config.icon} ${config.label}
                                             </span>
                                         </td>
@@ -552,7 +564,7 @@
                         } catch (error) {
                             console.error('Error loading audit logs:', error);
                             document.getElementById('audit-logs-table').innerHTML =
-                                '<tr><td colspan="4" class="px-4 py-6 text-center text-sm text-error">❌ {{ _("Failed to load") }}</td></tr>';
+                                '<tr><td colspan="4" class="px-4 py-6 text-center text-sm text-error flex items-center justify-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> {{ _("Failed to load") }}</td></tr>';
                         }
                     }
 
@@ -609,16 +621,24 @@
                         <svg class="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-7 7 7 7H12.5l-1-1H5a2 2 0 00-2 2zm5-10h6"/>
                         </svg>
-                        <p class="text-xs font-bold uppercase tracking-widest text-error">🚩 {{ _('FLAGGED') }}</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-error">{{ _('FLAGGED') }}</p>
                     </div>
                     <p class="text-xs text-base-content/70 mb-3">{{ session.flag_reason }}</p>
-                    <p class="text-xs text-base-content/60 mb-4">👤 {{ session.flagged_by }}</p>
+                    <p class="text-xs text-base-content/60 mb-4 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        {{ session.flagged_by }}
+                    </p>
                     <button
                             onclick="document.getElementById('unflag_modal').showModal()"
-                            class="btn btn-error btn-outline btn-sm w-full transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            class="btn btn-error btn-outline btn-sm w-full gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
                             aria-label="{{ _('Clear flag from session') }}"
                     >
-                        ✓ {{ _('Clear') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        {{ _('Clear') }}
                     </button>
                 </div>
                 {% endif %}
@@ -685,7 +705,12 @@
 <!-- Flag Modal -->
 <dialog id="flag_modal" class="modal">
     <div class="modal-box w-11/12 max-w-sm">
-        <h3 class="font-bold text-lg">🚩 {{ _('Flag Session') }}</h3>
+        <h3 class="font-bold text-lg flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-7 7 7 7H12.5l-1-1H5a2 2 0 00-2 2zm5-10h6"/>
+            </svg>
+            {{ _('Flag Session') }}
+        </h3>
 
         <form method="POST" action="/cash-sessions/{{ session.id }}/flag" class="space-y-4 mt-4">
             <div class="form-control">
@@ -730,12 +755,22 @@
 <!-- Unflag Modal -->
 <dialog id="unflag_modal" class="modal">
     <div class="modal-box w-11/12 max-w-sm">
-        <h3 class="font-bold text-lg">✓ {{ _('Clear Flag') }}</h3>
+        <h3 class="font-bold text-lg flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            {{ _('Clear Flag') }}
+        </h3>
         <p class="text-sm text-base-content/70 mt-2">{{ _('Remove flag from this session?') }}</p>
 
         <form method="POST" action="/cash-sessions/{{ session.id }}/flag" class="flex gap-2 mt-4">
             <input type="hidden" name="flagged" value="false"/>
-            <button type="submit" class="btn btn-success btn-sm flex-1">✓ {{ _('Clear') }}</button>
+            <button type="submit" class="btn btn-success btn-sm flex-1 gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                {{ _('Clear') }}
+            </button>
             <button type="button" onclick="document.getElementById('unflag_modal').close()"
                     class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}
             </button>
