@@ -122,9 +122,10 @@
                                     inputmode="decimal"
                                     data-currency-input
                                     autocomplete="off"
+                                    aria-describedby="credit-sales-help"
                                 />
                             </div>
-                            <label class="label pt-1">
+                            <label class="label pt-1" id="credit-sales-help">
                                 <span class="label-text-alt text-xs text-base-content/60">{{ _('New customer debt created') }}</span>
                             </label>
                         </div>
@@ -151,9 +152,10 @@
                                     inputmode="decimal"
                                     data-currency-input
                                     autocomplete="off"
+                                    aria-describedby="credit-payments-help"
                                 />
                             </div>
-                            <label class="label pt-1">
+                            <label class="label pt-1" id="credit-payments-help">
                                 <span class="label-text-alt text-xs text-base-content/60">{{ _('Customer paid old debt') }}</span>
                             </label>
                         </div>

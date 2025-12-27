@@ -60,7 +60,7 @@
         <div class="flex-1">
             <!-- Mobile Menu Button -->
             <div class="dropdown lg:hidden">
-                <button tabindex="0" class="btn btn-ghost btn-circle transition-all hover:scale-105 active:scale-95" aria-label="Menu">
+                <button tabindex="0" class="btn btn-ghost btn-circle transition-all hover:scale-105 active:scale-95" aria-label="{{ _('Menu') }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
@@ -119,7 +119,7 @@
             <!-- User Menu -->
             {% if current_user %}
             <div class="dropdown dropdown-end">
-                <button tabindex="0" class="btn btn-ghost btn-circle btn-sm transition-all duration-200 hover:scale-110 active:scale-95" aria-label="User menu">
+                <button tabindex="0" class="btn btn-ghost btn-circle btn-sm transition-all duration-200 hover:scale-110 active:scale-95" aria-label="{{ _('User menu') }}">
                     <div class="avatar placeholder">
                         <div class="w-8 rounded-full text-white font-bold text-xs shadow-lg bg-gradient-to-br from-primary to-primary-focus">
                             {{ current_user.email[0].upper() }}
