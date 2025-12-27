@@ -16,14 +16,20 @@
                         <label class="label pb-2">
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Name') }} *</span>
                         </label>
-                        <input type="text" name="name" class="input input-sm input-bordered w-full"
-                           placeholder="{{ _('e.g., Farmacia Central') }}"
-                           required
-                           minlength="1"
-                           maxlength="200"
-                           pattern="[a-zA-Z0-9\sáéíóúñÁÉÍÓÚÑ.,\-]+"
-                           title="{{ _('Only letters, numbers, spaces, and basic punctuation allowed') }}" />
-                        <label class="label pt-2">
+                        <input 
+                            type="text" 
+                            name="name" 
+                            id="name"
+                            class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                            placeholder="{{ _('e.g., Farmacia Central') }}"
+                            required
+                            minlength="1"
+                            maxlength="200"
+                            pattern="[a-zA-Z0-9\sáéíóúñÁÉÍÓÚÑ.,\-]+"
+                            title="{{ _('Only letters, numbers, spaces, and basic punctuation allowed') }}"
+                            aria-describedby="name-help"
+                        />
+                        <label class="label pt-2" id="name-help">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Pharmacy location name') }}</span>
                         </label>
                     </div>
@@ -33,10 +39,16 @@
                         <label class="label pb-2">
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Address') }}</span>
                         </label>
-                        <input type="text" name="address" class="input input-sm input-bordered w-full"
-                               placeholder="{{ _('e.g., Av. España 123') }}"
-                               maxlength="500" />
-                        <label class="label pt-2">
+                        <input 
+                            type="text" 
+                            name="address" 
+                            id="address"
+                            class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                            placeholder="{{ _('e.g., Av. España 123') }}"
+                            maxlength="500"
+                            aria-describedby="address-help"
+                        />
+                        <label class="label pt-2" id="address-help">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: Street address') }}</span>
                         </label>
                     </div>
@@ -46,23 +58,39 @@
                         <label class="label pb-2">
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Phone') }}</span>
                         </label>
-                        <input type="tel" name="phone" class="input input-sm input-bordered w-full"
-                           placeholder="{{ _('+595 21 123456') }}"
-                           maxlength="50"
-                           pattern="[0-9\s+\-()]+"
-                           title="{{ _('Only digits, spaces, +, -, (, ) allowed') }}" />
-                        <label class="label pt-2">
+                        <input 
+                            type="tel" 
+                            name="phone" 
+                            id="phone"
+                            class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                            placeholder="{{ _('+595 21 123456') }}"
+                            maxlength="50"
+                            pattern="[0-9\s+\-()]+"
+                            title="{{ _('Only digits, spaces, +, -, (, ) allowed') }}"
+                            aria-describedby="phone-help"
+                        />
+                        <label class="label pt-2" id="phone-help">
                             <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: Contact phone number') }}</span>
                         </label>
                     </div>
 
                     <!-- Buttons -->
                     <div class="flex gap-3 pt-4">
-                        <button type="submit" class="btn btn-primary btn-sm flex-[2]">
+                        <button 
+                            type="submit" 
+                            class="btn btn-primary btn-sm flex-[2] gap-2 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            aria-label="{{ _('Create new business') }}"
+                        >
                             <span class="loading loading-spinner loading-sm hidden" id="create-loading"></span>
                             {{ _('Create Business') }}
                         </button>
-                        <a href="/businesses" class="btn btn-outline btn-sm flex-1">{{ _('Cancel') }}</a>
+                        <a 
+                            href="/businesses" 
+                            class="btn btn-outline btn-sm flex-1 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-base-content/20"
+                            aria-label="{{ _('Cancel and return to businesses list') }}"
+                        >
+                            {{ _('Cancel') }}
+                        </a>
                     </div>
                 </form>
             </div>

@@ -114,8 +114,12 @@
                                     inputmode="decimal"
                                     data-currency-input
                                     autocomplete="off"
+                                    aria-describedby="credit-card-help"
                                 />
                             </div>
+                            <label class="label pt-2" id="credit-card-help">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Total credit card sales') }}</span>
+                            </label>
                         </div>
 
                         <!-- Debit Card -->
@@ -140,8 +144,12 @@
                                     inputmode="decimal"
                                     data-currency-input
                                     autocomplete="off"
+                                    aria-describedby="debit-card-help"
                                 />
                             </div>
+                            <label class="label pt-2" id="debit-card-help">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Total debit card sales') }}</span>
+                            </label>
                         </div>
                     </div>
 
@@ -205,9 +213,10 @@
                                         inputmode="decimal"
                                         data-currency-input
                                         autocomplete="off"
+                                        aria-describedby="credit-sales-help"
                                     />
                                 </div>
-                                <label class="label pt-1">
+                                <label class="label pt-1" id="credit-sales-help">
                                     <span class="label-text-alt text-xs text-base-content/60">{{ _('New customer debt created') }}</span>
                                 </label>
                             </div>
@@ -234,9 +243,10 @@
                                         inputmode="decimal"
                                         data-currency-input
                                         autocomplete="off"
+                                        aria-describedby="credit-payments-help"
                                     />
                                 </div>
-                                <label class="label pt-1">
+                                <label class="label pt-1" id="credit-payments-help">
                                     <span class="label-text-alt text-xs text-base-content/60">{{ _('Old customer debt collected') }}</span>
                                 </label>
                             </div>
