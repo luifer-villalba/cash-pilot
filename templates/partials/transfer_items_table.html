@@ -73,7 +73,7 @@
                     hx-include="[id='transfer-description'],[id='transfer-amount']"
                     hx-vals='js:{"description": document.getElementById("transfer-description").value, "amount": document.getElementById("transfer-amount").value}'
                     hx-indicator="#transfer-loading"
-                    hx-on::after-swap="const collapse = document.getElementById('transfer-items-collapse'); if (collapse) { const checkbox = collapse.querySelector('input[type=checkbox]'); const desc = collapse.querySelector('#transfer-description'); if (desc) { desc.focus(); desc.value = ''; } const amount = collapse.querySelector('#transfer-amount'); if (amount) amount.value = ''; }"
+                    hx-on::after-swap="const collapse = document.getElementById('transfer-items-collapse'); if (collapse) { const desc = collapse.querySelector('#transfer-description'); if (desc) { desc.focus(); desc.value = ''; } const amount = collapse.querySelector('#transfer-amount'); if (amount) amount.value = ''; }"
                     aria-label="{{ _('Add transfer') }}"
                 >
                     <span class="loading loading-spinner loading-xs hidden" id="transfer-loading"></span>
