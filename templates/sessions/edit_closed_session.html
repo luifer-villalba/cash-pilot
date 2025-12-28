@@ -164,11 +164,13 @@
 
                     <!-- Bank Transfers (Line Items) -->
                     <div class="form-control">
+                        {% set editable = True %}
                         {% include 'partials/transfer_items_table.html' %}
                     </div>
 
                     <!-- Expenses (Line Items) -->
                     <div class="form-control">
+                        {% set editable = True %}
                         {% include 'partials/expense_items_table.html' %}
                     </div>
                 </div>
