@@ -40,20 +40,32 @@
                         <span id="filter-count">0</span> {{ _('active') }}
                     </span>
                 </div>
-                <button
-                        type="button"
-                        id="filter-toggle"
-                        class="btn btn-sm btn-ghost gap-2 hover:bg-base-200 transition-all duration-200 hover:scale-105 active:scale-95"
-                        aria-label="{{ _('Toggle filters') }}"
-                        aria-expanded="false"
-                >
-                    <span>{{ _('More Options') }}</span>
-                    <svg id="filter-chevron" class="w-4 h-4 transition-transform duration-300" fill="none"
-                         stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                    </svg>
-                </button>
+                <div class="flex gap-2 items-center">
+                    {% if current_user.role == 'ADMIN' %}
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" 
+                               id="include-deleted-toggle" 
+                               class="toggle toggle-sm toggle-primary"
+                               {% if include_deleted %}checked{% endif %}
+                               onchange="toggleDeletedSessions()">
+                        <span class="text-xs text-base-content/70">{{ _('Show Deleted') }}</span>
+                    </label>
+                    {% endif %}
+                    <button
+                            type="button"
+                            id="filter-toggle"
+                            class="btn btn-sm btn-ghost gap-2 hover:bg-base-200 transition-all duration-200 hover:scale-105 active:scale-95"
+                            aria-label="{{ _('Toggle filters') }}"
+                            aria-expanded="false"
+                    >
+                        <span>{{ _('More Options') }}</span>
+                        <svg id="filter-chevron" class="w-4 h-4 transition-transform duration-300" fill="none"
+                             stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Preset Buttons + Business Selector (Always Visible) -->
@@ -240,7 +252,7 @@
 
     <!-- Sessions Table (HTMX TARGET) -->
     <div id="sessions-table"
-         hx-get="/sessions/table"
+         hx-get="/sessions/table{% if include_deleted %}?include_deleted=true{% endif %}"
          hx-include="#filter-form"
          hx-trigger="load"
          hx-swap="innerHTML">
@@ -285,14 +297,21 @@
     // Helper to trigger both stats and table updates
     function applyFilters() {
         const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
+        const includeDeletedToggle = document.getElementById('include-deleted-toggle');
+        if (includeDeletedToggle && includeDeletedToggle.checked) {
+            params.set('include_deleted', 'true');
+        }
         const queryString = '?' + params.toString();
 
         window.history.pushState({}, '', queryString);
 
         // Only load stats if element exists (Admin only)
+        // Stats should NEVER include deleted sessions
         const statsRow = document.getElementById('stats-row');
         if (statsRow) {
-            htmx.ajax('GET', '/stats' + queryString, '#stats-row');
+            const statsParams = new URLSearchParams(params);
+            statsParams.delete('include_deleted'); // Remove include_deleted from stats
+            htmx.ajax('GET', '/stats?' + statsParams.toString(), '#stats-row');
         }
 
         htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
@@ -396,6 +415,21 @@
 
     // Filter form change handler
     document.getElementById('filter-form').addEventListener('change', applyFilters);
+    
+    // Toggle deleted sessions (Admin only)
+    function toggleDeletedSessions() {
+        const toggle = document.getElementById('include-deleted-toggle');
+        const includeDeleted = toggle.checked;
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (includeDeleted) {
+            urlParams.set('include_deleted', 'true');
+        } else {
+            urlParams.delete('include_deleted');
+        }
+        
+        window.location.search = urlParams.toString();
+    }
 
     // Business quick filter handler
     document.getElementById('business_quick').addEventListener('change', function() {
