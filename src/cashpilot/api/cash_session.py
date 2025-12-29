@@ -43,17 +43,10 @@ async def list_shifts(
     Admin: sees all sessions
     Cashier: sees only own sessions (filtered by cashier_id)
     """
-    # Validate current_user
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User authentication required",
-        )
-
-    # Validate skip and limit
-    if skip is None or not isinstance(skip, int) or skip < 0:
+    # Validate skip and limit (range only; FastAPI enforces type and defaults)
+    if skip < 0:
         skip = 0
-    if limit is None or not isinstance(limit, int) or limit <= 0:
+    if limit <= 0:
         limit = 50
     if limit > 1000:  # Prevent excessive queries
         limit = 1000
@@ -75,11 +68,6 @@ async def list_shifts(
             )
 
     if status_filter:
-        if not isinstance(status_filter, str):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="status_filter must be a string",
-            )
         stmt = stmt.where(CashSession.status == status_filter)
 
     stmt = stmt.offset(skip).limit(limit).order_by(CashSession.opened_time.desc())
@@ -134,13 +122,8 @@ async def _admin_session_creation(
     cashier_id = session.for_cashier_id if session.for_cashier_id else current_user.id
     created_by = current_user.id
 
-    # Verify cashier exists if different from admin
+    # Verify cashier exists if different from admin (business logic)
     if cashier_id != current_user.id:
-        if cashier_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid cashier_id",
-            )
         stmt = select(User).where(User.id == cashier_id)
         result = await db.execute(stmt)
         if not result.scalar_one_or_none():
@@ -155,27 +138,6 @@ async def _cashier_session_creation(
     db: AsyncSession,
 ) -> tuple[UUID, UUID]:
     """Handle cashier session creation with business assignment validation."""
-    # Validate inputs
-    if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Session data is required",
-        )
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User authentication required",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-    if current_user.id is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid user ID",
-        )
 
     if session.for_cashier_id:
         raise HTTPException(
@@ -231,28 +193,6 @@ async def open_shift(
     Admin: Can create for any business/cashier, set for_cashier_id
     Cashier: Can only create for self, using assigned businesses
     """
-    # Validate inputs
-    if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Session data is required",
-        )
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User authentication required",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-    if session.business_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="business_id is required",
-        )
-
     # Determine cashier_id and created_by based on RBAC
     cashier_id, created_by = await _determine_cashier_for_session(session, current_user, db)
 
@@ -329,39 +269,14 @@ async def close_shift(
     db: AsyncSession = Depends(get_db),
 ):
     """Close a cash session."""
-    # Validate inputs
-    if session_id is None or not isinstance(session_id, str) or not session_id.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="session_id is required",
-        )
-    if session_update is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Session update data is required",
-        )
-    if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-    if session.status is None:
-        raise InvalidStateError(
-            "Session status is invalid",
-            details={"session_id": session_id},
-        )
-
+    # Business logic: session must be OPEN to close
     if session.status != SessionStatus.OPEN.value:
         raise InvalidStateError(
             "Session is not open",
             details={"status": session.status},
         )
 
+    # Business logic: required fields for closing session
     if (
         session_update.final_cash is None
         or session_update.envelope_amount is None
@@ -388,9 +303,7 @@ async def close_shift(
     # Apply other updates
     update_data = session_update.model_dump(exclude_unset=True, exclude={"closed_time"})
     for key, value in update_data.items():
-        # Validate value is not None for required fields (if needed)
-        if value is not None:
-            setattr(session, key, value)
+        setattr(session, key, value)
 
     db.add(session)
     await db.flush()
@@ -413,28 +326,6 @@ async def delete_session(
     db: AsyncSession = Depends(get_db),
 ):
     """Soft delete a cash session."""
-    # Validate inputs
-    if session_id is None or not isinstance(session_id, str) or not session_id.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="session_id is required",
-        )
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User authentication required",
-        )
-    if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-
     session.is_deleted = True
     session.deleted_at = now_utc()
     session.deleted_by = current_user.display_name or "Unknown"

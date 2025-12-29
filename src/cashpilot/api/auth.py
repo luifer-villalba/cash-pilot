@@ -53,26 +53,14 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """Dependency to get current authenticated user from session."""
-    # Validate inputs
-    if request is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Request object is required",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-
-    # Get session safely
-    if not hasattr(request, "session"):
+    # Get session safely (session middleware may not be configured)
+    if not hasattr(request, "session") or not request.session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
 
-    user_id = request.session.get("user_id") if request.session else None
+    user_id = request.session.get("user_id")
 
     if not user_id:
         raise HTTPException(
@@ -168,31 +156,16 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
-    # Validate inputs
-    if request is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Request object is required",
-        )
-    if form_data is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Login credentials are required",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
+    # Extract credentials from validated form data
+    username = form_data.username
+    password = form_data.password
 
-    username = getattr(form_data, "username", None)
-    password = getattr(form_data, "password", None)
-
-    if not username or not isinstance(username, str) or not username.strip():
+    # Basic sanity checks for empty credentials
+    if not username or not username.strip():
         logger.warning("auth.login_failed", email="invalid")
         return RedirectResponse(url="/login?error=true", status_code=303)
 
-    if not password or not isinstance(password, str):
+    if not password:
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
@@ -204,7 +177,7 @@ async def login(
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
-    if not hasattr(user, "hashed_password") or not user.hashed_password:
+    if not user.hashed_password:
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
@@ -212,7 +185,7 @@ async def login(
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
-    if not hasattr(user, "is_active") or not user.is_active:
+    if not user.is_active:
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
         return RedirectResponse(url="/login?error=true", status_code=303)
 
@@ -223,19 +196,15 @@ async def login(
             detail="Session middleware not configured",
         )
 
-    if not hasattr(user, "id") or user.id is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Invalid user data",
-        )
-
     # Initialize session if it's None (shouldn't happen with SessionMiddleware, but be safe)
     if request.session is None:
         request.session = {}
 
     request.session["user_id"] = str(user.id)
-    request.session["user_role"] = getattr(user, "role", None) or "CASHIER"
-    request.session["user_display_name"] = getattr(user, "display_name", None) or ""
+    request.session["user_role"] = (
+        user.role.value if hasattr(user.role, "value") else str(user.role)
+    )
+    request.session["user_display_name"] = user.display_name or ""
 
     if user.role in ROLE_TIMEOUTS:
         request.session["last_activity"] = now_utc_naive().isoformat()
