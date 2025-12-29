@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_own_session
+from cashpilot.api.auth_helpers import require_admin, require_own_session
 from cashpilot.api.utils import (
     get_locale,
     get_translation_function,
@@ -374,3 +374,40 @@ async def edit_closed_session_post(
             },
             status_code=400,
         )
+
+
+# ─────── RESTORE SESSION ────────
+
+
+@router.post("/{session_id}/restore", response_class=HTMLResponse)
+async def restore_session_post(
+    request: Request,
+    session_id: str,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Restore a deleted cash session. Admin only."""
+    from cashpilot.api.cash_session import restore_session as api_restore_session
+    from uuid import UUID
+    
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+    
+    try:
+        # Use the API endpoint logic
+        session = await api_restore_session(session_id, current_user, db)
+        logger.info(
+            "session.restored",
+            session_id=session_id,
+            restored_by=str(current_user.id),
+        )
+        return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+    except Exception as e:
+        logger.error(
+            "session.restore_failed",
+            session_id=session_id,
+            error=str(e),
+            user_id=str(current_user.id),
+        )
+        # Redirect back to dashboard with error
+        return RedirectResponse(url="/?restore_error=true", status_code=302)

@@ -216,10 +216,11 @@ async def login(
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
         return RedirectResponse(url="/login?error=true", status_code=303)
 
-    if not hasattr(request, "session") or not request.session:
+    # Session should be available via SessionMiddleware, but check safely
+    if not hasattr(request, "session"):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Session not available",
+            detail="Session middleware not configured",
         )
     
     if not hasattr(user, "id") or user.id is None:
@@ -227,6 +228,10 @@ async def login(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Invalid user data",
         )
+    
+    # Initialize session if it's None (shouldn't happen with SessionMiddleware, but be safe)
+    if request.session is None:
+        request.session = {}
     
     request.session["user_id"] = str(user.id)
     request.session["user_role"] = getattr(user, "role", None) or "CASHIER"

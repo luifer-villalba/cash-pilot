@@ -187,12 +187,87 @@ async def session_detail(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
-    session: CashSession = Depends(require_own_session),
     db: AsyncSession = Depends(get_db),
 ):
     """Display single session details (with permission check)."""
+    from cashpilot.api.auth_helpers import require_own_session
+    from cashpilot.core.errors import NotFoundError
+    from fastapi import HTTPException
+    
     locale = get_locale(request)
     _ = get_translation_function(locale)
+    
+    try:
+        # Try to get session with permission check
+        session = await require_own_session(session_id, current_user, db)
+    except NotFoundError:
+        # Session doesn't exist
+        return templates.TemplateResponse(
+            request,
+            "sessions/error.html",
+            {
+                "current_user": current_user,
+                "error_type": "not_found",
+                "session_id": session_id,
+                "locale": locale,
+                "_": _,
+            },
+            status_code=404,
+        )
+    except HTTPException as e:
+        if e.status_code == 404:
+            # Check if it's a deleted session or not owned
+            from uuid import UUID
+            from sqlalchemy import select
+            try:
+                stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+                result = await db.execute(stmt)
+                session_check = result.scalar_one_or_none()
+                
+                if session_check and session_check.is_deleted:
+                    # Deleted session - cashiers can't access
+                    return templates.TemplateResponse(
+                        request,
+                        "sessions/error.html",
+                        {
+                            "current_user": current_user,
+                            "error_type": "deleted",
+                            "session_id": session_id,
+                            "locale": locale,
+                            "_": _,
+                        },
+                        status_code=404,
+                    )
+                elif session_check and session_check.cashier_id != current_user.id:
+                    # Not owned by cashier
+                    return templates.TemplateResponse(
+                        request,
+                        "sessions/error.html",
+                        {
+                            "current_user": current_user,
+                            "error_type": "not_owned",
+                            "session_id": session_id,
+                            "locale": locale,
+                            "_": _,
+                        },
+                        status_code=403,
+                    )
+            except (ValueError, TypeError):
+                pass
+        
+        # Generic permission denied
+        return templates.TemplateResponse(
+            request,
+            "sessions/error.html",
+            {
+                "current_user": current_user,
+                "error_type": "not_owned",
+                "session_id": session_id,
+                "locale": locale,
+                "_": _,
+            },
+            status_code=403,
+        )
 
     # Ensure business is loaded (eager load to avoid template lazy loading)
     await db.refresh(session, ["business"])
