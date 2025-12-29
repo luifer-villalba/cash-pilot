@@ -117,11 +117,15 @@ async def _build_session_filters(
     business_id: str | None,
     status: str | None,
     current_user: User,
-) -> list:
+    include_deleted: bool = False,
+) -> tuple[list, bool]:
     """Build SQLAlchemy filter list from query params.
 
     Cashier sees only own sessions.
     Admin sees all sessions.
+    
+    Returns:
+        Tuple of (filters list, include_deleted flag)
     """
     filters = []
 
@@ -142,8 +146,12 @@ async def _build_session_filters(
         filters.append(_parse_business_id(business_id))
     if status and status.strip():
         filters.append(_parse_status(status))
+    
+    # Deleted filter (only exclude if not including deleted)
+    # Note: This filter will be added in _get_paginated_sessions if needed
+    # We return a flag here instead
 
-    return [f for f in filters if f is not None]
+    return [f for f in filters if f is not None], include_deleted
 
 
 def _build_role_filter(current_user: User):
@@ -212,6 +220,7 @@ async def _get_paginated_sessions(
     filters: list,
     page: int = 1,
     per_page: int = 10,
+    include_deleted: bool = False,
 ) -> tuple[list, int, int]:
     """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages)."""
     skip = (page - 1) * per_page
@@ -222,8 +231,9 @@ async def _get_paginated_sessions(
     )
     count_stmt = select(func.count(CashSession.id))
 
-    # Add deleted filter
-    filters.append(~CashSession.is_deleted)
+    # Add deleted filter only if not including deleted
+    if not include_deleted:
+        filters.append(~CashSession.is_deleted)
 
     # If filtering by cashier_name, join User table
     has_cashier_filter = any(
