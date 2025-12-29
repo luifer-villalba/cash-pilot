@@ -6,7 +6,7 @@ from decimal import Decimal
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -78,45 +78,17 @@ async def create_session_post(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle session creation form submission."""
-    # Validate inputs
-    if request is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Request object is required",
-        )
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User authentication required",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-    if business_id is None or not isinstance(business_id, str) or not business_id.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="business_id is required",
-        )
-    if initial_cash is None or not isinstance(initial_cash, str):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="initial_cash is required",
-        )
-
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
+        # Business logic: parse currency format (es-PY specific)
         initial_cash_val = parse_currency(initial_cash)
         if initial_cash_val is None:
             raise ValueError("Initial cash required")
 
-        # Validate and parse session_date
+        # Business logic: parse date/time formats
         if session_date:
-            if not isinstance(session_date, str):
-                raise ValueError("session_date must be a string")
             try:
                 session_date_val = datetime.fromisoformat(session_date).date()
             except (ValueError, TypeError):
@@ -124,10 +96,7 @@ async def create_session_post(
         else:
             session_date_val = today_local()
 
-        # Validate and parse opened_time
         if opened_time:
-            if not isinstance(opened_time, str):
-                raise ValueError("opened_time must be a string")
             try:
                 opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
             except (ValueError, TypeError):
@@ -135,15 +104,11 @@ async def create_session_post(
         else:
             opened_time_val = current_time_local()
 
-        # Validate business_id
+        # Business logic: validate UUID format
         try:
             business_uuid = UUID(business_id)
         except (ValueError, TypeError):
             raise ValueError("Invalid business_id format")
-
-        # Validate current_user.id
-        if not hasattr(current_user, "id") or current_user.id is None:
-            raise ValueError("Invalid user ID")
 
         session = CashSession(
             business_id=business_uuid,
@@ -190,7 +155,6 @@ async def session_detail(
     db: AsyncSession = Depends(get_db),
 ):
     """Display single session details (with permission check)."""
-    from fastapi import HTTPException
 
     from cashpilot.api.auth_helpers import require_own_session
     from cashpilot.core.errors import NotFoundError
@@ -335,57 +299,11 @@ async def close_session_post(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle session close form submission (with permission check)."""
-    # Validate inputs
-    if request is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Request object is required",
-        )
-    if session_id is None or not isinstance(session_id, str) or not session_id.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="session_id is required",
-        )
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User authentication required",
-        )
-    if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-    if final_cash is None or not isinstance(final_cash, str):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="final_cash is required",
-        )
-    if envelope_amount is None or not isinstance(envelope_amount, str):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="envelope_amount is required",
-        )
-    if credit_card_total is None or not isinstance(credit_card_total, str):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="credit_card_total is required",
-        )
-    if closed_time is None or not isinstance(closed_time, str):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="closed_time is required",
-        )
-
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
+        # Business logic: parse currency formats (es-PY specific)
         final_cash_val = parse_currency(final_cash)
         if final_cash_val is None:
             raise ValueError("Invalid final_cash format")
@@ -410,17 +328,15 @@ async def close_session_post(
             credit_payments_val if credit_payments_val is not None else Decimal("0")
         )
 
-        if not isinstance(closed_time, str):
-            raise ValueError("closed_time must be a string")
+        # Business logic: parse time format
         try:
             session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
         except (ValueError, TypeError):
             raise ValueError("Invalid closed_time format (expected HH:MM)")
 
-        session.closing_ticket = (
-            closing_ticket if closing_ticket and isinstance(closing_ticket, str) else None
-        )
-        session.notes = notes if notes and isinstance(notes, str) else None
+        # Optional fields: normalize empty strings to None
+        session.closing_ticket = closing_ticket or None
+        session.notes = notes or None
         session.status = "CLOSED"
 
         db.add(session)
