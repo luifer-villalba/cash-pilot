@@ -76,7 +76,7 @@ async def dashboard(
     # Only admins can include deleted sessions
     if include_deleted and current_user.role != UserRole.ADMIN:
         include_deleted = False
-    
+
     filters, include_deleted_flag = await _build_session_filters(
         from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
@@ -197,7 +197,7 @@ async def sessions_table(
     # Only admins can include deleted sessions
     if include_deleted and current_user.role != UserRole.ADMIN:
         include_deleted = False
-    
+
     filters, include_deleted_flag = await _build_session_filters(
         from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
@@ -218,7 +218,7 @@ async def sessions_table(
     query_string = "&".join(query_params)
     if query_string:
         query_string = "&" + query_string
-    
+
     # Add include_deleted to query_string if needed
     if include_deleted_flag:
         if query_string:

@@ -72,7 +72,7 @@ async def create_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email is required and must be a string",
         )
-    
+
     # Validate business_ids if provided
     if business_ids is not None:
         if not isinstance(business_ids, list):
@@ -86,7 +86,7 @@ async def create_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="All business_ids must be valid UUIDs",
                 )
-    
+
     # Check email uniqueness
     stmt = select(User).where(User.email == user.email)
     result = await db.execute(stmt)
@@ -190,7 +190,7 @@ async def assign_businesses_to_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="All business_ids must be valid UUIDs",
             )
-    
+
     # Verify user exists
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
@@ -239,7 +239,7 @@ async def _assign_businesses(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database connection error",
         )
-    
+
     # Validate all businesses exist
     stmt = select(Business).where(Business.id.in_(business_ids))
     result = await db.execute(stmt)
