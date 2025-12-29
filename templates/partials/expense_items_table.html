@@ -1,7 +1,29 @@
 <!-- File: templates/partials/expense_items_table.html -->
 {% set active_items = session.expense_items | selectattr('is_deleted', 'equalto', False) | list %}
+{% set has_items = active_items | length > 0 %}
 
-<div class="space-y-4" id="expense-items-container">
+<div class="collapse collapse-arrow {% if has_items %}bg-base-100 border-2 border-error/30 shadow-md{% else %}bg-base-100 border-2 border-error/40 border-dashed shadow-lg{% endif %} rounded-lg hover:shadow-xl transition-all duration-200 {% if not has_items %}hover:border-error/60 hover:bg-error/5 cursor-pointer{% endif %}" id="expense-items-collapse">
+    <input type="checkbox" id="expense-items-toggle" {% if has_items %}checked{% endif %} aria-label="{{ _('Toggle expenses section') }}" />
+    <div class="collapse-title text-base font-semibold p-4 min-h-0 {% if not has_items %}hover:bg-error/5 pr-12{% endif %} transition-colors duration-200">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                </svg>
+                <div class="flex flex-col">
+                    <span class="text-base font-bold uppercase tracking-wider text-base-content">{{ _('Expenses') }}</span>
+                    {% if not has_items %}
+                    <span class="text-base text-error font-semibold mt-1">{{ _('Click here to add your first expense') }}</span>
+                    {% endif %}
+                </div>
+                {% if has_items %}
+                <span class="badge badge-error badge-md ml-2">{{ active_items | length }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="collapse-content p-4 pt-0">
+        <div class="space-y-4" id="expense-items-container">
     <!-- Inline Add Form (NO <form> tag) -->
     {% if editable %}
     <div class="bg-gradient-to-br from-error/10 to-base-100 border border-error/30 rounded-lg p-4 space-y-3 transition-all duration-200">
@@ -46,11 +68,11 @@
                     type="button"
                     class="btn btn-error gap-2 transition-all hover:scale-105 active:scale-95"
                     hx-post="/sessions/{{ session.id }}/expense-items"
-                    hx-target="#expense-items-container"
+                    hx-target="#expense-items-collapse"
                     hx-swap="outerHTML"
                     hx-vals='js:{"description": document.getElementById("expense-description").value, "amount": document.getElementById("expense-amount").value}'
                     hx-indicator="#expense-loading"
-                    hx-on::after-swap="document.getElementById('expense-description')?.focus(); document.getElementById('expense-description').value=''; document.getElementById('expense-amount').value='';"
+                    hx-on::after-swap="const collapse = document.getElementById('expense-items-collapse'); if (collapse) { const checkbox = collapse.querySelector('input[type=checkbox]'); if (checkbox && !checkbox.checked) { checkbox.checked = true; } const desc = collapse.querySelector('#expense-description'); if (desc) { desc.focus(); desc.value = ''; } const amount = collapse.querySelector('#expense-amount'); if (amount) amount.value = ''; }"
                     aria-label="{{ _('Add expense') }}"
                 >
                     <span class="loading loading-spinner loading-xs hidden" id="expense-loading"></span>
@@ -92,7 +114,7 @@
                     class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/20 focus:bg-error/20 focus:outline-none focus:ring-2 focus:ring-error/50 transition-all opacity-0 group-hover:opacity-100"
                     aria-label="{{ _('Delete expense') }}: {{ item.description }}"
                     hx-delete="/sessions/{{ session.id }}/expense-items/{{ item.id }}"
-                    hx-target="#expense-items-container"
+                    hx-target="#expense-items-collapse"
                     hx-swap="outerHTML"
                     hx-confirm="{{ _('Delete this expense?') }}"
                     hx-indicator="#expense-delete-{{ item.id }}"
@@ -108,11 +130,12 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-base-200/50 border border-dashed border-base-300 rounded-lg p-6 text-center transition-all duration-200">
-        <svg class="w-8 h-8 mx-auto text-base-content/30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+    <div class="bg-gradient-to-br from-error/5 to-base-100 border-2 border-dashed border-error/30 rounded-lg p-8 text-center transition-all duration-200">
+        <svg class="w-12 h-12 mx-auto text-error/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
         </svg>
-        <p class="text-sm text-base-content/60 italic">{{ _('No expenses recorded') }}</p>
+        <p class="text-sm font-medium text-base-content/70 mb-1">{{ _('No expenses recorded') }}</p>
+        <p class="text-xs text-base-content/50">{{ _('Add expenses to track cash outflows') }}</p>
     </div>
     {% endif %}
 
@@ -130,4 +153,6 @@
             </p>
         </div>
     </div>
+    </div>
+</div>
 </div>
