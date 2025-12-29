@@ -39,6 +39,38 @@ async def create_business(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new business. Admin only."""
+    # Validate inputs
+    if business is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Business data is required",
+        )
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User authentication required",
+        )
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection error",
+        )
+    if not hasattr(business, "name") or not business.name or not isinstance(business.name, str):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Business name is required and must be a string",
+        )
+    if business.address is not None and not isinstance(business.address, str):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Address must be a string",
+        )
+    if business.phone is not None and not isinstance(business.phone, str):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Phone must be a string",
+        )
+    
     business_obj = Business(
         name=business.name,
         address=business.address,
@@ -63,7 +95,32 @@ async def get_business(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a single business by ID. All roles can read."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
+    # Validate inputs
+    if business_id is None or not isinstance(business_id, str) or not business_id.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="business_id is required",
+        )
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User authentication required",
+        )
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection error",
+        )
+    
+    try:
+        business_uuid = UUID(business_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid business_id format",
+        )
+    
+    stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
 
@@ -81,7 +138,37 @@ async def update_business(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a business. Admin only."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
+    # Validate inputs
+    if business_id is None or not isinstance(business_id, str) or not business_id.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="business_id is required",
+        )
+    if business is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Business update data is required",
+        )
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User authentication required",
+        )
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection error",
+        )
+    
+    try:
+        business_uuid = UUID(business_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid business_id format",
+        )
+    
+    stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
 
@@ -91,7 +178,24 @@ async def update_business(
     # Update fields (only non-null ones)
     update_data = business.model_dump(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(business_obj, key, value)
+        # Validate value type if it's a string field
+        if value is not None:
+            if key == "name" and not isinstance(value, str):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="name must be a string",
+                )
+            if key == "address" and value is not None and not isinstance(value, str):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="address must be a string",
+                )
+            if key == "phone" and value is not None and not isinstance(value, str):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="phone must be a string",
+                )
+            setattr(business_obj, key, value)
 
     db.add(business_obj)
     await db.commit()

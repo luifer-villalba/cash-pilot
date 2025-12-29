@@ -22,7 +22,11 @@ TEMPLATES_DIR = Path("/app/templates")
 # Define filter BEFORE templates initialization
 def format_currency_py(value):
     """Format number as es-PY currency (dots for thousands, no decimals)."""
-    if value is None or value == 0:
+    if value is None:
+        return "0"
+    if not isinstance(value, (int, float, Decimal)):
+        return "0"
+    if value == 0:
         return "0"
 
     from babel.numbers import format_decimal
@@ -70,7 +74,12 @@ def get_translation_function(locale: str):
 
 def parse_currency(value: str | None) -> Decimal | None:
     """Parse Paraguay currency format (5.000.000 → 5000000 or 750000.00 → 750000.00)."""
-    if not value or not value.strip():
+    # Validate input
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return None
+    if not value.strip():
         return None
 
     value = value.strip()
@@ -146,27 +155,48 @@ def _build_role_filter(current_user: User):
 
 def _parse_from_date(from_date: str):
     """Parse from_date query param."""
+    if from_date is None:
+        return None
+    if not isinstance(from_date, str):
+        return None
+    if not from_date.strip():
+        return None
+    
     try:
         from_dt = datetime.fromisoformat(from_date).date()
         return CashSession.session_date >= from_dt
-    except ValueError:
+    except (ValueError, TypeError, AttributeError):
         return None
 
 
 def _parse_to_date(to_date: str):
     """Parse to_date query param."""
+    if to_date is None:
+        return None
+    if not isinstance(to_date, str):
+        return None
+    if not to_date.strip():
+        return None
+    
     try:
         to_dt = datetime.fromisoformat(to_date).date()
         return CashSession.session_date <= to_dt
-    except ValueError:
+    except (ValueError, TypeError, AttributeError):
         return None
 
 
 def _parse_business_id(business_id: str):
     """Parse business_id query param."""
+    if business_id is None:
+        return None
+    if not isinstance(business_id, str):
+        return None
+    if not business_id.strip():
+        return None
+    
     try:
         return CashSession.business_id == UUID(business_id)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 

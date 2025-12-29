@@ -53,7 +53,26 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """Dependency to get current authenticated user from session."""
-    user_id = request.session.get("user_id")
+    # Validate inputs
+    if request is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Request object is required",
+        )
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection error",
+        )
+    
+    # Get session safely
+    if not hasattr(request, "session"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+    
+    user_id = request.session.get("user_id") if request.session else None
 
     if not user_id:
         raise HTTPException(
@@ -61,19 +80,20 @@ async def get_current_user(
             detail="Not authenticated",
         )
 
-    user_role = request.session.get("user_role")
+    user_role = request.session.get("user_role") if request.session else None
 
     # Enforce role-based inactivity timeout
-    if user_role in ROLE_TIMEOUTS:
+    if user_role and user_role in ROLE_TIMEOUTS:
         timeout = ROLE_TIMEOUTS[user_role]
         now_naive = now_utc_naive()
 
-        last_activity_raw = request.session.get("last_activity")
+        last_activity_raw = request.session.get("last_activity") if request.session else None
 
         try:
-            last_activity_naive = (
-                datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
-            )
+            if last_activity_raw and isinstance(last_activity_raw, str):
+                last_activity_naive = datetime.fromisoformat(last_activity_raw)
+            else:
+                last_activity_naive = None
 
             now = now_naive.replace(tzinfo=timezone.utc)
 
@@ -86,7 +106,8 @@ async def get_current_user(
             last_activity = None
 
         if last_activity and (now - last_activity) > timedelta(seconds=timeout):
-            request.session.clear()
+            if request.session:
+                request.session.clear()
 
             time_elapsed = now - last_activity
             logger.info(
@@ -99,7 +120,7 @@ async def get_current_user(
                 current_time_utc=now.isoformat(),
             )
 
-            is_htmx = request.headers.get("HX-Request") == "true"
+            is_htmx = request.headers.get("HX-Request") == "true" if request.headers else False
 
             if is_htmx:
                 raise HTTPException(
@@ -114,11 +135,14 @@ async def get_current_user(
                     headers={"Location": "/login?expired=true"},
                 )
         else:
-            request.session["last_activity"] = now_naive.isoformat()
+            if request.session:
+                request.session["last_activity"] = now_naive.isoformat()
 
     try:
+        if not isinstance(user_id, str):
+            raise ValueError("user_id must be a string")
         user_uuid = UUID(user_id)
-    except ValueError:
+    except (ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid user session",
@@ -144,21 +168,69 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
-    stmt = select(User).where(User.email == form_data.username)
+    # Validate inputs
+    if request is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Request object is required",
+        )
+    if form_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Login credentials are required",
+        )
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection error",
+        )
+    
+    username = getattr(form_data, "username", None)
+    password = getattr(form_data, "password", None)
+    
+    if not username or not isinstance(username, str) or not username.strip():
+        logger.warning("auth.login_failed", email="invalid")
+        return RedirectResponse(url="/login?error=true", status_code=303)
+    
+    if not password or not isinstance(password, str):
+        logger.warning("auth.login_failed", email=username)
+        return RedirectResponse(url="/login?error=true", status_code=303)
+
+    stmt = select(User).where(User.email == username)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        logger.warning("auth.login_failed", email=form_data.username)
+    if not user:
+        logger.warning("auth.login_failed", email=username)
+        return RedirectResponse(url="/login?error=true", status_code=303)
+    
+    if not hasattr(user, "hashed_password") or not user.hashed_password:
+        logger.warning("auth.login_failed", email=username)
+        return RedirectResponse(url="/login?error=true", status_code=303)
+    
+    if not verify_password(password, user.hashed_password):
+        logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
-    if not user.is_active:
+    if not hasattr(user, "is_active") or not user.is_active:
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
         return RedirectResponse(url="/login?error=true", status_code=303)
 
+    if not hasattr(request, "session") or not request.session:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Session not available",
+        )
+    
+    if not hasattr(user, "id") or user.id is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Invalid user data",
+        )
+    
     request.session["user_id"] = str(user.id)
-    request.session["user_role"] = user.role
-    request.session["user_display_name"] = user.display_name
+    request.session["user_role"] = getattr(user, "role", None) or "CASHIER"
+    request.session["user_display_name"] = getattr(user, "display_name", None) or ""
 
     if user.role in ROLE_TIMEOUTS:
         request.session["last_activity"] = now_utc_naive().isoformat()
