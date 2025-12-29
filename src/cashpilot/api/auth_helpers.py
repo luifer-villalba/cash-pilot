@@ -48,13 +48,23 @@ async def require_own_session(
     if not session:
         raise NotFoundError("CashSession", session_id)
 
-    # Admin: can edit any closed session anytime
+    # Block cashiers from accessing deleted sessions
+    if session.is_deleted and current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=404,
+            detail="Session not found or has been deleted",
+        )
+
+    # Admin: can edit any closed session anytime (including deleted ones)
     if current_user.role == UserRole.ADMIN:
         return session
 
     # Cashier: can edit only their own, within 12 hours of closing
     if session.cashier_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Permission denied")
+        raise HTTPException(
+            status_code=403,
+            detail="You don't have permission to access this session. You can only access sessions you created or own.",
+        )
 
     if session.status == "CLOSED":
         if session.closed_at:

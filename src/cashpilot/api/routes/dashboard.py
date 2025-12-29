@@ -72,11 +72,16 @@ async def dashboard(
     _ = get_translation_function(locale)
 
     # NO server defaults - client handles timezone
-    filters = await _build_session_filters(
-        from_date, to_date, cashier_name, business_id, status, current_user
+    include_deleted = request.query_params.get("include_deleted", "false").lower() == "true"
+    # Only admins can include deleted sessions
+    if include_deleted and current_user.role != UserRole.ADMIN:
+        include_deleted = False
+    
+    filters, include_deleted_flag = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
-        db, filters, page=page, per_page=10
+        db, filters, page=page, per_page=10, include_deleted=include_deleted_flag
     )
 
     stmt_active = select(func.count(CashSession.id)).where(
@@ -165,6 +170,7 @@ async def dashboard(
                 "business_id": business_id,
                 "status": status,
             },
+            "include_deleted": include_deleted,
             "locale": locale,
             "_": _,
         },
@@ -187,11 +193,16 @@ async def sessions_table(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    filters = await _build_session_filters(
-        from_date, to_date, cashier_name, business_id, status, current_user
+    include_deleted = request.query_params.get("include_deleted", "false").lower() == "true"
+    # Only admins can include deleted sessions
+    if include_deleted and current_user.role != UserRole.ADMIN:
+        include_deleted = False
+    
+    filters, include_deleted_flag = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
-        db, filters, page=page, per_page=10
+        db, filters, page=page, per_page=10, include_deleted=include_deleted_flag
     )
 
     query_params = []
@@ -207,6 +218,13 @@ async def sessions_table(
     query_string = "&".join(query_params)
     if query_string:
         query_string = "&" + query_string
+    
+    # Add include_deleted to query_string if needed
+    if include_deleted_flag:
+        if query_string:
+            query_string += "&include_deleted=true"
+        else:
+            query_string = "&include_deleted=true"
 
     # ✅ Add can_edit_closed for each session
     for session in sessions:
@@ -229,6 +247,7 @@ async def sessions_table(
                 "status": status,
             },
             "query_string": query_string,
+            "include_deleted": include_deleted_flag,
             "locale": locale,
             "now": now_local(),
             "_": _,
@@ -252,8 +271,9 @@ async def get_dashboard_stats(
     _ = get_translation_function(locale)
 
     # Build filters (reuse logic from sessions table)
-    filters = await _build_session_filters(
-        from_date, to_date, cashier_name, business_id, status, current_user
+    # Stats should NEVER include deleted sessions
+    filters, _include_deleted_flag = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user, include_deleted=False
     )
 
     # Use database aggregations for efficiency
