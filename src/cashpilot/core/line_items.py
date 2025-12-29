@@ -16,14 +16,6 @@ async def sync_session_totals(session: CashSession, db: AsyncSession) -> None:
 
     Does NOT commit - caller is responsible for commit.
     """
-    # Validate inputs
-    if session is None:
-        raise ValueError("Session is required")
-    if db is None:
-        raise ValueError("Database connection is required")
-    if not hasattr(session, "id") or session.id is None:
-        raise ValueError("Session must have a valid id")
-
     # Sum transfer items
     transfer_sum = await db.scalar(
         select(func.sum(TransferItem.amount)).where(
@@ -40,12 +32,7 @@ async def sync_session_totals(session: CashSession, db: AsyncSession) -> None:
         )
     )
 
-    # Update session (validate types)
-    if transfer_sum is not None and not isinstance(transfer_sum, (Decimal, int, float)):
-        transfer_sum = Decimal(0)
-    if expense_sum is not None and not isinstance(expense_sum, (Decimal, int, float)):
-        expense_sum = Decimal(0)
-
+    # Update session (SQLAlchemy func.sum returns Decimal or None)
     session.bank_transfer_total = Decimal(transfer_sum) if transfer_sum is not None else Decimal(0)
     session.expenses = Decimal(expense_sum) if expense_sum is not None else Decimal(0)
 

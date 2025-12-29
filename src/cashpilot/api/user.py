@@ -51,43 +51,7 @@ async def create_user(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new user with optional business assignments. Admin only."""
-    # Validate inputs
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User data is required",
-        )
-    if current_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User authentication required",
-        )
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
-    if not hasattr(user, "email") or not user.email or not isinstance(user.email, str):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email is required and must be a string",
-        )
-
-    # Validate business_ids if provided
-    if business_ids is not None:
-        if not isinstance(business_ids, list):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="business_ids must be a list",
-            )
-        for bid in business_ids:
-            if not isinstance(bid, UUID):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="All business_ids must be valid UUIDs",
-                )
-
-    # Check email uniqueness
+    # Business logic: check email uniqueness
     stmt = select(User).where(User.email == user.email)
     result = await db.execute(stmt)
     if result.scalar_one_or_none():
@@ -115,7 +79,7 @@ async def create_user(
     await db.flush()
 
     # Assign businesses if provided
-    if business_ids and len(business_ids) > 0:
+    if business_ids:
         await _assign_businesses(user_obj.id, business_ids, db)
 
     await db.commit()
@@ -174,23 +138,6 @@ async def assign_businesses_to_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database connection error",
         )
-    if not hasattr(request, "business_ids") or request.business_ids is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="business_ids is required",
-        )
-    if not isinstance(request.business_ids, list):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="business_ids must be a list",
-        )
-    for bid in request.business_ids:
-        if not isinstance(bid, UUID):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="All business_ids must be valid UUIDs",
-            )
-
     # Verify user exists
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
@@ -221,26 +168,10 @@ async def _assign_businesses(
     db: AsyncSession,
 ) -> None:
     """Helper to replace user's business assignments."""
-    # Validate inputs
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="user_id is required",
-        )
-    if business_ids is None or not isinstance(business_ids, list):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="business_ids must be a list",
-        )
-    if len(business_ids) == 0:
+    if not business_ids:
         return  # No businesses to assign
-    if db is None:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database connection error",
-        )
 
-    # Validate all businesses exist
+    # Business logic: validate all businesses exist
     stmt = select(Business).where(Business.id.in_(business_ids))
     result = await db.execute(stmt)
     found_businesses = result.scalars().all()
@@ -248,7 +179,7 @@ async def _assign_businesses(
     if len(found_businesses) != len(business_ids):
         found_ids = {b.id for b in found_businesses}
         missing_ids = set(business_ids) - found_ids
-        raise NotFoundError("Business", str(list(missing_ids)[0]) if missing_ids else "unknown")
+        raise NotFoundError("Business", str(next(iter(missing_ids))))
 
     # Delete existing assignments
     stmt = select(UserBusiness).where(UserBusiness.user_id == user_id)
