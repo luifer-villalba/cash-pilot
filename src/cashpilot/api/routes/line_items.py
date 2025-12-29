@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/routes/line_items.py
 """Line item CRUD endpoints for transfers and expenses."""
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from uuid import UUID
 
@@ -44,24 +44,49 @@ async def create_transfer_item(
     db: AsyncSession = Depends(get_db),
 ):
     """Add a bank transfer item to session."""
+    # Validate inputs
+    if request is None:
+        raise ValidationError("Request object is required")
+    if session_id is None or not isinstance(session_id, str) or not session_id.strip():
+        raise ValidationError("session_id is required")
+    if current_user is None:
+        raise ValidationError("User authentication required")
+    if session is None:
+        raise ValidationError("Session not found")
+    if db is None:
+        raise ValidationError("Database connection error")
+    
     # Validation
-    if not description or len(description.strip()) == 0:
+    if description is None or not isinstance(description, str) or len(description.strip()) == 0:
         raise ValidationError("Description is required")
 
     if len(description) > 100:
         raise ValidationError("Description must be 100 characters or less")
 
+    if amount is None or not isinstance(amount, str):
+        raise ValidationError("Amount is required")
+    
     try:
-        amount_decimal = Decimal(amount.replace(",", "").replace(".", ""))
-    except Exception:
+        # Clean amount string
+        amount_clean = amount.replace(",", "").replace(".", "")
+        if not amount_clean or amount_clean.strip() == "":
+            raise ValidationError("Invalid amount format")
+        amount_decimal = Decimal(amount_clean)
+    except (ValueError, TypeError, InvalidOperation):
         raise ValidationError("Invalid amount format")
 
     if amount_decimal < 100:
         raise ValidationError("Minimum amount is Gs 100")
 
+    # Validate session_id format
+    try:
+        session_uuid = UUID(session_id)
+    except (ValueError, TypeError):
+        raise ValidationError("Invalid session_id format")
+    
     # Create item
     item = TransferItem(
-        session_id=UUID(session_id),
+        session_id=session_uuid,
         description=description.strip(),
         amount=amount_decimal,
     )
@@ -169,24 +194,49 @@ async def create_expense_item(
     db: AsyncSession = Depends(get_db),
 ):
     """Add an expense item to session."""
+    # Validate inputs
+    if request is None:
+        raise ValidationError("Request object is required")
+    if session_id is None or not isinstance(session_id, str) or not session_id.strip():
+        raise ValidationError("session_id is required")
+    if current_user is None:
+        raise ValidationError("User authentication required")
+    if session is None:
+        raise ValidationError("Session not found")
+    if db is None:
+        raise ValidationError("Database connection error")
+    
     # Validation
-    if not description or len(description.strip()) == 0:
+    if description is None or not isinstance(description, str) or len(description.strip()) == 0:
         raise ValidationError("Description is required")
 
     if len(description) > 100:
         raise ValidationError("Description must be 100 characters or less")
 
+    if amount is None or not isinstance(amount, str):
+        raise ValidationError("Amount is required")
+    
     try:
-        amount_decimal = Decimal(amount.replace(",", "").replace(".", ""))
-    except Exception:
+        # Clean amount string
+        amount_clean = amount.replace(",", "").replace(".", "")
+        if not amount_clean or amount_clean.strip() == "":
+            raise ValidationError("Invalid amount format")
+        amount_decimal = Decimal(amount_clean)
+    except (ValueError, TypeError, InvalidOperation):
         raise ValidationError("Invalid amount format")
 
     if amount_decimal < 100:
         raise ValidationError("Minimum amount is Gs 100")
 
+    # Validate session_id format
+    try:
+        session_uuid = UUID(session_id)
+    except (ValueError, TypeError):
+        raise ValidationError("Invalid session_id format")
+    
     # Create item
     item = ExpenseItem(
-        session_id=UUID(session_id),
+        session_id=session_uuid,
         description=description.strip(),
         amount=amount_decimal,
     )
