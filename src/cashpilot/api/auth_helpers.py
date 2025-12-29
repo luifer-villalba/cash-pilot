@@ -63,7 +63,10 @@ async def require_own_session(
     if session.cashier_id != current_user.id:
         raise HTTPException(
             status_code=403,
-            detail="You don't have permission to access this session. You can only access sessions you created or own.",
+            detail=(
+                "You don't have permission to access this session. "
+                "You can only access sessions you created or own."
+            ),
         )
 
     if session.status == "CLOSED":

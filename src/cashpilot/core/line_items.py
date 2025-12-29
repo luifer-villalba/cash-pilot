@@ -45,7 +45,7 @@ async def sync_session_totals(session: CashSession, db: AsyncSession) -> None:
         transfer_sum = Decimal(0)
     if expense_sum is not None and not isinstance(expense_sum, (Decimal, int, float)):
         expense_sum = Decimal(0)
-    
+
     session.bank_transfer_total = Decimal(transfer_sum) if transfer_sum is not None else Decimal(0)
     session.expenses = Decimal(expense_sum) if expense_sum is not None else Decimal(0)
 

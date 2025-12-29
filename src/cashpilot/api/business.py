@@ -3,7 +3,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -70,7 +70,7 @@ async def create_business(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Phone must be a string",
         )
-    
+
     business_obj = Business(
         name=business.name,
         address=business.address,
@@ -111,7 +111,7 @@ async def get_business(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database connection error",
         )
-    
+
     try:
         business_uuid = UUID(business_id)
     except (ValueError, TypeError):
@@ -119,7 +119,7 @@ async def get_business(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid business_id format",
         )
-    
+
     stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
@@ -159,7 +159,7 @@ async def update_business(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database connection error",
         )
-    
+
     try:
         business_uuid = UUID(business_id)
     except (ValueError, TypeError):
@@ -167,7 +167,7 @@ async def update_business(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid business_id format",
         )
-    
+
     stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()

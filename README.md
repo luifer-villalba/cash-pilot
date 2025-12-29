@@ -56,6 +56,7 @@ make logs               # View live logs
 **Dashboard**
 - Paginated session list with date, business, cashier, reconciliation status
 - Filter by date range, cashier, pharmacy, session status
+- Admin-only toggle to view deleted sessions (excluded from statistics)
 - Quick links to open new session or view details
 
 **Session Lifecycle**
@@ -67,16 +68,18 @@ make logs               # View live logs
 3. **Close** — Auto-calculates: `cash_sales = (final_cash + envelope) - initial_cash`
 4. **Edit** — Corrections within 12 hours (admins anytime)
 5. **Flag** — Mark discrepancies with reason for follow-up
+6. **Delete/Restore** — Soft delete (admin-only). Deleted sessions don't affect statistics. Can be restored anytime
 
 **Admin Panel**
 - List all users, create new ones (auto-generates passwords)
 - Assign cashiers to pharmacy locations (M:N relationship)
 - Disable accounts without deleting
+- View and restore deleted cash sessions
 - View audit logs of who edited what and when
 
 **Permission System**
-- **Admin:** Can create/edit/delete businesses, manage all sessions, reset passwords
-- **Cashier:** Limited to assigned pharmacies only; within those, can create and view only their own sessions (edit within 12hr window) and cannot view sessions created by other cashiers
+- **Admin:** Can create/edit/delete businesses, manage all sessions, reset passwords, view/restore deleted sessions
+- **Cashier:** Limited to assigned pharmacies only; within those, can create and view only their own sessions (edit within 12hr window) and cannot view sessions created by other cashiers. Cannot access deleted sessions (even their own)
 
 ---
 
@@ -85,7 +88,8 @@ make logs               # View live logs
 This isn't a toy app. It's solving a real business problem for real pharmacies. Every feature exists because someone said "we need this to not waste time on paperwork."
 
 - **Audit Trail:** Every edit tracked with timestamp, user, old/new values — required for accounting
-- **Soft Deletes:** Sessions can be recovered, nothing is permanently lost
+- **Soft Deletes:** Sessions can be recovered, nothing is permanently lost. Admins can toggle deleted sessions view. Deleted sessions excluded from statistics but preserved for audit
+- **Input Validation:** Comprehensive null/undefined/type checking prevents crashes from unexpected input
 - **Reconciliation Math:** Automatic calculation removes manual errors
 - **Multi-Location:** Cashiers work across different pharmacies, each gets their own view
 - **Production Ready:** Runs 24/7 on Railway, handles failures gracefully
@@ -96,6 +100,7 @@ This isn't a toy app. It's solving a real business problem for real pharmacies. 
 
 - **167+ Tests** — Every RBAC rule tested, async patterns verified, edge cases covered
 - **Type Hints** — Full coverage with Pydantic v2, SQLAlchemy Mapped types
+- **Input Validation** — Comprehensive validation for null, undefined, and unexpected types across all endpoints
 - **Linting** — ruff, black, isort with pre-commit hooks
 - **Error Handling** — Custom exceptions with context, structured JSON logging
 - **Async Throughout** — No blocking I/O, connection pooling, proper session management
@@ -111,7 +116,7 @@ Users stay logged in across browser reloads. Simpler for pharmacy staff who aren
 HTML from the backend keeps things lean. No JavaScript framework bloat. HTMX for pagination. Jinja2 for i18n. Works fine.
 
 **Soft Deletes (Not Hard Deletes)**  
-Accountants need to see the full history. Businesses and sessions have `is_active` or `is_deleted` flags. Recovery is one flag flip.
+Accountants need to see the full history. Businesses and sessions have `is_active` or `is_deleted` flags. Recovery is one flag flip. Admins can toggle deleted sessions view in dashboard. Deleted sessions are excluded from statistics but preserved with audit metadata (deleted_by, deleted_at).
 
 **PostgreSQL + Async SQLAlchemy**  
 Multi-location = concurrent sessions. Async handles it without complexity. Alembic migrations keep schema versioned.
