@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_own_session
+from cashpilot.api.auth_helpers import require_admin, require_own_session
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
 from cashpilot.core.logging import get_logger
@@ -447,3 +447,90 @@ async def delete_session(
         session_id=str(session.id),
         deleted_by=str(current_user.id),
     )
+
+
+@router.patch("/{session_id}/restore", response_model=CashSessionRead)
+async def restore_session(
+    session_id: str,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Restore a soft-deleted cash session. Admin only."""
+    from cashpilot.core.audit import log_session_edit
+    
+    # Validate inputs
+    if session_id is None or not isinstance(session_id, str) or not session_id.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="session_id is required",
+        )
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User authentication required",
+        )
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection error",
+        )
+    
+    try:
+        session_uuid = UUID(session_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid session_id format",
+        )
+    
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise NotFoundError("CashSession", session_id)
+    
+    if not session.is_deleted:
+        raise InvalidStateError(
+            "Session is not deleted",
+            details={"session_id": session_id},
+        )
+    
+    # Capture old values for audit
+    old_values = {
+        "is_deleted": True,
+    }
+    
+    # Restore session (keep deleted_at and deleted_by for audit trail)
+    session.is_deleted = False
+    
+    # Update audit fields
+    session.last_modified_at = now_utc()
+    session.last_modified_by = current_user.display_name or "Unknown"
+    
+    new_values = {
+        "is_deleted": False,
+    }
+    
+    # Log restore to audit trail
+    await log_session_edit(
+        db,
+        session,
+        current_user.display_name or "Unknown",
+        "RESTORE",
+        old_values,
+        new_values,
+        reason=f"Session restored by {current_user.display_name}",
+    )
+    
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+    
+    logger.info(
+        "session.restored",
+        session_id=str(session.id),
+        restored_by=str(current_user.id),
+    )
+    
+    return session

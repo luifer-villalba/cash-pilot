@@ -1,5 +1,6 @@
 """CashSession edit endpoints (patch open/closed sessions)."""
 
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -150,35 +151,35 @@ def _apply_patch_updates(session: CashSession, patch: CashSessionPatchClosed) ->
         raise InvalidStateError("Patch data is required")
 
     if patch.final_cash is not None:
-        if not isinstance(patch.final_cash, (int, float, str)):
+        if not isinstance(patch.final_cash, (int, float, str, Decimal)):
             raise InvalidStateError("final_cash must be a number")
         session.final_cash = patch.final_cash
     if patch.envelope_amount is not None:
-        if not isinstance(patch.envelope_amount, (int, float, str)):
+        if not isinstance(patch.envelope_amount, (int, float, str, Decimal)):
             raise InvalidStateError("envelope_amount must be a number")
         session.envelope_amount = patch.envelope_amount
     if patch.credit_card_total is not None:
-        if not isinstance(patch.credit_card_total, (int, float, str)):
+        if not isinstance(patch.credit_card_total, (int, float, str, Decimal)):
             raise InvalidStateError("credit_card_total must be a number")
         session.credit_card_total = patch.credit_card_total
     if patch.debit_card_total is not None:
-        if not isinstance(patch.debit_card_total, (int, float, str)):
+        if not isinstance(patch.debit_card_total, (int, float, str, Decimal)):
             raise InvalidStateError("debit_card_total must be a number")
         session.debit_card_total = patch.debit_card_total
     if patch.bank_transfer_total is not None:
-        if not isinstance(patch.bank_transfer_total, (int, float, str)):
+        if not isinstance(patch.bank_transfer_total, (int, float, str, Decimal)):
             raise InvalidStateError("bank_transfer_total must be a number")
         session.bank_transfer_total = patch.bank_transfer_total
     if patch.expenses is not None:
-        if not isinstance(patch.expenses, (int, float, str)):
+        if not isinstance(patch.expenses, (int, float, str, Decimal)):
             raise InvalidStateError("expenses must be a number")
         session.expenses = patch.expenses
     if patch.credit_sales_total is not None:
-        if not isinstance(patch.credit_sales_total, (int, float, str)):
+        if not isinstance(patch.credit_sales_total, (int, float, str, Decimal)):
             raise InvalidStateError("credit_sales_total must be a number")
         session.credit_sales_total = patch.credit_sales_total
     if patch.credit_payments_collected is not None:
-        if not isinstance(patch.credit_payments_collected, (int, float, str)):
+        if not isinstance(patch.credit_payments_collected, (int, float, str, Decimal)):
             raise InvalidStateError("credit_payments_collected must be a number")
         session.credit_payments_collected = patch.credit_payments_collected
     if patch.notes is not None:
