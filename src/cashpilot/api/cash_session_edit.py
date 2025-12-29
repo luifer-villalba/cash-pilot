@@ -57,7 +57,8 @@ async def edit_open_session(
 
     if session.status is None or session.status != "OPEN":
         raise InvalidStateError(
-            f"Session must be OPEN to edit with this endpoint (current: {session.status or 'unknown'})"
+            f"Session must be OPEN to edit with this endpoint "
+            f"(current: {session.status or 'unknown'})"
         )
 
     # Capture old values
@@ -76,7 +77,7 @@ async def edit_open_session(
             raise InvalidStateError("initial_cash must be a number")
         session.initial_cash = patch.initial_cash
     if patch.opened_time is not None:
-        if not hasattr(patch.opened_time, 'isoformat'):  # Check if it's a time/datetime object
+        if not hasattr(patch.opened_time, "isoformat"):  # Check if it's a time/datetime object
             raise InvalidStateError("opened_time must be a valid time object")
         session.opened_time = patch.opened_time
     if patch.expenses is not None:
@@ -222,7 +223,8 @@ async def edit_closed_session(
 
     if session.status is None or session.status != "CLOSED":
         raise InvalidStateError(
-            f"Session must be CLOSED to edit with this endpoint (current: {session.status or 'unknown'})"
+            f"Session must be CLOSED to edit with this endpoint "
+            f"(current: {session.status or 'unknown'})"
         )
 
     # Capture old values

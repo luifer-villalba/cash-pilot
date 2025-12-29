@@ -55,7 +55,7 @@ async def create_transfer_item(
         raise ValidationError("Session not found")
     if db is None:
         raise ValidationError("Database connection error")
-    
+
     # Validation
     if description is None or not isinstance(description, str) or len(description.strip()) == 0:
         raise ValidationError("Description is required")
@@ -65,7 +65,7 @@ async def create_transfer_item(
 
     if amount is None or not isinstance(amount, str):
         raise ValidationError("Amount is required")
-    
+
     try:
         # Clean amount string
         amount_clean = amount.replace(",", "").replace(".", "")
@@ -83,7 +83,7 @@ async def create_transfer_item(
         session_uuid = UUID(session_id)
     except (ValueError, TypeError):
         raise ValidationError("Invalid session_id format")
-    
+
     # Create item
     item = TransferItem(
         session_id=session_uuid,
@@ -205,7 +205,7 @@ async def create_expense_item(
         raise ValidationError("Session not found")
     if db is None:
         raise ValidationError("Database connection error")
-    
+
     # Validation
     if description is None or not isinstance(description, str) or len(description.strip()) == 0:
         raise ValidationError("Description is required")
@@ -215,7 +215,7 @@ async def create_expense_item(
 
     if amount is None or not isinstance(amount, str):
         raise ValidationError("Amount is required")
-    
+
     try:
         # Clean amount string
         amount_clean = amount.replace(",", "").replace(".", "")
@@ -233,7 +233,7 @@ async def create_expense_item(
         session_uuid = UUID(session_id)
     except (ValueError, TypeError):
         raise ValidationError("Invalid session_id format")
-    
+
     # Create item
     item = ExpenseItem(
         session_id=session_uuid,

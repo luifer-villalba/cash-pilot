@@ -49,7 +49,7 @@ async def list_shifts(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User authentication required",
         )
-    
+
     # Validate skip and limit
     if skip is None or not isinstance(skip, int) or skip < 0:
         skip = 0
@@ -187,13 +187,13 @@ async def _cashier_session_creation(
     stmt = select(User).where(User.id == current_user.id)
     result = await db.execute(stmt)
     user_with_businesses = result.scalar_one_or_none()
-    
+
     if user_with_businesses is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    
+
     await db.refresh(user_with_businesses, ["businesses"])
 
     assigned_business_ids = {b.id for b in (user_with_businesses.businesses or [])}
@@ -457,7 +457,7 @@ async def restore_session(
 ):
     """Restore a soft-deleted cash session. Admin only."""
     from cashpilot.core.audit import log_session_edit
-    
+
     # Validate inputs
     if session_id is None or not isinstance(session_id, str) or not session_id.strip():
         raise HTTPException(
@@ -474,7 +474,7 @@ async def restore_session(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database connection error",
         )
-    
+
     try:
         session_uuid = UUID(session_id)
     except (ValueError, TypeError):
@@ -482,36 +482,36 @@ async def restore_session(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid session_id format",
         )
-    
+
     stmt = select(CashSession).where(CashSession.id == session_uuid)
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
-    
+
     if not session:
         raise NotFoundError("CashSession", session_id)
-    
+
     if not session.is_deleted:
         raise InvalidStateError(
             "Session is not deleted",
             details={"session_id": session_id},
         )
-    
+
     # Capture old values for audit
     old_values = {
         "is_deleted": True,
     }
-    
+
     # Restore session (keep deleted_at and deleted_by for audit trail)
     session.is_deleted = False
-    
+
     # Update audit fields
     session.last_modified_at = now_utc()
     session.last_modified_by = current_user.display_name or "Unknown"
-    
+
     new_values = {
         "is_deleted": False,
     }
-    
+
     # Log restore to audit trail
     await log_session_edit(
         db,
@@ -522,15 +522,15 @@ async def restore_session(
         new_values,
         reason=f"Session restored by {current_user.display_name}",
     )
-    
+
     db.add(session)
     await db.commit()
     await db.refresh(session)
-    
+
     logger.info(
         "session.restored",
         session_id=str(session.id),
         restored_by=str(current_user.id),
     )
-    
+
     return session

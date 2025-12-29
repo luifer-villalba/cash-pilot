@@ -64,14 +64,14 @@ async def get_current_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database connection error",
         )
-    
+
     # Get session safely
     if not hasattr(request, "session"):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
-    
+
     user_id = request.session.get("user_id") if request.session else None
 
     if not user_id:
@@ -184,14 +184,14 @@ async def login(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database connection error",
         )
-    
+
     username = getattr(form_data, "username", None)
     password = getattr(form_data, "password", None)
-    
+
     if not username or not isinstance(username, str) or not username.strip():
         logger.warning("auth.login_failed", email="invalid")
         return RedirectResponse(url="/login?error=true", status_code=303)
-    
+
     if not password or not isinstance(password, str):
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
@@ -203,11 +203,11 @@ async def login(
     if not user:
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
-    
+
     if not hasattr(user, "hashed_password") or not user.hashed_password:
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
-    
+
     if not verify_password(password, user.hashed_password):
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
@@ -222,17 +222,17 @@ async def login(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Session middleware not configured",
         )
-    
+
     if not hasattr(user, "id") or user.id is None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Invalid user data",
         )
-    
+
     # Initialize session if it's None (shouldn't happen with SessionMiddleware, but be safe)
     if request.session is None:
         request.session = {}
-    
+
     request.session["user_id"] = str(user.id)
     request.session["user_role"] = getattr(user, "role", None) or "CASHIER"
     request.session["user_display_name"] = getattr(user, "display_name", None) or ""

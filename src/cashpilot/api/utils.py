@@ -123,7 +123,7 @@ async def _build_session_filters(
 
     Cashier sees only own sessions.
     Admin sees all sessions.
-    
+
     Returns:
         Tuple of (filters list, include_deleted flag)
     """
@@ -146,7 +146,7 @@ async def _build_session_filters(
         filters.append(_parse_business_id(business_id))
     if status and status.strip():
         filters.append(_parse_status(status))
-    
+
     # Deleted filter (only exclude if not including deleted)
     # Note: This filter will be added in _get_paginated_sessions if needed
     # We return a flag here instead
@@ -169,7 +169,7 @@ def _parse_from_date(from_date: str):
         return None
     if not from_date.strip():
         return None
-    
+
     try:
         from_dt = datetime.fromisoformat(from_date).date()
         return CashSession.session_date >= from_dt
@@ -185,7 +185,7 @@ def _parse_to_date(to_date: str):
         return None
     if not to_date.strip():
         return None
-    
+
     try:
         to_dt = datetime.fromisoformat(to_date).date()
         return CashSession.session_date <= to_dt
@@ -201,7 +201,7 @@ def _parse_business_id(business_id: str):
         return None
     if not business_id.strip():
         return None
-    
+
     try:
         return CashSession.business_id == UUID(business_id)
     except (ValueError, TypeError):

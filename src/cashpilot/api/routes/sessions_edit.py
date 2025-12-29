@@ -387,15 +387,15 @@ async def restore_session_post(
     db: AsyncSession = Depends(get_db),
 ):
     """Restore a deleted cash session. Admin only."""
+
     from cashpilot.api.cash_session import restore_session as api_restore_session
-    from uuid import UUID
-    
+
     locale = get_locale(request)
     _ = get_translation_function(locale)
-    
+
     try:
         # Use the API endpoint logic
-        session = await api_restore_session(session_id, current_user, db)
+        await api_restore_session(session_id, current_user, db)
         logger.info(
             "session.restored",
             session_id=session_id,
