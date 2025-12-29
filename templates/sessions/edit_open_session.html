@@ -30,8 +30,8 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form (Main) -->
-        <div class="lg:col-span-2 space-y-6">
-            <form method="POST" action="/sessions/{{ session.id }}/edit-open" onsubmit="document.getElementById('save-loading').classList.remove('hidden');">
+        <div class="lg:col-span-2">
+            <form method="POST" action="/sessions/{{ session.id }}/edit-open" class="space-y-6" onsubmit="document.getElementById('save-loading').classList.remove('hidden');">
                 <!-- STEP 1: Initial Cash & Line Items -->
                 <div class="bg-gradient-to-br from-primary/5 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
                     <div class="flex items-center gap-3 pb-2 border-b border-primary/20">
@@ -67,30 +67,17 @@
 
                     <!-- Bank Transfers (Line Items) -->
                     <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                                </svg>
-                                {{ _('Bank Transfers') }}
-                            </span>
-                        </label>
+                        {% set editable = True %}
                         {% include 'partials/transfer_items_table.html' %}
                     </div>
 
                     <!-- Expenses (Line Items) -->
                     <div class="form-control">
-                        <label class="label pb-2">
-                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
-                                </svg>
-                                {{ _('Expenses') }}
-                            </span>
-                        </label>
+                        {% set editable = True %}
                         {% include 'partials/expense_items_table.html' %}
                     </div>
                 </div>
+                <!-- End STEP 1 -->
 
                 <!-- STEP 2: Credit Tracking -->
                 <div class="bg-base-100 border-2 border-base-300 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
@@ -161,6 +148,7 @@
                         </div>
                     </div>
                 </div>
+                <!-- End STEP 2 -->
 
                 <!-- STEP 3: Time & Notes -->
                 <div class="bg-base-100 border border-base-300 rounded-xl shadow p-6 space-y-6 transition-all duration-200">

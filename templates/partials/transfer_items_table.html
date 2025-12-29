@@ -1,7 +1,29 @@
 <!-- File: templates/partials/transfer_items_table.html -->
 {% set active_items = session.transfer_items | selectattr('is_deleted', 'equalto', False) | list %}
+{% set has_items = active_items | length > 0 %}
 
-<div class="space-y-4" id="transfer-items-container">
+<div class="collapse collapse-arrow {% if has_items %}bg-base-100 border-2 border-info/30 shadow-md{% else %}bg-base-100 border-2 border-info/40 border-dashed shadow-lg{% endif %} rounded-lg hover:shadow-xl transition-all duration-200 {% if not has_items %}hover:border-info/60 hover:bg-info/5 cursor-pointer{% endif %}" id="transfer-items-collapse">
+    <input type="checkbox" id="transfer-items-toggle" {% if has_items %}checked{% endif %} aria-label="{{ _('Toggle bank transfers section') }}" />
+    <div class="collapse-title text-base font-semibold p-4 min-h-0 {% if not has_items %}hover:bg-info/5 pr-12{% endif %} transition-colors duration-200">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                </svg>
+                <div class="flex flex-col">
+                    <span class="text-base font-bold uppercase tracking-wider text-base-content">{{ _('Bank Transfers') }}</span>
+                    {% if not has_items %}
+                    <span class="text-base text-info font-semibold mt-1">{{ _('Click here to add your first transfer') }}</span>
+                    {% endif %}
+                </div>
+                {% if has_items %}
+                <span class="badge badge-info badge-md ml-2">{{ active_items | length }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="collapse-content p-4 pt-0">
+        <div class="space-y-4" id="transfer-items-container">
     <!-- Inline Add Form (NO <form> tag - use HTMX directly) -->
     {% if editable %}
     <div class="bg-gradient-to-br from-info/10 to-base-100 border border-info/30 rounded-lg p-4 space-y-3 transition-all duration-200">
@@ -46,12 +68,12 @@
                     type="button"
                     class="btn btn-primary gap-2 transition-all hover:scale-105 active:scale-95"
                     hx-post="/sessions/{{ session.id }}/transfer-items"
-                    hx-target="#transfer-items-container"
+                    hx-target="#transfer-items-collapse"
                     hx-swap="outerHTML"
                     hx-include="[id='transfer-description'],[id='transfer-amount']"
                     hx-vals='js:{"description": document.getElementById("transfer-description").value, "amount": document.getElementById("transfer-amount").value}'
                     hx-indicator="#transfer-loading"
-                    hx-on::after-swap="document.getElementById('transfer-description')?.focus(); document.getElementById('transfer-description').value=''; document.getElementById('transfer-amount').value='';"
+                    hx-on::after-swap="const collapse = document.getElementById('transfer-items-collapse'); if (collapse) { const desc = collapse.querySelector('#transfer-description'); if (desc) { desc.focus(); desc.value = ''; } const amount = collapse.querySelector('#transfer-amount'); if (amount) amount.value = ''; }"
                     aria-label="{{ _('Add transfer') }}"
                 >
                     <span class="loading loading-spinner loading-xs hidden" id="transfer-loading"></span>
@@ -93,7 +115,7 @@
                     class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/20 focus:bg-error/20 focus:outline-none focus:ring-2 focus:ring-error/50 transition-all opacity-0 group-hover:opacity-100"
                     aria-label="{{ _('Delete transfer') }}: {{ item.description }}"
                     hx-delete="/sessions/{{ session.id }}/transfer-items/{{ item.id }}"
-                    hx-target="#transfer-items-container"
+                    hx-target="#transfer-items-collapse"
                     hx-swap="outerHTML"
                     hx-confirm="{{ _('Delete this transfer?') }}"
                     hx-indicator="#transfer-delete-{{ item.id }}"
@@ -109,11 +131,12 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-base-200/50 border border-dashed border-base-300 rounded-lg p-6 text-center transition-all duration-200">
-        <svg class="w-8 h-8 mx-auto text-base-content/30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+    <div class="bg-gradient-to-br from-info/5 to-base-100 border-2 border-dashed border-info/30 rounded-lg p-8 text-center transition-all duration-200">
+        <svg class="w-12 h-12 mx-auto text-info/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
         </svg>
-        <p class="text-sm text-base-content/60 italic">{{ _('No transfers recorded') }}</p>
+        <p class="text-sm font-medium text-base-content/70 mb-1">{{ _('No bank transfers recorded') }}</p>
+        <p class="text-xs text-base-content/50">{{ _('Add transfers to track bank deposits') }}</p>
     </div>
     {% endif %}
 
@@ -131,4 +154,6 @@
             </p>
         </div>
     </div>
+    </div>
+</div>
 </div>
