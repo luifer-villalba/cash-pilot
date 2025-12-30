@@ -220,7 +220,12 @@ async def session_detail(
                         status_code=403,
                     )
             except (ValueError, TypeError):
-                pass
+                # If session_id is not a valid UUID (or a related type error occurs),
+                # fall through to the generic "not_owned" error handling below.
+                logger.debug(
+                    "Invalid session_id '%s' while checking session permissions",
+                    session_id,
+                )
 
         # Generic permission denied
         return templates.TemplateResponse(
