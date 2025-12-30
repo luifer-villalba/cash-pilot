@@ -10,6 +10,9 @@ from cashpilot.core.logging import get_logger
 
 logger = get_logger(__name__)
 
+# Guard against multiple initializations
+_sentry_initialized = False
+
 
 def init_sentry() -> None:
     """
@@ -17,6 +20,7 @@ def init_sentry() -> None:
 
     Only initializes if SENTRY_DSN environment variable is set.
     This allows local development without Sentry (no DSN = no init).
+    Prevents multiple initializations if called multiple times.
 
     Configuration:
     - Disables performance monitoring (paid feature, not needed)
@@ -24,6 +28,11 @@ def init_sentry() -> None:
     - Logging integration disabled to avoid duplication with structlog
     - Captures structured context (request_id, user_id)
     """
+    global _sentry_initialized
+
+    if _sentry_initialized:
+        return
+
     sentry_dsn = os.getenv("SENTRY_DSN")
     if not sentry_dsn:
         logger.info("sentry.disabled", message="Sentry DSN not found, error tracking disabled")
@@ -48,6 +57,7 @@ def init_sentry() -> None:
         before_send=_filter_sensitive_data,
     )
 
+    _sentry_initialized = True
     logger.info(
         "sentry.initialized", message="Sentry error tracking enabled", environment=environment
     )

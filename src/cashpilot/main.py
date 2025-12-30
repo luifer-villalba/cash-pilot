@@ -84,7 +84,7 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
     app.add_middleware(RequestIDMiddleware)
 
     # 2. SentryContextMiddleware (Added Second, Runs SECOND TO LAST)
-    # Runs after RequestIDMiddleware so request_id is available from context var
+    # Runs before RequestIDMiddleware, so must parse request_id from headers first
     from cashpilot.middleware.sentry import SentryContextMiddleware
 
     app.add_middleware(SentryContextMiddleware)

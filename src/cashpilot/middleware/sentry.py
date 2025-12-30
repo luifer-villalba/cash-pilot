@@ -1,5 +1,7 @@
 """Sentry context middleware to capture request context in error reports."""
 
+import uuid
+
 import sentry_sdk
 from starlette.types import ASGIApp, Receive, Scope, Send
 
@@ -40,6 +42,9 @@ class SentryContextMiddleware:
                 break
         if not request_id:
             request_id = get_request_id()
+        # Generate UUID as final fallback if still not available
+        if not request_id or request_id == "no-request-id":
+            request_id = str(uuid.uuid4())
 
         # Get user_id from session if available
         # Session is populated by SessionMiddleware which runs before this middleware

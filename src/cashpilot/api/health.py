@@ -171,9 +171,9 @@ async def test_sentry(
     - user_id: From session (if authenticated)
     - Additional context: method, path, etc.
     """
-    # Restrict to development environment only (case-insensitive)
+    # Restrict to development/test environments only (case-insensitive)
     environment = os.getenv("ENVIRONMENT", "development").lower()
-    if environment == "production":
+    if environment not in {"development", "dev", "test", "testing"}:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Not found",

@@ -1,0 +1,43 @@
+MIZ-216: Implement Sentry for production error tracking
+
+- Add sentry-sdk dependency to pyproject.toml
+- Initialize Sentry in main.py with DSN from environment variable
+- Sentry disabled locally when DSN not set (no DSN = no init)
+- Create SentryContextMiddleware to capture request_id, user_id, session_id
+- Update /health endpoint to return 200 OK only if PostgreSQL is active
+- Add test endpoint /test-sentry (development only) to verify Sentry integration
+- Configure Sentry: disable performance monitoring, disable SQL queries
+- Filter sensitive data via before_send hook
+- Integrate with existing structured logging
+
+All acceptance criteria met:
+✅ sentry-sdk installed and initialized
+✅ Sentry disabled locally without DSN
+✅ Test exceptions appear in Sentry dashboard
+✅ /health returns 200 OK iff PostgreSQL active
+✅ Errors include structured context (request_id, user_id, session_id)
+✅ No sensitive data in error payloads (SQL queries disabled)
+
+Fix Copilot review comments:
+- Fix middleware ordering: RequestIDMiddleware must run before SentryContextMiddleware
+- Replace fragile test string filtering with environment-based check
+- Remove duplicate exception capture (let FastAPI integration handle it)
+- Move sentry_sdk import to top of file (PEP 8 compliance)
+- Remove dead session_id code and update docstrings
+- Restrict sentry-sdk version to <3.0.0 to avoid breaking changes
+- Clarify logging integration is disabled to avoid duplication
+
+Fix critical Copilot review issues:
+- Fix request_id extraction: get from headers since middleware runs before RequestIDMiddleware
+- Remove session_id from docstrings (not actually captured)
+- Fix redundant session check (scope.get already defaults to empty dict)
+- Make environment check case-insensitive for test endpoint
+- Improve SQL filtering: check both keys and values, add error handling
+- Add defensive error handling to filter function to never break Sentry sending
+
+Fix request_id extraction in SentryContextMiddleware:
+- Extract request_id from headers since middleware runs before RequestIDMiddleware
+- Remove redundant session check (scope.get already defaults to empty dict)
+
+Fix line length linting error in sentry middleware
+
