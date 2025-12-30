@@ -10,9 +10,9 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy config and source files
-# Note: Tailwind v4 can run without a config in some setups, but this project
-# uses tailwind.config.js for explicit content paths and safelist patterns
-# to ensure reliable class generation for dynamic content.
+# Note: In this project, Tailwind v4 requires tailwind.config.js
+# to define explicit content paths and safelist patterns
+# so that class generation is reliable, including for dynamic content.
 COPY tailwind.config.js postcss.config.js ./
 COPY static/css/input.css ./static/css/
 COPY templates ./templates
