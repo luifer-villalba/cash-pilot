@@ -1,7 +1,6 @@
 """Tests for the enhanced health check endpoint."""
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -106,12 +105,12 @@ class TestHealthCheckDegradedStates:
 
     @pytest.mark.asyncio
     async def test_health_returns_degraded_when_db_fails(
-        self, client: TestClient
+        self, client: AsyncClient
     ) -> None:
         """
         Test that health endpoint returns degraded status when DB is down.
 
-        NOTE: This test is tricky because TestClient uses a real DB session.
+        NOTE: This test is tricky because the async client uses a real DB session.
         In production with a real unavailable DB, you'd see degraded status.
         For this test, we'd need to mock the DB dependency, which requires
         a more complex test setup. See comment below.

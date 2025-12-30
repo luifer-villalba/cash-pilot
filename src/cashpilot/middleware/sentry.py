@@ -52,26 +52,21 @@ class SentryContextMiddleware:
         user_id = session.get("user_id")
 
         # Set Sentry context (Sentry SDK 2.x compatible)
-        # Use direct API functions which modify the current scope
-        sentry_sdk.set_tag("request_id", request_id)
-        if user_id:
-            sentry_sdk.set_user({"id": user_id})
-            sentry_sdk.set_tag("user_id", user_id)
+        # Use isolation scope to ensure tags and context are cleared after request
+        with sentry_sdk.isolation_scope() as sentry_scope:
+            sentry_scope.set_tag("request_id", request_id)
+            if user_id:
+                sentry_scope.set_user({"id": user_id})
+                sentry_scope.set_tag("user_id", user_id)
 
-        # Set additional context
-        sentry_sdk.set_context(
-            "request",
-            {
-                "method": scope.get("method"),
-                "path": scope.get("path"),
-                "request_id": request_id,
-            },
-        )
+            # Set additional context
+            sentry_scope.set_context(
+                "request",
+                {
+                    "method": scope.get("method"),
+                    "path": scope.get("path"),
+                    "request_id": request_id,
+                },
+            )
 
-        try:
             await self.app(scope, receive, send)
-        finally:
-            # Clear request-scoped tags and context after request
-            # Note: In Sentry SDK 2.x, tags persist in the current scope
-            # For proper isolation, consider using isolation context if needed
-            pass
