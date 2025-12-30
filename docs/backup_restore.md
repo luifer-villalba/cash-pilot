@@ -33,15 +33,20 @@ pg_dump --version  # Should show 17.x
 ```
 
 ### 2. Create `.env.backup` File
+
+**Option A: Copy from example (recommended)**
+```bash
+cp .env.backup.example .env.backup
+# Then edit .env.backup and replace PASSWORD with your actual database password
+```
+
+**Option B: Create manually**
 ```bash
 # Get public URL from Railway dashboard → PostgreSQL → Connect → Public Network
 echo 'DATABASE_PUBLIC_URL=postgresql://postgres:PASSWORD@switchyard.proxy.rlwy.net:PORT/railway' > .env.backup
 ```
 
-### 3. Add to `.gitignore`
-```bash
-echo '.env.backup' >> .gitignore
-```
+**Note:** The `.env.backup` file is already in `.gitignore` and won't be committed to git.
 
 ---
 

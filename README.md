@@ -193,13 +193,17 @@ Railway's Hobby plan doesn't include automated backups. The `scripts/` directory
 ### Quick Start (Railway)
 ```bash
 # Setup (one-time)
-echo 'DATABASE_PUBLIC_URL=your_railway_public_url' > .env.backup
+cp .env.backup.example .env.backup
+# Edit .env.backup with your Railway database URL
 
 # Weekly backup
 ./scripts/backup_production.sh
 
 # Test restore locally
 ./scripts/restore_to_local.sh backups/cashpilot_20251220_160224.sql.gz
+
+# Restore to Railway PR deployment (for testing)
+./scripts/restore_to_railway.sh "DATABASE_URL" backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz
 ```
 
 **See [docs/backup_restore.md](docs/backup_restore.md) for complete setup guide.**
