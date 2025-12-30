@@ -193,22 +193,21 @@ async def test_sentry(
         path=request.url.path,
     )
 
-    # Set additional context for this test exception
-    with sentry_sdk.push_scope() as scope:
-        scope.set_tag("test_endpoint", "true")
-        scope.set_context(
-            "test",
-            {
-                "purpose": "Verify Sentry error tracking",
-                "request_id": request_id,
-                "user_id": user_id,
-            },
-        )
+    # Set additional context for this test exception (Sentry SDK 2.x compatible)
+    sentry_sdk.set_tag("test_endpoint", "true")
+    sentry_sdk.set_context(
+        "test",
+        {
+            "purpose": "Verify Sentry error tracking",
+            "request_id": request_id,
+            "user_id": user_id,
+        },
+    )
 
-        # Raise a test exception with context
-        # FastAPI integration will automatically capture it
-        raise RuntimeError(
-            f"Sentry test exception - Request ID: {request_id}, "
-            f"User ID: {user_id or 'anonymous'}, "
-            f"Path: {request.url.path}"
-        )
+    # Raise a test exception with context
+    # FastAPI integration will automatically capture it
+    raise RuntimeError(
+        f"Sentry test exception - Request ID: {request_id}, "
+        f"User ID: {user_id or 'anonymous'}, "
+        f"Path: {request.url.path}"
+    )
