@@ -82,4 +82,3 @@ psql "$DATABASE_URL" -c "SELECT NOW() AS restore_verified_at;"
 echo ""
 echo "✅ Restore complete!"
 echo "⚠️  Remember to run migrations if needed: alembic upgrade head"
-

@@ -1,14 +1,12 @@
 @import "tailwindcss";
 
 /* DaisyUI plugin configuration
- * Note: This uses Tailwind CSS v4's CSS-based @plugin configuration syntax.
- * `themes: light --default, dark --prefersdark;` sets DaisyUI themes and
- * marks `light` as the default theme and `dark` as the prefers-color-scheme dark theme.
+ * Note: DaisyUI is enabled via Tailwind CSS v4's CSS-based @plugin syntax below.
+ * Theme configuration should be done via the Tailwind/DaisyUI JavaScript config
+ * or supported data attributes/custom properties, not via CSS @plugin blocks.
  * See: https://tailwindcss.com/docs/configuration#using-css and DaisyUI docs.
  */
-@plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
-}
+@plugin "daisyui";
 
 /* Tailwind Forms plugin */
 @plugin "@tailwindcss/forms";
