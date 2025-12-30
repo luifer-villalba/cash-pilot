@@ -14,10 +14,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 
 from cashpilot.core.logging import configure_logging, get_logger
+from cashpilot.core.sentry import init_sentry
 from cashpilot.utils.datetime import now_utc
 
 configure_logging()
 logger = get_logger(__name__)
+
+# Initialize Sentry (only if DSN is set)
+init_sentry()
 
 
 class AdminRedirectMiddleware(BaseHTTPMiddleware):
@@ -74,17 +78,24 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
     """
 
     # 1. RequestIDMiddleware (Added First, Runs LAST)
+    # Sets request_id in context var, which SentryContextMiddleware needs
     from cashpilot.middleware.logging import RequestIDMiddleware
 
     app.add_middleware(RequestIDMiddleware)
 
-    # 2. AdminRedirectMiddleware (Runs THIRD)
+    # 2. SentryContextMiddleware (Added Second, Runs SECOND TO LAST)
+    # Runs before RequestIDMiddleware, so must parse request_id from headers first
+    from cashpilot.middleware.sentry import SentryContextMiddleware
+
+    app.add_middleware(SentryContextMiddleware)
+
+    # 3. AdminRedirectMiddleware (Runs THIRD)
     app.add_middleware(AdminRedirectMiddleware)
 
-    # 3. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
+    # 4. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
     app.add_middleware(AuthRedirectMiddleware)
 
-    # 4. SessionMiddleware
+    # 5. SessionMiddleware (Runs FIRST)
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,

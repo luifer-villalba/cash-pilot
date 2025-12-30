@@ -32,6 +32,7 @@ dependencies = [
     "structlog==24.4.0",
     "babel==2.14.0",
     "watchfiles==0.22.0",
+    "sentry-sdk>=2.0.0,<3.0.0",
 ]
 
 [project.optional-dependencies]
