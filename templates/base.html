@@ -93,7 +93,7 @@
             </a>
             <a href="/businesses" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/businesses' %} btn-active{% else %} btn-ghost{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
                 <span class="text-sm">{{ _('Businesses') }}</span>
             </a>
@@ -123,8 +123,8 @@
             {% if current_user %}
             <div class="dropdown dropdown-end">
                 <button tabindex="0" class="btn btn-ghost btn-circle btn-sm transition-all duration-200 hover:scale-110 active:scale-95" aria-label="{{ _('User menu') }}">
-                    <div class="avatar placeholder">
-                        <div class="w-8 rounded-full text-white font-bold text-xs shadow-lg bg-gradient-to-br from-primary to-primary-focus">
+                    <div class="avatar">
+                        <div class="w-8 rounded-full text-white font-bold text-xs shadow-lg bg-gradient-to-br from-primary to-primary-focus flex items-center justify-center">
                             {{ current_user.email[0].upper() }}
                         </div>
                     </div>

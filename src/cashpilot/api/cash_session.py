@@ -328,7 +328,7 @@ async def delete_session(
     """Soft delete a cash session."""
     session.is_deleted = True
     session.deleted_at = now_utc()
-    
+
     # Get display_name with informative fallback if somehow falsy
     display_name = current_user.display_name
     if not display_name:
@@ -407,7 +407,7 @@ async def restore_session(
 
     # Update audit fields
     session.last_modified_at = now_utc()
-    
+
     # Get display_name with informative fallback if somehow falsy
     display_name = current_user.display_name
     if not display_name:

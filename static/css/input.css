@@ -1,3 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* DaisyUI plugin configuration
+ * Note: DaisyUI is enabled via Tailwind CSS v4's CSS-based @plugin syntax below.
+ * Theme configuration should be done via the Tailwind/DaisyUI JavaScript config
+ * or supported data attributes/custom properties, not via CSS @plugin blocks.
+ * See: https://tailwindcss.com/docs/configuration#using-css and DaisyUI docs.
+ */
+@plugin "daisyui";
+
+/* Tailwind Forms plugin */
+@plugin "@tailwindcss/forms";
