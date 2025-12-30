@@ -13,19 +13,23 @@ Used by:
 - Monitoring systems (Datadog, New Relic, etc.)
 """
 
+import os
 import time
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, status
+import sentry_sdk
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.db import get_db
+from cashpilot.core.logging import get_logger, get_request_id
 from cashpilot.utils.datetime import now_utc
 
 router = APIRouter(tags=["health"])
+logger = get_logger(__name__)
 
 # Global app start time (set in lifespan)
 _app_start_time: datetime | None = None
@@ -70,23 +74,24 @@ async def check_database(db: AsyncSession) -> dict[str, Any]:
 
 @router.get(
     "/health",
-    status_code=status.HTTP_200_OK,
-    summary="Enhanced health check",
+    summary="Health check endpoint",
     description=(
         "Returns API health status including uptime and dependency checks. "
-        "Returns 200 regardless of degraded dependencies (for graceful degradation)."
+        "Returns 200 OK only if PostgreSQL connection is active, otherwise 503 Service Unavailable."
     ),
 )
 async def health_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
     """
-    Enhanced health check endpoint.
+    Health check endpoint.
+
+    Returns 200 OK if PostgreSQL connection is active, otherwise 503 Service Unavailable.
 
     Returns:
         - status: "ok" if all checks pass, "degraded" if some fail
         - uptime_seconds: how long app has been running
         - checks: detailed status of each dependency
 
-    Example response (healthy):
+    Example response (healthy - 200 OK):
         {
             "status": "ok",
             "uptime_seconds": 3600,
@@ -95,7 +100,7 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
             }
         }
 
-    Example response (degraded):
+    Example response (unhealthy - 503 Service Unavailable):
         {
             "status": "degraded",
             "uptime_seconds": 3600,
@@ -122,7 +127,88 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
         },
     }
 
+    # Return 200 OK only if PostgreSQL connection is active
+    status_code = (
+        status.HTTP_200_OK if db_check["status"] == "ok" else status.HTTP_503_SERVICE_UNAVAILABLE
+    )
+
     return JSONResponse(
         content=response,
-        status_code=status.HTTP_200_OK,
+        status_code=status_code,
     )
+
+
+@router.get(
+    "/test-sentry",
+    summary="Test Sentry error tracking (development only)",
+    description=(
+        "Test endpoint to verify Sentry error tracking is working. "
+        "Raises a test exception that should appear in Sentry dashboard within 5 seconds. "
+        "⚠️ WARNING: This endpoint intentionally raises an exception. Use only for testing! "
+        "⚠️ Only available in development environment."
+    ),
+)
+async def test_sentry(
+    request: Request,
+) -> None:
+    """
+    Test endpoint to verify Sentry error tracking.
+
+    **Development only** - Returns 404 in production for security.
+
+    This endpoint intentionally raises a test exception to verify:
+    1. Sentry is initialized and capturing errors
+    2. Structured context (request_id, user_id) is included
+    3. Errors appear in Sentry dashboard within 5 seconds
+
+    ⚠️ WARNING: This will create an error event in Sentry. Clean up test exceptions before demo.
+
+    Example usage (development only):
+        curl http://localhost:8000/test-sentry
+
+    The exception will include:
+    - request_id: From X-Request-ID header or generated UUID
+    - user_id: From session (if authenticated)
+    - Additional context: method, path, etc.
+    """
+    # Restrict to development environment only (case-insensitive)
+    environment = os.getenv("ENVIRONMENT", "development").lower()
+    if environment == "production":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found",
+        )
+
+    request_id = get_request_id()
+    user_id = (
+        request.scope.get("session", {}).get("user_id") if request.scope.get("session") else None
+    )
+
+    # Log before raising exception (to verify logging integration)
+    logger.warning(
+        "sentry.test",
+        message="Test exception about to be raised for Sentry verification",
+        request_id=request_id,
+        user_id=user_id,
+        path=request.url.path,
+    )
+
+    # Set additional context for this test exception
+    with sentry_sdk.push_scope() as scope:
+        scope.set_tag("test_endpoint", "true")
+        scope.set_context(
+            "test",
+            {
+                "purpose": "Verify Sentry error tracking",
+                "request_id": request_id,
+                "user_id": user_id,
+            },
+        )
+
+        # Raise a test exception with context
+        # FastAPI integration will automatically capture it
+        raise RuntimeError(
+            f"Sentry test exception - Request ID: {request_id}, "
+            f"User ID: {user_id or 'anonymous'}, "
+            f"Path: {request.url.path}"
+        )
