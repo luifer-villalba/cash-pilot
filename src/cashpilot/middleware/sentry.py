@@ -51,8 +51,9 @@ class SentryContextMiddleware:
         session = scope.get("session", {})
         user_id = session.get("user_id")
 
-        # Set Sentry context
-        with sentry_sdk.push_scope() as sentry_scope:
+        # Set Sentry context (Sentry SDK 2.x compatible)
+        # Use isolation scope to ensure tags and context are cleared after request
+        with sentry_sdk.isolation_scope() as sentry_scope:
             sentry_scope.set_tag("request_id", request_id)
             if user_id:
                 sentry_scope.set_user({"id": user_id})

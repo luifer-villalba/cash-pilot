@@ -193,8 +193,9 @@ async def test_sentry(
         path=request.url.path,
     )
 
-    # Set additional context for this test exception
-    with sentry_sdk.push_scope() as scope:
+    # Set additional context for this test exception (Sentry SDK 2.x compatible)
+    # Use isolation scope to ensure test-specific tags don't leak to other errors
+    with sentry_sdk.isolation_scope() as scope:
         scope.set_tag("test_endpoint", "true")
         scope.set_context(
             "test",
