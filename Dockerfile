@@ -7,9 +7,12 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy config and source files
+# Note: In this project, Tailwind v4 requires tailwind.config.js
+# to define explicit content paths and safelist patterns
+# so that class generation is reliable, including for dynamic content.
 COPY tailwind.config.js postcss.config.js ./
 COPY static/css/input.css ./static/css/
 COPY templates ./templates
