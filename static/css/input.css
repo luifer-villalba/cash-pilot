@@ -1,3 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* DaisyUI plugin configuration */
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
+/* Tailwind Forms plugin */
+@plugin "@tailwindcss/forms";

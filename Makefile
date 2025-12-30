@@ -184,7 +184,7 @@ build-css:
 
 watch-css:
 	@echo "👀 Watching CSS for changes..."
-	docker compose run --rm css-builder npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch
+	docker compose run --rm css-builder sh -c "npm ci && npx postcss ./static/css/input.css -o ./static/css/main.css --watch"
 
 # ---------- Favicons ----------
 favicons:
