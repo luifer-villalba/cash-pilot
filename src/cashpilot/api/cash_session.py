@@ -328,7 +328,17 @@ async def delete_session(
     """Soft delete a cash session."""
     session.is_deleted = True
     session.deleted_at = now_utc()
-    session.deleted_by = current_user.display_name or "Unknown"
+    
+    # Get display_name with informative fallback if somehow falsy
+    display_name = current_user.display_name
+    if not display_name:
+        logger.warning(
+            "User missing display_name when deleting session",
+            user_id=str(current_user.id),
+            session_id=str(session.id),
+        )
+        display_name = f"User-{current_user.id}"
+    session.deleted_by = display_name
 
     db.add(session)
     await db.commit()
@@ -397,7 +407,17 @@ async def restore_session(
 
     # Update audit fields
     session.last_modified_at = now_utc()
-    session.last_modified_by = current_user.display_name or "Unknown"
+    
+    # Get display_name with informative fallback if somehow falsy
+    display_name = current_user.display_name
+    if not display_name:
+        logger.warning(
+            "User missing display_name when restoring session",
+            user_id=str(current_user.id),
+            session_id=str(session.id),
+        )
+        display_name = f"User-{current_user.id}"
+    session.last_modified_by = display_name
 
     new_values = {
         "is_deleted": False,
@@ -407,11 +427,11 @@ async def restore_session(
     await log_session_edit(
         db,
         session,
-        current_user.display_name or "Unknown",
+        display_name,
         "RESTORE",
         old_values,
         new_values,
-        reason=f"Session restored by {current_user.display_name}",
+        reason=f"Session restored by {display_name}",
     )
 
     db.add(session)
