@@ -1,6 +1,6 @@
 # File: Makefile
 
-.PHONY: fmt lint sh hook-install run dev up down logs watch dev-watch test \
+.PHONY: fmt lint audit audit-full sh hook-install run dev up down logs watch dev-watch test \
         migrate migration migrate-up migrate-down migrate-current migrate-history \
         check-db rebuild rebuild-quick fix-perms fix-line-endings clean-branches seed seed-reset \
         createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update \
@@ -12,6 +12,9 @@ fmt:
 
 lint:
 	docker compose run --rm app bash -lc "ruff check src && black --check src && isort --check-only src"
+
+audit:  ## Run security audit (fails on any vulnerabilities found)
+	docker compose run --rm --no-deps app bash -lc "pip-audit --desc"
 
 # ---------- Utilities ----------
 sh:

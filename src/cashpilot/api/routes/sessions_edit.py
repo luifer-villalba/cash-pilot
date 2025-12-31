@@ -2,7 +2,6 @@
 """Session edit routes (edit-open, edit-closed)."""
 
 from datetime import timedelta
-from decimal import Decimal
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, Request
@@ -15,7 +14,7 @@ from cashpilot.api.auth_helpers import require_admin, require_own_session
 from cashpilot.api.utils import (
     get_locale,
     get_translation_function,
-    parse_currency,
+    update_closed_session_fields,
     update_open_session_fields,
 )
 from cashpilot.core.db import get_db
@@ -182,113 +181,6 @@ async def edit_closed_session_form(
             "editable": True,
         },
     )
-
-
-def _update_field(
-    session: CashSession,
-    field_name: str,
-    new_value: Decimal | str | None,
-    current_value: Decimal | str | None,
-    changed_fields: list[str],
-    old_values: dict,
-    new_values: dict,
-) -> None:
-    """Update a single field and track changes."""
-    if new_value is None:
-        return
-
-    new_val_str = str(new_value) if new_value else None
-    current_val_str = str(current_value) if current_value else None
-
-    if new_val_str != current_val_str:
-        changed_fields.append(field_name)
-        old_values[field_name] = current_val_str
-        new_values[field_name] = new_val_str
-        setattr(session, field_name, new_value)
-
-
-async def update_closed_session_fields(
-    session: CashSession,
-    final_cash: str | None = None,
-    envelope_amount: str | None = None,
-    credit_card_total: str | None = None,
-    debit_card_total: str | None = None,
-    credit_sales_total: str | None = None,
-    credit_payments_collected: str | None = None,
-    closing_ticket: str | None = None,
-    notes: str | None = None,
-) -> tuple[list[str], dict, dict]:
-    """Track field changes for closed session edit."""
-    changed_fields = []
-    old_values = {}
-    new_values = {}
-
-    _update_field(
-        session,
-        "final_cash",
-        parse_currency(final_cash),
-        session.final_cash,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "envelope_amount",
-        parse_currency(envelope_amount) or Decimal("0"),
-        session.envelope_amount,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "credit_card_total",
-        parse_currency(credit_card_total) or Decimal("0"),
-        session.credit_card_total,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "debit_card_total",
-        parse_currency(debit_card_total) or Decimal("0"),
-        session.debit_card_total,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "credit_sales_total",
-        parse_currency(credit_sales_total) or Decimal("0"),
-        session.credit_sales_total,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "credit_payments_collected",
-        parse_currency(credit_payments_collected) or Decimal("0"),
-        session.credit_payments_collected,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "closing_ticket",
-        closing_ticket,
-        session.closing_ticket,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(session, "notes", notes, session.notes, changed_fields, old_values, new_values)
-
-    return changed_fields, old_values, new_values
 
 
 @router.post("/{session_id}/edit-closed", response_class=HTMLResponse)
