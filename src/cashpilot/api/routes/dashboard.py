@@ -1,7 +1,6 @@
 # File: src/cashpilot/api/routes/dashboard.py
 """Dashboard routes (HTML endpoints)."""
 
-from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 from uuid import UUID
@@ -15,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.utils import (
     _build_session_filters,
+    _can_edit_closed_session,
     _get_paginated_sessions,
     format_currency_py,
     get_locale,
@@ -23,7 +23,7 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_local, now_utc, today_local
+from cashpilot.utils.datetime import now_local, today_local
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -31,24 +31,6 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(tags=["dashboard"])
-
-
-def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
-    """Check if current user can edit a closed session (12-hour window for cashiers)."""
-    if current_user.role == UserRole.ADMIN:
-        return True
-
-    if session.status != "CLOSED":
-        return False
-
-    if session.cashier_id != current_user.id:
-        return False
-
-    if not session.closed_at:
-        return False
-
-    time_since_close = now_utc() - session.closed_at
-    return time_since_close <= timedelta(hours=12)
 
 
 @router.get("/", response_class=HTMLResponse)
