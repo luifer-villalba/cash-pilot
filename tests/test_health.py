@@ -1,19 +1,47 @@
 """Tests for the enhanced health check endpoint."""
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from unittest.mock import patch, AsyncMock
 
 from cashpilot.main import create_app
 from cashpilot.api.health import set_app_start_time, get_uptime_seconds
+from cashpilot.core.db import get_db, Base
+from tests.conftest import TEST_DATABASE_URL
 
 
 @pytest.fixture
-def client() -> TestClient:
-    """Create a test client for the FastAPI app."""
+def client(db_session: AsyncSession) -> TestClient:
+    """Create a test client for the FastAPI app with database dependency override."""
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    
     app = create_app()
-    return TestClient(app)
+
+    # Create a new engine using the same database URL
+    # Tables are already created by db_session fixture, so we just need the engine
+    engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+    async_session_maker = async_sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    # Override get_db dependency to create a new session for each request
+    async def override_get_db():
+        async with async_session_maker() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    client_instance = TestClient(app)
+    # Store engine reference to prevent garbage collection
+    client_instance._engine = engine
+    return client_instance
 
 
 class TestHealthCheckEndpoint:

@@ -1,7 +1,9 @@
 """Tests for logging and error handling."""
 
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from cashpilot.core.errors import (
     AppError,
@@ -11,14 +13,41 @@ from cashpilot.core.errors import (
     ValidationError,
 )
 from cashpilot.core.logging import get_request_id, set_request_id
+from cashpilot.core.db import get_db, Base
 from cashpilot.main import create_app
+from tests.conftest import TEST_DATABASE_URL
 
 
 @pytest.fixture
-def client() -> TestClient:
-    """Create test client."""
+def client(db_session: AsyncSession) -> TestClient:
+    """Create test client with database dependency override."""
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    
     app = create_app()
-    return TestClient(app)
+
+    # Create a new engine using the same database URL
+    # Tables are already created by db_session fixture, so we just need the engine
+    engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+    async_session_maker = async_sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    # Override get_db dependency to create a new session for each request
+    async def override_get_db():
+        async with async_session_maker() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    client_instance = TestClient(app)
+    # Store engine reference to prevent garbage collection
+    client_instance._engine = engine
+    return client_instance
 
 
 class TestErrorClasses:
