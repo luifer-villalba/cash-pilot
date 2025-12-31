@@ -223,6 +223,7 @@ git checkout -b feature/your-feature
 make test       # Verify tests pass
 make fmt        # Format code
 make lint       # Check linting
+make audit      # Security audit
 git add .
 git commit -m "feat: your change description"
 git push origin feature/your-feature
