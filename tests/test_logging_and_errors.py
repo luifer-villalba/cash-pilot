@@ -1,39 +1,14 @@
 """Tests for logging and error handling."""
 
 import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.core.errors import (
-    AppError,
     ConflictError,
     ErrorDetail,
     NotFoundError,
     ValidationError,
 )
 from cashpilot.core.logging import get_request_id, set_request_id
-from cashpilot.main import create_app
-from cashpilot.core.db import get_db
-
-
-@pytest_asyncio.fixture
-async def client(db_session: AsyncSession):
-    """Create test client with database dependency override."""
-    from httpx import ASGITransport, AsyncClient
-    
-    app = create_app()
-    
-    # Override database dependency to use test session
-    async def override_get_db():
-        yield db_session
-    
-    app.dependency_overrides[get_db] = override_get_db
-    
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as ac:
-        yield ac
 
 
 class TestErrorClasses:
@@ -90,27 +65,27 @@ class TestErrorHandling:
     """Test global error handlers."""
 
     @pytest.mark.asyncio
-    async def test_health_endpoint_returns_ok(self, client):
+    async def test_health_endpoint_returns_ok(self, client_for_health_checks):
         """Verify health endpoint still works."""
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
         assert response.status_code == 200
         data = response.json()
         # MIZ-27 enhanced health check with detailed checks
         assert "checks" in data or "status" in data
 
     @pytest.mark.asyncio
-    async def test_request_id_header_in_response(self, client):
+    async def test_request_id_header_in_response(self, client_for_health_checks):
         """Test X-Request-ID header is echoed back."""
         test_id = "external-123"
-        response = await client.get("/health", headers={"X-Request-ID": test_id})
+        response = await client_for_health_checks.get("/health", headers={"X-Request-ID": test_id})
 
         assert response.headers.get("X-Request-ID") == test_id
 
     @pytest.mark.asyncio
-    async def test_request_id_propagates_to_response_headers(self, client):
+    async def test_request_id_propagates_to_response_headers(self, client_for_health_checks):
         """Test request ID is propagated through middleware."""
         # Make a request without X-Request-ID header
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
 
         # Response should have X-Request-ID header
         assert "X-Request-ID" in response.headers
