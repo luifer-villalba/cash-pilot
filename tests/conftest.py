@@ -4,20 +4,18 @@
 import asyncpg
 import pytest
 import pytest_asyncio
-from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from cashpilot.core.db import Base, get_db
-from cashpilot.main import create_app
-
-from tests.factories import UserFactory, BusinessFactory, CashSessionFactory
 from cashpilot.core.security import hash_password
+from cashpilot.main import create_app
 
 # Import all models
 from cashpilot.models.business import Business  # noqa: F401
 from cashpilot.models.cash_session import CashSession  # noqa: F401
 from cashpilot.models.user import User  # noqa: F401
+from tests.factories import UserFactory
 
 TEST_DATABASE_URL = (
     "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_test"
@@ -148,6 +146,50 @@ async def unauthenticated_client(
     ) as ac:
         ac.db_session = db_session
         yield ac
+
+
+@pytest_asyncio.fixture
+async def client_for_health_checks(db_session: AsyncSession):
+    """
+    Create a test client for health check endpoints with proper database session management.
+
+    Creates a new engine and session factory to ensure fresh sessions per request,
+    which is required for health check endpoints that need to test database connectivity.
+    """
+    from httpx import ASGITransport, AsyncClient
+    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+    app = create_app()
+
+    # Create a new engine using the same database URL
+    # Tables are already created by db_session fixture, so we just need the engine
+    engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+    async_session_maker = async_sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False
+    )
+
+    # Override get_db dependency to create a new session for each request
+    async def override_get_db():
+        async with async_session_maker() as session:
+            try:
+                yield session
+                await session.commit()
+            except Exception:
+                await session.rollback()
+                raise
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as ac:
+        # Store engine reference to prevent garbage collection
+        ac.test_engine = engine
+        yield ac
+
+    # Cleanup
+    await engine.dispose()
 
 @pytest_asyncio.fixture
 async def admin_client(db_session):

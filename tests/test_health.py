@@ -1,41 +1,21 @@
 """Tests for the enhanced health check endpoint."""
-import pytest
-import pytest_asyncio
-from httpx import ASGITransport, AsyncClient
 from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-from unittest.mock import patch, AsyncMock
 
-from cashpilot.main import create_app
-from cashpilot.api.health import set_app_start_time, get_uptime_seconds
-from cashpilot.core.db import get_db
+import pytest
+from httpx import AsyncClient
 
-
-@pytest_asyncio.fixture
-async def client(db_session: AsyncSession):
-    """Create a test client for the FastAPI app with database dependency override."""
-    app = create_app()
-    
-    # Override database dependency to use test session
-    async def override_get_db():
-        yield db_session
-    
-    app.dependency_overrides[get_db] = override_get_db
-    
-    async with AsyncClient(
-        transport=ASGITransport(app=app),
-        base_url="http://test"
-    ) as ac:
-        yield ac
+from cashpilot.api.health import get_uptime_seconds, set_app_start_time
 
 
 class TestHealthCheckEndpoint:
     """Test suite for /health endpoint."""
 
     @pytest.mark.asyncio
-    async def test_health_endpoint_returns_200_when_db_ok(self, client: AsyncClient) -> None:
+    async def test_health_endpoint_returns_200_when_db_ok(
+        self, client_for_health_checks: AsyncClient
+    ) -> None:
         """Test that /health returns 200 with ok status when DB is healthy."""
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -47,9 +27,11 @@ class TestHealthCheckEndpoint:
         assert data["checks"]["database"]["status"] == "ok"
 
     @pytest.mark.asyncio
-    async def test_health_endpoint_includes_response_time(self, client: AsyncClient) -> None:
+    async def test_health_endpoint_includes_response_time(
+        self, client_for_health_checks: AsyncClient
+    ) -> None:
         """Test that database check includes response time in milliseconds."""
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -59,9 +41,11 @@ class TestHealthCheckEndpoint:
         assert db_check["response_time_ms"] >= 0
 
     @pytest.mark.asyncio
-    async def test_health_endpoint_content_type(self, client: AsyncClient) -> None:
+    async def test_health_endpoint_content_type(
+        self, client_for_health_checks: AsyncClient
+    ) -> None:
         """Test that /health returns JSON content type."""
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
 
         assert "application/json" in response.headers["content-type"]
 
@@ -77,9 +61,11 @@ class TestHealthCheckEndpoint:
         assert 3590 <= uptime <= 3610, f"Expected ~3600 seconds, got {uptime}"
 
     @pytest.mark.asyncio
-    async def test_health_endpoint_response_schema(self, client: AsyncClient) -> None:
+    async def test_health_endpoint_response_schema(
+        self, client_for_health_checks: AsyncClient
+    ) -> None:
         """Test that response matches expected schema."""
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -105,7 +91,7 @@ class TestHealthCheckDegradedStates:
 
     @pytest.mark.asyncio
     async def test_health_returns_degraded_when_db_fails(
-        self, client: AsyncClient
+        self, client_for_health_checks: AsyncClient
     ) -> None:
         """
         Test that health endpoint returns degraded status when DB is down.
@@ -125,7 +111,7 @@ class TestHealthCheckDegradedStates:
         # Then response would have status="degraded"
 
         # For now, we verify the structure is correct when DB is healthy
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
         assert response.status_code == 200
         data = response.json()
         assert "checks" in data
@@ -136,12 +122,14 @@ class TestHealthCheckPerformance:
     """Test health check performance constraints."""
 
     @pytest.mark.asyncio
-    async def test_health_check_response_is_fast(self, client: AsyncClient) -> None:
+    async def test_health_check_response_is_fast(
+        self, client_for_health_checks: AsyncClient
+    ) -> None:
         """Test that health check completes quickly (<500ms)."""
         import time
 
         start = time.time()
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
         elapsed_ms = (time.time() - start) * 1000
 
         assert response.status_code == 200
@@ -153,7 +141,9 @@ class TestHealthCheckIntegration:
     """Integration tests for health check with actual DB."""
 
     @pytest.mark.asyncio
-    async def test_health_check_with_db_integration(self, client: AsyncClient) -> None:
+    async def test_health_check_with_db_integration(
+        self, client_for_health_checks: AsyncClient
+    ) -> None:
         """
         Test that health endpoint successfully connects to actual database.
         This verifies the SELECT 1 query works.
@@ -161,7 +151,7 @@ class TestHealthCheckIntegration:
         Note: In test environment, DB may be down (test isolation).
         This test verifies the response structure is correct regardless.
         """
-        response = await client.get("/health")
+        response = await client_for_health_checks.get("/health")
 
         assert response.status_code == 200
         data = response.json()

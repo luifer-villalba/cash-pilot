@@ -5,6 +5,7 @@ import os
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.utils import BadDsn
 
 from cashpilot.core.logging import get_logger
 
@@ -18,9 +19,10 @@ def init_sentry() -> None:
     """
     Initialize Sentry SDK for error tracking.
 
-    Only initializes if SENTRY_DSN environment variable is set.
+    Only initializes if SENTRY_DSN environment variable is set and valid.
     This allows local development without Sentry (no DSN = no init).
     Prevents multiple initializations if called multiple times.
+    Handles invalid DSNs gracefully (e.g., placeholder values in CI).
 
     Configuration:
     - Disables performance monitoring (paid feature, not needed)
@@ -38,29 +40,71 @@ def init_sentry() -> None:
         logger.info("sentry.disabled", message="Sentry DSN not found, error tracking disabled")
         return
 
+    # Validate DSN format and check for placeholder values
+    # Sentry DSNs should start with https:// or http://
+    # Also check for common placeholder patterns like "xxx"
+    sentry_dsn_stripped = sentry_dsn.strip()
+    if not sentry_dsn_stripped.startswith(("https://", "http://")):
+        dsn_preview = (
+            sentry_dsn_stripped[:20] + "..."
+            if len(sentry_dsn_stripped) > 20
+            else sentry_dsn_stripped
+        )
+        logger.info(
+            "sentry.disabled",
+            message="Sentry DSN appears to be invalid or placeholder, error tracking disabled",
+            dsn_preview=dsn_preview,
+        )
+        return
+
+    # Check for placeholder patterns (e.g., "xxx", "placeholder", "your-dsn-here")
+    placeholder_patterns = ["xxx", "placeholder", "your-dsn", "example.com"]
+    dsn_lower = sentry_dsn_stripped.lower()
+    if any(pattern in dsn_lower for pattern in placeholder_patterns):
+        dsn_preview = (
+            sentry_dsn_stripped[:20] + "..."
+            if len(sentry_dsn_stripped) > 20
+            else sentry_dsn_stripped
+        )
+        logger.info(
+            "sentry.disabled",
+            message="Sentry DSN appears to be a placeholder, error tracking disabled",
+            dsn_preview=dsn_preview,
+        )
+        return
+
     environment = os.getenv("ENVIRONMENT", "development")
 
-    sentry_sdk.init(
-        dsn=sentry_dsn,
-        environment=environment,
-        # Disable performance monitoring (paid feature)
-        traces_sample_rate=0.0,
-        # Disable SQL query logging in error payloads (security)
-        send_default_pii=False,
-        # Integrate with FastAPI
-        integrations=[
-            FastApiIntegration(transaction_style="endpoint"),
-            LoggingIntegration(level=None, event_level=None),  # Don't duplicate logs
-            # Note: SqlalchemyIntegration is NOT included to prevent SQL query capture
-        ],
-        # Additional options
-        before_send=_filter_sensitive_data,
-    )
+    try:
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            environment=environment,
+            # Disable performance monitoring (paid feature)
+            traces_sample_rate=0.0,
+            # Disable SQL query logging in error payloads (security)
+            send_default_pii=False,
+            # Integrate with FastAPI
+            integrations=[
+                FastApiIntegration(transaction_style="endpoint"),
+                LoggingIntegration(level=None, event_level=None),  # Don't duplicate logs
+                # Note: SqlalchemyIntegration is NOT included to prevent SQL query capture
+            ],
+            # Additional options
+            before_send=_filter_sensitive_data,
+        )
 
-    _sentry_initialized = True
-    logger.info(
-        "sentry.initialized", message="Sentry error tracking enabled", environment=environment
-    )
+        _sentry_initialized = True
+        logger.info(
+            "sentry.initialized", message="Sentry error tracking enabled", environment=environment
+        )
+    except BadDsn as exc:
+        # Handle invalid DSN gracefully (e.g., placeholder values in CI)
+        logger.warning(
+            "sentry.init_failed",
+            message="Failed to initialize Sentry due to invalid DSN, error tracking disabled",
+            error=str(exc),
+        )
+        return
 
 
 def _filter_sensitive_data(event: dict, hint: dict) -> dict:
