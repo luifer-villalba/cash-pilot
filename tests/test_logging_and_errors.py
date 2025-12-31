@@ -2,7 +2,6 @@
 
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from cashpilot.core.errors import (
@@ -13,15 +12,15 @@ from cashpilot.core.errors import (
     ValidationError,
 )
 from cashpilot.core.logging import get_request_id, set_request_id
-from cashpilot.core.db import get_db, Base
+from cashpilot.core.db import get_db
 from cashpilot.main import create_app
 from tests.conftest import TEST_DATABASE_URL
 
 
-@pytest.fixture
-def client(db_session: AsyncSession) -> TestClient:
+@pytest_asyncio.fixture
+async def client(db_session: AsyncSession):
     """Create test client with database dependency override."""
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+    from httpx import ASGITransport, AsyncClient
     
     app = create_app()
 
@@ -44,10 +43,16 @@ def client(db_session: AsyncSession) -> TestClient:
 
     app.dependency_overrides[get_db] = override_get_db
 
-    client_instance = TestClient(app)
-    # Store engine reference to prevent garbage collection
-    client_instance._engine = engine
-    return client_instance
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as ac:
+        # Store engine reference to prevent garbage collection
+        ac._engine = engine
+        yield ac
+    
+    # Cleanup
+    await engine.dispose()
 
 
 class TestErrorClasses:
@@ -103,25 +108,28 @@ class TestRequestIDContext:
 class TestErrorHandling:
     """Test global error handlers."""
 
-    def test_health_endpoint_returns_ok(self, client: TestClient):
+    @pytest.mark.asyncio
+    async def test_health_endpoint_returns_ok(self, client):
         """Verify health endpoint still works."""
-        response = client.get("/health")
+        response = await client.get("/health")
         assert response.status_code == 200
         data = response.json()
         # MIZ-27 enhanced health check with detailed checks
         assert "checks" in data or "status" in data
 
-    def test_request_id_header_in_response(self, client: TestClient):
+    @pytest.mark.asyncio
+    async def test_request_id_header_in_response(self, client):
         """Test X-Request-ID header is echoed back."""
         test_id = "external-123"
-        response = client.get("/health", headers={"X-Request-ID": test_id})
+        response = await client.get("/health", headers={"X-Request-ID": test_id})
 
         assert response.headers.get("X-Request-ID") == test_id
 
-    def test_request_id_propagates_to_response_headers(self, client: TestClient):
+    @pytest.mark.asyncio
+    async def test_request_id_propagates_to_response_headers(self, client):
         """Test request ID is propagated through middleware."""
         # Make a request without X-Request-ID header
-        response = client.get("/health")
+        response = await client.get("/health")
 
         # Response should have X-Request-ID header
         assert "X-Request-ID" in response.headers

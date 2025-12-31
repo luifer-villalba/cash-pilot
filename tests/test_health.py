@@ -1,22 +1,20 @@
 """Tests for the enhanced health check endpoint."""
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from unittest.mock import patch, AsyncMock
 
 from cashpilot.main import create_app
 from cashpilot.api.health import set_app_start_time, get_uptime_seconds
-from cashpilot.core.db import get_db, Base
+from cashpilot.core.db import get_db
 from tests.conftest import TEST_DATABASE_URL
 
 
-@pytest.fixture
-def client(db_session: AsyncSession) -> TestClient:
+@pytest_asyncio.fixture
+async def client(db_session: AsyncSession):
     """Create a test client for the FastAPI app with database dependency override."""
-    from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-    
     app = create_app()
 
     # Create a new engine using the same database URL
@@ -38,18 +36,25 @@ def client(db_session: AsyncSession) -> TestClient:
 
     app.dependency_overrides[get_db] = override_get_db
 
-    client_instance = TestClient(app)
-    # Store engine reference to prevent garbage collection
-    client_instance._engine = engine
-    return client_instance
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test"
+    ) as ac:
+        # Store engine reference to prevent garbage collection
+        ac._engine = engine
+        yield ac
+    
+    # Cleanup
+    await engine.dispose()
 
 
 class TestHealthCheckEndpoint:
     """Test suite for /health endpoint."""
 
-    def test_health_endpoint_returns_200_when_db_ok(self, client: TestClient) -> None:
+    @pytest.mark.asyncio
+    async def test_health_endpoint_returns_200_when_db_ok(self, client: AsyncClient) -> None:
         """Test that /health returns 200 with ok status when DB is healthy."""
-        response = client.get("/health")
+        response = await client.get("/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -60,9 +65,10 @@ class TestHealthCheckEndpoint:
         assert "database" in data["checks"]
         assert data["checks"]["database"]["status"] == "ok"
 
-    def test_health_endpoint_includes_response_time(self, client: TestClient) -> None:
+    @pytest.mark.asyncio
+    async def test_health_endpoint_includes_response_time(self, client: AsyncClient) -> None:
         """Test that database check includes response time in milliseconds."""
-        response = client.get("/health")
+        response = await client.get("/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -71,13 +77,14 @@ class TestHealthCheckEndpoint:
         assert isinstance(db_check["response_time_ms"], int)
         assert db_check["response_time_ms"] >= 0
 
-    def test_health_endpoint_content_type(self, client: TestClient) -> None:
+    @pytest.mark.asyncio
+    async def test_health_endpoint_content_type(self, client: AsyncClient) -> None:
         """Test that /health returns JSON content type."""
-        response = client.get("/health")
+        response = await client.get("/health")
 
         assert "application/json" in response.headers["content-type"]
 
-    def test_health_endpoint_uptime_tracking(self, client: TestClient) -> None:
+    def test_health_endpoint_uptime_tracking(self) -> None:
         """Test that uptime increases over time."""
         # Set start time to 1 hour ago
         one_hour_ago = datetime.now() - timedelta(hours=1)
@@ -88,9 +95,10 @@ class TestHealthCheckEndpoint:
         # Should be approximately 3600 seconds (1 hour)
         assert 3590 <= uptime <= 3610, f"Expected ~3600 seconds, got {uptime}"
 
-    def test_health_endpoint_response_schema(self, client: TestClient) -> None:
+    @pytest.mark.asyncio
+    async def test_health_endpoint_response_schema(self, client: AsyncClient) -> None:
         """Test that response matches expected schema."""
-        response = client.get("/health")
+        response = await client.get("/health")
 
         assert response.status_code == 200
         data = response.json()
@@ -116,12 +124,12 @@ class TestHealthCheckDegradedStates:
 
     @pytest.mark.asyncio
     async def test_health_returns_degraded_when_db_fails(
-        self, client: TestClient
+        self, client: AsyncClient
     ) -> None:
         """
         Test that health endpoint returns degraded status when DB is down.
 
-        NOTE: This test is tricky because TestClient uses a real DB session.
+        NOTE: This test is tricky because the async client uses a real DB session.
         In production with a real unavailable DB, you'd see degraded status.
         For this test, we'd need to mock the DB dependency, which requires
         a more complex test setup. See comment below.
@@ -136,7 +144,7 @@ class TestHealthCheckDegradedStates:
         # Then response would have status="degraded"
 
         # For now, we verify the structure is correct when DB is healthy
-        response = client.get("/health")
+        response = await client.get("/health")
         assert response.status_code == 200
         data = response.json()
         assert "checks" in data
@@ -146,12 +154,13 @@ class TestHealthCheckDegradedStates:
 class TestHealthCheckPerformance:
     """Test health check performance constraints."""
 
-    def test_health_check_response_is_fast(self, client: TestClient) -> None:
+    @pytest.mark.asyncio
+    async def test_health_check_response_is_fast(self, client: AsyncClient) -> None:
         """Test that health check completes quickly (<500ms)."""
         import time
 
         start = time.time()
-        response = client.get("/health")
+        response = await client.get("/health")
         elapsed_ms = (time.time() - start) * 1000
 
         assert response.status_code == 200
@@ -162,7 +171,8 @@ class TestHealthCheckPerformance:
 class TestHealthCheckIntegration:
     """Integration tests for health check with actual DB."""
 
-    def test_health_check_with_db_integration(self, client: TestClient) -> None:
+    @pytest.mark.asyncio
+    async def test_health_check_with_db_integration(self, client: AsyncClient) -> None:
         """
         Test that health endpoint successfully connects to actual database.
         This verifies the SELECT 1 query works.
@@ -170,7 +180,7 @@ class TestHealthCheckIntegration:
         Note: In test environment, DB may be down (test isolation).
         This test verifies the response structure is correct regardless.
         """
-        response = client.get("/health")
+        response = await client.get("/health")
 
         assert response.status_code == 200
         data = response.json()
