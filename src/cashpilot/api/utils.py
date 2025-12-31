@@ -2,7 +2,7 @@
 """Frontend routes - dashboard only. Session/business routes moved to routes/."""
 
 import gettext
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from uuid import UUID
@@ -374,8 +374,6 @@ async def update_open_session_fields(
 
 def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
     """Check if current user can edit a closed session (12-hour window for cashiers)."""
-    from datetime import timedelta
-
     if current_user.role == UserRole.ADMIN:
         return True
 

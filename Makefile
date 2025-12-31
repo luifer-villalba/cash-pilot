@@ -16,9 +16,6 @@ lint:
 audit:  ## Run security audit (fails on any vulnerabilities found)
 	docker compose run --rm --no-deps app bash -lc "pip-audit --desc"
 
-audit-full:  ## Run full security audit (shows all vulnerabilities)
-	docker compose run --rm --no-deps app bash -lc "pip-audit --desc"
-
 # ---------- Utilities ----------
 sh:
 	docker compose exec app bash
