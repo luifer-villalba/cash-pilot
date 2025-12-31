@@ -245,11 +245,16 @@ class CashSession(Base):
         This is the difference between expected and actual cash.
         Positive = surplus (more cash than expected)
         Negative = shortage (less cash than expected)
+
+        Envelope and expenses are legitimate cash removals and should not
+        count as discrepancies in the cash count.
         """
         if self.final_cash is None:
             return Decimal("0.00")
 
-        expected_final = self.initial_cash + self.cash_sales
+        envelope_amount = self.envelope_amount or Decimal("0.00")
+        expenses = self.expenses or Decimal("0.00")
+        expected_final = self.initial_cash + self.cash_sales - envelope_amount - expenses
         return self.final_cash - expected_final
 
     async def get_conflicting_sessions(self, db: AsyncSession) -> list["CashSession"]:

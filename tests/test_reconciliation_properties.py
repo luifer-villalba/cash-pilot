@@ -183,6 +183,25 @@ class TestCashSessionProperties:
         )
 
         # cash_sales = (1,500,000 - 500,000) + 200,000 + 100,000 - 0 = 1,300,000
-        # expected_final = 500,000 + 1,300,000 = 1,800,000
-        # shortage_surplus = 1,500,000 - 1,800,000 = -300,000 (shortage)
-        assert session.shortage_surplus == Decimal("-300000.00")
+        # expected_final = 500,000 + 1,300,000 - 200,000 - 100,000 = 1,500,000
+        # shortage_surplus = 1,500,000 - 1,500,000 = 0 (perfect match)
+        assert session.shortage_surplus == Decimal("0.00")
+
+    async def test_shortage_surplus_perfect_match_with_envelope_and_expenses(self):
+        """Test shortage_surplus with envelope=100k, expenses=50k, perfect cash count = 0."""
+        session = CashSession(
+            business_id=uuid4(),
+            cashier_id=uuid4(),
+            initial_cash=Decimal("500000.00"),
+            final_cash=Decimal("550000.00"),  # Perfect count
+            envelope_amount=Decimal("100000.00"),
+            expenses=Decimal("50000.00"),
+            credit_card_total=Decimal("0.00"),
+            debit_card_total=Decimal("0.00"),
+            bank_transfer_total=Decimal("0.00"),
+        )
+
+        # cash_sales = (550,000 - 500,000) + 100,000 + 50,000 - 0 = 200,000
+        # expected_final = 500,000 + 200,000 - 100,000 - 50,000 = 550,000
+        # shortage_surplus = 550,000 - 550,000 = 0 (perfect match)
+        assert session.shortage_surplus == Decimal("0.00")
