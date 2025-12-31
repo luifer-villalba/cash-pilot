@@ -238,20 +238,6 @@ class CashSession(Base):
         expenses = self.expenses or Decimal("0.00")
         return self.total_sales - expenses
 
-    @property
-    def shortage_surplus(self) -> Decimal:
-        """Calculate cash shortage (-) or surplus (+).
-
-        This is the difference between expected and actual cash.
-        Positive = surplus (more cash than expected)
-        Negative = shortage (less cash than expected)
-        """
-        if self.final_cash is None:
-            return Decimal("0.00")
-
-        expected_final = self.initial_cash + self.cash_sales
-        return self.final_cash - expected_final
-
     async def get_conflicting_sessions(self, db: AsyncSession) -> list["CashSession"]:
         """Find all sessions that overlap with this one in same business."""
         if self.closed_time is None:
