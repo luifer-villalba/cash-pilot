@@ -44,10 +44,15 @@ def init_sentry() -> None:
     # This catches placeholder values like "xxx" that might be set in CI
     sentry_dsn_stripped = sentry_dsn.strip()
     if not sentry_dsn_stripped.startswith(("https://", "http://")):
+        dsn_preview = (
+            sentry_dsn_stripped[:20] + "..."
+            if len(sentry_dsn_stripped) > 20
+            else sentry_dsn_stripped
+        )
         logger.info(
             "sentry.disabled",
             message="Sentry DSN appears to be invalid or placeholder, error tracking disabled",
-            dsn_preview=sentry_dsn_stripped[:20] + "..." if len(sentry_dsn_stripped) > 20 else sentry_dsn_stripped,
+            dsn_preview=dsn_preview,
         )
         return
 
