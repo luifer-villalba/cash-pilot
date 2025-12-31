@@ -40,8 +40,9 @@ def init_sentry() -> None:
         logger.info("sentry.disabled", message="Sentry DSN not found, error tracking disabled")
         return
 
-    # Validate DSN format - Sentry DSNs should start with https:// or http://
-    # This catches placeholder values like "xxx" that might be set in CI
+    # Validate DSN format and check for placeholder values
+    # Sentry DSNs should start with https:// or http://
+    # Also check for common placeholder patterns like "xxx"
     sentry_dsn_stripped = sentry_dsn.strip()
     if not sentry_dsn_stripped.startswith(("https://", "http://")):
         dsn_preview = (
@@ -52,6 +53,22 @@ def init_sentry() -> None:
         logger.info(
             "sentry.disabled",
             message="Sentry DSN appears to be invalid or placeholder, error tracking disabled",
+            dsn_preview=dsn_preview,
+        )
+        return
+
+    # Check for placeholder patterns (e.g., "xxx", "placeholder", "your-dsn-here")
+    placeholder_patterns = ["xxx", "placeholder", "your-dsn", "example.com"]
+    dsn_lower = sentry_dsn_stripped.lower()
+    if any(pattern in dsn_lower for pattern in placeholder_patterns):
+        dsn_preview = (
+            sentry_dsn_stripped[:20] + "..."
+            if len(sentry_dsn_stripped) > 20
+            else sentry_dsn_stripped
+        )
+        logger.info(
+            "sentry.disabled",
+            message="Sentry DSN appears to be a placeholder, error tracking disabled",
             dsn_preview=dsn_preview,
         )
         return
