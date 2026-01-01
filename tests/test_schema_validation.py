@@ -97,20 +97,20 @@ class TestBusinessCreateValidation:
     def test_valid_business_create(self):
         """Test valid business creation."""
         business = BusinessCreate(
-            name="Farmacia Central",
+            name="Business Central",
             address="Av. España 123",
             phone="+595 21 123456",
         )
-        assert business.name == "Farmacia Central"
+        assert business.name == "Business Central"
         assert business.address == "Av. España 123"
         assert business.phone == "+595 21 123456"
 
     def test_name_sanitized(self):
         """Test business name is validated and trimmed."""
         business = BusinessCreate(
-            name="  Farmacia Test  ",
+            name="  Business Test  ",
         )
-        assert business.name == "Farmacia Test"
+        assert business.name == "Business Test"
 
     def test_invalid_name_fails(self):
         """Test invalid business name is rejected."""
@@ -141,8 +141,8 @@ class TestBusinessCreateValidation:
 
     def test_minimal_business_create(self):
         """Test business creation with only required fields."""
-        business = BusinessCreate(name="Test Farmacia")
-        assert business.name == "Test Farmacia"
+        business = BusinessCreate(name="Test Business")
+        assert business.name == "Test Business"
         assert business.address is None
         assert business.phone is None
 

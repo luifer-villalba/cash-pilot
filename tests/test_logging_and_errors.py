@@ -37,11 +37,11 @@ class TestErrorClasses:
 
     def test_conflict_error_creates_correct_response(self):
         """Test ConflictError for duplicate resource."""
-        exc = ConflictError("Business already exists", details={"name": "Farmacia XYZ"})
+        exc = ConflictError("Business already exists", details={"name": "Business XYZ"})
 
         assert exc.code == "CONFLICT"
         assert exc.status_code == 409
-        assert exc.details == {"name": "Farmacia XYZ"}
+        assert exc.details == {"name": "Business XYZ"}
 
 
 class TestRequestIDContext:

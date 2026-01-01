@@ -55,7 +55,7 @@ class BusinessFactory:
     @staticmethod
     async def create(
         session: AsyncSession,
-        name: str = "Test Farmacia",
+        name: str = "Test Business",
         address: Optional[str] = "Test Address",
         phone: Optional[str] = "+595 21 123-4567",
         is_active: bool = True,

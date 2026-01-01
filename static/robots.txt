@@ -1,5 +1,5 @@
 # CashPilot - Robots.txt
-# Block search engines from indexing (internal pharmacy app)
+# Block search engines from indexing (internal business app)
 
 User-agent: *
 Disallow: /

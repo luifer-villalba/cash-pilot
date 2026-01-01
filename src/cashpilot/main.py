@@ -169,7 +169,7 @@ def create_app() -> FastAPI:
     """Application factory for CashPilot."""
     app = FastAPI(
         title="CashPilot API",
-        description="Pharmacy cash register reconciliation system",
+        description="Business cash register reconciliation system",
         version="0.1.0",
         lifespan=lifespan,
     )

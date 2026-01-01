@@ -19,12 +19,12 @@ class TestRBACBusinessAPIReadAccess:
         db_session: AsyncSession,
     ) -> None:
         """Test cashier can access business list."""
-        await BusinessFactory.create(db_session, name="Farmacia Test")
+        await BusinessFactory.create(db_session, name="Business Test")
 
         response = await client.get("/businesses")
         assert response.status_code == 200
         # Route returns HTML (frontend), check content
-        assert "Farmacia Test" in response.text or isinstance(response.json(), list)
+        assert "Business Test" in response.text or isinstance(response.json(), list)
 
     @pytest.mark.asyncio
     async def test_get_single_business(
@@ -33,14 +33,14 @@ class TestRBACBusinessAPIReadAccess:
         db_session: AsyncSession,
     ) -> None:
         """Test get single business endpoint."""
-        business = await BusinessFactory.create(db_session, name="Farmacia Test")
+        business = await BusinessFactory.create(db_session, name="Business Test")
 
         response = await client.get(f"/businesses/{business.id}")
         assert response.status_code == 200
         # API endpoint returns JSON
         if response.headers.get("content-type", "").startswith("application/json"):
             data = response.json()
-            assert data["name"] == "Farmacia Test"
+            assert data["name"] == "Business Test"
 
 
 class TestRBACBusinessAPIWriteAccess:
@@ -59,7 +59,7 @@ class TestRBACBusinessAPIWriteAccess:
         response = await client.post(
             "/businesses",
             json={
-                "name": "Unauthorized Pharmacy",
+                "name": "Unauthorized Business",
                 "address": "456 Oak Ave",
                 "phone": "789-012-3456",
             },
@@ -193,13 +193,13 @@ class TestRBACBusinessFrontendAccess:
         db_session: AsyncSession,
     ) -> None:
         """Test cashier can view business list HTML page."""
-        await BusinessFactory.create(db_session, name="Farmacia Test")
+        await BusinessFactory.create(db_session, name="Business Test")
 
         response = await client.get("/businesses")
         assert response.status_code == 200
         html = response.text
         assert "Businesses" in html
-        assert "Farmacia Test" in html
+        assert "Business Test" in html
 
     @pytest.mark.asyncio
     async def test_cashier_cannot_access_create_business_form(
@@ -231,14 +231,14 @@ class TestRBACBusinessFrontendAccess:
         db_session: AsyncSession,
     ) -> None:
         """Test business list page shows disabled buttons for cashier."""
-        await BusinessFactory.create(db_session, name="Farmacia Test")
+        await BusinessFactory.create(db_session, name="Business Test")
 
         response = await client.get("/businesses")
         assert response.status_code == 200
         html = response.text
 
         # Page should render
-        assert "Farmacia Test" in html
+        assert "Business Test" in html
         # Edit button should be disabled (contains disabled attribute)
         assert "disabled" in html
         assert "Only admins" in html or "only admins" in html.lower()

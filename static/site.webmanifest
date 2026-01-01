@@ -1,7 +1,7 @@
 {
   "name": "CashPilot",
   "short_name": "CashPilot",
-  "description": "Sistema de Reconciliación de Cajas Registradoras para Farmacias",
+  "description": "Sistema de Reconciliación de Cajas Registradoras para Negocios",
   "icons": [
     {
       "src": "/static/android-chrome-192x192.png",
