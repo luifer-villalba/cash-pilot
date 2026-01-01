@@ -1,0 +1,34 @@
+<!-- File: templates/reports/base.html -->
+{% extends "base.html" %}
+
+{% block title %}{% block report_title %}{{ _('Reports') }}{% endblock %} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
+        <div class="flex-1">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-primary/10 rounded-lg">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-base-content">{% block report_header %}{{ _('Reports') }}{% endblock %}</h1>
+                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{% block report_description %}{{ _('Analytics and insights for your business') }}{% endblock %}</p>
+                </div>
+            </div>
+        </div>
+        <a href="/reports" class="btn btn-sm btn-ghost gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            {{ _('Back to Reports') }}
+        </a>
+    </div>
+
+    {% block report_content %}{% endblock %}
+</div>
+{% endblock %}
+
