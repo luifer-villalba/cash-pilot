@@ -15,14 +15,14 @@ class TestListBusinesses:
         self, client: AsyncClient, db_session: AsyncSession
     ):
         """Test GET /businesses returns list of businesses."""
-        await BusinessFactory.create(db_session, name="Farmacia A")
-        await BusinessFactory.create(db_session, name="Farmacia B")
+        await BusinessFactory.create(db_session, name="Business A")
+        await BusinessFactory.create(db_session, name="Business B")
 
         response = await client.get("/businesses")
 
         assert response.status_code == 200
         # Route returns HTML frontend, check for content
-        assert "Farmacia A" in response.text or "Farmacia B" in response.text
+        assert "Business A" in response.text or "Business B" in response.text
 
     @pytest.mark.asyncio
     async def test_list_businesses_empty(

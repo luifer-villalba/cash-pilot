@@ -18,7 +18,7 @@ async def test_list_users_includes_businesses(
     """Test /admin/users includes businesses."""
     # Create a business
     business = Business(
-        name="Test Pharmacy",
+        name="Test Business",
         address="123 Test St",
         phone="+595981234567",
         is_active=True,
@@ -56,7 +56,7 @@ async def test_list_businesses_for_assignment(
     """Test /admin/businesses returns active businesses."""
     # Create a business
     business = Business(
-        name="Test Pharmacy",
+        name="Test Business",
         address="123 Test St",
         phone="+595981234567",
         is_active=True,
@@ -84,13 +84,13 @@ async def test_assign_businesses_to_user(
     """Test assigning multiple businesses to a user."""
     # Create two businesses
     business_1 = Business(
-        name="Test Pharmacy 1",
+        name="Test Business 1",
         address="123 Test St",
         phone="+595981234567",
         is_active=True,
     )
     business_2 = Business(
-        name="Test Pharmacy 2",
+        name="Test Business 2",
         address="456 Test Ave",
         phone="+595981234568",
         is_active=True,
@@ -134,7 +134,7 @@ async def test_unassign_business(
     """Test removing a business assignment."""
     # Create business
     business = Business(
-        name="Test Pharmacy",
+        name="Test Business",
         address="123 Test St",
         phone="+595981234567",
         is_active=True,
@@ -177,7 +177,7 @@ async def test_unassign_nonexistent_assignment_fails(
     """Test unassigning non-existent assignment returns 404."""
     # Create business but don't assign
     business = Business(
-        name="Test Pharmacy",
+        name="Test Business",
         address="123 Test St",
         phone="+595981234567",
         is_active=True,
@@ -201,7 +201,7 @@ async def test_non_admin_cannot_assign_businesses(
     """Test non-admin users cannot assign businesses."""
     # Create business
     business = Business(
-        name="Test Pharmacy",
+        name="Test Business",
         address="123 Test St",
         phone="+595981234567",
         is_active=True,

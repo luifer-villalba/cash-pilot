@@ -39,7 +39,7 @@ async def seed_users(db: AsyncSession) -> dict[str, User]:
 
     users = {}
     for first_name, last_name in CASHIER_POOL:
-        email = f"{first_name.lower()}.{last_name.lower()}@farmacia.local"
+        email = f"{first_name.lower()}.{last_name.lower()}@business.local"
         user = User(
             id=uuid4(),
             email=email,
@@ -68,19 +68,19 @@ async def seed_businesses(db: AsyncSession) -> list[Business]:
 
     businesses = [
         Business(
-            name="Farmacia Central",
+            name="Business Central",
             address="Av. Mariscal López 1234, Asunción",
             phone="+595 21 123-4567",
             is_active=True,
         ),
         Business(
-            name="Farmacia San Lorenzo",
+            name="Business San Lorenzo",
             address="Ruta 2 Km 15, San Lorenzo",
             phone="+595 21 234-5678",
             is_active=True,
         ),
         Business(
-            name="Farmacia Villa Morra",
+            name="Business Villa Morra",
             address="Av. San Martín 890, Villa Morra",
             phone="+595 21 345-6789",
             is_active=True,

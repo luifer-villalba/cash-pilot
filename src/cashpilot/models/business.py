@@ -1,5 +1,5 @@
 # File: src/cashpilot/models/business.py
-"""Business model for pharmacy locations."""
+"""Business model for business locations."""
 
 from typing import TYPE_CHECKING
 
@@ -22,9 +22,9 @@ from cashpilot.core.db import Base
 
 class Business(Base):
     """
-    Represents a pharmacy location.
+    Represents a business location.
 
-    Each pharmacy location operates independently with its own:
+    Each business location operates independently with its own:
     - Cash register operations
     - Daily reconciliation
     - Employees (managed via UserBusiness relationship)

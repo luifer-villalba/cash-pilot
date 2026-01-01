@@ -183,7 +183,7 @@ msgid "Clear All"
 msgstr ""
 
 #: /app/templates/login.html:25
-msgid "Pharmacy Cash Reconciliation System"
+msgid "Business Cash Reconciliation System"
 msgstr ""
 
 #: /app/templates/login.html:37
@@ -554,7 +554,7 @@ msgid "Name"
 msgstr ""
 
 #: /app/templates/businesses/create.html:24
-msgid "e.g., Farmacia Central"
+msgid "e.g., Business Central"
 msgstr ""
 
 #: /app/templates/businesses/create.html:29
@@ -564,7 +564,7 @@ msgstr ""
 #: /app/templates/businesses/create.html:33
 #: /app/templates/businesses/create.html:107
 #: /app/templates/businesses/edit.html:34
-msgid "Pharmacy location name"
+msgid "Business location name"
 msgstr ""
 
 #: /app/templates/businesses/create.html:40
@@ -672,7 +672,7 @@ msgid "Back to Businesses"
 msgstr ""
 
 #: /app/templates/businesses/list.html:19
-msgid "Manage pharmacy locations and assignments"
+msgid "Manage business locations and assignments"
 msgstr ""
 
 #: /app/templates/businesses/list.html:31
@@ -1427,7 +1427,7 @@ msgstr ""
 
 #: /app/templates/sessions/create_session.html:76
 #: /app/templates/sessions/create_session.html:249
-msgid "Which pharmacy location?"
+msgid "Which business location?"
 msgstr ""
 
 #: /app/templates/sessions/create_session.html:93

@@ -1,6 +1,6 @@
 # 💰 CashPilot
 
-Pharmacy cash register reconciliation system built for 5-6 pharmacy locations in Paraguay. Replaces manual paper-based daily reconciliation with automated session tracking, multi-payment support, and role-based access control.
+Business cash register reconciliation system built for multi-location operations. Replaces manual paper-based daily reconciliation with automated session tracking, multi-payment support, and role-based access control.
 
 **Live:** https://cash-pilot-production.up.railway.app
 
@@ -8,12 +8,12 @@ Pharmacy cash register reconciliation system built for 5-6 pharmacy locations in
 
 ## What It Does
 
-**Problem:** Pharmacy managers spend 30+ minutes daily reconciling cash by hand, tracking payments across cash/card/transfers, and managing discrepancies in spreadsheets.
+**Problem:** Business managers spend 30+ minutes daily reconciling cash by hand, tracking payments across cash/card/transfers, and managing discrepancies in spreadsheets.
 
 **Solution:** 
 - Cashiers open a shift with initial cash → track payments throughout day → close with auto-reconciliation
 - System flags discrepancies instantly (short 15,000₲? it tells you)
-- Admins manage users, assign them to pharmacy locations, reset passwords
+- Admins manage users, assign them to business locations, reset passwords
 - Complete audit trail of every edit (who changed what, when, why)
 - Requires an internet connection; offline mode is not currently supported
 
@@ -41,7 +41,7 @@ cd cash-pilot
 make build              # Build containers
 make up                 # Start services
 make migrate            # Run migrations
-make seed               # Create demo data (3 pharmacies, 87 sessions)
+make seed               # Create demo data (3 businesses, 87 sessions)
 make test               # Run 167+ tests
 make logs               # View live logs
 
@@ -55,12 +55,12 @@ make logs               # View live logs
 
 **Dashboard**
 - Paginated session list with date, business, cashier, reconciliation status
-- Filter by date range, cashier, pharmacy, session status
+- Filter by date range, cashier, business, session status
 - Admin-only toggle to view deleted sessions (excluded from statistics)
 - Quick links to open new session or view details
 
 **Session Lifecycle**
-1. **Create** — Cashier selects pharmacy, enters initial cash, optional expenses
+1. **Create** — Cashier selects business, enters initial cash, optional expenses
 2. **Track** — Log cash/card/transfer amounts throughout shift
    - Add multiple expense line items (description + amount)
    - Add multiple bank transfer line items (description + amount)
@@ -72,26 +72,26 @@ make logs               # View live logs
 
 **Admin Panel**
 - List all users, create new ones (auto-generates passwords)
-- Assign cashiers to pharmacy locations (M:N relationship)
+- Assign cashiers to business locations (M:N relationship)
 - Disable accounts without deleting
 - View and restore deleted cash sessions
 - View audit logs of who edited what and when
 
 **Permission System**
 - **Admin:** Can create/edit/delete businesses, manage all sessions, reset passwords, view/restore deleted sessions
-- **Cashier:** Limited to assigned pharmacies only; within those, can create and view only their own sessions (edit within 12hr window) and cannot view sessions created by other cashiers. Cannot access deleted sessions (even their own)
+- **Cashier:** Limited to assigned businesses only; within those, can create and view only their own sessions (edit within 12hr window) and cannot view sessions created by other cashiers. Cannot access deleted sessions (even their own)
 
 ---
 
 ## Why This Matters
 
-This isn't a toy app. It's solving a real business problem for real pharmacies. Every feature exists because someone said "we need this to not waste time on paperwork."
+This isn't a toy app. It's solving a real business problem for real businesses. Every feature exists because someone said "we need this to not waste time on paperwork."
 
 - **Audit Trail:** Every edit tracked with timestamp, user, old/new values — required for accounting
 - **Soft Deletes:** Sessions can be recovered, nothing is permanently lost. Admins can toggle deleted sessions view. Deleted sessions excluded from statistics but preserved for audit
 - **Input Validation:** Comprehensive null/undefined/type checking prevents crashes from unexpected input
 - **Reconciliation Math:** Automatic calculation removes manual errors
-- **Multi-Location:** Cashiers work across different pharmacies, each gets their own view
+- **Multi-Location:** Cashiers work across different businesses, each gets their own view
 - **Production Ready:** Runs 24/7 on Railway, handles failures gracefully
 
 ---
@@ -110,7 +110,7 @@ This isn't a toy app. It's solving a real business problem for real pharmacies. 
 ## Technical Decisions (And Why)
 
 **Session-Based Auth (Not JWT)**  
-Users stay logged in across browser reloads. Simpler for pharmacy staff who aren't tech-savvy. Timeout enforced: 30min for cashiers, 2hrs for admins.
+Users stay logged in across browser reloads. Simpler for business staff who aren't tech-savvy. Timeout enforced: 30min for cashiers, 2hrs for admins.
 
 **Server-Rendered Templates (Not SPA)**  
 HTML from the backend keeps things lean. No JavaScript framework bloat. HTMX for pagination. Jinja2 for i18n. Works fine.
@@ -239,7 +239,7 @@ Use Linear for ticket tracking (MIZ-XXX prefix). Reference in commit messages.
 **Tables:**
 - `users` — Email, hashed password, role (ADMIN/CASHIER), is_active flag
 - `businesses` — Name, address, phone, is_active flag
-- `user_businesses` — M:N assignment (which cashier works at which pharmacy)
+- `user_businesses` — M:N assignment (which cashier works at which business)
 - `cash_sessions` — Initial/final cash, payments, reconciliation, is_deleted flag
 - `expense_items` — Line items for expenses (description, amount) linked to sessions
 - `transfer_items` — Line items for bank transfers (description, amount) linked to sessions
