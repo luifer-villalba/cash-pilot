@@ -187,154 +187,82 @@
                         {% for item in businesses %}
                         <tr>
                             <td class="sticky left-0 z-10 bg-base-100 font-semibold">{{ item.business.name }}</td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.total_revenue | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.total_revenue, item.current.total_revenue) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.total_revenue | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.cash_revenue | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.cash_revenue, item.current.cash_revenue) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.cash_revenue | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.card_revenue | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.card_revenue, item.current.card_revenue) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.card_revenue | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.operating_expenses | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.operating_expenses, item.current.operating_expenses) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.operating_expenses | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.net_profit | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.net_profit, item.current.net_profit) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.net_profit | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.operating_cash_flow | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.operating_cash_flow, item.current.operating_cash_flow) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.operating_cash_flow | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.cash_on_hand | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.cash_on_hand, item.current.cash_on_hand) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.cash_on_hand | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.cash_withdrawn | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.cash_withdrawn, item.current.cash_withdrawn) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.cash_withdrawn | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.bank_deposits | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.bank_deposits, item.current.bank_deposits) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.bank_deposits | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.cash_profit | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.cash_profit, item.current.cash_profit) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.cash_profit | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.accounts_receivable | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.accounts_receivable, item.current.accounts_receivable) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.accounts_receivable | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ item.current.collections | format_currency_py }}</span>
-                                    {{ delta_display(item.deltas.collections, item.current.collections) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ item.current.collections | format_currency_py }}
                             </td>
                         </tr>
                         {% endfor %}
                         <!-- Totals Row -->
                         <tr class="bg-base-200 font-bold">
                             <td class="sticky left-0 z-10 bg-base-200">{{ _('TOTAL') }}</td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.total_revenue | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.total_revenue, totals_current.total_revenue) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.total_revenue | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.cash_revenue | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.cash_revenue, totals_current.cash_revenue) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.cash_revenue | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.card_revenue | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.card_revenue, totals_current.card_revenue) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.card_revenue | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.operating_expenses | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.operating_expenses, totals_current.operating_expenses) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.operating_expenses | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.net_profit | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.net_profit, totals_current.net_profit) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.net_profit | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.operating_cash_flow | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.operating_cash_flow, totals_current.operating_cash_flow) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.operating_cash_flow | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.cash_on_hand | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.cash_on_hand, totals_current.cash_on_hand) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.cash_on_hand | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.cash_withdrawn | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.cash_withdrawn, totals_current.cash_withdrawn) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.cash_withdrawn | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.bank_deposits | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.bank_deposits, totals_current.bank_deposits) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.bank_deposits | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.cash_profit | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.cash_profit, totals_current.cash_profit) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.cash_profit | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.accounts_receivable | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.accounts_receivable, totals_current.accounts_receivable) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.accounts_receivable | format_currency_py }}
                             </td>
-                            <td class="text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <span>Gs {{ totals_current.collections | format_currency_py }}</span>
-                                    {{ delta_display(totals_deltas.collections, totals_current.collections) }}
-                                </div>
+                            <td class="text-right whitespace-nowrap">
+                                Gs {{ totals_current.collections | format_currency_py }}
                             </td>
                         </tr>
                     </tbody>
