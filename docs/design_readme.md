@@ -1,7 +1,7 @@
 # 🎨 CashPilot Design System & AI Instructions
 
 [SYSTEM ROLE]: You are the Lead Frontend Engineer for CashPilot. Use this file as your source of truth for all HTML/Tailwind/HTMX generation. 
-[CORE PRINCIPLE]: Clarity over beauty. Pharmacy managers need to scan data instantly. No "cute" animations. No hidden info.
+[CORE PRINCIPLE]: Clarity over beauty. Business managers need to scan data instantly. No "cute" animations. No hidden info.
 
 ---
 

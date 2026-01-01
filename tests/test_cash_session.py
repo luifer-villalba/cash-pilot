@@ -15,7 +15,7 @@ async def business_id(db_session: AsyncSession) -> str:
     """Create a business for testing."""
     business = await BusinessFactory.create(
         db_session,
-        name="Farmacia Test",
+        name="Business Test",
         address="Calle Test 123",
         phone="+595972000000",
     )
