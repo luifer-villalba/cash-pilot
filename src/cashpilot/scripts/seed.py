@@ -15,8 +15,8 @@ from cashpilot.models.user import UserRole
 from cashpilot.utils.datetime import today_local
 
 SHIFT_PATTERNS = [
-    {"start_time": time(7, 0), "end_time": time(15, 0), "name": "Turno Mañana"},
-    {"start_time": time(15, 0), "end_time": time(23, 0), "name": "Turno Tarde"},
+    {"start_time": time(7, 0), "end_time": time(15, 0), "name": "Morning Shift"},
+    {"start_time": time(15, 0), "end_time": time(23, 0), "name": "Evening Shift"},
 ]
 
 CASHIER_POOL = [
