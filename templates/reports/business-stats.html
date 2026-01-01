@@ -26,6 +26,87 @@
         </div>
     </div>
 
+    <!-- Summary Box -->
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
+        <h3 class="text-lg font-semibold mb-4">{{ _('Performance Summary') }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Total Revenue Summary -->
+            <div class="bg-base-200 rounded-lg p-3">
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="text-sm text-base-content/70">{{ _('Total Revenue') }}</span>
+                    <div class="tooltip tooltip-right max-w-xs" data-tip="{{ _('Calculation: Cash Revenue + Card Revenue + Bank Deposits + Accounts Receivable. Percentage change compares current period to previous period: ((Current - Previous) / Previous) × 100%.') }}">
+                        <svg class="w-4 h-4 text-base-content/50 hover:text-base-content cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold">Gs {{ totals_current.total_revenue | format_currency_py }}</span>
+                    {% if totals_deltas.total_revenue.direction == 'up' %}
+                        <span class="text-success text-sm font-medium">+{{ totals_deltas.total_revenue.percent }}%</span>
+                    {% elif totals_deltas.total_revenue.direction == 'down' %}
+                        <span class="text-error text-sm font-medium">{{ totals_deltas.total_revenue.percent }}%</span>
+                    {% else %}
+                        <span class="text-base-content/50 text-sm">{{ totals_deltas.total_revenue.percent }}%</span>
+                    {% endif %}
+                </div>
+                <div class="text-xs text-base-content/50 mt-1">
+                    {{ _('Previous') }}: Gs {{ totals_previous.total_revenue | format_currency_py }}
+                </div>
+            </div>
+
+            <!-- Net Profit Summary -->
+            <div class="bg-base-200 rounded-lg p-3">
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="text-sm text-base-content/70">{{ _('Net Profit') }}</span>
+                    <div class="tooltip tooltip-right max-w-xs" data-tip="{{ _('Calculation: Total Revenue - Operating Expenses. Shows actual profit after all expenses. Percentage change: ((Current - Previous) / Previous) × 100%.') }}">
+                        <svg class="w-4 h-4 text-base-content/50 hover:text-base-content cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold">Gs {{ totals_current.net_profit | format_currency_py }}</span>
+                    {% if totals_deltas.net_profit.direction == 'up' %}
+                        <span class="text-success text-sm font-medium">+{{ totals_deltas.net_profit.percent }}%</span>
+                    {% elif totals_deltas.net_profit.direction == 'down' %}
+                        <span class="text-error text-sm font-medium">{{ totals_deltas.net_profit.percent }}%</span>
+                    {% else %}
+                        <span class="text-base-content/50 text-sm">{{ totals_deltas.net_profit.percent }}%</span>
+                    {% endif %}
+                </div>
+                <div class="text-xs text-base-content/50 mt-1">
+                    {{ _('Previous') }}: Gs {{ totals_previous.net_profit | format_currency_py }}
+                </div>
+            </div>
+
+            <!-- Operating Expenses Summary -->
+            <div class="bg-base-200 rounded-lg p-3">
+                <div class="flex items-center gap-1 mb-1">
+                    <span class="text-sm text-base-content/70">{{ _('Operating Expenses') }}</span>
+                    <div class="tooltip tooltip-right max-w-xs" data-tip="{{ _('Calculation: Sum of all expenses from closed sessions. Percentage change: ((Current - Previous) / Previous) × 100%. Note: For expenses, a decrease (↓) is positive.') }}">
+                        <svg class="w-4 h-4 text-base-content/50 hover:text-base-content cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-xl font-bold">Gs {{ totals_current.operating_expenses | format_currency_py }}</span>
+                    {% if totals_deltas.operating_expenses.direction == 'up' %}
+                        <span class="text-error text-sm font-medium">+{{ totals_deltas.operating_expenses.percent }}%</span>
+                    {% elif totals_deltas.operating_expenses.direction == 'down' %}
+                        <span class="text-success text-sm font-medium">{{ totals_deltas.operating_expenses.percent }}%</span>
+                    {% else %}
+                        <span class="text-base-content/50 text-sm">{{ totals_deltas.operating_expenses.percent }}%</span>
+                    {% endif %}
+                </div>
+                <div class="text-xs text-base-content/50 mt-1">
+                    {{ _('Previous') }}: Gs {{ totals_previous.operating_expenses | format_currency_py }}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Date Range Selector -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
         <div class="flex flex-wrap gap-2">
