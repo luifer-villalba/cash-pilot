@@ -100,8 +100,8 @@
                 ↑ +{{ delta.percent }}%
             </span>
         {% elif delta.direction == 'down' %}
-            <span class="text-error text-xs font-medium" title="{{ _('down') }} {{ delta.percent }}%">
-                ↓ {{ delta.percent }}%
+            <span class="text-error text-xs font-medium" title="{{ _('down') }} {{ delta.percent|abs }}%">
+                ↓ {{ delta.percent|abs }}%
             </span>
         {% else %}
             <span class="text-base-content/50 text-xs" title="{{ delta.percent }}%">

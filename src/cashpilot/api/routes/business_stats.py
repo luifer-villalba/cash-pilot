@@ -66,9 +66,18 @@ def calculate_date_range(
             # Invalid date format
             raise ValueError("Invalid date format. Please use YYYY-MM-DD format.") from e
 
+        # Validate date range
+        if to_dt > today:
+            raise ValueError("End date cannot be in the future.")
+
         if from_dt > to_dt:
             # Invalid range: from_date after to_date
             raise ValueError("Start date must be before or equal to end date.")
+
+        # Limit date range to prevent performance issues
+        range_days = (to_dt - from_dt).days
+        if range_days > 365:
+            raise ValueError("Date range cannot exceed 365 days. Please select a smaller range.")
 
         return from_dt, to_dt
     else:
