@@ -531,13 +531,43 @@ function showLoading(show) {
     document.getElementById('loadingState').classList.toggle('hidden', !show);
 }
 
-function showError(message) {
-    document.getElementById('errorMessage').textContent = message;
-    document.getElementById('errorState').classList.remove('hidden');
-}
+           function showError(message) {
+               document.getElementById('errorMessage').textContent = message;
+               document.getElementById('errorState').classList.remove('hidden');
+           }
 
-function hideError() {
-    document.getElementById('errorState').classList.add('hidden');
-}
-</script>
+           function hideError() {
+               document.getElementById('errorState').classList.add('hidden');
+           }
+
+           // Format time from "HH:MM:SS" to "HH:MM"
+           function formatShiftTime(timeStr) {
+               if (!timeStr) return '';
+               // timeStr is like "14:30:00"
+               const parts = timeStr.split(':');
+               return `${parts[0]}:${parts[1]}`;
+           }
+
+           // Get badge class for shift label
+           function getShiftBadgeClass(label) {
+               const classes = {
+                   'Morning': 'badge-info',
+                   'Afternoon': 'badge-warning',
+                   'Evening': 'badge-primary',
+                   'Night': 'badge-accent'
+               };
+               return classes[label] || 'badge-ghost';
+           }
+
+           // Translate shift labels
+           function translateShift(label) {
+               const translations = {
+                   'Morning': '{{ _("Morning") }}',
+                   'Afternoon': '{{ _("Afternoon") }}',
+                   'Evening': '{{ _("Evening") }}',
+                   'Night': '{{ _("Night") }}'
+               };
+               return translations[label] || label;
+           }
+       </script>
 {% endblock %}

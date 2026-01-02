@@ -167,6 +167,8 @@ async def get_daily_revenue(
                 "total_duration_seconds": 0,
                 "total_expenses": Decimal("0.00"),
                 "flagged_sessions": 0,
+                "earliest_start": None,
+                "latest_end": None,
             }
 
         cashier_stats[cashier_id]["sessions"] += 1
@@ -181,10 +183,22 @@ async def get_daily_revenue(
         if session.flagged:
             cashier_stats[cashier_id]["flagged_sessions"] += 1
 
-        # Calculate session duration
+        # Calculate session duration and track shift times
         if session.opened_at and session.closed_at:
             duration = (session.closed_at - session.opened_at).total_seconds()
             cashier_stats[cashier_id]["total_duration_seconds"] += duration
+
+            # Track earliest start and latest end times
+            if (
+                cashier_stats[cashier_id]["earliest_start"] is None
+                or session.opened_at < cashier_stats[cashier_id]["earliest_start"]
+            ):
+                cashier_stats[cashier_id]["earliest_start"] = session.opened_at
+            if (
+                cashier_stats[cashier_id]["latest_end"] is None
+                or session.closed_at > cashier_stats[cashier_id]["latest_end"]
+            ):
+                cashier_stats[cashier_id]["latest_end"] = session.closed_at
 
     # Build cashier performance list
     cashier_performance = []
@@ -225,6 +239,26 @@ async def get_daily_revenue(
             else Decimal("0.00")
         )
 
+        # Determine shift times and label
+        shift_start_time = None
+        shift_end_time = None
+        shift_label = ""
+
+        if stats["earliest_start"] and stats["latest_end"]:
+            shift_start_time = stats["earliest_start"].time()
+            shift_end_time = stats["latest_end"].time()
+
+            # Classify shift based on start time
+            start_hour = stats["earliest_start"].hour
+            if 5 <= start_hour < 12:
+                shift_label = "Morning"
+            elif 12 <= start_hour < 18:
+                shift_label = "Afternoon"
+            elif 18 <= start_hour < 22:
+                shift_label = "Evening"
+            else:
+                shift_label = "Night"
+
         cashier_performance.append(
             CashierPerformance(
                 cashier_id=cashier_id,
@@ -240,6 +274,9 @@ async def get_daily_revenue(
                 avg_session_duration_hours=avg_duration_hours,
                 total_expenses=stats["total_expenses"],
                 flagged_sessions=stats["flagged_sessions"],
+                shift_start=shift_start_time,
+                shift_end=shift_end_time,
+                shift_label=shift_label,
             )
         )
 

@@ -1,6 +1,7 @@
 """Pydantic schemas for reports API."""
 
 from datetime import date as date_type
+from datetime import time
 from decimal import Decimal
 from uuid import UUID
 
@@ -39,6 +40,13 @@ class CashierPerformance(BaseModel):
         default=Decimal("0.00"), description="Total expenses during shifts"
     )
     flagged_sessions: int = Field(default=0, description="Number of flagged/problematic sessions")
+
+    # Shift time information
+    shift_start: time | None = Field(default=None, description="Earliest session start time")
+    shift_end: time | None = Field(default=None, description="Latest session end time")
+    shift_label: str = Field(
+        default="", description="Shift classification (Morning/Afternoon/Evening/Night)"
+    )
 
 
 class DailyRevenueSummary(BaseModel):
