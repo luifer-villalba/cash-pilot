@@ -158,8 +158,19 @@ class WeeklyRevenueTrend(BaseModel):
     )
 
     # Aggregate stats
-    highest_day: dict = Field(default={}, description="Day with highest revenue across all 5 weeks")
-    lowest_day: dict = Field(default={}, description="Day with lowest revenue across all 5 weeks")
-    avg_weekly_revenue: Decimal = Field(
-        default=Decimal("0.00"), description="Average weekly revenue across 5 weeks"
+    highest_day: dict = Field(default={}, description="Day with highest revenue in current week")
+    lowest_day: dict = Field(default={}, description="Day with lowest revenue in current week")
+
+    # Week-over-week comparison
+    current_week_total: Decimal = Field(
+        default=Decimal("0.00"), description="Total revenue for current week"
+    )
+    previous_week_total: Decimal = Field(
+        default=Decimal("0.00"), description="Total revenue for previous week"
+    )
+    week_over_week_growth: Decimal | None = Field(
+        None, description="Week-over-week growth percentage"
+    )
+    week_over_week_difference: Decimal = Field(
+        default=Decimal("0.00"), description="Absolute difference in revenue (current - previous)"
     )

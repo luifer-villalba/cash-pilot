@@ -16,7 +16,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Weekly Revenue Trend') }}</h1>
-                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Compare daily revenue across 7-day spans to identify peak/low days and week-over-week growth patterns') }}</p>
+                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Analyze revenue patterns and growth week by week') }}</p>
                 </div>
             </div>
         </div>
@@ -44,6 +44,17 @@
         </div>
 
         <div class="divider my-3 text-xs text-base-content/50">{{ _('Select time period') }}</div>
+
+        <!-- Selected Period Display -->
+        <div id="selectedPeriodBanner" class="hidden mb-3 p-3 bg-info/10 border border-info/30 rounded-lg">
+            <div class="flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="font-medium text-info">{{ _('Viewing') }}:</span>
+                <span id="selectedPeriodText" class="text-base-content font-semibold"></span>
+            </div>
+        </div>
 
         <!-- Quick Week Buttons -->
         <div class="flex flex-wrap gap-2 mb-4">
@@ -126,11 +137,11 @@
                 <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span>{{ _('Showing 5 weeks of data. Main chart compares this week vs last week for detailed day-by-day analysis.') }}</span>
+                <span>{{ _('Line chart: current vs previous week (day-by-day). Bar chart: 5-week revenue trend.') }}</span>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Highest Revenue Day -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
@@ -157,16 +168,28 @@
                 <p class="text-xs text-base-content/50 mt-1" id="lowestDayDate">-</p>
             </div>
 
-            <!-- Average Weekly Revenue -->
+            <!-- Week Total Sales -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Week Total') }}</h3>
+                </div>
+                <p class="text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekTotal">-</p>
+                <p class="text-sm text-base-content/60 mt-1">{{ _('Total sales this week') }}</p>
+            </div>
+
+            <!-- Week-over-Week Growth -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Avg Weekly Revenue') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Growth vs Previous') }}</h3>
                 </div>
-                <p class="text-2xl font-bold text-base-content" id="avgWeeklyRevenue">-</p>
-                <p class="text-sm text-base-content/60 mt-1">{{ _('(5-week average)') }}</p>
+                <p class="text-2xl font-bold font-mono tabular-nums" id="weekGrowthPercent">-</p>
+                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1" id="weekGrowthDifference">-</p>
             </div>
         </div>
 
@@ -175,7 +198,7 @@
             <!-- Main Comparison Chart (2 weeks only) -->
             <div class="lg:col-span-2 bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold">{{ _('Week-over-Week Comparison') }}</h2>
+                    <h2 class="text-lg font-semibold">{{ _('Day-by-Day Comparison') }}</h2>
                     <div class="text-xs text-base-content/60">{{ _('Current vs Previous Week') }}</div>
                 </div>
                 <div class="relative" style="height: 350px;">
@@ -192,9 +215,9 @@
             </div>
         </div>
 
-        <!-- Current Week Details -->
+        <!-- Selected Week Details -->
         <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
-            <h2 class="text-lg font-semibold mb-4">{{ _('Current Week Details') }}</h2>
+            <h2 class="text-lg font-semibold mb-4">{{ _('Selected Week Details') }}</h2>
             <div class="overflow-x-auto">
                 <table class="table table-sm table-zebra w-full">
                     <thead>
@@ -365,11 +388,14 @@
         document.getElementById('reportContent').classList.add('hidden');
 
         try {
+            // Add timestamp to prevent browser caching
+            const timestamp = new Date().getTime();
             const response = await fetch(
-                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}`,
+                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}&_t=${timestamp}`,
                 {
                     headers: {
                         'Accept': 'application/json',
+                        'Cache-Control': 'no-cache',
                     },
                 }
             );
@@ -390,20 +416,81 @@
     }
 
     function displayReport(data) {
-        // Display summary cards
-        if (data.highest_day && data.highest_day.day_name) {
-            document.getElementById('highestDay').textContent = translateDayName(data.highest_day.day_name);
-            document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
-            document.getElementById('highestDayDate').textContent = data.highest_day.date;
+        // Update selected period banner
+        const dateInput = document.getElementById('reportDate');
+        if (dateInput.value) {
+            const weekRange = formatWeekRange(dateInput.value);
+            document.getElementById('selectedPeriodText').textContent = weekRange;
+            document.getElementById('selectedPeriodBanner').classList.remove('hidden');
         }
 
-        if (data.lowest_day && data.lowest_day.day_name) {
-            document.getElementById('lowestDay').textContent = translateDayName(data.lowest_day.day_name);
-            document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
-            document.getElementById('lowestDayDate').textContent = data.lowest_day.date;
-        }
+        // Display summary cards (clear first to show change)
+        const highestDayEl = document.getElementById('highestDay');
+        const lowestDayEl = document.getElementById('lowestDay');
+        const avgRevenueEl = document.getElementById('avgWeeklyRevenue');
+        
+        // Clear with loading state
+        highestDayEl.textContent = '...';
+        lowestDayEl.textContent = '...';
+        document.getElementById('currentWeekTotal').textContent = '...';
+        document.getElementById('weekGrowthPercent').textContent = '...';
+        
+        // Update after small delay to show change
+        setTimeout(() => {
+            if (data.highest_day && data.highest_day.day_name) {
+                highestDayEl.textContent = translateDayName(data.highest_day.day_name);
+                document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
+                document.getElementById('highestDayDate').textContent = data.highest_day.date;
+            } else {
+                highestDayEl.textContent = '-';
+                document.getElementById('highestDayRevenue').textContent = '-';
+                document.getElementById('highestDayDate').textContent = '-';
+            }
 
-        document.getElementById('avgWeeklyRevenue').textContent = formatCurrency(data.avg_weekly_revenue);
+            if (data.lowest_day && data.lowest_day.day_name) {
+                lowestDayEl.textContent = translateDayName(data.lowest_day.day_name);
+                document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
+                document.getElementById('lowestDayDate').textContent = data.lowest_day.date;
+            } else {
+                lowestDayEl.textContent = '-';
+                document.getElementById('lowestDayRevenue').textContent = '-';
+                document.getElementById('lowestDayDate').textContent = '-';
+            }
+
+            // Update week-over-week growth
+            const currentWeekTotalEl = document.getElementById('currentWeekTotal');
+            const growthPercentEl = document.getElementById('weekGrowthPercent');
+            const growthDiffEl = document.getElementById('weekGrowthDifference');
+            
+            // Show current week total
+            currentWeekTotalEl.textContent = formatCurrency(data.current_week_total);
+            
+            if (data.week_over_week_growth !== null && data.week_over_week_growth !== undefined) {
+                const growth = parseFloat(data.week_over_week_growth);
+                const isPositive = growth > 0;
+                const isNegative = growth < 0;
+                
+                // Color and arrow based on growth
+                const colorClass = isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-base-content/60';
+                const arrow = isPositive ? '↑' : isNegative ? '↓' : '→';
+                
+                growthPercentEl.className = `text-lg font-bold font-mono tabular-nums ${colorClass}`;
+                growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
+                
+                // Show difference
+                const diff = parseFloat(data.week_over_week_difference);
+                const diffText = diff > 0 ? `+${formatCurrency(Math.abs(diff))}` : 
+                                diff < 0 ? `-${formatCurrency(Math.abs(diff))}` : 
+                                formatCurrency(0);
+                growthDiffEl.className = `text-sm font-mono tabular-nums mt-1 ${colorClass}`;
+                growthDiffEl.textContent = diffText;
+            } else {
+                growthPercentEl.className = 'text-lg font-bold text-base-content/60';
+                growthPercentEl.textContent = '-';
+                growthDiffEl.textContent = '{{ _("No previous data") }}';
+            }
+        }, 100);
+
 
         // Display current week table
         const tableBody = document.getElementById('currentWeekTable');

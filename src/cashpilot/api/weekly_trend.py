@@ -114,9 +114,9 @@ async def get_weekly_trend(
             detail="Invalid business_id format",
         )
 
-    # Check cache (v2 = cache key updated for better TTL)
+    # Check cache (v4 = changed to week-over-week growth instead of 5-week average)
     cache_key = make_cache_key(
-        "weekly_trend_v2", year=str(year), week=str(week), business_id=str(business_uuid)
+        "weekly_trend_v4", year=str(year), week=str(week), business_id=str(business_uuid)
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
@@ -228,14 +228,14 @@ async def get_weekly_trend(
             day.growth_percent = growth
             day.trend_arrow = get_trend_arrow(growth)
 
-    # Calculate aggregate stats (only include days with actual data)
-    days_with_data = [day for day in all_days if day.has_data]
+    # Calculate aggregate stats for CURRENT WEEK ONLY (not all 5 weeks)
+    current_week_days_with_data = [day for day in weeks_data[-1]["days"] if day.has_data]
 
     highest_day = {}
     lowest_day = {}
-    if days_with_data:
-        max_day = max(days_with_data, key=lambda d: d.revenue)
-        min_day = min(days_with_data, key=lambda d: d.revenue)
+    if current_week_days_with_data:
+        max_day = max(current_week_days_with_data, key=lambda d: d.revenue)
+        min_day = min(current_week_days_with_data, key=lambda d: d.revenue)
 
         highest_day = {
             "day_name": max_day.day_name,
@@ -248,14 +248,19 @@ async def get_weekly_trend(
             "date": str(min_day.date),
         }
 
-    # Calculate average weekly revenue (only count days with data)
-    weekly_totals = [
-        sum(day.revenue for day in week_info["days"] if day.has_data) for week_info in weeks_data
-    ]
-    if weekly_totals:
-        avg_weekly_revenue = sum(weekly_totals) / len(weekly_totals)
-    else:
-        avg_weekly_revenue = Decimal("0.00")
+    # Calculate week-over-week comparison
+    current_week_total = sum(day.revenue for day in weeks_data[-1]["days"] if day.has_data)
+    previous_week_total = Decimal("0.00")
+
+    if len(weeks_data) >= 2:
+        previous_week_total = sum(day.revenue for day in weeks_data[-2]["days"] if day.has_data)
+
+    # Calculate growth percentage
+    week_over_week_growth = None
+    week_over_week_difference = current_week_total - previous_week_total
+
+    if previous_week_total > 0:
+        week_over_week_growth = calculate_growth_percent(current_week_total, previous_week_total)
 
     # Prepare response
     result = WeeklyRevenueTrend(
@@ -266,7 +271,10 @@ async def get_weekly_trend(
         previous_weeks=[week_info["days"] for week_info in weeks_data[:-1]],
         highest_day=highest_day,
         lowest_day=lowest_day,
-        avg_weekly_revenue=avg_weekly_revenue.quantize(Decimal("0.01")),
+        current_week_total=current_week_total,
+        previous_week_total=previous_week_total,
+        week_over_week_growth=week_over_week_growth,
+        week_over_week_difference=week_over_week_difference,
     )
 
     # Cache the result
@@ -283,7 +291,8 @@ async def get_weekly_trend(
 
     logger.info(
         f"Weekly trend report generated for {year}-W{week:02d}, "
-        f"business {business_uuid}, avg weekly revenue: {avg_weekly_revenue}"
+        f"business {business_uuid}, current week total: {current_week_total}, "
+        f"growth: {week_over_week_growth}%"
     )
 
     return result
