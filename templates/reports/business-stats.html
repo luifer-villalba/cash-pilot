@@ -1,0 +1,470 @@
+<!-- File: templates/reports/business-stats.html -->
+{% extends "reports/base.html" %}
+
+{% block report_title %}{{ _('Business Statistics') }}{% endblock %}
+
+{% block report_header %}{{ _('Business Statistics') }}{% endblock %}
+{% block report_description %}{{ _('Multi-business statistics dashboard with daily metrics comparison') }}{% endblock %}
+
+{% block report_content %}
+<div class="space-y-4">
+    <!-- Period Comparison Label & Hero Box Combined -->
+    <div class="bg-gradient-to-br from-primary/10 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-4 transition-all duration-200">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 bg-primary/20 rounded-md text-primary font-semibold text-xs uppercase tracking-wider">{{ _('Current') }}</span>
+                <span class="text-sm font-bold text-base-content">{{ current_period_label }}</span>
+                <span class="text-base-content/40">vs</span>
+                <span class="px-2.5 py-1 bg-base-200 rounded-md text-base-content/70 font-semibold text-xs uppercase tracking-wider">{{ _('Previous') }}</span>
+                <span class="text-sm font-bold text-base-content/70">{{ previous_period_label }}</span>
+            </div>
+            <div class="text-xs text-base-content/60 uppercase tracking-wider">{{ _('Cash + Cards + Bank Transfer') }}</div>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
+            <div class="flex items-baseline gap-3">
+                <h2 class="text-xs font-bold uppercase tracking-widest text-base-content/70">{{ _('Total Sales') }}</h2>
+                <p class="text-3xl font-bold font-mono text-primary tabular-nums">
+                    Gs {{ totals_current.total_sales | format_currency_py }}
+                </p>
+                {% if totals_deltas.total_sales.direction == 'up' %}
+                    <span class="text-success text-sm font-medium">↑ +{{ totals_deltas.total_sales.percent }}%</span>
+                {% elif totals_deltas.total_sales.direction == 'down' %}
+                    <span class="text-error text-sm font-medium">↓ {{ totals_deltas.total_sales.percent }}%</span>
+                {% elif totals_deltas.total_sales.percent == 0 and totals_current.total_sales == 0 %}
+                    <span class="text-base-content/40 text-xs italic">{{ _('No data') }}</span>
+                {% else %}
+                    <span class="text-base-content/50 text-sm">± {{ totals_deltas.total_sales.percent }}%</span>
+                {% endif %}
+            </div>
+            <div class="text-xs text-base-content/50">
+                {{ _('Previous') }}: <span class="font-mono tabular-nums">Gs {{ totals_previous.total_sales | format_currency_py }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Range Selector -->
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-3">
+        {% if date_error %}
+        <div role="alert" class="alert alert-error mb-3 shadow-lg rounded-xl border-none">
+            <svg class="stroke-current shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-medium">{{ date_error }}</span>
+        </div>
+        {% endif %}
+        <div class="flex flex-wrap gap-2 items-center">
+            <a href="/reports/business-stats?view=today" 
+               class="btn btn-sm {% if view == 'today' %}btn-primary{% else %}btn-outline{% endif %} transition-all hover:scale-[1.02] active:scale-[0.98]">
+                {{ _('Today') }}
+            </a>
+            <a href="/reports/business-stats?view=yesterday" 
+               class="btn btn-sm {% if view == 'yesterday' %}btn-primary{% else %}btn-outline{% endif %} transition-all hover:scale-[1.02] active:scale-[0.98]">
+                {{ _('Yesterday') }}
+            </a>
+            <a href="/reports/business-stats?view=week" 
+               class="btn btn-sm {% if view == 'week' %}btn-primary{% else %}btn-outline{% endif %} transition-all hover:scale-[1.02] active:scale-[0.98]">
+                {{ _('Last 7 Days') }}
+            </a>
+            <a href="/reports/business-stats?view=month" 
+               class="btn btn-sm {% if view == 'month' %}btn-primary{% else %}btn-outline{% endif %} transition-all hover:scale-[1.02] active:scale-[0.98]">
+                {{ _('Last 30 Days') }}
+            </a>
+            <a href="/reports/business-stats?view=custom" 
+               class="btn btn-sm {% if view == 'custom' %}btn-primary{% else %}btn-outline{% endif %} transition-all hover:scale-[1.02] active:scale-[0.98]">
+                {{ _('Custom') }}
+            </a>
+            {% if view == 'custom' %}
+            <form method="GET" action="/reports/business-stats" class="flex gap-2 items-center">
+                <input type="hidden" name="view" value="custom">
+                <label for="from_date" class="sr-only">{{ _('Start date for custom range') }}</label>
+                <input id="from_date" type="date" name="from_date" value="{{ from_date or current_from.isoformat() }}" 
+                       class="input input-sm input-bordered focus:ring-2 focus:ring-primary/20 transition-all" required>
+                <span class="text-xs text-base-content/60">{{ _('to') }}</span>
+                <label for="to_date" class="sr-only">{{ _('End date for custom range') }}</label>
+                <input id="to_date" type="date" name="to_date" value="{{ to_date or current_to.isoformat() }}" 
+                       class="input input-sm input-bordered focus:ring-2 focus:ring-primary/20 transition-all" required>
+                <button type="submit" class="btn btn-sm btn-primary transition-all hover:scale-[1.02] active:scale-[0.98]">{{ _('Apply') }}</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Helper macro for delta display - hides delta when business is closed -->
+    {% macro delta_display(delta, current_value, previous_value) %}
+        {% if current_value == 0 and previous_value == 0 %}
+            {# Business closed for both periods - no delta shown #}
+        {% elif current_value == 0 and previous_value > 0 %}
+            {# Business closed today - hide delta indicator #}
+        {% elif delta.direction == 'up' %}
+            <span class="text-success text-xs font-medium" title="{{ _('up') }} {{ delta.percent }}%">
+                ↑ +{{ delta.percent }}%
+            </span>
+        {% elif delta.direction == 'down' %}
+            <span class="text-error text-xs font-medium" title="{{ _('down') }} {{ delta.percent|abs }}%">
+                ↓ {{ delta.percent|abs }}%
+            </span>
+        {% else %}
+            <span class="text-base-content/50 text-xs" title="{{ delta.percent }}%">
+                ± {{ delta.percent }}%
+            </span>
+        {% endif %}
+    {% endmacro %}
+
+    <!-- Primary 5-Card Grid (Always visible desktop & mobile) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <!-- Card 1: Cash Sales -->
+        <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Cash Sales') }}</h3>
+            <p class="text-xl font-bold font-mono tabular-nums mb-1">Gs {{ totals_current.cash_sales | format_currency_py }}</p>
+            <div class="mt-1">
+                {{ delta_display(totals_deltas.cash_sales, totals_current.cash_sales, totals_previous.cash_sales) }}
+            </div>
+        </div>
+
+        <!-- Card 2: Card Payments -->
+        <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Card Payments') }}</h3>
+            <p class="text-xl font-bold font-mono tabular-nums mb-1">Gs {{ totals_current.card_payments_total | format_currency_py }}</p>
+            <div class="mt-1">
+                {{ delta_display(totals_deltas.card_payments_total, totals_current.card_payments_total, totals_previous.card_payments_total) }}
+            </div>
+        </div>
+
+        <!-- Card 3: Credit Sales -->
+        <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Credit Sales') }}</h3>
+            <p class="text-xl font-bold font-mono tabular-nums mb-1">Gs {{ totals_current.credit_sales_total | format_currency_py }}</p>
+            <div class="mt-1">
+                {{ delta_display(totals_deltas.credit_sales_total, totals_current.credit_sales_total, totals_previous.credit_sales_total) }}
+            </div>
+        </div>
+
+        <!-- Card 4: Collections -->
+        <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Collections') }}</h3>
+            <p class="text-xl font-bold font-mono tabular-nums mb-1">Gs {{ totals_current.credit_payments_collected | format_currency_py }}</p>
+            <div class="mt-1">
+                {{ delta_display(totals_deltas.credit_payments_collected, totals_current.credit_payments_collected, totals_previous.credit_payments_collected) }}
+            </div>
+        </div>
+
+        <!-- Card 5: Bank Transfers -->
+        <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Bank Transfers') }}</h3>
+            <p class="text-xl font-bold font-mono tabular-nums mb-1">Gs {{ totals_current.bank_transfer_total | format_currency_py }}</p>
+            <div class="mt-1">
+                {{ delta_display(totals_deltas.bank_transfer_total, totals_current.bank_transfer_total, totals_previous.bank_transfer_total) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Business Details Section -->
+    <div class="space-y-3">
+        <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70">{{ _('By Business') }}</h2>
+        
+        <!-- Desktop Table View - visible on screens 1024px and wider -->
+        <div class="hidden lg:block overflow-x-auto bg-base-100 border border-base-300 rounded-xl shadow-lg">
+            <table class="table table-sm w-full">
+                <thead>
+                    <tr class="bg-gradient-to-r from-base-200 to-base-200/80 border-b-2 border-primary/20">
+                        <th class="sticky left-0 z-20 bg-gradient-to-r from-base-200 to-base-200/80 border-r border-base-300/50 min-w-[200px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70">
+                            {{ _('Business') }}
+                        </th>
+                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                            {{ _('Total Sales') }}
+                        </th>
+                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                            {{ _('Cash Sales') }}
+                        </th>
+                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                            {{ _('Card Payments') }}
+                        </th>
+                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                            {{ _('Credit Sales') }}
+                        </th>
+                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                            {{ _('Collections') }}
+                        </th>
+                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70">
+                            {{ _('Bank Transfers') }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in businesses %}
+                    {% set business_closed = item.current.total_sales == 0 and item.previous.total_sales > 0 %}
+                    {% set no_current_sessions = item.current.total_sales == 0 %}
+                    <tr class="hover:bg-primary/5 transition-all duration-200 border-b border-base-200/50 group">
+                        <td class="sticky left-0 z-10 bg-base-100 group-hover:bg-primary/5 border-r border-base-300/50 px-4 py-3 font-semibold text-sm transition-colors duration-200 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                            {{ item.business.name }}
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                            <div class="flex flex-col items-end gap-1">
+                                {% if no_current_sessions %}
+                                    <span class="text-base-content/30 text-sm">—</span>
+                                {% else %}
+                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.total_sales | format_currency_py }}</span>
+                                {% endif %}
+                                <div class="text-xs">
+                                    {{ delta_display(item.deltas.total_sales, item.current.total_sales, item.previous.total_sales) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                            <div class="flex flex-col items-end gap-1">
+                                {% if no_current_sessions %}
+                                    <span class="text-base-content/30 text-sm">—</span>
+                                {% else %}
+                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.cash_sales | format_currency_py }}</span>
+                                {% endif %}
+                                <div class="text-xs">
+                                    {{ delta_display(item.deltas.cash_sales, item.current.cash_sales, item.previous.cash_sales) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                            <div class="flex flex-col items-end gap-1">
+                                {% if no_current_sessions %}
+                                    <span class="text-base-content/30 text-sm">—</span>
+                                {% else %}
+                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
+                                {% endif %}
+                                <div class="text-xs">
+                                    {{ delta_display(item.deltas.card_payments_total, item.current.card_payments_total, item.previous.card_payments_total) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                            <div class="flex flex-col items-end gap-1">
+                                {% if no_current_sessions %}
+                                    <span class="text-base-content/30 text-sm">—</span>
+                                {% else %}
+                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.credit_sales_total | format_currency_py }}</span>
+                                {% endif %}
+                                <div class="text-xs">
+                                    {{ delta_display(item.deltas.credit_sales_total, item.current.credit_sales_total, item.previous.credit_sales_total) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                            <div class="flex flex-col items-end gap-1">
+                                {% if no_current_sessions %}
+                                    <span class="text-base-content/30 text-sm">—</span>
+                                {% else %}
+                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.credit_payments_collected | format_currency_py }}</span>
+                                {% endif %}
+                                <div class="text-xs">
+                                    {{ delta_display(item.deltas.credit_payments_collected, item.current.credit_payments_collected, item.previous.credit_payments_collected) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3">
+                            <div class="flex flex-col items-end gap-1">
+                                {% if no_current_sessions %}
+                                    <span class="text-base-content/30 text-sm">—</span>
+                                {% else %}
+                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.bank_transfer_total | format_currency_py }}</span>
+                                {% endif %}
+                                <div class="text-xs">
+                                    {{ delta_display(item.deltas.bank_transfer_total, item.current.bank_transfer_total, item.previous.bank_transfer_total) }}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Totals Row -->
+                    <tr class="bg-gradient-to-r from-primary/10 via-primary/5 to-base-200 font-bold border-t-2 border-primary/40">
+                        <td class="sticky left-0 z-10 bg-gradient-to-r from-primary/10 via-primary/5 to-base-200 border-r border-primary/30 px-4 py-3 text-sm uppercase tracking-wider shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                            {{ _('TOTAL') }}
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.total_sales | format_currency_py }}</span>
+                                <div class="text-xs">
+                                    {{ delta_display(totals_deltas.total_sales, totals_current.total_sales, totals_previous.total_sales) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.cash_sales | format_currency_py }}</span>
+                                <div class="text-xs">
+                                    {{ delta_display(totals_deltas.cash_sales, totals_current.cash_sales, totals_previous.cash_sales) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.card_payments_total | format_currency_py }}</span>
+                                <div class="text-xs">
+                                    {{ delta_display(totals_deltas.card_payments_total, totals_current.card_payments_total, totals_previous.card_payments_total) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.credit_sales_total | format_currency_py }}</span>
+                                <div class="text-xs">
+                                    {{ delta_display(totals_deltas.credit_sales_total, totals_current.credit_sales_total, totals_previous.credit_sales_total) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.credit_payments_collected | format_currency_py }}</span>
+                                <div class="text-xs">
+                                    {{ delta_display(totals_deltas.credit_payments_collected, totals_current.credit_payments_collected, totals_previous.credit_payments_collected) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.bank_transfer_total | format_currency_py }}</span>
+                                <div class="text-xs">
+                                    {{ delta_display(totals_deltas.bank_transfer_total, totals_current.bank_transfer_total, totals_previous.bank_transfer_total) }}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile/Tablet Card View - visible on screens smaller than 1024px -->
+        <div class="lg:hidden space-y-3">
+            {% for item in businesses %}
+            {% set business_closed = item.current.total_sales == 0 and item.previous.total_sales > 0 %}
+            {% set no_current_sessions = item.current.total_sales == 0 %}
+            <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200 p-4">
+                <h3 class="text-sm font-bold mb-3 pb-2 border-b border-base-300">{{ item.business.name }}</h3>
+                
+                <div class="space-y-2.5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Total Sales') }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if no_current_sessions %}
+                                <span class="text-sm text-base-content/40">—</span>
+                            {% else %}
+                                <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.total_sales | format_currency_py }}</span>
+                            {% endif %}
+                            {{ delta_display(item.deltas.total_sales, item.current.total_sales, item.previous.total_sales) }}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cash Sales') }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if no_current_sessions %}
+                                <span class="text-sm text-base-content/40">—</span>
+                            {% else %}
+                                <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.cash_sales | format_currency_py }}</span>
+                            {% endif %}
+                            {{ delta_display(item.deltas.cash_sales, item.current.cash_sales, item.previous.cash_sales) }}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Card Payments') }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if no_current_sessions %}
+                                <span class="text-sm text-base-content/40">—</span>
+                            {% else %}
+                                <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
+                            {% endif %}
+                            {{ delta_display(item.deltas.card_payments_total, item.current.card_payments_total, item.previous.card_payments_total) }}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Credit Sales') }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if no_current_sessions %}
+                                <span class="text-sm text-base-content/40">—</span>
+                            {% else %}
+                                <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.credit_sales_total | format_currency_py }}</span>
+                            {% endif %}
+                            {{ delta_display(item.deltas.credit_sales_total, item.current.credit_sales_total, item.previous.credit_sales_total) }}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Collections') }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if no_current_sessions %}
+                                <span class="text-sm text-base-content/40">—</span>
+                            {% else %}
+                                <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.credit_payments_collected | format_currency_py }}</span>
+                            {% endif %}
+                            {{ delta_display(item.deltas.credit_payments_collected, item.current.credit_payments_collected, item.previous.credit_payments_collected) }}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Bank Transfers') }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if no_current_sessions %}
+                                <span class="text-sm text-base-content/40">—</span>
+                            {% else %}
+                                <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.bank_transfer_total | format_currency_py }}</span>
+                            {% endif %}
+                            {{ delta_display(item.deltas.bank_transfer_total, item.current.bank_transfer_total, item.previous.bank_transfer_total) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- More Details Collapsible Section -->
+                <div class="collapse collapse-arrow bg-base-200 rounded-lg mt-3">
+                    <input
+                        type="checkbox"
+                        id="business-details-{{ loop.index0 }}"
+                        aria-label="{{ _('Toggle more details for') }} {{ item.business.name }}"
+                        aria-controls="business-details-panel-{{ loop.index0 }}">
+                    <div class="collapse-title text-xs font-semibold text-primary py-2 px-0 min-h-0">
+                        {{ _('More Details') }}
+                    </div>
+                    <div class="collapse-content px-0" id="business-details-panel-{{ loop.index0 }}">
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Cash Profit') }}</p>
+                                <p class="text-sm font-bold font-mono tabular-nums {% if item.current.cash_profit >= 0 %}text-success{% else %}text-error{% endif %}">
+                                    {% if item.current.cash_profit >= 0 %}+{% endif %}Gs {{ item.current.cash_profit | format_currency_py }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Total Expenses') }}</p>
+                                <p class="text-sm font-bold font-mono tabular-nums text-error">−Gs {{ item.current.total_expenses | format_currency_py }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Credit Card') }}</p>
+                                <p class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.credit_card_total | format_currency_py }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Debit Card') }}</p>
+                                <p class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.debit_card_total | format_currency_py }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Sessions Open') }}</p>
+                                <p class="text-sm font-bold font-mono tabular-nums">{{ item.current.sessions_count_open }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Sessions Closed') }}</p>
+                                <p class="text-sm font-bold font-mono tabular-nums">{{ item.current.sessions_count_closed }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Need Review') }}</p>
+                                <p class="text-sm font-bold font-mono tabular-nums {% if item.current.sessions_need_review > 0 %}text-warning{% endif %}">
+                                    {{ item.current.sessions_need_review }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Payment Mix') }}</p>
+                                <p class="text-xs font-mono tabular-nums">
+                                    {{ _('Cash') }}:{{ "%.0f"|format(item.current.payment_method_mix.cash_percent) }}% 
+                                    {{ _('Card') }}:{{ "%.0f"|format(item.current.payment_method_mix.card_percent) }}% 
+                                    {{ _('Bank') }}:{{ "%.0f"|format(item.current.payment_method_mix.bank_percent) }}%
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
