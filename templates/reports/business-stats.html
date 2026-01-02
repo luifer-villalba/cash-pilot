@@ -44,6 +44,14 @@
 
     <!-- Date Range Selector -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-3">
+        {% if date_error %}
+        <div role="alert" class="alert alert-error mb-3 shadow-lg rounded-xl border-none">
+            <svg class="stroke-current shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-medium">{{ date_error }}</span>
+        </div>
+        {% endif %}
         <div class="flex flex-wrap gap-2 items-center">
             <a href="/reports/business-stats?view=today" 
                class="btn btn-sm {% if view == 'today' %}btn-primary{% else %}btn-outline{% endif %} transition-all hover:scale-[1.02] active:scale-[0.98]">
@@ -69,10 +77,12 @@
             <form method="GET" action="/reports/business-stats" class="flex gap-2 items-center">
                 <input type="hidden" name="view" value="custom">
                 <input type="date" name="from_date" value="{{ from_date or current_from.isoformat() }}" 
-                       class="input input-sm input-bordered focus:ring-2 focus:ring-primary/20 transition-all" required>
+                       class="input input-sm input-bordered focus:ring-2 focus:ring-primary/20 transition-all" required
+                       aria-label="{{ _('Start date for custom range') }}">
                 <span class="text-xs text-base-content/60">{{ _('to') }}</span>
                 <input type="date" name="to_date" value="{{ to_date or current_to.isoformat() }}" 
-                       class="input input-sm input-bordered focus:ring-2 focus:ring-primary/20 transition-all" required>
+                       class="input input-sm input-bordered focus:ring-2 focus:ring-primary/20 transition-all" required
+                       aria-label="{{ _('End date for custom range') }}">
                 <button type="submit" class="btn btn-sm btn-primary transition-all hover:scale-[1.02] active:scale-[0.98]">{{ _('Apply') }}</button>
             </form>
             {% endif %}
@@ -363,11 +373,15 @@
 
                 <!-- More Details Collapsible Section -->
                 <div class="collapse collapse-arrow bg-base-200 rounded-lg mt-3">
-                    <input type="checkbox" id="business-details-{{ loop.index0 }}">
+                    <input
+                        type="checkbox"
+                        id="business-details-{{ loop.index0 }}"
+                        aria-label="{{ _('Toggle more details for') }} {{ item.business.name }}"
+                        aria-controls="business-details-panel-{{ loop.index0 }}">
                     <div class="collapse-title text-xs font-semibold text-primary py-2 px-0 min-h-0">
                         {{ _('More Details') }}
                     </div>
-                    <div class="collapse-content px-0">
+                    <div class="collapse-content px-0" id="business-details-panel-{{ loop.index0 }}">
                         <div class="grid grid-cols-2 gap-3 pt-2">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Cash Profit') }}</p>
@@ -404,9 +418,9 @@
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Payment Mix') }}</p>
                                 <p class="text-xs font-mono tabular-nums">
-                                    C:{{ "%.0f"|format(item.current.payment_method_mix.cash_percent) }}% 
-                                    T:{{ "%.0f"|format(item.current.payment_method_mix.card_percent) }}% 
-                                    B:{{ "%.0f"|format(item.current.payment_method_mix.bank_percent) }}%
+                                    {{ _('Cash') }}:{{ "%.0f"|format(item.current.payment_method_mix.cash_percent) }}% 
+                                    {{ _('Card') }}:{{ "%.0f"|format(item.current.payment_method_mix.card_percent) }}% 
+                                    {{ _('Bank') }}:{{ "%.0f"|format(item.current.payment_method_mix.bank_percent) }}%
                                 </p>
                             </div>
                         </div>

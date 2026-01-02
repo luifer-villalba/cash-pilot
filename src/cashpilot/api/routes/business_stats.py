@@ -55,10 +55,13 @@ def calculate_date_range(
         try:
             from_dt = date.fromisoformat(from_date)
             to_dt = date.fromisoformat(to_date)
+            if from_dt > to_dt:
+                # Invalid range: from_date after to_date
+                raise ValueError("from_date must be before or equal to to_date")
             return from_dt, to_dt
         except ValueError:
-            # Fallback to today if invalid
-            return today, today
+            # Re-raise to be handled by the route handler
+            raise
     else:
         # Default to today
         return today, today
@@ -191,15 +194,9 @@ async def aggregate_business_metrics(
         # Calculate payment method % mix
         payment_method_mix = {}
         if total_sales > 0:
-            payment_method_mix["cash_percent"] = (
-                (cash_sales / total_sales * 100) if total_sales > 0 else Decimal("0")
-            )
-            payment_method_mix["card_percent"] = (
-                (card_payments_total / total_sales * 100) if total_sales > 0 else Decimal("0")
-            )
-            payment_method_mix["bank_percent"] = (
-                (bank_transfer_total / total_sales * 100) if total_sales > 0 else Decimal("0")
-            )
+            payment_method_mix["cash_percent"] = cash_sales / total_sales * 100
+            payment_method_mix["card_percent"] = card_payments_total / total_sales * 100
+            payment_method_mix["bank_percent"] = bank_transfer_total / total_sales * 100
         else:
             payment_method_mix["cash_percent"] = Decimal("0")
             payment_method_mix["card_percent"] = Decimal("0")
@@ -324,7 +321,7 @@ def calculate_delta(current: Decimal | int, previous: Decimal | int) -> dict:
 @router.get("/business-stats", response_class=HTMLResponse)
 async def business_stats(
     request: Request,
-    view: str = Query("today", regex="^(today|yesterday|week|month|custom)$"),
+    view: str = Query("today", pattern="^(today|yesterday|week|month|custom)$"),
     from_date: str | None = Query(None),
     to_date: str | None = Query(None),
     current_user: User = Depends(require_admin),
@@ -335,7 +332,14 @@ async def business_stats(
     _ = get_translation_function(locale)
 
     # Calculate current period date range
-    current_from, current_to = calculate_date_range(view, from_date, to_date)
+    date_error = None
+    try:
+        current_from, current_to = calculate_date_range(view, from_date, to_date)
+    except ValueError:
+        # Invalid date range - show error and fallback to today
+        date_error = _("Invalid date range. Please check your dates and try again.")
+        today = today_local()
+        current_from, current_to = today, today
 
     # Calculate previous period for comparison
     prev_from, prev_to = calculate_previous_period(current_from, current_to)
@@ -367,12 +371,8 @@ async def business_stats(
         "sessions_need_review",
     ]
 
-    totals_current = {
-        key: Decimal("0") if key.startswith("sessions_") else Decimal("0") for key in metric_keys
-    }
-    totals_previous = {
-        key: Decimal("0") if key.startswith("sessions_") else Decimal("0") for key in metric_keys
-    }
+    totals_current = {key: Decimal("0") for key in metric_keys}
+    totals_previous = {key: Decimal("0") for key in metric_keys}
 
     # Payment method mix for totals (calculated separately)
     totals_current["payment_method_mix"] = {
@@ -429,10 +429,10 @@ async def business_stats(
             current_val = current[key]
             previous_val = previous[key]
             deltas[key] = calculate_delta(current_val, previous_val)
-            # Add to totals
+            # Add to totals (convert integers to Decimal for consistency)
             if key.startswith("sessions_"):
-                totals_current[key] += current_val
-                totals_previous[key] += previous_val
+                totals_current[key] = Decimal(str(int(totals_current[key]) + int(current_val)))
+                totals_previous[key] = Decimal(str(int(totals_previous[key]) + int(previous_val)))
             else:
                 totals_current[key] += current_val
                 totals_previous[key] += previous_val
@@ -477,10 +477,6 @@ async def business_stats(
         totals_deltas[key] = calculate_delta(totals_current[key], totals_previous[key])
 
     # Format dates for display - more readable format
-    def format_date_short(d: date) -> str:
-        """Format date as 'Mon Dec 31' for single days, or 'Dec 25 - Dec 31' for ranges."""
-        return d.strftime("%b %d")
-
     def format_date_range(from_d: date, to_d: date) -> str:
         """Format date range concisely."""
         if from_d == to_d:
@@ -516,5 +512,6 @@ async def business_stats(
             "totals_deltas": totals_deltas,
             "locale": locale,
             "_": _,
+            "date_error": date_error,
         },
     )
