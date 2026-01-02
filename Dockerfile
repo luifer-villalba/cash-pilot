@@ -5,7 +5,8 @@ FROM node:20-alpine AS css-builder
 
 WORKDIR /app
 
-# Update npm to latest version
+# Pin npm to 11.7.0 for reproducible builds and to match the version
+# used to generate package-lock.json and the existing build tooling.
 RUN npm install -g npm@11.7.0
 
 # Install dependencies

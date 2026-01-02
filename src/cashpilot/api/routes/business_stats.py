@@ -1,6 +1,7 @@
 # File: src/cashpilot/api/routes/business_stats.py
 """Business statistics report route."""
 
+import asyncio
 from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -19,9 +20,15 @@ from cashpilot.api.utils import (
     get_translation_function,
 )
 from cashpilot.core.db import get_db
+from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
 from cashpilot.models.user import User
 from cashpilot.utils.datetime import today_local
+
+logger = get_logger(__name__)
+
+# Threshold for determining neutral delta direction (percentage)
+NEUTRAL_DELTA_THRESHOLD_PERCENT = 3
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -103,15 +110,16 @@ async def aggregate_business_metrics(
     stmt_financial = (
         select(
             CashSession.business_id,
-            # Cash Sales = (final_cash - initial_cash) + envelope + bank_transfer
-            # + expenses - credit_payments_collected
+            # Cash Sales = (final_cash - initial_cash) + envelope + expenses
+            # - credit_payments_collected
+            # Note: bank_transfer_total is NOT included in cash_sales
+            # (it's a separate payment method)
             func.sum(
                 case(
                     (
                         CashSession.final_cash.is_not(None),
                         (CashSession.final_cash - CashSession.initial_cash)
                         + func.coalesce(CashSession.envelope_amount, 0)
-                        + func.coalesce(CashSession.bank_transfer_total, 0)
                         + func.coalesce(CashSession.expenses, 0)
                         - func.coalesce(CashSession.credit_payments_collected, 0),
                     ),
@@ -158,10 +166,12 @@ async def aggregate_business_metrics(
         .group_by(CashSession.business_id)
     )
 
-    result_financial = await db.execute(stmt_financial)
+    # Execute both queries concurrently for better performance
+    result_financial, result_counts = await asyncio.gather(
+        db.execute(stmt_financial),
+        db.execute(stmt_counts),
+    )
     financial_rows = result_financial.all()
-
-    result_counts = await db.execute(stmt_counts)
     count_rows = result_counts.all()
 
     # Build count dict by business_id
@@ -302,7 +312,7 @@ def calculate_delta(current: Decimal | int, previous: Decimal | int) -> dict:
     delta_percent = delta_percent.quantize(Decimal("0.1"))
 
     # Determine direction and color
-    if abs(delta_percent) <= 3:
+    if abs(delta_percent) <= NEUTRAL_DELTA_THRESHOLD_PERCENT:
         direction = "neutral"
         color = "neutral"
     elif delta_percent > 0:
@@ -338,6 +348,16 @@ async def business_stats(
     try:
         current_from, current_to = calculate_date_range(view, from_date, to_date)
     except ValueError as e:
+        # Log the original exception for debugging
+        logger.warning(
+            "Invalid date range in business stats",
+            extra={
+                "view": view,
+                "from_date": from_date,
+                "to_date": to_date,
+                "error": str(e),
+            },
+        )
         # Invalid date range - show specific error message and fallback to today
         error_msg = str(e)
         if error_msg:
@@ -350,9 +370,11 @@ async def business_stats(
     # Calculate previous period for comparison
     prev_from, prev_to = calculate_previous_period(current_from, current_to)
 
-    # Aggregate metrics for current and previous periods
-    current_metrics = await aggregate_business_metrics(db, current_from, current_to)
-    previous_metrics = await aggregate_business_metrics(db, prev_from, prev_to)
+    # Aggregate metrics for current and previous periods concurrently
+    current_metrics, previous_metrics = await asyncio.gather(
+        aggregate_business_metrics(db, current_from, current_to),
+        aggregate_business_metrics(db, prev_from, prev_to),
+    )
 
     # Get all businesses
     businesses = await get_active_businesses(db)
