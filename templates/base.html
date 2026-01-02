@@ -69,7 +69,8 @@
                     <li><a href="/" class="text-sm transition-colors hover:bg-primary/10">{{ _('Dashboard') }}</a></li>
                     <li><a href="/businesses" class="text-sm transition-colors hover:bg-primary/10">{{ _('Businesses') }}</a></li>
                     {% if current_user and current_user.role == 'ADMIN' %}
-                    <li class="border-t border-base-200 pt-2 mt-2"><a href="/admin/users-page" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Users') }}</a></li>
+                    <li class="border-t border-base-200 pt-2 mt-2"><a href="/reports" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Reports') }}</a></li>
+                    <li><a href="/admin/users-page" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Users') }}</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -98,6 +99,12 @@
                 <span class="text-sm">{{ _('Businesses') }}</span>
             </a>
             {% if current_user and current_user.role == 'ADMIN' %}
+            <a href="/reports" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/reports' or request.path.startswith('/reports/') %} btn-active{% else %} btn-ghost{% endif %}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span class="text-sm">{{ _('Reports') }}</span>
+            </a>
             <a href="/admin/users-page" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/admin/users-page' %} btn-active{% else %} btn-ghost{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -160,10 +167,15 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                 </svg>
-                <span>CashPilot © 2025 — {{ _('Business Cash Register Reconciliation System') }}</span>
+                <span>CashPilot © <span id="current-year">2026</span> — {{ _('Business Cash Register Reconciliation System') }}</span>
             </p>
         </div>
     </footer>
+
+    <script>
+        // Set current year dynamically
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
 
     <script src="/static/js/theme-toggle.js"></script>
     <script src="/static/js/currency-formatter.js"></script>

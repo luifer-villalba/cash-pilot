@@ -56,12 +56,13 @@ services:
       retries: 5
 
   # CSS builder for development
+  # Note: npm version matches Dockerfile (11.7.0) for consistency
   css-builder:
     image: node:20-alpine
     working_dir: /app
     volumes:
       - ./:/app
-    command: sh -c "npm ci && npm run build:css"
+    command: sh -c "npm install -g npm@11.7.0 && npm ci && npm run build:css"
     profiles:
       - tools
 
