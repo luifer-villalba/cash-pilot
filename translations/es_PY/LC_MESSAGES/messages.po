@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-02 02:53+0000\n"
+"POT-Creation-Date: 2026-01-02 19:16+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -19,48 +19,54 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.14.0\n"
 
-#: /app/src/cashpilot/api/routes/reports.py:33
-msgid "Daily Summary"
-msgstr ""
+#: /app/src/cashpilot/api/routes/business_stats.py:375
+msgid "Invalid date range. Please check your dates and try again."
+msgstr "Rango de fechas inválido. Por favor revisá las fechas e intentá de nuevo."
 
-#: /app/src/cashpilot/api/routes/reports.py:34
-msgid "Overview of daily cash flow and transactions"
-msgstr ""
+#: /app/src/cashpilot/api/routes/reports.py:36
+#: /app/templates/reports/daily-revenue.html:4
+#: /app/templates/reports/daily-revenue.html:18
+msgid "Daily Revenue Summary"
+msgstr "Resumen de Ventas Diarias"
 
-#: /app/src/cashpilot/api/routes/reports.py:40
+#: /app/src/cashpilot/api/routes/reports.py:37
+msgid "Total sales by payment method, net earnings, and discrepancy counts"
+msgstr "Total de ventas por método de pago, ganancias netas y conteo de discrepancias"
+
+#: /app/src/cashpilot/api/routes/reports.py:45
 #: /app/templates/sessions/session_detail.html:265
 msgid "Cash Flow"
 msgstr "Flujo de efectivo"
 
-#: /app/src/cashpilot/api/routes/reports.py:41
+#: /app/src/cashpilot/api/routes/reports.py:46
 msgid "Track cash inflows and outflows over time"
-msgstr ""
-
-#: /app/src/cashpilot/api/routes/reports.py:47
-msgid "Revenue Analysis"
-msgstr ""
-
-#: /app/src/cashpilot/api/routes/reports.py:48
-msgid "Breakdown of revenue by payment method and category"
-msgstr ""
+msgstr "Seguimiento de entradas y salidas de efectivo a lo largo del tiempo"
 
 #: /app/src/cashpilot/api/routes/reports.py:54
+msgid "Revenue Analysis"
+msgstr "Análisis de Ingresos"
+
+#: /app/src/cashpilot/api/routes/reports.py:55
+msgid "Breakdown of revenue by payment method and category"
+msgstr "Desglose de ingresos por método de pago y categoría"
+
+#: /app/src/cashpilot/api/routes/reports.py:63
 msgid "Expense Tracking"
 msgstr "Seguimiento de Gastos"
 
-#: /app/src/cashpilot/api/routes/reports.py:55
+#: /app/src/cashpilot/api/routes/reports.py:64
 msgid "Monitor and categorize business expenses"
-msgstr ""
+msgstr "Monitorear y categorizar gastos del negocio"
 
-#: /app/src/cashpilot/api/routes/reports.py:61
+#: /app/src/cashpilot/api/routes/reports.py:72
 msgid "Session Performance"
 msgstr "Rendimiento de Sesiones"
 
-#: /app/src/cashpilot/api/routes/reports.py:62
+#: /app/src/cashpilot/api/routes/reports.py:73
 msgid "Analyze cashier and session performance metrics"
 msgstr "Analizar métricas de rendimiento de cajeros y sesiones"
 
-#: /app/src/cashpilot/api/routes/reports.py:68
+#: /app/src/cashpilot/api/routes/reports.py:79
 #: /app/templates/sessions/close_session.html:92
 #: /app/templates/sessions/edit_closed_session.html:75
 #: /app/templates/sessions/session_detail.html:348
@@ -68,23 +74,23 @@ msgstr "Analizar métricas de rendimiento de cajeros y sesiones"
 msgid "Payment Methods"
 msgstr "Métodos de Pago"
 
-#: /app/src/cashpilot/api/routes/reports.py:69
+#: /app/src/cashpilot/api/routes/reports.py:80
 msgid "Distribution of payments by method (cash, card, transfer)"
-msgstr ""
+msgstr "Distribución de pagos por método (efectivo, tarjeta, transferencia)"
 
-#: /app/src/cashpilot/api/routes/reports.py:75
+#: /app/src/cashpilot/api/routes/reports.py:88
 msgid "Discrepancies"
 msgstr "Discrepancias"
 
-#: /app/src/cashpilot/api/routes/reports.py:76
+#: /app/src/cashpilot/api/routes/reports.py:89
 msgid "Report on cash discrepancies and flagged sessions"
-msgstr ""
+msgstr "Reporte de discrepancias de efectivo y sesiones marcadas"
 
-#: /app/src/cashpilot/api/routes/reports.py:82
+#: /app/src/cashpilot/api/routes/reports.py:97
 #: /app/templates/partials/stats_row.html:28
-#: /app/templates/reports/business-stats.html:125
-#: /app/templates/reports/business-stats.html:163
-#: /app/templates/reports/business-stats.html:314
+#: /app/templates/reports/business-stats.html:135
+#: /app/templates/reports/business-stats.html:183
+#: /app/templates/reports/business-stats.html:376
 #: /app/templates/sessions/close_session.html:189
 #: /app/templates/sessions/edit_closed_session.html:197
 #: /app/templates/sessions/edit_open_session.html:97
@@ -93,38 +99,38 @@ msgstr ""
 msgid "Credit Sales"
 msgstr "Ventas a Crédito"
 
-#: /app/src/cashpilot/api/routes/reports.py:83
+#: /app/src/cashpilot/api/routes/reports.py:98
 msgid "Track credit sales and payment collections"
-msgstr ""
+msgstr "Seguimiento de ventas a crédito y cobros"
 
-#: /app/src/cashpilot/api/routes/reports.py:89
+#: /app/src/cashpilot/api/routes/reports.py:106
 #: /app/templates/reports/business-stats.html:4
 #: /app/templates/reports/business-stats.html:6
 msgid "Business Statistics"
 msgstr "Estadísticas de Negocios"
 
-#: /app/src/cashpilot/api/routes/reports.py:90
+#: /app/src/cashpilot/api/routes/reports.py:107
 #: /app/templates/reports/business-stats.html:7
 msgid "Multi-business statistics dashboard with daily metrics comparison"
 msgstr "Panel de estadísticas multi-negocio con comparación de métricas diarias"
 
-#: /app/src/cashpilot/api/routes/reports.py:96
+#: /app/src/cashpilot/api/routes/reports.py:115
 msgid "Business Comparison"
 msgstr "Comparación de Negocios"
 
-#: /app/src/cashpilot/api/routes/reports.py:97
+#: /app/src/cashpilot/api/routes/reports.py:116
 msgid "Compare performance across multiple business locations"
-msgstr ""
+msgstr "Comparar rendimiento entre múltiples sucursales"
 
-#: /app/src/cashpilot/api/routes/reports.py:103
+#: /app/src/cashpilot/api/routes/reports.py:124
 #: /app/templates/sessions/edit_closed_session.html:298
 #: /app/templates/sessions/edit_open_session.html:202
 msgid "Audit Trail"
 msgstr "Registro de Auditoría"
 
-#: /app/src/cashpilot/api/routes/reports.py:104
+#: /app/src/cashpilot/api/routes/reports.py:125
 msgid "Complete history of session changes and edits"
-msgstr ""
+msgstr "Historial completo de cambios y ediciones de sesiones"
 
 #: /app/src/cashpilot/api/routes/sessions_edit.py:169
 #: /app/templates/partials/sessions_table.html:191
@@ -134,7 +140,7 @@ msgstr "No podes editar (pasaron más de 12 horas)"
 
 #: /app/templates/base.html:63
 msgid "Menu"
-msgstr ""
+msgstr "Menú"
 
 #: /app/templates/base.html:69 /app/templates/base.html:93
 #: /app/templates/index.html:4 /app/templates/index.html:19
@@ -151,7 +157,7 @@ msgstr "Negocios"
 #: /app/templates/reports/dashboard.html:4
 #: /app/templates/reports/dashboard.html:18
 msgid "Reports"
-msgstr ""
+msgstr "Reportes"
 
 #: /app/templates/base.html:73 /app/templates/base.html:112
 msgid "Users"
@@ -212,11 +218,13 @@ msgstr "Alternar filtros"
 msgid "More Options"
 msgstr "Más Opciones"
 
-#: /app/templates/index.html:81 /app/templates/reports/business-stats.html:50
+#: /app/templates/index.html:81 /app/templates/reports/business-stats.html:58
+#: /app/templates/reports/daily-revenue.html:36
 msgid "Today"
 msgstr "Hoy"
 
-#: /app/templates/index.html:91 /app/templates/reports/business-stats.html:54
+#: /app/templates/index.html:91 /app/templates/reports/business-stats.html:62
+#: /app/templates/reports/daily-revenue.html:39
 msgid "Yesterday"
 msgstr "Ayer"
 
@@ -589,6 +597,7 @@ msgstr "¿Estás seguro de que deseas activar este usuario?"
 #: /app/templates/businesses/list.html:104
 #: /app/templates/partials/sessions_table.html:118
 #: /app/templates/partials/stats_row.html:79
+#: /app/templates/reports/daily-revenue.html:278
 msgid "Active"
 msgstr "Activo"
 
@@ -642,7 +651,7 @@ msgstr "Por favor complete todos los campos requeridos"
 
 #: /app/templates/admin/users.html:333
 msgid "(You)"
-msgstr ""
+msgstr "(Vos)"
 
 #: /app/templates/admin/users.html:334
 msgid "ADMIN"
@@ -726,7 +735,7 @@ msgstr "Crear Negocio"
 #: /app/templates/businesses/create.html:90
 #: /app/templates/businesses/edit.html:107
 msgid "Cancel and return to businesses list"
-msgstr ""
+msgstr "Cancelar y volver a la lista de negocios"
 
 #: /app/templates/businesses/create.html:103
 #: /app/templates/sessions/create_session.html:222
@@ -754,12 +763,13 @@ msgid "Edit Business"
 msgstr "Editar Negocio"
 
 #: /app/templates/businesses/edit.html:10
+#: /app/templates/reports/daily-revenue.html:27
 msgid "Back"
-msgstr ""
+msgstr "Volver"
 
 #: /app/templates/businesses/edit.html:90
 msgid "Enable or disable this business location"
-msgstr ""
+msgstr "Habilitar o deshabilitar esta sucursal"
 
 #: /app/templates/businesses/edit.html:99
 msgid "Save business changes"
@@ -798,7 +808,7 @@ msgstr "Solo administradores pueden crear negocios/sucursales"
 
 #: /app/templates/businesses/list.html:48
 msgid "Search & Filter"
-msgstr ""
+msgstr "Buscar y Filtrar"
 
 #: /app/templates/businesses/list.html:53
 msgid "Search businesses"
@@ -893,7 +903,7 @@ msgstr "Gastos"
 
 #: /app/templates/partials/expense_items_table.html:16
 msgid "Click here to add your first expense"
-msgstr ""
+msgstr "Hacé clic acá para agregar tu primer gasto"
 
 #: /app/templates/partials/expense_items_table.html:34
 msgid "Add Expense"
@@ -943,10 +953,11 @@ msgstr "No hay gastos registrados"
 
 #: /app/templates/partials/expense_items_table.html:138
 msgid "Add expenses to track cash outflows"
-msgstr ""
+msgstr "Agregá gastos para rastrear salidas de efectivo"
 
 #: /app/templates/partials/expense_items_table.html:149
-#: /app/templates/reports/business-stats.html:363
+#: /app/templates/reports/business-stats.html:429
+#: /app/templates/reports/daily-revenue.html:146
 msgid "Total Expenses"
 msgstr "Total de Gastos"
 
@@ -963,7 +974,8 @@ msgid "New Session"
 msgstr "Abrir Caja"
 
 #: /app/templates/partials/sessions_table.html:50
-#: /app/templates/reports/business-stats.html:160
+#: /app/templates/reports/business-stats.html:171
+#: /app/templates/reports/daily-revenue.html:54
 #: /app/templates/sessions/create_session.html:29
 #: /app/templates/sessions/create_session.html:248
 #: /app/templates/sessions/session_detail.html:717
@@ -985,9 +997,9 @@ msgstr "Entregado"
 #: /app/templates/partials/sessions_table.html:53
 #: /app/templates/partials/stats_row.html:14
 #: /app/templates/partials/stats_row.html:72
-#: /app/templates/reports/business-stats.html:107
-#: /app/templates/reports/business-stats.html:161
-#: /app/templates/reports/business-stats.html:292
+#: /app/templates/reports/business-stats.html:117
+#: /app/templates/reports/business-stats.html:177
+#: /app/templates/reports/business-stats.html:354
 #: /app/templates/sessions/close_session.html:384
 #: /app/templates/sessions/close_session.html:468
 #: /app/templates/sessions/session_detail.html:412
@@ -1151,10 +1163,13 @@ msgid "TOTAL SALES"
 msgstr "VENTAS TOTALES"
 
 #: /app/templates/partials/stats_row.html:7
+#: /app/templates/reports/business-stats.html:457
+#: /app/templates/reports/daily-revenue.html:164
 msgid "Cash"
 msgstr "Efectivo"
 
 #: /app/templates/partials/stats_row.html:7
+#: /app/templates/reports/daily-revenue.html:191
 #: /app/templates/sessions/edit_closed_session.html:379
 #: /app/templates/sessions/session_detail.html:301
 #: /app/templates/sessions/session_detail.html:398
@@ -1172,9 +1187,9 @@ msgid "Envelope"
 msgstr "Sobre"
 
 #: /app/templates/partials/stats_row.html:21
-#: /app/templates/reports/business-stats.html:116
-#: /app/templates/reports/business-stats.html:162
-#: /app/templates/reports/business-stats.html:303
+#: /app/templates/reports/business-stats.html:126
+#: /app/templates/reports/business-stats.html:180
+#: /app/templates/reports/business-stats.html:365
 #: /app/templates/sessions/close_session.html:393
 #: /app/templates/sessions/close_session.html:482
 #: /app/templates/sessions/session_detail.html:421
@@ -1182,6 +1197,7 @@ msgid "Card Payments"
 msgstr "Ventas con Tarjeta"
 
 #: /app/templates/partials/stats_row.html:23
+#: /app/templates/reports/daily-revenue.html:200
 #: /app/templates/sessions/session_detail.html:428
 msgid "Credit"
 msgstr "Crédito"
@@ -1196,9 +1212,9 @@ msgid "Pending payments"
 msgstr "Pagos pendientes"
 
 #: /app/templates/partials/stats_row.html:35
-#: /app/templates/reports/business-stats.html:134
-#: /app/templates/reports/business-stats.html:164
-#: /app/templates/reports/business-stats.html:325
+#: /app/templates/reports/business-stats.html:144
+#: /app/templates/reports/business-stats.html:186
+#: /app/templates/reports/business-stats.html:387
 msgid "Collections"
 msgstr "Cobranzas"
 
@@ -1208,9 +1224,9 @@ msgstr "Pagos cobrados"
 
 #: /app/templates/partials/stats_row.html:42
 #: /app/templates/partials/transfer_items_table.html:14
-#: /app/templates/reports/business-stats.html:143
-#: /app/templates/reports/business-stats.html:165
-#: /app/templates/reports/business-stats.html:336
+#: /app/templates/reports/business-stats.html:153
+#: /app/templates/reports/business-stats.html:189
+#: /app/templates/reports/business-stats.html:398
 #: /app/templates/sessions/close_session.html:497
 msgid "Bank Transfers"
 msgstr "Transferencias"
@@ -1221,7 +1237,7 @@ msgstr "Transferencias directas"
 
 #: /app/templates/partials/stats_row.html:51
 #: /app/templates/partials/stats_row.html:107
-#: /app/templates/reports/business-stats.html:352
+#: /app/templates/reports/business-stats.html:418
 msgid "More Details"
 msgstr "Más Detalles"
 
@@ -1230,7 +1246,7 @@ msgid "Cash outflows"
 msgstr "Salida de efectivo"
 
 #: /app/templates/partials/stats_row.html:70
-#: /app/templates/reports/business-stats.html:357
+#: /app/templates/reports/business-stats.html:423
 #: /app/templates/sessions/session_detail.html:406
 msgid "Cash Profit"
 msgstr "Ganancia en Efectivo"
@@ -1240,6 +1256,7 @@ msgid "Open Sessions"
 msgstr "Sesiones Abiertas"
 
 #: /app/templates/partials/stats_row.html:84
+#: /app/templates/reports/daily-revenue.html:152
 msgid "Closed Sessions"
 msgstr "Sesiones Cerradas"
 
@@ -1265,7 +1282,7 @@ msgstr "Alternar sección de transferencias bancarias"
 
 #: /app/templates/partials/transfer_items_table.html:16
 msgid "Click here to add your first transfer"
-msgstr ""
+msgstr "Hacé clic acá para agregar tu primera transferencia"
 
 #: /app/templates/partials/transfer_items_table.html:34
 msgid "Add Transfer"
@@ -1277,7 +1294,7 @@ msgstr "Descripción de la transferencia"
 
 #: /app/templates/partials/transfer_items_table.html:44
 msgid "e.g., Cliente Juan Pérez / Pago factura 12345"
-msgstr ""
+msgstr "ej., Cliente Juan Pérez / Pago factura 12345"
 
 #: /app/templates/partials/transfer_items_table.html:53
 msgid "Transfer amount"
@@ -1289,7 +1306,7 @@ msgstr "Añadir transferencia"
 
 #: /app/templates/partials/transfer_items_table.html:98
 msgid "Transfer items list"
-msgstr ""
+msgstr "Lista de transferencias"
 
 #: /app/templates/partials/transfer_items_table.html:116
 msgid "Delete transfer"
@@ -1305,7 +1322,7 @@ msgstr "No hay transferencias bancarias registradas"
 
 #: /app/templates/partials/transfer_items_table.html:139
 msgid "Add transfers to track bank deposits"
-msgstr ""
+msgstr "Agregá transferencias para rastrear depósitos bancarios"
 
 #: /app/templates/partials/transfer_items_table.html:150
 msgid "Total Transfers"
@@ -1337,6 +1354,9 @@ msgid "Cash + Cards + Bank Transfer"
 msgstr "Efectivo + Tarjetas + Transferencia Bancaria"
 
 #: /app/templates/reports/business-stats.html:25
+#: /app/templates/reports/business-stats.html:174
+#: /app/templates/reports/business-stats.html:343
+#: /app/templates/reports/daily-revenue.html:134
 #: /app/templates/sessions/close_session.html:507
 #: /app/templates/sessions/session_detail.html:438
 msgid "Total Sales"
@@ -1346,69 +1366,222 @@ msgstr "Ventas Totales"
 msgid "No data"
 msgstr "Sin datos"
 
-#: /app/templates/reports/business-stats.html:58
+#: /app/templates/reports/business-stats.html:66
 msgid "Last 7 Days"
 msgstr "Últimos 7 Días"
 
-#: /app/templates/reports/business-stats.html:62
+#: /app/templates/reports/business-stats.html:70
 msgid "Last 30 Days"
 msgstr "Últimos 30 Días"
 
-#: /app/templates/reports/business-stats.html:66
+#: /app/templates/reports/business-stats.html:74
 msgid "Custom"
 msgstr "Personalizado"
 
-#: /app/templates/reports/business-stats.html:73
+#: /app/templates/reports/business-stats.html:79
+msgid "Start date for custom range"
+msgstr "Fecha de inicio para rango personalizado"
+
+#: /app/templates/reports/business-stats.html:82
 msgid "to"
 msgstr "a"
 
-#: /app/templates/reports/business-stats.html:76
+#: /app/templates/reports/business-stats.html:83
+msgid "End date for custom range"
+msgstr "Ingrese contraseña personalizada"
+
+#: /app/templates/reports/business-stats.html:86
 msgid "Apply"
 msgstr "Aplicar"
 
-#: /app/templates/reports/business-stats.html:89
+#: /app/templates/reports/business-stats.html:99
 msgid "up"
 msgstr "arriba"
 
-#: /app/templates/reports/business-stats.html:93
+#: /app/templates/reports/business-stats.html:103
 msgid "down"
 msgstr "abajo"
 
-#: /app/templates/reports/business-stats.html:153
+#: /app/templates/reports/business-stats.html:163
 msgid "By Business"
 msgstr "Por Negocio"
 
-#: /app/templates/reports/business-stats.html:237
+#: /app/templates/reports/business-stats.html:278
 msgid "TOTAL"
 msgstr "TOTAL"
 
-#: /app/templates/reports/business-stats.html:367
+#: /app/templates/reports/business-stats.html:415
+msgid "Toggle more details for"
+msgstr "Más Detalles"
+
+#: /app/templates/reports/business-stats.html:433
+#: /app/templates/reports/daily-revenue.html:173
 #: /app/templates/sessions/edit_closed_session.html:371
 #: /app/templates/sessions/session_detail.html:356
 msgid "Credit Card"
 msgstr "Tarjeta de Crédito"
 
-#: /app/templates/reports/business-stats.html:371
+#: /app/templates/reports/business-stats.html:437
+#: /app/templates/reports/daily-revenue.html:182
 #: /app/templates/sessions/edit_closed_session.html:375
 #: /app/templates/sessions/session_detail.html:368
 msgid "Debit Card"
 msgstr "Tarjeta de Débito"
 
-#: /app/templates/reports/business-stats.html:375
+#: /app/templates/reports/business-stats.html:441
 msgid "Sessions Open"
 msgstr "Sesiones Abiertas"
 
-#: /app/templates/reports/business-stats.html:379
+#: /app/templates/reports/business-stats.html:445
 msgid "Sessions Closed"
 msgstr "Sesiones Cerradas"
 
-#: /app/templates/reports/business-stats.html:383
+#: /app/templates/reports/business-stats.html:449
 msgid "Need Review"
 msgstr "Necesitan Revisión"
 
-#: /app/templates/reports/business-stats.html:389
+#: /app/templates/reports/business-stats.html:455
 msgid "Payment Mix"
 msgstr "Distribución de Pagos"
+
+#: /app/templates/reports/business-stats.html:458
+msgid "Card"
+msgstr "Tarjetas"
+
+#: /app/templates/reports/business-stats.html:459
+msgid "Bank"
+msgstr "Transferencias"
+
+#: /app/templates/reports/daily-revenue.html:19
+msgid ""
+"Daily reconciliation view with sales by payment method and discrepancy "
+"analysis"
+msgstr "Vista de reconciliación diaria con ventas por método de pago y análisis de discrepancias"
+
+#: /app/templates/reports/daily-revenue.html:42
+msgid "7 Days Ago"
+msgstr "Hace 7 Días"
+
+#: /app/templates/reports/daily-revenue.html:45
+msgid "30 Days Ago"
+msgstr "Últimos 30 Días"
+
+#: /app/templates/reports/daily-revenue.html:57
+msgid "Select Business"
+msgstr "Seleccionar un Negocio"
+
+#: /app/templates/reports/daily-revenue.html:67
+msgid "Date"
+msgstr "Fecha"
+
+#: /app/templates/reports/daily-revenue.html:78
+msgid "Generate Report"
+msgstr "Generar reporte"
+
+#: /app/templates/reports/daily-revenue.html:89
+msgid "Loading report data..."
+msgstr "Cargando..."
+
+#: /app/templates/reports/daily-revenue.html:102
+msgid "Error"
+msgstr "Error"
+
+#: /app/templates/reports/daily-revenue.html:107
+msgid "Dismiss"
+msgstr "Ignorar"
+
+#: /app/templates/reports/daily-revenue.html:118
+msgid "Report"
+msgstr "Reporte"
+
+#: /app/templates/reports/daily-revenue.html:140
+#: /app/templates/sessions/close_session.html:402
+#: /app/templates/sessions/close_session.html:530
+msgid "Net Earnings"
+msgstr "Ganancias Netas"
+
+#: /app/templates/reports/daily-revenue.html:160
+msgid "Sales by Payment Method"
+msgstr "Ventas por Métodos de Pago"
+
+#: /app/templates/reports/daily-revenue.html:213
+msgid "Financial Performance Insights"
+msgstr "Información de Rendimiento Financiero"
+
+#: /app/templates/reports/daily-revenue.html:218
+msgid "Profit Margin"
+msgstr "Margen"
+
+#: /app/templates/reports/daily-revenue.html:224
+msgid "Net / Total Sales"
+msgstr "Neto / Ventas Totales"
+
+#: /app/templates/reports/daily-revenue.html:230
+msgid "Avg per Session"
+msgstr "Promedio por Sesión"
+
+#: /app/templates/reports/daily-revenue.html:236
+msgid "Revenue / Session"
+msgstr "Ganancia / Sesión"
+
+#: /app/templates/reports/daily-revenue.html:242
+msgid "Cash Sales %"
+msgstr "Ventas al Contado %"
+
+#: /app/templates/reports/daily-revenue.html:248
+msgid "Cash vs Total Sales"
+msgstr "Ventas al Contado vs Ventas Totales"
+
+#: /app/templates/reports/daily-revenue.html:254
+msgid "Digital Sales"
+msgstr "Ventas Digitales"
+
+#: /app/templates/reports/daily-revenue.html:260
+msgid "Cards + Transfers"
+msgstr "Tarjetas + Transferencias"
+
+#: /app/templates/reports/daily-revenue.html:270
+msgid "Cashier Performance & Shifts"
+msgstr "Rendimiento y Turnos de Cajeros"
+
+#: /app/templates/reports/daily-revenue.html:280
+msgid "cashiers"
+msgstr "cajeros"
+
+#: /app/templates/reports/daily-revenue.html:338
+msgid "Please select a business"
+msgstr "Seleccionar un Negocio"
+
+#: /app/templates/reports/daily-revenue.html:354
+msgid "Failed to generate report"
+msgstr "Error al generar reporte"
+
+#: /app/templates/reports/daily-revenue.html:439
+msgid "No cashier data available"
+msgstr "No hay datos de cajeros disponibles"
+
+#: /app/templates/reports/daily-revenue.html:493
+msgid "cash"
+msgstr "efectivo"
+
+#: /app/templates/reports/daily-revenue.html:494
+#: /app/templates/sessions/close_session.html:394
+msgid "debit"
+msgstr "débito"
+
+#: /app/templates/reports/daily-revenue.html:495
+#: /app/templates/sessions/close_session.html:394
+msgid "credit"
+msgstr "crédito"
+
+#: /app/templates/reports/daily-revenue.html:496
+msgid "bank"
+msgstr "transferencias"
+
+#: /app/templates/reports/daily-revenue.html:504
+#: /app/templates/sessions/close_session.html:403
+msgid "expenses"
+msgstr "gastos"
 
 #: /app/templates/reports/dashboard.html:41
 #: /app/templates/reports/dashboard.html:62
@@ -1548,7 +1721,7 @@ msgstr "Cerrar Caja"
 #: /app/templates/sessions/edit_closed_session.html:339
 #: /app/templates/sessions/edit_open_session.html:243
 msgid "Cancel and return to session details"
-msgstr ""
+msgstr "Cancelar y volver a detalles de sesión"
 
 #: /app/templates/sessions/close_session.html:334
 msgid "Opening Info"
@@ -1591,26 +1764,9 @@ msgstr "inicial"
 msgid "envelope"
 msgstr "sobre"
 
-#: /app/templates/sessions/close_session.html:394
-msgid "credit"
-msgstr "crédito"
-
-#: /app/templates/sessions/close_session.html:394
-msgid "debit"
-msgstr "débito"
-
-#: /app/templates/sessions/close_session.html:402
-#: /app/templates/sessions/close_session.html:530
-msgid "Net Earnings"
-msgstr "Ganancias Netas"
-
 #: /app/templates/sessions/close_session.html:403
 msgid "total"
 msgstr "total"
-
-#: /app/templates/sessions/close_session.html:403
-msgid "expenses"
-msgstr "gastos"
 
 #: /app/templates/sessions/create_session.html:4
 #: /app/templates/sessions/create_session.html:10
@@ -1632,9 +1788,7 @@ msgstr "Seleccionar un Negocio"
 
 #: /app/templates/sessions/create_session.html:50
 msgid "No businesses assigned. Contact an administrator to assign you a location."
-msgstr ""
-"No hay negocios asignados. Contactá al administrador para asignar una "
-"sucursal."
+msgstr "No hay negocios asignados. Contactá al administrador para asignar una sucursal."
 
 #: /app/templates/sessions/create_session.html:76
 #: /app/templates/sessions/create_session.html:249
@@ -1693,9 +1847,7 @@ msgstr "Importante"
 msgid ""
 "Once opened, only one session can be active per business unless overlap "
 "is enabled."
-msgstr ""
-"Una vez abierto, solo una sesión puede estar activa por negocio a menos "
-"que se habilite la superposición."
+msgstr "Una vez abierto, solo una sesión puede estar activa por negocio a menos que se habilite la superposición."
 
 #: /app/templates/sessions/edit_closed_session.html:4
 #: /app/templates/sessions/edit_closed_session.html:11
@@ -1749,9 +1901,7 @@ msgstr "Consejo Rápido"
 #: /app/templates/sessions/edit_closed_session.html:398
 #: /app/templates/sessions/edit_open_session.html:286
 msgid "All edits are logged with reason and timestamp for compliance."
-msgstr ""
-"Todas las ediciones se registran con razón y marca de tiempo para "
-"cumplimiento."
+msgstr "Todas las ediciones se registran con razón y marca de tiempo para cumplimiento."
 
 #: /app/templates/sessions/edit_open_session.html:4
 #: /app/templates/sessions/edit_open_session.html:11
@@ -1819,9 +1969,7 @@ msgstr "Esta sesión de caja ha sido eliminada y ya no es accesible."
 msgid ""
 "You don't have permission to access this session. You can only access "
 "sessions you created or own."
-msgstr ""
-"No tenés permiso para acceder a esta sesión. Solo podés acceder a "
-"sesiones que creaste o que te pertenecen."
+msgstr "No tenés permiso para acceder a esta sesión. Solo podés acceder a sesiones que creaste o que te pertenecen."
 
 #: /app/templates/sessions/error.html:48
 msgid "The cash session you are looking for does not exist or has been removed."
@@ -1939,9 +2087,7 @@ msgstr "(Deuda nueva − Cobrada)"
 msgid ""
 "Credit tracking is for reporting only and does not affect reconciliation "
 "calculations."
-msgstr ""
-"El seguimiento de crédito es solo para reportes y no afecta los cálculos "
-"de conciliación."
+msgstr "El seguimiento de crédito es solo para reportes y no afecta los cálculos de conciliación."
 
 #: /app/templates/sessions/session_detail.html:525
 msgid "Closing Ticket"
@@ -2048,4 +2194,10 @@ msgstr "Limpiar Marca"
 #: /app/templates/sessions/session_detail.html:828
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
+
+#~ msgid "Daily Summary"
+#~ msgstr ""
+
+#~ msgid "Overview of daily cash flow and transactions"
+#~ msgstr ""
 
