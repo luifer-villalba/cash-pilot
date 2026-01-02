@@ -1,6 +1,6 @@
 """Tests for the Daily Revenue Summary Report."""
 
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from decimal import Decimal
 from uuid import uuid4
 
@@ -41,8 +41,9 @@ async def setup_test_data(db_session: AsyncSession):
     admin = User(
         id=uuid4(),
         email="admin@test.com",
-        username="admin",
-        password_hash="hashed",
+        first_name="Admin",
+        last_name="User",
+        hashed_password="hashed",
         role=UserRole.ADMIN,
         is_active=True,
     )
@@ -52,8 +53,9 @@ async def setup_test_data(db_session: AsyncSession):
     cashier = User(
         id=uuid4(),
         email="cashier@test.com",
-        username="cashier",
-        password_hash="hashed",
+        first_name="Cashier",
+        last_name="User",
+        hashed_password="hashed",
         role=UserRole.CASHIER,
         is_active=True,
     )
@@ -72,8 +74,8 @@ async def setup_test_data(db_session: AsyncSession):
         session_number=1,
         status="CLOSED",
         session_date=today,
-        opened_time=10,  # 10:00 AM
-        closed_time=18,  # 6:00 PM
+        opened_time=time(10, 0),  # 10:00 AM
+        closed_time=time(18, 0),  # 6:00 PM
         initial_cash=Decimal("1000.00"),
         final_cash=Decimal("1500.00"),  # Net +500
         envelope_amount=Decimal("0.00"),
@@ -98,8 +100,8 @@ async def setup_test_data(db_session: AsyncSession):
         session_number=2,
         status="CLOSED",
         session_date=today,
-        opened_time=18,
-        closed_time=22,
+        opened_time=time(18, 0),
+        closed_time=time(22, 0),
         initial_cash=Decimal("500.00"),
         final_cash=Decimal("900.00"),  # Net +400, expected +500 = shortage of 100
         envelope_amount=Decimal("0.00"),
@@ -126,8 +128,8 @@ async def setup_test_data(db_session: AsyncSession):
         session_number=3,
         status="CLOSED",
         session_date=today,
-        opened_time=22,
-        closed_time=23,
+        opened_time=time(22, 0),
+        closed_time=time(23, 0),
         initial_cash=Decimal("200.00"),
         final_cash=Decimal("800.00"),  # Net +600, expected 500 = surplus of 100
         envelope_amount=Decimal("0.00"),
@@ -171,17 +173,17 @@ class TestDailyRevenueEndpoint:
     @pytest.mark.asyncio
     async def test_invalid_business_id_format(self, client, setup_test_data):
         """Test that invalid UUID format returns 400."""
-        data = await setup_test_data
+        data = setup_test_data
         # Would need auth token, so this is a placeholder
-        response = client.get("/reports/daily-revenue?business_id=not-a-uuid")
-        assert response.status_code in [400, 401, 403]
+        response = client.get("/reports/daily-revenue/data?business_id=not-a-uuid")
+        assert response.status_code in [400, 401, 403, 422]
     
     @pytest.mark.asyncio
     async def test_aggregation_calculation(self, db_session: AsyncSession, setup_test_data):
         """Test that sales aggregation is calculated correctly."""
         from cashpilot.api.daily_revenue import get_daily_revenue
         
-        data = await setup_test_data
+        data = setup_test_data
         business = data["business"]
         today = data["today"]
         
