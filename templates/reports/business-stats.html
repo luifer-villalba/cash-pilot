@@ -171,6 +171,9 @@
                             {{ _('Business') }}
                         </th>
                         <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                            {{ _('Total Sales') }}
+                        </th>
+                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
                             {{ _('Cash Sales') }}
                         </th>
                         <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
@@ -190,13 +193,26 @@
                 <tbody>
                     {% for item in businesses %}
                     {% set business_closed = item.current.total_sales == 0 and item.previous.total_sales > 0 %}
+                    {% set no_current_sessions = item.current.total_sales == 0 %}
                     <tr class="hover:bg-primary/5 transition-all duration-200 border-b border-base-200/50 group">
                         <td class="sticky left-0 z-10 bg-base-100 group-hover:bg-primary/5 border-r border-base-300/50 px-4 py-3 font-semibold text-sm transition-colors duration-200 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                             {{ item.business.name }}
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
                             <div class="flex flex-col items-end gap-1">
-                                {% if business_closed and item.current.cash_sales == 0 %}
+                                {% if no_current_sessions %}
+                                    <span class="text-base-content/30 text-sm">—</span>
+                                {% else %}
+                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.total_sales | format_currency_py }}</span>
+                                {% endif %}
+                                <div class="text-xs">
+                                    {{ delta_display(item.deltas.total_sales, item.current.total_sales, item.previous.total_sales) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                            <div class="flex flex-col items-end gap-1">
+                                {% if no_current_sessions %}
                                     <span class="text-base-content/30 text-sm">—</span>
                                 {% else %}
                                     <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.cash_sales | format_currency_py }}</span>
@@ -208,7 +224,7 @@
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
                             <div class="flex flex-col items-end gap-1">
-                                {% if business_closed and item.current.card_payments_total == 0 %}
+                                {% if no_current_sessions %}
                                     <span class="text-base-content/30 text-sm">—</span>
                                 {% else %}
                                     <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
@@ -220,7 +236,7 @@
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
                             <div class="flex flex-col items-end gap-1">
-                                {% if business_closed and item.current.credit_sales_total == 0 %}
+                                {% if no_current_sessions %}
                                     <span class="text-base-content/30 text-sm">—</span>
                                 {% else %}
                                     <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.credit_sales_total | format_currency_py }}</span>
@@ -232,7 +248,7 @@
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
                             <div class="flex flex-col items-end gap-1">
-                                {% if business_closed and item.current.credit_payments_collected == 0 %}
+                                {% if no_current_sessions %}
                                     <span class="text-base-content/30 text-sm">—</span>
                                 {% else %}
                                     <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.credit_payments_collected | format_currency_py }}</span>
@@ -244,7 +260,7 @@
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3">
                             <div class="flex flex-col items-end gap-1">
-                                {% if business_closed and item.current.bank_transfer_total == 0 %}
+                                {% if no_current_sessions %}
                                     <span class="text-base-content/30 text-sm">—</span>
                                 {% else %}
                                     <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.bank_transfer_total | format_currency_py }}</span>
@@ -260,6 +276,14 @@
                     <tr class="bg-gradient-to-r from-primary/10 via-primary/5 to-base-200 font-bold border-t-2 border-primary/40">
                         <td class="sticky left-0 z-10 bg-gradient-to-r from-primary/10 via-primary/5 to-base-200 border-r border-primary/30 px-4 py-3 text-sm uppercase tracking-wider shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                             {{ _('TOTAL') }}
+                        </td>
+                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.total_sales | format_currency_py }}</span>
+                                <div class="text-xs">
+                                    {{ delta_display(totals_deltas.total_sales, totals_current.total_sales, totals_previous.total_sales) }}
+                                </div>
+                            </div>
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
                             <div class="flex flex-col items-end gap-1">
@@ -310,14 +334,26 @@
         <div class="lg:hidden space-y-3">
             {% for item in businesses %}
             {% set business_closed = item.current.total_sales == 0 and item.previous.total_sales > 0 %}
+            {% set no_current_sessions = item.current.total_sales == 0 %}
             <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200 p-4">
                 <h3 class="text-sm font-bold mb-3 pb-2 border-b border-base-300">{{ item.business.name }}</h3>
                 
                 <div class="space-y-2.5">
                     <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Total Sales') }}</span>
+                        <div class="flex items-center gap-2">
+                            {% if no_current_sessions %}
+                                <span class="text-sm text-base-content/40">—</span>
+                            {% else %}
+                                <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.total_sales | format_currency_py }}</span>
+                            {% endif %}
+                            {{ delta_display(item.deltas.total_sales, item.current.total_sales, item.previous.total_sales) }}
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
                         <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cash Sales') }}</span>
                         <div class="flex items-center gap-2">
-                            {% if business_closed and item.current.cash_sales == 0 %}
+                            {% if no_current_sessions %}
                                 <span class="text-sm text-base-content/40">—</span>
                             {% else %}
                                 <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.cash_sales | format_currency_py }}</span>
@@ -328,7 +364,7 @@
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Card Payments') }}</span>
                         <div class="flex items-center gap-2">
-                            {% if business_closed and item.current.card_payments_total == 0 %}
+                            {% if no_current_sessions %}
                                 <span class="text-sm text-base-content/40">—</span>
                             {% else %}
                                 <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
@@ -339,7 +375,7 @@
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Credit Sales') }}</span>
                         <div class="flex items-center gap-2">
-                            {% if business_closed and item.current.credit_sales_total == 0 %}
+                            {% if no_current_sessions %}
                                 <span class="text-sm text-base-content/40">—</span>
                             {% else %}
                                 <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.credit_sales_total | format_currency_py }}</span>
@@ -350,7 +386,7 @@
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Collections') }}</span>
                         <div class="flex items-center gap-2">
-                            {% if business_closed and item.current.credit_payments_collected == 0 %}
+                            {% if no_current_sessions %}
                                 <span class="text-sm text-base-content/40">—</span>
                             {% else %}
                                 <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.credit_payments_collected | format_currency_py }}</span>
@@ -361,7 +397,7 @@
                     <div class="flex justify-between items-center">
                         <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Bank Transfers') }}</span>
                         <div class="flex items-center gap-2">
-                            {% if business_closed and item.current.bank_transfer_total == 0 %}
+                            {% if no_current_sessions %}
                                 <span class="text-sm text-base-content/40">—</span>
                             {% else %}
                                 <span class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.bank_transfer_total | format_currency_py }}</span>

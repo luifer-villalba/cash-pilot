@@ -167,10 +167,15 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
                 </svg>
-                <span>CashPilot © 2025 — {{ _('Business Cash Register Reconciliation System') }}</span>
+                <span>CashPilot © <span id="current-year">2026</span> — {{ _('Business Cash Register Reconciliation System') }}</span>
             </p>
         </div>
     </footer>
+
+    <script>
+        // Set current year dynamically
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
 
     <script src="/static/js/theme-toggle.js"></script>
     <script src="/static/js/currency-formatter.js"></script>
