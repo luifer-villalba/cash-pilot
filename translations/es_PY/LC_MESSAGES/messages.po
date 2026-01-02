@@ -35,6 +35,227 @@ msgstr ""
 "Total de ventas por método de pago, ganancias netas y conteo de "
 "discrepancias"
 
+#: templates/reports/weekly-trend.html:4
+#: templates/reports/weekly-trend.html:18
+msgid "Weekly Revenue Trend"
+msgstr "Tendencia de Ventas Semanales"
+
+#: templates/reports/weekly-trend.html:19
+msgid "Compare daily revenue across 7-day spans to identify peak/low days and week-over-week growth patterns"
+msgstr "Comparar ingresos diarios en períodos de 7 días para identificar días pico/bajos y patrones de crecimiento semanal"
+
+#: templates/reports/weekly-trend.html:39
+msgid "Current Week"
+msgstr "Semana Actual"
+
+#: templates/reports/weekly-trend.html:42
+msgid "Last Week"
+msgstr "Semana Pasada"
+
+#: templates/reports/weekly-trend.html:45
+msgid "4 Weeks Ago"
+msgstr "Hace 4 Semanas"
+
+#: templates/reports/weekly-trend.html:63
+msgid "Year"
+msgstr "Año"
+
+#: templates/reports/weekly-trend.html:70
+msgid "Week"
+msgstr "Semana"
+
+#: templates/reports/weekly-trend.html:118
+msgid "Highest Revenue Day"
+msgstr "Día de Mayor Ingreso"
+
+#: templates/reports/weekly-trend.html:128
+msgid "Lowest Revenue Day"
+msgstr "Día de Menor Ingreso"
+
+#: templates/reports/weekly-trend.html:138
+msgid "Avg Weekly Revenue"
+msgstr "Promedio Semanal de Ingresos"
+
+#: templates/reports/weekly-trend.html:141
+msgid "(5-week average)"
+msgstr "(promedio de 5 semanas)"
+
+#: templates/reports/weekly-trend.html:148
+msgid "5-Week Revenue Comparison"
+msgstr "Comparación de Ingresos de 5 Semanas"
+
+#: templates/reports/weekly-trend.html:156
+msgid "Current Week Details"
+msgstr "Detalles de la Semana Actual"
+
+#: templates/reports/weekly-trend.html:161
+msgid "Day"
+msgstr "Día"
+
+#: templates/reports/weekly-trend.html:164
+msgid "WoW Growth"
+msgstr "Crecimiento Semanal"
+
+#: templates/reports/weekly-trend.html:165
+msgid "Trend"
+msgstr "Tendencia"
+
+#: templates/reports/weekly-trend.html:234
+msgid "Select a date to see its week"
+msgstr "Seleccione una fecha para ver su semana"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Jan"
+msgstr "Ene"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Feb"
+msgstr "Feb"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Mar"
+msgstr "Mar"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Apr"
+msgstr "Abr"
+
+#: templates/reports/weekly-trend.html:238
+msgid "May"
+msgstr "May"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Jun"
+msgstr "Jun"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Jul"
+msgstr "Jul"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Aug"
+msgstr "Ago"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Sep"
+msgstr "Sep"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Oct"
+msgstr "Oct"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Nov"
+msgstr "Nov"
+
+#: templates/reports/weekly-trend.html:238
+msgid "Dec"
+msgstr "Dic"
+
+#: templates/reports/weekly-trend.html:248
+msgid "Week of"
+msgstr "Semana del"
+
+#: templates/reports/weekly-trend.html:290
+msgid "Please select a date"
+msgstr "Por favor seleccione una fecha"
+
+#: templates/reports/weekly-trend.html:36
+msgid "Select business to analyze"
+msgstr "Seleccione un negocio para analizar"
+
+#: templates/reports/weekly-trend.html:44
+msgid "Select time period"
+msgstr "Seleccione el período de tiempo"
+
+#: templates/reports/weekly-trend.html:48
+msgid "Show current week"
+msgstr "Mostrar semana actual"
+
+#: templates/reports/weekly-trend.html:54
+msgid "This Week"
+msgstr "Esta Semana"
+
+#: templates/reports/weekly-trend.html:56
+msgid "Show last week"
+msgstr "Mostrar semana pasada"
+
+#: templates/reports/weekly-trend.html:59
+msgid "Show 2 weeks ago"
+msgstr "Mostrar hace 2 semanas"
+
+#: templates/reports/weekly-trend.html:62
+msgid "Show 4 weeks ago"
+msgstr "Mostrar hace 4 semanas"
+
+#: templates/reports/weekly-trend.html:63
+msgid "Last Month"
+msgstr "Mes Pasado"
+
+#: templates/reports/weekly-trend.html:72
+msgid "Pick Custom Date"
+msgstr "Elegir Fecha Personalizada"
+
+#: templates/reports/weekly-trend.html:80
+msgid "Any date in the week"
+msgstr "Cualquier fecha de la semana"
+
+#: templates/reports/weekly-trend.html:383
+msgid "No data"
+msgstr "Sin datos"
+
+#: templates/reports/weekly-trend.html:151
+msgid "Week-over-Week Comparison"
+msgstr "Comparación Semanal"
+
+#: templates/reports/weekly-trend.html:152
+msgid "Current vs Previous Week"
+msgstr "Semana Actual vs Anterior"
+
+#: templates/reports/weekly-trend.html:161
+msgid "5-Week Trend"
+msgstr "Tendencia de 5 Semanas"
+
+#: templates/reports/weekly-trend.html:335
+msgid "Mon"
+msgstr "Lun"
+
+#: templates/reports/weekly-trend.html:335
+msgid "Tue"
+msgstr "Mar"
+
+#: templates/reports/weekly-trend.html:335
+msgid "Wed"
+msgstr "Mié"
+
+#: templates/reports/weekly-trend.html:335
+msgid "Thu"
+msgstr "Jue"
+
+#: templates/reports/weekly-trend.html:335
+msgid "Fri"
+msgstr "Vie"
+
+#: templates/reports/weekly-trend.html:335
+msgid "Sat"
+msgstr "Sáb"
+
+#: templates/reports/weekly-trend.html:335
+msgid "Sun"
+msgstr "Dom"
+
+#: templates/reports/weekly-trend.html:410
+msgid "Now"
+msgstr "Ahora"
+
+#: templates/reports/weekly-trend.html:416
+msgid "Weekly Total"
+msgstr "Total Semanal"
+
+#: templates/reports/weekly-trend.html:111
+msgid "Showing 5 weeks of data. Main chart compares this week vs last week for detailed day-by-day analysis."
+msgstr "Mostrando 5 semanas de datos. El gráfico principal compara esta semana vs la anterior para análisis detallado día por día."
+
 #: src/cashpilot/api/routes/reports.py:45
 #: templates/sessions/session_detail.html:265
 msgid "Cash Flow"

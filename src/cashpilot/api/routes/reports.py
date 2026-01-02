@@ -44,6 +44,16 @@ async def reports_dashboard(
             ),
         },
         {
+            "id": "weekly-trend",
+            "title": _("Weekly Revenue Trend"),
+            "description": _(
+                "Compare daily revenue across 7-day spans to identify peak/low days "
+                "and week-over-week growth patterns"
+            ),
+            "enabled": True,
+            "icon": "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6",
+        },
+        {
             "id": "cash-flow",
             "title": _("Cash Flow"),
             "description": _("Track cash inflows and outflows over time"),
@@ -167,6 +177,38 @@ async def daily_revenue_report(
 
     return templates.TemplateResponse(
         "reports/daily-revenue.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "businesses": businesses,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.get("/weekly-trend", response_class=HTMLResponse)
+async def weekly_trend_report(
+    request: Request,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Weekly revenue trend report page. Admin only."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    # Get all active businesses
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
+    result = await db.execute(stmt)
+    businesses = result.scalars().all()
+
+    logger.info(
+        f"Weekly trend report accessed by {current_user.display_name}, "
+        f"found {len(businesses)} businesses"
+    )
+
+    return templates.TemplateResponse(
+        "reports/weekly-trend.html",
         {
             "request": request,
             "current_user": current_user,
