@@ -1,0 +1,573 @@
+<!-- File: templates/reports/daily-revenue.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Daily Revenue Summary') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
+        <div class="flex-1">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-primary/10 rounded-lg">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Daily Revenue Summary') }}</h1>
+                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Daily reconciliation view with sales by payment method and discrepancy analysis') }}</p>
+                </div>
+            </div>
+        </div>
+        <a href="/reports" class="btn btn-outline btn-sm gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            {{ _('Back') }}
+        </a>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-3">
+        <!-- Quick Date Buttons -->
+        <div class="flex flex-wrap gap-2 items-center mb-3">
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="0">
+                {{ _('Today') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="1">
+                {{ _('Yesterday') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="7">
+                {{ _('7 Days Ago') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="30">
+                {{ _('30 Days Ago') }}
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <!-- Business Selector -->
+            <div class="form-control">
+                <label for="businessId" class="label py-1">
+                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+                </label>
+                <select id="businessId" class="select select-bordered select-sm focus:ring-2 focus:ring-primary/20 transition-all">
+                    <option value="">{{ _('Select Business') }}</option>
+                    {% for business in businesses %}
+                    <option value="{{ business.id }}">{{ business.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Date Selector -->
+            <div class="form-control">
+                <label for="reportDate" class="label py-1">
+                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Date') }}</span>
+                </label>
+                <input type="date" id="reportDate" class="input input-bordered input-sm focus:ring-2 focus:ring-primary/20 transition-all" />
+            </div>
+
+            <!-- Action Button -->
+            <div class="form-control flex flex-col justify-end">
+                <button id="generateReport" class="btn btn-primary btn-sm gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    {{ _('Generate Report') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="hidden">
+        <div class="flex items-center justify-center py-12">
+            <div class="text-center">
+                <span class="loading loading-spinner loading-lg text-primary"></span>
+                <p class="text-base-content/60 mt-4">{{ _('Loading report data...') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden">
+        <div class="alert alert-error shadow-lg">
+            <div class="flex items-start gap-3">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                    <h3 class="font-bold">{{ _('Error') }}</h3>
+                    <div class="text-sm" id="errorMessage"></div>
+                </div>
+            </div>
+            <button class="btn btn-sm" onclick="document.getElementById('errorState').classList.add('hidden')">
+                {{ _('Dismiss') }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Report Content (Hidden by default) -->
+    <div id="reportContent" class="hidden space-y-6">
+        <!-- Report Date Info -->
+        <div class="bg-gradient-to-br from-primary/10 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-4 transition-all duration-200">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2.5 py-1 bg-primary/20 rounded-md text-primary font-semibold text-xs uppercase tracking-wider">{{ _('Report') }}</span>
+                    <span class="text-sm font-bold text-base-content" id="reportDateDisplay"></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-base-content/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    <span class="text-sm font-bold text-base-content" id="businessNameDisplay"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Total Sales Card -->
+            <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Total Sales') }}</h3>
+                <p class="text-xl font-bold font-mono tabular-nums mb-1" id="totalSalesDisplay">Gs 0</p>
+            </div>
+
+            <!-- Net Earnings Card -->
+            <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Net Earnings') }}</h3>
+                <p class="text-xl font-bold font-mono tabular-nums text-success mb-1" id="netEarningsDisplay">Gs 0</p>
+            </div>
+
+            <!-- Total Expenses Card -->
+            <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Total Expenses') }}</h3>
+                <p class="text-xl font-bold font-mono tabular-nums text-error mb-1" id="totalExpensesDisplay">Gs 0</p>
+            </div>
+
+            <!-- Total Sessions Card -->
+            <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Closed Sessions') }}</h3>
+                <p class="text-xl font-bold font-mono tabular-nums mb-1" id="totalSessionsDisplay">0</p>
+            </div>
+        </div>
+
+        <!-- Sales by Payment Method -->
+        <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4">{{ _('Sales by Payment Method') }}</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <!-- Cash Sales -->
+                    <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Cash') }}</h3>
+                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="cashSalesDisplay">Gs 0</p>
+                        <div class="text-xs text-base-content/50 mt-1">
+                            <span id="cashSalesPercent">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Credit Card Sales -->
+                    <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Credit Card') }}</h3>
+                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="creditCardSalesDisplay">Gs 0</p>
+                        <div class="text-xs text-base-content/50 mt-1">
+                            <span id="creditCardPercent">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Debit Card Sales -->
+                    <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Debit Card') }}</h3>
+                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="debitCardSalesDisplay">Gs 0</p>
+                        <div class="text-xs text-base-content/50 mt-1">
+                            <span id="debitCardPercent">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Bank Transfer Sales -->
+                    <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Bank Transfer') }}</h3>
+                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="bankTransferSalesDisplay">Gs 0</p>
+                        <div class="text-xs text-base-content/50 mt-1">
+                            <span id="bankTransferPercent">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Credit Sales -->
+                    <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Credit') }}</h3>
+                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="creditSalesDisplay">Gs 0</p>
+                        <div class="text-xs text-base-content/50 mt-1">
+                            <span id="creditSalesPercent">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Performance Insights -->
+        <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4">{{ _('Financial Performance Insights') }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Profit Margin -->
+                    <div class="bg-gradient-to-br from-success/10 to-success/5 border border-success/30 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs text-success/80 uppercase font-bold tracking-wide">{{ _('Profit Margin') }}</span>
+                            <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                        <div class="text-3xl font-bold text-success" id="profitMarginDisplay">0%</div>
+                        <div class="text-xs text-success/70 mt-2">{{ _('Net / Total Sales') }}</div>
+                    </div>
+
+                    <!-- Revenue per Session -->
+                    <div class="bg-gradient-to-br from-info/10 to-info/5 border border-info/30 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs text-info/80 uppercase font-bold tracking-wide">{{ _('Avg per Session') }}</span>
+                            <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold font-mono tabular-nums text-info" id="avgRevenueDisplay">Gs 0</div>
+                        <div class="text-xs text-info/70 mt-2">{{ _('Revenue / Session') }}</div>
+                    </div>
+
+                    <!-- Cash Concentration -->
+                    <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/30 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs text-purple-600/80 uppercase font-bold tracking-wide">{{ _('Cash Sales %') }}</span>
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="text-3xl font-bold text-purple-600" id="cashConcentrationDisplay">0%</div>
+                        <div class="text-xs text-purple-600/70 mt-2">{{ _('Cash vs Total Sales') }}</div>
+                    </div>
+
+                    <!-- Digital Payments -->
+                    <div class="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs text-primary/80 uppercase font-bold tracking-wide">{{ _('Digital Sales') }}</span>
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                        </div>
+                        <div class="text-2xl font-bold font-mono tabular-nums text-primary" id="digitalSalesDisplay">Gs 0</div>
+                        <div class="text-xs text-primary/70 mt-2">{{ _('Cards + Transfers') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cashier Performance Leaderboard -->
+        <div class="card bg-base-100 border border-base-300 shadow-sm" id="cashierPerformanceSection">
+            <div class="card-body">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 pb-3 border-b border-base-300">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70">{{ _('Cashier Performance & Shifts') }}</h2>
+                    <div class="stats shadow-sm bg-gradient-to-br from-primary/10 to-base-100 border border-primary/30">
+                        <div class="stat py-2 px-4">
+                            <div class="stat-figure text-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                            </div>
+                            <div class="stat-title text-xs">{{ _('Active') }}</div>
+                            <div class="stat-value text-lg font-mono tabular-nums text-primary" id="cashierCount">0</div>
+                            <div class="stat-desc text-xs">{{ _('cashiers') }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="cashierLeaderboard" class="space-y-3">
+                    <!-- Cashier cards will be inserted here dynamically -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Read URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlDate = urlParams.get('date');
+    const urlBusinessId = urlParams.get('business_id');
+    
+    // Set default date to today or URL param
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('reportDate').value = urlDate || today;
+    
+    // Set business from URL param if exists
+    if (urlBusinessId) {
+        document.getElementById('businessId').value = urlBusinessId;
+    }
+    
+    // Auto-generate report if URL has params
+    if (urlDate && urlBusinessId) {
+        generateReport();
+    }
+
+    // Generate report on button click
+    document.getElementById('generateReport').addEventListener('click', generateReport);
+
+    // Quick date buttons
+    document.querySelectorAll('.quick-date-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const daysAgo = parseInt(this.getAttribute('data-days'));
+            const date = new Date();
+            date.setDate(date.getDate() - daysAgo);
+            document.getElementById('reportDate').value = date.toISOString().split('T')[0];
+            
+            // Highlight active button
+            document.querySelectorAll('.quick-date-btn').forEach(b => b.classList.remove('btn-primary'));
+            this.classList.add('btn-primary');
+        });
+    });
+});
+
+async function generateReport() {
+    const date = document.getElementById('reportDate').value;
+    const businessId = document.getElementById('businessId').value;
+
+    if (!businessId) {
+        showError('{{ _("Please select a business") }}');
+        return;
+    }
+
+    // Update URL with parameters
+    const newUrl = `${window.location.pathname}?date=${date}&business_id=${businessId}`;
+    window.history.pushState({date, businessId}, '', newUrl);
+
+    try {
+        showLoading(true);
+        hideError();
+
+        const response = await fetch(`/reports/daily-revenue/data?date=${date}&business_id=${businessId}`);
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("Failed to generate report") }}');
+        }
+
+        const data = await response.json();
+        displayReport(data);
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function displayReport(data) {
+    // Update date and business display
+    const reportDate = new Date(data.date);
+    document.getElementById('reportDateDisplay').textContent = reportDate.toLocaleDateString('es-PY');
+    
+    const businessName = document.getElementById('businessId').options[document.getElementById('businessId').selectedIndex].text;
+    document.getElementById('businessNameDisplay').textContent = businessName;
+
+    // Format currency values (Gs 2.500.000 - dot separator, no decimals)
+    const formatCurrency = (value) => {
+        const num = Math.round(parseFloat(value));
+        // es-PY uses comma, but we need dots per design system
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+    };
+
+    // Update summary cards
+    document.getElementById('totalSalesDisplay').textContent = formatCurrency(data.total_sales);
+    document.getElementById('netEarningsDisplay').textContent = formatCurrency(data.net_earnings);
+    document.getElementById('totalExpensesDisplay').textContent = formatCurrency(data.total_expenses);
+    document.getElementById('totalSessionsDisplay').textContent = data.total_sessions;
+
+    // Update payment method breakdown
+    document.getElementById('cashSalesDisplay').textContent = formatCurrency(data.cash_sales);
+    document.getElementById('creditCardSalesDisplay').textContent = formatCurrency(data.credit_card_sales);
+    document.getElementById('debitCardSalesDisplay').textContent = formatCurrency(data.debit_card_sales);
+    document.getElementById('bankTransferSalesDisplay').textContent = formatCurrency(data.bank_transfer_sales);
+    document.getElementById('creditSalesDisplay').textContent = formatCurrency(data.credit_sales);
+
+    // Calculate percentages
+    const total = parseFloat(data.total_sales);
+    const cashPercent = total > 0 ? ((parseFloat(data.cash_sales) / total) * 100).toFixed(1) : 0;
+    const creditCardPercent = total > 0 ? ((parseFloat(data.credit_card_sales) / total) * 100).toFixed(1) : 0;
+    const debitCardPercent = total > 0 ? ((parseFloat(data.debit_card_sales) / total) * 100).toFixed(1) : 0;
+    const bankPercent = total > 0 ? ((parseFloat(data.bank_transfer_sales) / total) * 100).toFixed(1) : 0;
+    const creditPercent = total > 0 ? ((parseFloat(data.credit_sales) / total) * 100).toFixed(1) : 0;
+
+    document.getElementById('cashSalesPercent').textContent = cashPercent + '%';
+    document.getElementById('creditCardPercent').textContent = creditCardPercent + '%';
+    document.getElementById('debitCardPercent').textContent = debitCardPercent + '%';
+    document.getElementById('bankTransferPercent').textContent = bankPercent + '%';
+    document.getElementById('creditSalesPercent').textContent = creditPercent + '%';
+
+    // Calculate financial insights
+    // 1. Profit Margin = (Net Earnings / Total Sales) * 100
+    const profitMargin = total > 0 ? ((parseFloat(data.net_earnings) / total) * 100).toFixed(1) : 0;
+    document.getElementById('profitMarginDisplay').textContent = profitMargin + '%';
+    
+    // 2. Average Revenue per Session
+    const avgRevenue = data.total_sessions > 0 ? (total / data.total_sessions) : 0;
+    document.getElementById('avgRevenueDisplay').textContent = formatCurrency(avgRevenue);
+    
+    // 3. Cash Concentration = (Cash Sales / Total Sales) * 100
+    const cashConcentration = total > 0 ? ((parseFloat(data.cash_sales) / total) * 100).toFixed(1) : 0;
+    document.getElementById('cashConcentrationDisplay').textContent = cashConcentration + '%';
+    
+    // 4. Digital Sales = Credit Card + Debit Card + Bank Transfer
+    const digitalSales = parseFloat(data.credit_card_sales) + parseFloat(data.debit_card_sales) + parseFloat(data.bank_transfer_sales);
+    document.getElementById('digitalSalesDisplay').textContent = formatCurrency(digitalSales);
+
+    // Display Cashier Performance
+    displayCashierPerformance(data.cashier_performance || []);
+
+    // Show report content
+    document.getElementById('reportContent').classList.remove('hidden');
+}
+
+function displayCashierPerformance(cashiers) {
+    const leaderboard = document.getElementById('cashierLeaderboard');
+    const cashierCount = document.getElementById('cashierCount');
+    
+    cashierCount.textContent = cashiers.length;
+    
+    if (cashiers.length === 0) {
+        leaderboard.innerHTML = '<p class="text-center text-base-content/60 py-8">{{ _("No cashier data available") }}</p>';
+        return;
+    }
+    
+    leaderboard.innerHTML = '';
+    
+    // Gradient colors for top 3
+    const gradients = [
+        'from-yellow-500/20 to-yellow-600/10 border-yellow-500/40',
+        'from-gray-400/20 to-gray-500/10 border-gray-400/40',
+        'from-orange-600/20 to-orange-700/10 border-orange-600/40'
+    ];
+    
+    const rankColors = [
+        'bg-yellow-500 text-yellow-50',
+        'bg-gray-400 text-gray-50',
+        'bg-orange-600 text-orange-50'
+    ];
+    
+    cashiers.forEach((cashier, index) => {
+        const isTopThree = index < 3;
+        const gradient = isTopThree ? gradients[index] : 'from-base-200/50 to-base-300/30 border-base-300';
+        const rankColor = isTopThree ? rankColors[index] : 'bg-base-300 text-base-content';
+        
+        const formatCurrency = (value) => {
+            const num = Math.round(parseFloat(value));
+            return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+        };
+        
+        const card = document.createElement('div');
+        card.className = `bg-gradient-to-r ${gradient} border rounded-lg p-4 hover:shadow-md transition-all duration-200`;
+        card.innerHTML = `
+            <div class="flex items-center gap-4">
+                <!-- Rank Badge -->
+                <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full ${rankColor} font-bold text-lg shadow-sm">
+                    ${index + 1}
+                </div>
+                
+                <!-- Cashier Info -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-2">
+                        <h3 class="font-bold text-base-content">${cashier.cashier_name}</h3>
+                        ${cashier.flagged_sessions > 0 ? `
+                            <span class="badge badge-sm badge-warning gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                ${cashier.flagged_sessions}
+                            </span>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Payment Mix - Inline badges -->
+                    <div class="flex flex-wrap gap-1.5 text-xs mb-2">
+                        <span class="badge badge-sm badge-ghost font-mono">${parseFloat(cashier.cash_percentage).toFixed(0)}% {{ _('cash') }}</span>
+                        <span class="badge badge-sm badge-ghost font-mono">${parseFloat(cashier.debit_percentage).toFixed(0)}% {{ _('debit') }}</span>
+                        <span class="badge badge-sm badge-ghost font-mono">${parseFloat(cashier.credit_percentage).toFixed(0)}% {{ _('credit') }}</span>
+                        <span class="badge badge-sm badge-ghost font-mono">${parseFloat(cashier.bank_percentage).toFixed(0)}% {{ _('bank') }}</span>
+                    </div>
+                    
+                    <!-- Additional Info -->
+                    <div class="flex flex-wrap gap-2 text-xs text-base-content/60">
+                        <span>${parseFloat(cashier.avg_session_duration_hours).toFixed(1)}h</span>
+                        ${parseFloat(cashier.total_expenses) > 0 ? `
+                            <span>•</span>
+                            <span class="text-error font-semibold">${formatCurrency(cashier.total_expenses)} {{ _('expenses') }}</span>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <!-- Revenue & Percentage -->
+                <div class="text-right">
+                    <div class="text-xl font-bold font-mono tabular-nums text-base-content">${formatCurrency(cashier.total_revenue)}</div>
+                    <div class="text-sm mt-1">
+                        <span class="badge badge-sm ${isTopThree ? 'badge-primary' : 'badge-ghost'}">${parseFloat(cashier.percentage_of_total).toFixed(1)}%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mt-3">
+                <div class="w-full bg-base-300 rounded-full h-2">
+                    <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${cashier.percentage_of_total}%"></div>
+                </div>
+            </div>
+        `;
+        
+        leaderboard.appendChild(card);
+    });
+}
+
+function showLoading(show) {
+    document.getElementById('loadingState').classList.toggle('hidden', !show);
+}
+
+           function showError(message) {
+               document.getElementById('errorMessage').textContent = message;
+               document.getElementById('errorState').classList.remove('hidden');
+           }
+
+           function hideError() {
+               document.getElementById('errorState').classList.add('hidden');
+           }
+
+           // Format time from "HH:MM:SS" to "HH:MM"
+           function formatShiftTime(timeStr) {
+               if (!timeStr) return '';
+               // timeStr is like "14:30:00"
+               const parts = timeStr.split(':');
+               return `${parts[0]}:${parts[1]}`;
+           }
+
+           // Get badge class for shift label
+           function getShiftBadgeClass(label) {
+               const classes = {
+                   'Morning': 'badge-info',
+                   'Afternoon': 'badge-warning',
+                   'Evening': 'badge-primary',
+                   'Night': 'badge-accent'
+               };
+               return classes[label] || 'badge-ghost';
+           }
+
+           // Translate shift labels
+           function translateShift(label) {
+               const translations = {
+                   'Morning': '{{ _("Morning") }}',
+                   'Afternoon': '{{ _("Afternoon") }}',
+                   'Evening': '{{ _("Evening") }}',
+                   'Night': '{{ _("Night") }}'
+               };
+               return translations[label] || label;
+           }
+       </script>
+{% endblock %}
