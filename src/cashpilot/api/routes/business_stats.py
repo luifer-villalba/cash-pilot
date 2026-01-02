@@ -55,13 +55,15 @@ def calculate_date_range(
         try:
             from_dt = date.fromisoformat(from_date)
             to_dt = date.fromisoformat(to_date)
-            if from_dt > to_dt:
-                # Invalid range: from_date after to_date
-                raise ValueError("from_date must be before or equal to to_date")
-            return from_dt, to_dt
-        except ValueError:
-            # Re-raise to be handled by the route handler
-            raise
+        except ValueError as e:
+            # Invalid date format
+            raise ValueError("Invalid date format. Please use YYYY-MM-DD format.") from e
+
+        if from_dt > to_dt:
+            # Invalid range: from_date after to_date
+            raise ValueError("Start date must be before or equal to end date.")
+
+        return from_dt, to_dt
     else:
         # Default to today
         return today, today
@@ -296,8 +298,8 @@ def calculate_delta(current: Decimal | int, previous: Decimal | int) -> dict:
     delta_value = current_decimal - previous_decimal
     delta_percent = (delta_value / previous_decimal) * 100
 
-    # Round to 1 decimal place
-    delta_percent = round(float(delta_percent), 1)
+    # Round to 1 decimal place using Decimal to avoid float precision issues
+    delta_percent = delta_percent.quantize(Decimal("0.1"))
 
     # Determine direction and color
     if abs(delta_percent) <= 3:
@@ -335,9 +337,13 @@ async def business_stats(
     date_error = None
     try:
         current_from, current_to = calculate_date_range(view, from_date, to_date)
-    except ValueError:
-        # Invalid date range - show error and fallback to today
-        date_error = _("Invalid date range. Please check your dates and try again.")
+    except ValueError as e:
+        # Invalid date range - show specific error message and fallback to today
+        error_msg = str(e)
+        if error_msg:
+            date_error = _(error_msg)
+        else:
+            date_error = _("Invalid date range. Please check your dates and try again.")
         today = today_local()
         current_from, current_to = today, today
 
