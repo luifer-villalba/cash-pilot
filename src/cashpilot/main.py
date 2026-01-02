@@ -144,9 +144,9 @@ def _register_routers(app: FastAPI) -> None:
 
     app.include_router(businesses_router)
 
-    # Reports (UI)
-    from cashpilot.api.routes.reports import router as reports_router
+      # Reports (UI)
     from cashpilot.api.routes.business_stats import router as business_stats_router
+    from cashpilot.api.routes.reports import router as reports_router
 
     app.include_router(reports_router)
     app.include_router(business_stats_router)

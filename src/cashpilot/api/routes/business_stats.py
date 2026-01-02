@@ -19,7 +19,7 @@ from cashpilot.api.utils import (
     get_translation_function,
 )
 from cashpilot.core.db import get_db
-from cashpilot.models import Business, CashSession
+from cashpilot.models import CashSession
 from cashpilot.models.user import User
 from cashpilot.utils.datetime import today_local
 
@@ -76,8 +76,8 @@ async def aggregate_business_metrics(
     to_date: date,
 ) -> dict[str, dict]:
     """Aggregate metrics by business for given date range. Returns dict keyed by business_id."""
-    # Base filters: closed sessions only, not deleted
-    base_filters = [
+    # Base filters for financial metrics: closed sessions only, not deleted
+    financial_filters = [
         CashSession.status == "CLOSED",
         CashSession.final_cash.is_not(None),
         ~CashSession.is_deleted,
@@ -85,129 +85,157 @@ async def aggregate_business_metrics(
         CashSession.session_date <= to_date,
     ]
 
-    # Aggregate by business_id
-    stmt = select(
+    # Base filters for session counts: all sessions (open + closed), not deleted
+    count_filters = [
+        ~CashSession.is_deleted,
+        CashSession.session_date >= from_date,
+        CashSession.session_date <= to_date,
+    ]
+
+    # Query 1: Financial metrics (closed sessions only)
+    stmt_financial = select(
         CashSession.business_id,
-        # Total Sales
+        # Cash Sales = (final_cash - initial_cash) + envelope + bank_transfer + expenses - credit_payments_collected
         func.sum(
             case(
                 (
                     CashSession.final_cash.is_not(None),
                     (CashSession.final_cash - CashSession.initial_cash)
                     + func.coalesce(CashSession.envelope_amount, 0)
-                    + func.coalesce(CashSession.expenses, 0)
-                    - func.coalesce(CashSession.credit_payments_collected, 0)
-                    + func.coalesce(CashSession.credit_card_total, 0)
-                    + func.coalesce(CashSession.debit_card_total, 0)
                     + func.coalesce(CashSession.bank_transfer_total, 0)
-                    + func.coalesce(CashSession.credit_sales_total, 0),
-                ),
-                else_=0,
-            )
-        ).label("total_sales"),
-        # Cash Sales
-        func.sum(
-            case(
-                (
-                    CashSession.final_cash.is_not(None),
-                    (CashSession.final_cash - CashSession.initial_cash)
-                    + func.coalesce(CashSession.envelope_amount, 0)
                     + func.coalesce(CashSession.expenses, 0)
                     - func.coalesce(CashSession.credit_payments_collected, 0),
                 ),
                 else_=0,
             )
         ).label("cash_sales"),
-        # Card Payments (credit + debit combined)
+        # Card Payments Total = credit_card + debit_card
         func.sum(
             func.coalesce(CashSession.credit_card_total, 0) + func.coalesce(CashSession.debit_card_total, 0)
-        ).label("card_payments"),
-        # Cash Profit (cash sales - expenses)
-        func.sum(
-            case(
-                (
-                    CashSession.final_cash.is_not(None),
-                    (CashSession.final_cash - CashSession.initial_cash)
-                    + func.coalesce(CashSession.envelope_amount, 0)
-                    - func.coalesce(CashSession.credit_payments_collected, 0)
-                    - func.coalesce(CashSession.expenses, 0),
-                ),
-                else_=0,
-            )
-        ).label("cash_profit"),
-        # Cash on Hand (final cash)
-        func.sum(func.coalesce(CashSession.final_cash, 0)).label("register"),
-        # Envelope (cash removed)
-        func.sum(func.coalesce(CashSession.envelope_amount, 0)).label("envelope"),
-        # Credit Sales (pending payments)
-        func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
-        # Collections (credit payments collected)
-        func.sum(func.coalesce(CashSession.credit_payments_collected, 0)).label("collections"),
-        # Bank Transfers
-        func.sum(func.coalesce(CashSession.bank_transfer_total, 0)).label("bank_transfers"),
+        ).label("card_payments_total"),
+        # Credit Card Total (breakdown)
+        func.sum(func.coalesce(CashSession.credit_card_total, 0)).label("credit_card_total"),
+        # Debit Card Total (breakdown)
+        func.sum(func.coalesce(CashSession.debit_card_total, 0)).label("debit_card_total"),
+        # Credit Sales Total (pending credit sales)
+        func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales_total"),
+        # Credit Payments Collected
+        func.sum(func.coalesce(CashSession.credit_payments_collected, 0)).label("credit_payments_collected"),
+        # Bank Transfer Total
+        func.sum(func.coalesce(CashSession.bank_transfer_total, 0)).label("bank_transfer_total"),
         # Total Expenses
         func.sum(func.coalesce(CashSession.expenses, 0)).label("total_expenses"),
-        # Net Profit (total_sales - expenses)
-        func.sum(
-            case(
-                (
-                    CashSession.final_cash.is_not(None),
-                    (CashSession.final_cash - CashSession.initial_cash)
-                    + func.coalesce(CashSession.envelope_amount, 0)
-                    + func.coalesce(CashSession.expenses, 0)
-                    - func.coalesce(CashSession.credit_payments_collected, 0)
-                    + func.coalesce(CashSession.credit_card_total, 0)
-                    + func.coalesce(CashSession.debit_card_total, 0)
-                    + func.coalesce(CashSession.bank_transfer_total, 0)
-                    + func.coalesce(CashSession.credit_sales_total, 0)
-                    - func.coalesce(CashSession.expenses, 0),
-                ),
-                else_=0,
-            )
-        ).label("net_profit"),
-    ).where(and_(*base_filters)).group_by(CashSession.business_id)
+    ).where(and_(*financial_filters)).group_by(CashSession.business_id)
 
-    result = await db.execute(stmt)
-    rows = result.all()
+    # Query 2: Session counts (all sessions)
+    stmt_counts = select(
+        CashSession.business_id,
+        func.sum(case((CashSession.status == "OPEN", 1), else_=0)).label("sessions_count_open"),
+        func.sum(case((CashSession.status == "CLOSED", 1), else_=0)).label("sessions_count_closed"),
+        func.sum(case((CashSession.flagged, 1), else_=0)).label("sessions_need_review"),
+    ).where(and_(*count_filters)).group_by(CashSession.business_id)
 
-    metrics_by_business = {}
-    for row in rows:
+    result_financial = await db.execute(stmt_financial)
+    financial_rows = result_financial.all()
+
+    result_counts = await db.execute(stmt_counts)
+    count_rows = result_counts.all()
+
+    # Build count dict by business_id
+    counts_by_business = {}
+    for row in count_rows:
         business_id = str(row.business_id)
-        total_sales = Decimal(row.total_sales or 0)
-        cash_sales = Decimal(row.cash_sales or 0)
-        card_payments = Decimal(row.card_payments or 0)
-        cash_profit = Decimal(row.cash_profit or 0)
-        register = Decimal(row.register or 0)
-        envelope = Decimal(row.envelope or 0)
-        credit_sales = Decimal(row.credit_sales or 0)
-        collections = Decimal(row.collections or 0)
-        bank_transfers = Decimal(row.bank_transfers or 0)
-        total_expenses = Decimal(row.total_expenses or 0)
-        net_profit = Decimal(row.net_profit or 0)
-        
-        # Calculate financial ratios
-        profit_margin = (net_profit / total_sales * 100) if total_sales > 0 else Decimal("0")
-        expense_ratio = (total_expenses / total_sales * 100) if total_sales > 0 else Decimal("0")
-        collection_rate = (collections / credit_sales * 100) if credit_sales > 0 else Decimal("0")
-        operating_cash_flow = cash_sales + collections - total_expenses
-        
-        metrics_by_business[business_id] = {
-            "total_revenue": total_sales,
-            "cash_revenue": cash_sales,
-            "card_revenue": card_payments,
-            "cash_profit": cash_profit,
-            "cash_on_hand": register,
-            "cash_withdrawn": envelope,
-            "accounts_receivable": credit_sales,
-            "collections": collections,
-            "bank_deposits": bank_transfers,
-            "operating_expenses": total_expenses,
-            "net_profit": net_profit,
-            "profit_margin": profit_margin,
-            "expense_ratio": expense_ratio,
-            "collection_rate": collection_rate,
-            "operating_cash_flow": operating_cash_flow,
+        counts_by_business[business_id] = {
+            "sessions_count_open": int(row.sessions_count_open or 0),
+            "sessions_count_closed": int(row.sessions_count_closed or 0),
+            "sessions_need_review": int(row.sessions_need_review or 0),
         }
+
+    # Build financial metrics dict
+    financial_by_business = {}
+    for row in financial_rows:
+        business_id = str(row.business_id)
+        cash_sales = Decimal(row.cash_sales or 0)
+        card_payments_total = Decimal(row.card_payments_total or 0)
+        credit_card_total = Decimal(row.credit_card_total or 0)
+        debit_card_total = Decimal(row.debit_card_total or 0)
+        credit_sales_total = Decimal(row.credit_sales_total or 0)
+        credit_payments_collected = Decimal(row.credit_payments_collected or 0)
+        bank_transfer_total = Decimal(row.bank_transfer_total or 0)
+        total_expenses = Decimal(row.total_expenses or 0)
+        
+        # Total Sales = cash_sales + card_payments_total + bank_transfer_total
+        total_sales = cash_sales + card_payments_total + bank_transfer_total
+        
+        # Cash Profit = cash_sales - expenses
+        cash_profit = cash_sales - total_expenses
+        
+        # Calculate payment method % mix
+        payment_method_mix = {}
+        if total_sales > 0:
+            payment_method_mix["cash_percent"] = (cash_sales / total_sales * 100) if total_sales > 0 else Decimal("0")
+            payment_method_mix["card_percent"] = (card_payments_total / total_sales * 100) if total_sales > 0 else Decimal("0")
+            payment_method_mix["bank_percent"] = (bank_transfer_total / total_sales * 100) if total_sales > 0 else Decimal("0")
+        else:
+            payment_method_mix["cash_percent"] = Decimal("0")
+            payment_method_mix["card_percent"] = Decimal("0")
+            payment_method_mix["bank_percent"] = Decimal("0")
+        
+        financial_by_business[business_id] = {
+            # Core 6 metrics
+            "total_sales": total_sales,
+            "cash_sales": cash_sales,
+            "card_payments_total": card_payments_total,
+            "credit_sales_total": credit_sales_total,
+            "credit_payments_collected": credit_payments_collected,
+            "bank_transfer_total": bank_transfer_total,
+            # Secondary metrics
+            "cash_profit": cash_profit,
+            "credit_card_total": credit_card_total,
+            "debit_card_total": debit_card_total,
+            "total_expenses": total_expenses,
+            "payment_method_mix": payment_method_mix,
+        }
+
+    # Combine financial metrics with session counts
+    # Include all businesses that have either financial data or session counts
+    all_business_ids = set(financial_by_business.keys()) | set(counts_by_business.keys())
+    
+    metrics_by_business = {}
+    for business_id in all_business_ids:
+        financial = financial_by_business.get(business_id, {})
+        counts = counts_by_business.get(business_id, {
+            "sessions_count_open": 0,
+            "sessions_count_closed": 0,
+            "sessions_need_review": 0,
+        })
+        
+        # Merge financial metrics with session counts
+        metrics_by_business[business_id] = {
+            **financial,
+            "sessions_count_open": counts["sessions_count_open"],
+            "sessions_count_closed": counts["sessions_count_closed"],
+            "sessions_need_review": counts["sessions_need_review"],
+        }
+        
+        # Ensure all required keys exist with defaults
+        defaults = {
+            "total_sales": Decimal("0"),
+            "cash_sales": Decimal("0"),
+            "card_payments_total": Decimal("0"),
+            "credit_sales_total": Decimal("0"),
+            "credit_payments_collected": Decimal("0"),
+            "bank_transfer_total": Decimal("0"),
+            "cash_profit": Decimal("0"),
+            "credit_card_total": Decimal("0"),
+            "debit_card_total": Decimal("0"),
+            "total_expenses": Decimal("0"),
+            "payment_method_mix": {"cash_percent": Decimal("0"), "card_percent": Decimal("0"), "bank_percent": Decimal("0")},
+        }
+        
+        for key, default_value in defaults.items():
+            if key not in metrics_by_business[business_id]:
+                metrics_by_business[business_id][key] = default_value
 
     return metrics_by_business
 
@@ -277,40 +305,30 @@ async def business_stats(
 
     # Build business stats with deltas
     business_stats_list = []
-    totals_current = {
-        "total_revenue": Decimal("0"),
-        "cash_revenue": Decimal("0"),
-        "card_revenue": Decimal("0"),
-        "cash_profit": Decimal("0"),
-        "cash_on_hand": Decimal("0"),
-        "cash_withdrawn": Decimal("0"),
-        "accounts_receivable": Decimal("0"),
-        "collections": Decimal("0"),
-        "bank_deposits": Decimal("0"),
-        "operating_expenses": Decimal("0"),
-        "net_profit": Decimal("0"),
-        "profit_margin": Decimal("0"),
-        "expense_ratio": Decimal("0"),
-        "collection_rate": Decimal("0"),
-        "operating_cash_flow": Decimal("0"),
-    }
-    totals_previous = {
-        "total_revenue": Decimal("0"),
-        "cash_revenue": Decimal("0"),
-        "card_revenue": Decimal("0"),
-        "cash_profit": Decimal("0"),
-        "cash_on_hand": Decimal("0"),
-        "cash_withdrawn": Decimal("0"),
-        "accounts_receivable": Decimal("0"),
-        "collections": Decimal("0"),
-        "bank_deposits": Decimal("0"),
-        "operating_expenses": Decimal("0"),
-        "net_profit": Decimal("0"),
-        "profit_margin": Decimal("0"),
-        "expense_ratio": Decimal("0"),
-        "collection_rate": Decimal("0"),
-        "operating_cash_flow": Decimal("0"),
-    }
+    
+    # Initialize totals with all metrics
+    metric_keys = [
+        "total_sales",
+        "cash_sales",
+        "card_payments_total",
+        "credit_sales_total",
+        "credit_payments_collected",
+        "bank_transfer_total",
+        "cash_profit",
+        "credit_card_total",
+        "debit_card_total",
+        "total_expenses",
+        "sessions_count_open",
+        "sessions_count_closed",
+        "sessions_need_review",
+    ]
+    
+    totals_current = {key: Decimal("0") if key.startswith("sessions_") else Decimal("0") for key in metric_keys}
+    totals_previous = {key: Decimal("0") if key.startswith("sessions_") else Decimal("0") for key in metric_keys}
+    
+    # Payment method mix for totals (calculated separately)
+    totals_current["payment_method_mix"] = {"cash_percent": Decimal("0"), "card_percent": Decimal("0"), "bank_percent": Decimal("0")}
+    totals_previous["payment_method_mix"] = {"cash_percent": Decimal("0"), "card_percent": Decimal("0"), "bank_percent": Decimal("0")}
 
     for business in businesses:
         business_id = str(business.id)
@@ -320,38 +338,40 @@ async def business_stats(
         # Initialize current and previous with all required keys (default to 0)
         current = {}
         previous = {}
-        for key in totals_current.keys():
-            if key in ["profit_margin", "expense_ratio", "collection_rate"]:
-                # These are calculated, not from raw data
-                current[key] = Decimal("0")
-                previous[key] = Decimal("0")
+        for key in metric_keys:
+            if key.startswith("sessions_"):
+                current[key] = current_raw.get(key, 0)
+                previous[key] = previous_raw.get(key, 0)
             else:
                 current[key] = current_raw.get(key, Decimal("0"))
                 previous[key] = previous_raw.get(key, Decimal("0"))
-
-        # Calculate financial ratios for this business
-        if current["total_revenue"] > 0:
-            current["profit_margin"] = (current["net_profit"] / current["total_revenue"]) * 100
-            current["expense_ratio"] = (current["operating_expenses"] / current["total_revenue"]) * 100
-        if current["accounts_receivable"] > 0:
-            current["collection_rate"] = (current["collections"] / current["accounts_receivable"]) * 100
-        current["operating_cash_flow"] = current["cash_revenue"] + current["collections"] - current["operating_expenses"]
-
-        if previous["total_revenue"] > 0:
-            previous["profit_margin"] = (previous["net_profit"] / previous["total_revenue"]) * 100
-            previous["expense_ratio"] = (previous["operating_expenses"] / previous["total_revenue"]) * 100
-        if previous["accounts_receivable"] > 0:
-            previous["collection_rate"] = (previous["collections"] / previous["accounts_receivable"]) * 100
-        previous["operating_cash_flow"] = previous["cash_revenue"] + previous["collections"] - previous["operating_expenses"]
+        
+        # Ensure payment_method_mix is always present
+        current["payment_method_mix"] = current_raw.get("payment_method_mix", {
+            "cash_percent": Decimal("0"),
+            "card_percent": Decimal("0"),
+            "bank_percent": Decimal("0"),
+        })
+        previous["payment_method_mix"] = previous_raw.get("payment_method_mix", {
+            "cash_percent": Decimal("0"),
+            "card_percent": Decimal("0"),
+            "bank_percent": Decimal("0"),
+        })
 
         # Calculate deltas for all metrics
         deltas = {}
-        for key in totals_current.keys():
+        for key in metric_keys:
+            if key == "payment_method_mix":
+                # Skip payment method mix for deltas (it's a percentage breakdown)
+                continue
             current_val = current[key]
             previous_val = previous[key]
             deltas[key] = calculate_delta(current_val, previous_val)
-            # Add to totals (except ratios which are calculated separately)
-            if key not in ["profit_margin", "expense_ratio", "collection_rate", "operating_cash_flow"]:
+            # Add to totals
+            if key.startswith("sessions_"):
+                totals_current[key] += current_val
+                totals_previous[key] += previous_val
+            else:
                 totals_current[key] += current_val
                 totals_previous[key] += previous_val
 
@@ -361,25 +381,23 @@ async def business_stats(
             "previous": previous,
             "deltas": deltas,
         })
-
-    # Recalculate ratios for totals (they can't be summed, must be calculated from totals)
-    if totals_current["total_revenue"] > 0:
-        totals_current["profit_margin"] = (totals_current["net_profit"] / totals_current["total_revenue"]) * 100
-        totals_current["expense_ratio"] = (totals_current["operating_expenses"] / totals_current["total_revenue"]) * 100
-    if totals_current["accounts_receivable"] > 0:
-        totals_current["collection_rate"] = (totals_current["collections"] / totals_current["accounts_receivable"]) * 100
-    totals_current["operating_cash_flow"] = totals_current["cash_revenue"] + totals_current["collections"] - totals_current["operating_expenses"]
     
-    if totals_previous["total_revenue"] > 0:
-        totals_previous["profit_margin"] = (totals_previous["net_profit"] / totals_previous["total_revenue"]) * 100
-        totals_previous["expense_ratio"] = (totals_previous["operating_expenses"] / totals_previous["total_revenue"]) * 100
-    if totals_previous["accounts_receivable"] > 0:
-        totals_previous["collection_rate"] = (totals_previous["collections"] / totals_previous["accounts_receivable"]) * 100
-    totals_previous["operating_cash_flow"] = totals_previous["cash_revenue"] + totals_previous["collections"] - totals_previous["operating_expenses"]
+    # Calculate payment method mix for totals
+    if totals_current["total_sales"] > 0:
+        totals_current["payment_method_mix"]["cash_percent"] = (totals_current["cash_sales"] / totals_current["total_sales"] * 100)
+        totals_current["payment_method_mix"]["card_percent"] = (totals_current["card_payments_total"] / totals_current["total_sales"] * 100)
+        totals_current["payment_method_mix"]["bank_percent"] = (totals_current["bank_transfer_total"] / totals_current["total_sales"] * 100)
+    
+    if totals_previous["total_sales"] > 0:
+        totals_previous["payment_method_mix"]["cash_percent"] = (totals_previous["cash_sales"] / totals_previous["total_sales"] * 100)
+        totals_previous["payment_method_mix"]["card_percent"] = (totals_previous["card_payments_total"] / totals_previous["total_sales"] * 100)
+        totals_previous["payment_method_mix"]["bank_percent"] = (totals_previous["bank_transfer_total"] / totals_previous["total_sales"] * 100)
     
     # Calculate totals deltas
     totals_deltas = {}
-    for key in totals_current.keys():
+    for key in metric_keys:
+        if key == "payment_method_mix":
+            continue
         totals_deltas[key] = calculate_delta(totals_current[key], totals_previous[key])
 
     # Format dates for display - more readable format
