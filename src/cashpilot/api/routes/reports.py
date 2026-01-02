@@ -12,7 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cashpilot.api.auth_helpers import require_admin
 from cashpilot.api.utils import get_locale, get_translation_function
 from cashpilot.core.db import get_db
+from cashpilot.core.logging import get_logger
 from cashpilot.models import Business, User
+
+logger = get_logger(__name__)
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -152,10 +155,29 @@ async def daily_revenue_report(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    # Get all active businesses
-    stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
+    # Get all active businesses that the user has access to
+    # Admins see all businesses, cashiers see only their assigned businesses
+    if current_user.role == "admin":
+        stmt = select(Business).where(Business.is_active is True).order_by(Business.name)
+    else:
+        # Cashiers see only their assigned businesses
+        from cashpilot.models.user_business import UserBusiness
+
+        stmt = (
+            select(Business)
+            .join(UserBusiness, Business.id == UserBusiness.business_id)
+            .where(UserBusiness.user_id == current_user.id)
+            .where(Business.is_active is True)
+            .order_by(Business.name)
+        )
+
     result = await db.execute(stmt)
     businesses = result.scalars().all()
+
+    logger.info(
+        f"Daily revenue report accessed by {current_user.display_name} "
+        f"({current_user.role}), found {len(businesses)} businesses"
+    )
 
     return templates.TemplateResponse(
         "reports/daily-revenue.html",

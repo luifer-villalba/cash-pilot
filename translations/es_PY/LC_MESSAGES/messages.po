@@ -1566,22 +1566,20 @@ msgid "expenses"
 msgstr "gastos"
 
 #: templates/reports/daily-revenue.html:565
-#, fuzzy
 msgid "Morning"
-msgstr "Margen"
+msgstr "Mañana"
 
 #: templates/reports/daily-revenue.html:566
 msgid "Afternoon"
-msgstr ""
+msgstr "Tarde"
 
 #: templates/reports/daily-revenue.html:567
-#, fuzzy
 msgid "Evening"
-msgstr "Ganancias Netas"
+msgstr "Noche"
 
 #: templates/reports/daily-revenue.html:568
 msgid "Night"
-msgstr ""
+msgstr "Madrugada"
 
 #: templates/reports/dashboard.html:41 templates/reports/dashboard.html:62
 msgid "Coming Soon"
