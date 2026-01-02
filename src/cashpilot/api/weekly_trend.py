@@ -114,9 +114,9 @@ async def get_weekly_trend(
             detail="Invalid business_id format",
         )
 
-    # Check cache
+    # Check cache (v2 = cache key updated for better TTL)
     cache_key = make_cache_key(
-        "weekly_trend", year=str(year), week=str(week), business_id=str(business_uuid)
+        "weekly_trend_v2", year=str(year), week=str(week), business_id=str(business_uuid)
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
