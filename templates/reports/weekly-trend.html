@@ -392,13 +392,13 @@
     function displayReport(data) {
         // Display summary cards
         if (data.highest_day && data.highest_day.day_name) {
-            document.getElementById('highestDay').textContent = data.highest_day.day_name;
+            document.getElementById('highestDay').textContent = translateDayName(data.highest_day.day_name);
             document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
             document.getElementById('highestDayDate').textContent = data.highest_day.date;
         }
 
         if (data.lowest_day && data.lowest_day.day_name) {
-            document.getElementById('lowestDay').textContent = data.lowest_day.day_name;
+            document.getElementById('lowestDay').textContent = translateDayName(data.lowest_day.day_name);
             document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
             document.getElementById('lowestDayDate').textContent = data.lowest_day.date;
         }
