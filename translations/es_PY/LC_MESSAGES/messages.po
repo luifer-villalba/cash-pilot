@@ -256,6 +256,42 @@ msgstr "Total Semanal"
 msgid "Showing 5 weeks of data. Main chart compares this week vs last week for detailed day-by-day analysis."
 msgstr "Mostrando 5 semanas de datos. El gráfico principal compara esta semana vs la anterior para análisis detallado día por día."
 
+#: templates/reports/weekly-trend.html:199
+msgid "Monday"
+msgstr "Lunes"
+
+#: templates/reports/weekly-trend.html:199
+msgid "Tuesday"
+msgstr "Martes"
+
+#: templates/reports/weekly-trend.html:199
+msgid "Wednesday"
+msgstr "Miércoles"
+
+#: templates/reports/weekly-trend.html:199
+msgid "Thursday"
+msgstr "Jueves"
+
+#: templates/reports/weekly-trend.html:199
+msgid "Friday"
+msgstr "Viernes"
+
+#: templates/reports/weekly-trend.html:199
+msgid "Saturday"
+msgstr "Sábado"
+
+#: templates/reports/weekly-trend.html:199
+msgid "Sunday"
+msgstr "Domingo"
+
+#: templates/reports/weekly-trend.html:538
+msgid "Wk"
+msgstr "Sem"
+
+#: templates/reports/weekly-trend.html:545
+msgid "Current"
+msgstr "Actual"
+
 #: src/cashpilot/api/routes/reports.py:45
 #: templates/sessions/session_detail.html:265
 msgid "Cash Flow"

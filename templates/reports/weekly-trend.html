@@ -229,6 +229,20 @@
         return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
     };
 
+    // Translate day names from English to Spanish
+    const translateDayName = (dayName) => {
+        const translations = {
+            'Monday': '{{ _("Monday") }}',
+            'Tuesday': '{{ _("Tuesday") }}',
+            'Wednesday': '{{ _("Wednesday") }}',
+            'Thursday': '{{ _("Thursday") }}',
+            'Friday': '{{ _("Friday") }}',
+            'Saturday': '{{ _("Saturday") }}',
+            'Sunday': '{{ _("Sunday") }}'
+        };
+        return translations[dayName] || dayName;
+    };
+
     // Calculate ISO week from date
     function getISOWeek(date) {
         const d = new Date(date);
@@ -411,7 +425,7 @@
             const revenueClass = day.has_data ? 'font-mono' : 'text-base-content/40';
             
             row.innerHTML = `
-                <td class="font-medium">${day.day_name}</td>
+                <td class="font-medium">${translateDayName(day.day_name)}</td>
                 <td>${day.date}</td>
                 <td class="text-right ${revenueClass}">${revenueDisplay}</td>
                 <td class="text-right font-mono ${growthClass}">${growthText}</td>
@@ -535,14 +549,14 @@
         // Previous 4 weeks
         data.previous_weeks.forEach((week, index) => {
             const weekTotal = week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
-            weekLabels.push(`W${index + 1}`);
+            weekLabels.push(`{{ _("Wk") }} ${index + 1}`);
             weekTotals.push(weekTotal);
             weekColors.push('rgba(156, 163, 175, 0.6)'); // Gray
         });
         
         // Current week
         const currentTotal = data.current_week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
-        weekLabels.push('{{ _("Now") }}');
+        weekLabels.push('{{ _("Current") }}');
         weekTotals.push(currentTotal);
         weekColors.push('rgb(99, 102, 241)'); // Primary blue
 
