@@ -171,9 +171,8 @@ class TestDailyRevenueEndpoint:
         assert response.status_code in [401, 403]
     
     @pytest.mark.asyncio
-    async def test_invalid_business_id_format(self, client, setup_test_data):
+    async def test_invalid_business_id_format(self, client):
         """Test that invalid UUID format returns 400."""
-        data = setup_test_data
         # Would need auth token, so this is a placeholder
         response = client.get("/reports/daily-revenue/data?business_id=not-a-uuid")
         assert response.status_code in [400, 401, 403, 422]
@@ -184,8 +183,6 @@ class TestDailyRevenueEndpoint:
         from cashpilot.api.daily_revenue import get_daily_revenue
         
         data = setup_test_data
-        business = data["business"]
-        today = data["today"]
         
         # Verify sessions were created
         sessions = data["sessions"]
