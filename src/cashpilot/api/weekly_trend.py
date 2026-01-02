@@ -120,6 +120,7 @@ async def get_weekly_trend(
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
+        logger.debug(f"Cache hit for weekly trend {year}-W{week:02d}, business {business_uuid}")
         return cached_result
 
     # Calculate date ranges for 5 weeks (current week + previous 4 weeks)
@@ -268,8 +269,17 @@ async def get_weekly_trend(
         avg_weekly_revenue=avg_weekly_revenue.quantize(Decimal("0.01")),
     )
 
-    # Cache the result (1 hour TTL)
-    set_cache(cache_key, result, ttl_seconds=3600)
+    # Cache the result
+    # - Current week: 5 minutes (data might still be coming in)
+    # - Past weeks: 1 hour (data is immutable)
+    from cashpilot.utils.datetime import today_local
+
+    current_week_start, _ = get_week_dates(year, week)
+    today = today_local()
+    is_current_week = current_week_start <= today <= current_week_start + timedelta(days=6)
+
+    cache_ttl = 300 if is_current_week else 3600  # 5 min vs 1 hour
+    set_cache(cache_key, result, ttl_seconds=cache_ttl)
 
     logger.info(
         f"Weekly trend report generated for {year}-W{week:02d}, "
