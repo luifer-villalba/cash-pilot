@@ -103,7 +103,10 @@ async def get_weekly_trend(
         - previous_weeks: Daily revenue for previous 4 weeks
         - highest_day: Day with highest revenue
         - lowest_day: Day with lowest revenue
-        - avg_weekly_revenue: Average weekly revenue
+        - current_week_total: Total revenue for target week
+        - previous_week_total: Total revenue for previous week
+        - week_over_week_growth: Week-over-week growth percentage
+        - week_over_week_difference: Absolute difference between current and previous week revenue
     """
     # Validate and parse business_id
     try:
