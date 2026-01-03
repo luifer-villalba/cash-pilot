@@ -1,10 +1,11 @@
 """Tests for the enhanced health check endpoint."""
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import pytest
 from httpx import AsyncClient
 
 from cashpilot.api.health import get_uptime_seconds, set_app_start_time
+from cashpilot.utils.datetime import now_utc
 
 
 class TestHealthCheckEndpoint:
@@ -51,8 +52,8 @@ class TestHealthCheckEndpoint:
 
     def test_health_endpoint_uptime_tracking(self) -> None:
         """Test that uptime increases over time."""
-        # Set start time to 1 hour ago
-        one_hour_ago = datetime.now() - timedelta(hours=1)
+        # Set start time to 1 hour ago (use timezone-aware datetime)
+        one_hour_ago = now_utc() - timedelta(hours=1)
         set_app_start_time(one_hour_ago)
 
         uptime = get_uptime_seconds()
