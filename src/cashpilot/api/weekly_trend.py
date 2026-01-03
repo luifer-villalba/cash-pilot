@@ -1,4 +1,17 @@
-"""Weekly Revenue Trend Report API."""
+"""Weekly Revenue Trend Report API.
+
+Cache Versioning Strategy:
+--------------------------
+The cache key includes a version string (e.g., "weekly_trend_v4") to handle breaking changes
+in the report calculation logic. When the logic changes:
+
+1. Increment the version in CACHE_VERSION constant
+2. Old cache entries with previous versions will naturally expire based on TTL
+3. For immediate cleanup, call clear_old_cache_versions() on application startup
+
+This approach avoids serving stale data after deployments while allowing the in-memory
+cache to self-clean over time.
+"""
 
 from datetime import date, timedelta
 from decimal import Decimal
@@ -9,7 +22,7 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.core.cache import get_cache, make_cache_key, set_cache
+from cashpilot.core.cache import clear_cache, get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession, User
@@ -18,6 +31,25 @@ from cashpilot.models.report_schemas import DayOfWeekRevenue, WeeklyRevenueTrend
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+# Cache version - increment when calculation logic changes
+CACHE_VERSION = "v4"
+
+
+def clear_old_cache_versions() -> None:
+    """Clear cache entries from previous versions.
+
+    This function should be called during application startup to clean up
+    any cache entries from previous versions. Since the cache is in-memory,
+    this is only necessary after a deployment without restart, but provides
+    a clean way to handle version migrations.
+    """
+    # Clear all weekly_trend entries that don't match current version
+    # In a production system with persistent cache (Redis), you would
+    # iterate through keys and delete non-matching versions
+    for old_version in ["v1", "v2", "v3"]:  # Add old versions here
+        clear_cache(f"weekly_trend_{old_version}")
+    logger.info(f"Cleared old cache versions. Current version: {CACHE_VERSION}")
 
 
 def get_week_dates(year: int, week: int) -> tuple[date, date]:
@@ -45,12 +77,17 @@ def calculate_growth_percent(current: Decimal, previous: Decimal) -> Decimal | N
     Formula: ((current - previous) / previous) * 100
 
     Args:
-        current: Current week revenue
-        previous: Previous week revenue
+        current: Current week revenue (must be a non-negative Decimal)
+        previous: Previous week revenue (must be a non-negative Decimal)
 
     Returns:
         Growth percentage or None if previous is 0
+
+    Raises:
+        ValueError: If either current or previous is negative.
     """
+    if current < 0 or previous < 0:
+        raise ValueError("current and previous revenue must be non-negative")
     if previous == 0:
         return None
     return ((current - previous) / previous * 100).quantize(Decimal("0.1"))
@@ -119,7 +156,10 @@ async def get_weekly_trend(
 
     # Check cache (v4 = changed to week-over-week growth instead of 5-week average)
     cache_key = make_cache_key(
-        "weekly_trend_v4", year=str(year), week=str(week), business_id=str(business_uuid)
+        f"weekly_trend_{CACHE_VERSION}",
+        year=str(year),
+        week=str(week),
+        business_id=str(business_uuid),
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:

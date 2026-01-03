@@ -106,15 +106,30 @@ class DailyRevenueSummary(BaseModel):
 
 
 class DayOfWeekRevenue(BaseModel):
-    """Revenue data for a single day of the week."""
+    """Revenue data for a single day of the week.
+
+    Note on default values:
+    - growth_percent defaults to None for days in previous weeks (no comparison data available)
+    - trend_arrow defaults to "→" for days without growth data
+    - These fields are populated with actual values only for days in the current week
+      when compared against the same day in the previous week
+    """
 
     day_name: str = Field(..., description="Name of the day (Monday, Tuesday, etc.)")
     day_number: int = Field(..., description="ISO weekday number (1=Monday, 7=Sunday)")
     date: date_type = Field(..., description="The specific date")
     revenue: Decimal = Field(default=Decimal("0.00"), description="Total revenue for the day")
     has_data: bool = Field(default=True, description="Whether we have session data for this day")
-    growth_percent: Decimal | None = Field(None, description="Week-over-week growth percentage")
-    trend_arrow: str = Field(default="→", description="Trend indicator (↑, ↓, →)")
+    growth_percent: Decimal | None = Field(
+        None, description="Week-over-week growth percentage (only populated for current week days)"
+    )
+    trend_arrow: str = Field(
+        default="→",
+        description=(
+            "Trend indicator (↑, ↓, →) based on growth_percent "
+            "(only meaningful for current week)"
+        ),
+    )
 
 
 class WeeklyRevenueTrend(BaseModel):

@@ -276,18 +276,45 @@ class TestCacheBehavior:
     def test_cache_key_generation(self):
         """Test cache key generation for weekly trend."""
         from cashpilot.core.cache import make_cache_key
+        from cashpilot.api.weekly_trend import CACHE_VERSION
         
         key = make_cache_key(
-            "weekly_trend_v4",
+            f"weekly_trend_{CACHE_VERSION}",
             year="2025",
             week="1",
             business_id="550e8400-e29b-41d4-a716-446655440000",
         )
         
-        assert "weekly_trend_v4" in key
+        assert f"weekly_trend_{CACHE_VERSION}" in key
         assert "2025" in key
         assert "1" in key
         assert "550e8400-e29b-41d4-a716-446655440000" in key
+    
+    def test_cache_version_constant_exists(self):
+        """Test that CACHE_VERSION constant is defined."""
+        from cashpilot.api.weekly_trend import CACHE_VERSION
+        
+        assert CACHE_VERSION is not None
+        assert isinstance(CACHE_VERSION, str)
+        assert CACHE_VERSION.startswith("v")
+    
+    def test_clear_old_cache_versions(self):
+        """Test clearing old cache versions."""
+        from cashpilot.api.weekly_trend import clear_old_cache_versions
+        from cashpilot.core.cache import set_cache, get_cache
+        
+        # Set some old version cache entries
+        set_cache("weekly_trend_v1|test", {"data": "old"})
+        set_cache("weekly_trend_v2|test", {"data": "old"})
+        set_cache("weekly_trend_v3|test", {"data": "old"})
+        
+        # Clear old versions
+        clear_old_cache_versions()
+        
+        # Verify old entries are cleared
+        assert get_cache("weekly_trend_v1|test") is None
+        assert get_cache("weekly_trend_v2|test") is None
+        assert get_cache("weekly_trend_v3|test") is None
     
     def test_cache_set_and_get(self):
         """Test basic cache operations."""
@@ -461,6 +488,15 @@ class TestAcceptanceCriteria:
             assert "{{ _(" in content
             # Verify Chart.js is included
             assert "chart.js" in content.lower()
+            # Verify crossorigin attribute is present
+            assert "crossorigin=" in content
+            # Verify template structure
+            assert "comparisonChart" in content
+            assert "trendChart" in content
+            assert "generateReport" in content
+            # Verify error handling
+            assert "errorState" in content
+            assert "loadingState" in content
     
     def test_cache_enables_fast_response(self):
         """Criterion: Cache enables sub-second response time."""
