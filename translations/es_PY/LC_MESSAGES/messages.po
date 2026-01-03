@@ -184,6 +184,9 @@ msgstr "Mostrar semana pasada"
 msgid "Show 2 weeks ago"
 msgstr "Mostrar hace 2 semanas"
 
+msgid "2 Weeks Ago"
+msgstr "Hace 2 semanas"
+
 #: templates/reports/weekly-trend.html:62
 msgid "Show 4 weeks ago"
 msgstr "Mostrar hace 4 semanas"
