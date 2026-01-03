@@ -103,3 +103,92 @@ class DailyRevenueSummary(BaseModel):
     cashier_performance: list[CashierPerformance] = Field(
         default=[], description="Performance by cashier"
     )
+
+
+class DayOfWeekRevenue(BaseModel):
+    """Revenue data for a single day of the week.
+
+    Note on default values:
+    - growth_percent defaults to None for days in previous weeks (no comparison data available)
+    - trend_arrow defaults to "→" for days without growth data
+    - These fields are populated with actual values only for days in the current week
+      when compared against the same day in the previous week
+    """
+
+    day_name: str = Field(..., description="Name of the day (Monday, Tuesday, etc.)")
+    day_number: int = Field(..., description="ISO weekday number (1=Monday, 7=Sunday)")
+    date: date_type = Field(..., description="The specific date")
+    revenue: Decimal = Field(default=Decimal("0.00"), description="Total revenue for the day")
+    has_data: bool = Field(default=True, description="Whether we have session data for this day")
+    growth_percent: Decimal | None = Field(
+        None, description="Week-over-week growth percentage (only populated for current week days)"
+    )
+    trend_arrow: str = Field(
+        default="→",
+        description=(
+            "Trend indicator (↑, ↓, →) based on growth_percent "
+            "(only meaningful for current week)"
+        ),
+    )
+
+
+class WeeklyRevenueTrend(BaseModel):
+    """Weekly revenue trend report comparing current week with previous weeks."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "business_id": "550e8400-e29b-41d4-a716-446655440000",
+                "year": 2025,
+                "week": 1,
+                "current_week": [],
+                "previous_weeks": [],
+                "highest_day": {
+                    "day_name": "Friday",
+                    "revenue": 10000.00,
+                    "date": "2025-01-03",
+                },
+                "lowest_day": {
+                    "day_name": "Monday",
+                    "revenue": 3000.00,
+                    "date": "2024-12-30",
+                },
+                "current_week_total": 45000.00,
+                "previous_week_total": 40000.00,
+                "week_over_week_growth": 12.5,
+                "week_over_week_difference": 5000.00,
+            }
+        }
+    )
+
+    business_id: UUID = Field(..., description="The business ID")
+    year: int = Field(..., description="Year of the target week")
+    week: int = Field(..., description="ISO week number (1-53)")
+
+    # Current week data (7 days)
+    current_week: list[DayOfWeekRevenue] = Field(
+        default=[], description="Revenue data for each day of the current week"
+    )
+
+    # Previous 4 weeks data (28 days total, grouped by week)
+    previous_weeks: list[list[DayOfWeekRevenue]] = Field(
+        default=[], description="Revenue data for previous 4 weeks"
+    )
+
+    # Aggregate stats
+    highest_day: dict = Field(default={}, description="Day with highest revenue in current week")
+    lowest_day: dict = Field(default={}, description="Day with lowest revenue in current week")
+
+    # Week-over-week comparison
+    current_week_total: Decimal = Field(
+        default=Decimal("0.00"), description="Total revenue for current week"
+    )
+    previous_week_total: Decimal = Field(
+        default=Decimal("0.00"), description="Total revenue for previous week"
+    )
+    week_over_week_growth: Decimal | None = Field(
+        None, description="Week-over-week growth percentage"
+    )
+    week_over_week_difference: Decimal = Field(
+        default=Decimal("0.00"), description="Absolute difference in revenue (current - previous)"
+    )

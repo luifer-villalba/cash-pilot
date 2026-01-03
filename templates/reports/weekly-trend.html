@@ -1,0 +1,757 @@
+<!-- File: templates/reports/weekly-trend.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Weekly Revenue Trend') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
+        <div class="flex-1">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-primary/10 rounded-lg">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Weekly Revenue Trend') }}</h1>
+                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Compare daily revenue across 7-day spans to identify peak/low days and week-over-week growth patterns') }}</p>
+                </div>
+            </div>
+        </div>
+        <a href="/reports" class="btn btn-outline btn-sm gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            {{ _('Back') }}
+        </a>
+    </div>
+
+    <!-- Controls Section -->
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
+        <!-- Business Selector (Most Important) -->
+        <div class="mb-4">
+            <label for="businessId" class="label py-1">
+                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+            </label>
+            <select id="businessId" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-label="{{ _('Select business to analyze') }}">
+                <option value="">{{ _('Select Business') }}</option>
+                {% for business in businesses %}
+                <option value="{{ business.id }}">{{ business.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="divider my-3 text-xs text-base-content/50">{{ _('Select time period') }}</div>
+
+        <!-- Selected Period Display -->
+        <div id="selectedPeriodBanner" class="hidden mb-3 p-3 bg-info/10 border border-info/30 rounded-lg">
+            <div class="flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="font-medium text-info">{{ _('Viewing') }}:</span>
+                <span id="selectedPeriodText" class="text-base-content font-semibold"></span>
+            </div>
+        </div>
+
+        <!-- Quick Week Buttons -->
+        <div class="flex flex-wrap gap-2 mb-4">
+            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="0" aria-label="{{ _('Show current week') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                {{ _('This Week') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="1" aria-label="{{ _('Show last week') }}">
+                {{ _('Last Week') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="2" aria-label="{{ _('Show 2 weeks ago') }}">
+                {{ _('2 Weeks Ago') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="4" aria-label="{{ _('Show 4 weeks ago') }}">
+                {{ _('Last Month') }}
+            </button>
+        </div>
+
+        <!-- Custom Date Selector -->
+        <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
+            <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>{{ _('Pick Custom Date') }}</span>
+                </div>
+            </summary>
+            <div class="collapse-content pt-3">
+                <div class="form-control">
+                    <label for="reportDate" class="label py-1">
+                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Any date in the week') }}</span>
+                    </label>
+                    <input type="date" id="reportDate" class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-describedby="weekDisplay" />
+                    <label class="label pt-2" id="week-display-container">
+                        <span class="label-text-alt text-info font-medium flex items-center gap-1" id="weekDisplay">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ _('Select a date to see its week') }}
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="hidden">
+        <div class="flex items-center justify-center py-12">
+            <div class="text-center">
+                <span class="loading loading-spinner loading-lg text-primary"></span>
+                <p class="text-base-content/60 mt-4">{{ _('Loading report data...') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden">
+        <div class="alert alert-error shadow-lg">
+            <div class="flex items-start gap-3">
+                <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                    <h3 class="font-bold">{{ _('Error Loading Report') }}</h3>
+                    <div class="text-sm" id="errorMessage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Content -->
+    <div id="reportContent" class="hidden space-y-6">
+        <!-- Summary Cards -->
+        <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/20 rounded-lg p-4 mb-6">
+            <div class="flex items-center gap-2 text-sm text-base-content/70">
+                <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ _('Line chart: current vs previous week (day-by-day). Bar chart: 5-week revenue trend.') }}</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Highest Revenue Day -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Highest Revenue Day') }}</h3>
+                </div>
+                <p class="text-2xl font-bold text-base-content" id="highestDay">-</p>
+                <p class="text-sm text-base-content/60 mt-1" id="highestDayRevenue">-</p>
+                <p class="text-xs text-base-content/50 mt-1" id="highestDayDate">-</p>
+            </div>
+
+            <!-- Lowest Revenue Day -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                    </svg>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Lowest Revenue Day') }}</h3>
+                </div>
+                <p class="text-2xl font-bold text-base-content" id="lowestDay">-</p>
+                <p class="text-sm text-base-content/60 mt-1" id="lowestDayRevenue">-</p>
+                <p class="text-xs text-base-content/50 mt-1" id="lowestDayDate">-</p>
+            </div>
+
+            <!-- Week Total Sales -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Week Total') }}</h3>
+                </div>
+                <p class="text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekTotal">-</p>
+                <p class="text-sm text-base-content/60 mt-1">{{ _('Total sales this week') }}</p>
+            </div>
+
+            <!-- Week-over-Week Growth -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Growth vs Previous') }}</h3>
+                </div>
+                <p class="text-2xl font-bold font-mono tabular-nums" id="weekGrowthPercent">-</p>
+                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1" id="weekGrowthDifference">-</p>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Comparison Chart (2 weeks only) -->
+            <div class="lg:col-span-2 bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">{{ _('Day-by-Day Comparison') }}</h2>
+                    <div class="text-xs text-base-content/60">{{ _('Current vs Previous Week') }}</div>
+                </div>
+                <div class="relative" style="height: 350px;">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 5-Week Trend (Bar Chart) -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+                <h2 class="text-lg font-semibold mb-4">{{ _('5-Week Trend') }}</h2>
+                <div class="relative" style="height: 350px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Week Details -->
+        <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+            <h2 class="text-lg font-semibold mb-4">{{ _('Selected Week Details') }}</h2>
+            <div class="overflow-x-auto">
+                <table class="table table-sm table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Day') }}</th>
+                            <th>{{ _('Date') }}</th>
+                            <th class="text-right">{{ _('Revenue') }}</th>
+                            <th class="text-right">{{ _('WoW Growth') }}</th>
+                            <th class="text-center">{{ _('Trend') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currentWeekTable">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous" onerror="console.error('Failed to load Chart.js from CDN')"></script>
+<script src="{{ url_for('static', path='/js/currency-formatter.js') }}"></script>
+
+<script>
+    // Wait for Chart.js to load before initializing
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js failed to load from CDN');
+    }
+    
+    let trendChart = null;
+
+    // Format currency values (Gs 2.500.000 - dot separator, no decimals)
+    const formatCurrency = (value) => {
+        const num = Math.round(parseFloat(value));
+        // es-PY uses comma, but we need dots per design system
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+    };
+
+    // Translate day names from English to Spanish
+    const translateDayName = (dayName) => {
+        const translations = {
+            'Monday': '{{ _("Monday") }}',
+            'Tuesday': '{{ _("Tuesday") }}',
+            'Wednesday': '{{ _("Wednesday") }}',
+            'Thursday': '{{ _("Thursday") }}',
+            'Friday': '{{ _("Friday") }}',
+            'Saturday': '{{ _("Saturday") }}',
+            'Sunday': '{{ _("Sunday") }}'
+        };
+        return translations[dayName] || dayName;
+    };
+
+    // Calculate ISO week from date
+    function getISOWeek(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        // Set to nearest Thursday (current date + 4 - current day number, making Sunday's day number 7)
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+        // Get first day of year
+        const yearStart = new Date(d.getFullYear(), 0, 1);
+        // Calculate full weeks to nearest Thursday
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return { year: d.getFullYear(), week: weekNo };
+    }
+
+    // Format date range for week
+    function formatWeekRange(date) {
+        const d = new Date(date);
+        // Get Monday of the week
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const monday = new Date(d.setDate(diff));
+        
+        // Get Sunday
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        
+        const formatDate = (date) => {
+            const months = ['{{ _("Jan") }}', '{{ _("Feb") }}', '{{ _("Mar") }}', '{{ _("Apr") }}', '{{ _("May") }}', '{{ _("Jun") }}', 
+                          '{{ _("Jul") }}', '{{ _("Aug") }}', '{{ _("Sep") }}', '{{ _("Oct") }}', '{{ _("Nov") }}', '{{ _("Dec") }}'];
+            return `${date.getDate()} ${months[date.getMonth()]}`;
+        };
+        
+        return `${formatDate(monday)} - ${formatDate(sunday)}`;
+    }
+
+    // Update week display when date changes
+    function updateWeekDisplay() {
+        const dateInput = document.getElementById('reportDate');
+        const weekDisplay = document.getElementById('weekDisplay');
+        
+        if (dateInput.value) {
+            const weekRange = formatWeekRange(dateInput.value);
+            weekDisplay.textContent = `{{ _("Week of") }} ${weekRange}`;
+        } else {
+            weekDisplay.textContent = '{{ _("Select a date to see its week") }}';
+        }
+    }
+
+    // Initialize date picker with today
+    function initializeDatePickers() {
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+        document.getElementById('reportDate').value = dateStr;
+        updateWeekDisplay();
+    }
+
+    // Date change handler
+    document.getElementById('reportDate').addEventListener('change', () => {
+        updateWeekDisplay();
+        if (document.getElementById('businessId').value) {
+            generateReport();
+        }
+    });
+
+    // Business change handler - auto-generate
+    document.getElementById('businessId').addEventListener('change', () => {
+        if (document.getElementById('businessId').value) {
+            generateReport();
+        }
+    });
+
+    // Quick week button handlers
+    document.querySelectorAll('.quick-week-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons
+            document.querySelectorAll('.quick-week-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline');
+            });
+            
+            // Add active class to clicked button
+            btn.classList.remove('btn-outline');
+            btn.classList.add('btn-primary');
+            
+            const offset = parseInt(btn.dataset.offset);
+            const today = new Date();
+            const targetDate = new Date(today);
+            targetDate.setDate(targetDate.getDate() - (offset * 7));
+            
+            const dateStr = targetDate.toISOString().split('T')[0];
+            document.getElementById('reportDate').value = dateStr;
+            updateWeekDisplay();
+            
+            // Auto-generate if business is selected
+            if (document.getElementById('businessId').value) {
+                generateReport();
+            }
+        });
+    });
+
+    async function generateReport() {
+        const businessId = document.getElementById('businessId').value;
+        const dateStr = document.getElementById('reportDate').value;
+
+        if (!businessId) {
+            showError('{{ _("Please select a business") }}');
+            return;
+        }
+
+        if (!dateStr) {
+            showError('{{ _("Please select a date") }}');
+            return;
+        }
+
+        // Calculate ISO week from date
+        const { year, week } = getISOWeek(dateStr);
+
+        // Update URL with parameters
+        const newUrl = `${window.location.pathname}?year=${year}&week=${week}&business_id=${businessId}`;
+        window.history.pushState({year, week, businessId}, '', newUrl);
+
+        // Show loading state
+        document.getElementById('loadingState').classList.remove('hidden');
+        document.getElementById('errorState').classList.add('hidden');
+        document.getElementById('reportContent').classList.add('hidden');
+
+        try {
+            const response = await fetch(
+                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}`,
+                {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to load report');
+            }
+
+            const data = await response.json();
+            displayReport(data);
+        } catch (error) {
+            console.error('Error loading report:', error);
+            showError(error.message);
+        } finally {
+            document.getElementById('loadingState').classList.add('hidden');
+        }
+    }
+
+    function displayReport(data) {
+        // Update selected period banner
+        const dateInput = document.getElementById('reportDate');
+        if (dateInput.value) {
+            const weekRange = formatWeekRange(dateInput.value);
+            document.getElementById('selectedPeriodText').textContent = weekRange;
+            document.getElementById('selectedPeriodBanner').classList.remove('hidden');
+        }
+
+        // Display summary cards
+        const highestDayEl = document.getElementById('highestDay');
+        const lowestDayEl = document.getElementById('lowestDay');
+        
+        // Update highest day
+        if (data.highest_day && data.highest_day.day_name) {
+            highestDayEl.textContent = translateDayName(data.highest_day.day_name);
+            document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
+            document.getElementById('highestDayDate').textContent = data.highest_day.date;
+        } else {
+            highestDayEl.textContent = '-';
+            document.getElementById('highestDayRevenue').textContent = '-';
+            document.getElementById('highestDayDate').textContent = '-';
+        }
+
+        // Update lowest day
+        if (data.lowest_day && data.lowest_day.day_name) {
+            lowestDayEl.textContent = translateDayName(data.lowest_day.day_name);
+            document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
+            document.getElementById('lowestDayDate').textContent = data.lowest_day.date;
+        } else {
+            lowestDayEl.textContent = '-';
+            document.getElementById('lowestDayRevenue').textContent = '-';
+            document.getElementById('lowestDayDate').textContent = '-';
+        }
+
+        // Update week-over-week growth
+        const currentWeekTotalEl = document.getElementById('currentWeekTotal');
+        const growthPercentEl = document.getElementById('weekGrowthPercent');
+        const growthDiffEl = document.getElementById('weekGrowthDifference');
+        
+        // Show current week total
+        currentWeekTotalEl.textContent = formatCurrency(data.current_week_total);
+        
+        if (data.week_over_week_growth !== null && data.week_over_week_growth !== undefined) {
+            const growth = parseFloat(data.week_over_week_growth);
+            const isPositive = growth > 0;
+            const isNegative = growth < 0;
+            
+            // Color and arrow based on growth
+            const colorClass = isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-base-content/60';
+            const arrow = isPositive ? '↑' : isNegative ? '↓' : '→';
+            
+            growthPercentEl.className = `text-2xl font-bold font-mono tabular-nums ${colorClass}`;
+            growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
+            
+            // Show difference
+            const diff = parseFloat(data.week_over_week_difference);
+            const diffText = diff > 0 ? `+${formatCurrency(Math.abs(diff))}` : 
+                            diff < 0 ? `-${formatCurrency(Math.abs(diff))}` : 
+                            formatCurrency(0);
+            growthDiffEl.className = `text-sm font-mono tabular-nums mt-1 ${colorClass}`;
+            growthDiffEl.textContent = diffText;
+        } else {
+            growthPercentEl.className = 'text-2xl font-bold text-base-content/60';
+            growthPercentEl.textContent = '-';
+            growthDiffEl.textContent = '{{ _("No previous data") }}';
+        }
+
+
+        // Display current week table
+        const tableBody = document.getElementById('currentWeekTable');
+        tableBody.innerHTML = '';
+        
+        data.current_week.forEach(day => {
+            const row = document.createElement('tr');
+            
+            const growthClass = day.growth_percent > 0 ? 'text-success' : 
+                               day.growth_percent < 0 ? 'text-error' : 
+                               'text-base-content/60';
+            
+            const growthText = day.growth_percent !== null ? 
+                `${day.growth_percent > 0 ? '+' : ''}${day.growth_percent}%` : 
+                '-';
+            
+            // Show dash if no data, currency if we have data
+            const revenueDisplay = day.has_data ? formatCurrency(day.revenue) : '-';
+            const revenueClass = day.has_data ? 'font-mono' : 'text-base-content/40';
+            
+            // Day name cell
+            const dayCell = document.createElement('td');
+            dayCell.className = 'font-medium';
+            dayCell.textContent = translateDayName(day.day_name);
+            row.appendChild(dayCell);
+            
+            // Date cell
+            const dateCell = document.createElement('td');
+            dateCell.textContent = day.date;
+            row.appendChild(dateCell);
+            
+            // Revenue cell
+            const revenueCell = document.createElement('td');
+            revenueCell.className = `text-right ${revenueClass}`;
+            revenueCell.textContent = revenueDisplay;
+            row.appendChild(revenueCell);
+            
+            // Growth percent cell
+            const growthCell = document.createElement('td');
+            growthCell.className = `text-right font-mono ${growthClass}`;
+            growthCell.textContent = growthText;
+            row.appendChild(growthCell);
+            
+            // Trend arrow cell
+            const trendCell = document.createElement('td');
+            trendCell.className = 'text-center text-lg';
+            trendCell.textContent = day.trend_arrow || '';
+            row.appendChild(trendCell);
+            
+            tableBody.appendChild(row);
+        });
+
+        // Create chart
+        createChart(data);
+
+        // Show report content
+        document.getElementById('reportContent').classList.remove('hidden');
+    }
+
+    let comparisonChart = null;
+
+    function createChart(data) {
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded. Cannot create charts.');
+            showError('Chart library failed to load. Please refresh the page.');
+            return;
+        }
+        
+        // Chart 1: Week-over-Week Comparison (Current vs Previous week only)
+        const comparisonCtx = document.getElementById('comparisonChart');
+        
+        if (comparisonChart) {
+            comparisonChart.destroy();
+        }
+
+        const labels = ['{{ _("Mon") }}', '{{ _("Tue") }}', '{{ _("Wed") }}', '{{ _("Thu") }}', '{{ _("Fri") }}', '{{ _("Sat") }}', '{{ _("Sun") }}'];
+        
+        // Get last week data (may be undefined if no previous weeks exist)
+        const previousWeek = data.previous_weeks && data.previous_weeks.length > 0 
+            ? data.previous_weeks[data.previous_weeks.length - 1] 
+            : null;
+        
+        // Build datasets array - only include previous week if data exists
+        const datasets = [];
+        
+        if (previousWeek) {
+            datasets.push({
+                label: '{{ _("Last Week") }}',
+                data: previousWeek.map(day => day.has_data ? parseFloat(day.revenue) : null),
+                borderColor: 'rgb(156, 163, 175)', // Gray
+                backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                spanGaps: false,
+                borderDash: [5, 5], // Dashed line
+            });
+        }
+        
+        datasets.push({
+            label: '{{ _("This Week") }}',
+            data: data.current_week.map(day => day.has_data ? parseFloat(day.revenue) : null),
+            borderColor: 'rgb(99, 102, 241)', // Primary blue
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            spanGaps: false,
+            fill: true,
+        });
+        
+        comparisonChart = new Chart(comparisonCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y === null) {
+                                    label += '{{ _("No data") }}';
+                                } else {
+                                    label += formatCurrency(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: 5-Week Trend (Bar chart showing weekly totals)
+        const trendCtx = document.getElementById('trendChart');
+        
+        if (trendChart) {
+            trendChart.destroy();
+        }
+
+        const weekLabels = [];
+        const weekTotals = [];
+        const weekColors = [];
+        
+        // Previous 4 weeks
+        data.previous_weeks.forEach((week, index) => {
+            const weekTotal = week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+            weekLabels.push(`{{ _("Wk") }} ${index + 1}`);
+            weekTotals.push(weekTotal);
+            weekColors.push('rgba(156, 163, 175, 0.6)'); // Gray
+        });
+        
+        // Current week
+        const currentTotal = data.current_week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+        weekLabels.push('{{ _("Current") }}');
+        weekTotals.push(currentTotal);
+        weekColors.push('rgb(99, 102, 241)'); // Primary blue
+
+        trendChart = new Chart(trendCtx, {
+            type: 'bar',
+            data: {
+                labels: weekLabels,
+                datasets: [{
+                    label: '{{ _("Weekly Total") }}',
+                    data: weekTotals,
+                    backgroundColor: weekColors,
+                    borderColor: weekColors.map(c => c.replace('0.6', '1').replace('rgb', 'rgb')),
+                    borderWidth: 2,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return formatCurrency(context.parsed.y);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                // Shorten to millions if needed
+                                if (value >= 1000000) {
+                                    return 'Gs ' + (value / 1000000).toFixed(1) + 'M';
+                                }
+                                return formatCurrency(value);
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function showError(message) {
+        document.getElementById('errorMessage').textContent = message;
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('reportContent').classList.add('hidden');
+    }
+
+    // Initialize on load
+    initializeDatePickers();
+    
+    // Auto-click "This Week" button on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const thisWeekBtn = document.querySelector('.quick-week-btn[data-offset="0"]');
+        if (thisWeekBtn) {
+            thisWeekBtn.classList.remove('btn-outline');
+            thisWeekBtn.classList.add('btn-primary');
+        }
+    });
+</script>
+{% endblock %}
