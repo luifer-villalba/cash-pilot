@@ -25,7 +25,7 @@ from cashpilot.api.auth import get_current_user
 from cashpilot.core.cache import clear_cache, get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
-from cashpilot.models import CashSession, User
+from cashpilot.models import Business, CashSession, User
 from cashpilot.models.report_schemas import DayOfWeekRevenue, WeeklyRevenueTrend
 
 logger = get_logger(__name__)
@@ -154,12 +154,27 @@ async def get_weekly_trend(
             detail="Invalid business_id format",
         )
 
+    # Fetch business to get timezone
+    stmt_business = select(Business).where(Business.id == business_uuid, Business.is_active)
+    result_business = await db.execute(stmt_business)
+    business = result_business.scalar_one_or_none()
+
+    if not business:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Business not found or inactive",
+        )
+
+    business_tz = business.timezone
+
     # Check cache (v4 = changed to week-over-week growth instead of 5-week average)
+    # Include timezone in cache key to prevent cross-timezone collisions
     cache_key = make_cache_key(
         f"weekly_trend_{CACHE_VERSION}",
         year=str(year),
         week=str(week),
         business_id=str(business_uuid),
+        timezone=business_tz,
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
@@ -327,7 +342,7 @@ async def get_weekly_trend(
     from cashpilot.utils.datetime import today_local
 
     current_week_start, _ = get_week_dates(year, week)
-    today = today_local()
+    today = today_local(business_tz)  # Use business timezone
     is_current_week = current_week_start <= today <= current_week_start + timedelta(days=6)
 
     cache_ttl = 300 if is_current_week else 3600  # 5 min vs 1 hour

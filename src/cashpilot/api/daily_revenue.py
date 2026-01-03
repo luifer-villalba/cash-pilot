@@ -12,7 +12,7 @@ from cashpilot.api.auth import get_current_user
 from cashpilot.core.cache import get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
-from cashpilot.models import CashSession, User
+from cashpilot.models import Business, CashSession, User
 from cashpilot.models.report_schemas import CashierPerformance, DailyRevenueSummary
 from cashpilot.utils.datetime import today_local
 
@@ -56,19 +56,36 @@ async def get_daily_revenue(
             detail="Invalid business_id format",
         )
 
-    # Default to today if not provided
-    target_date = date_param or today_local()
+    # Fetch business to get timezone
+    stmt_business = select(Business).where(Business.id == business_uuid, Business.is_active)
+    result_business = await db.execute(stmt_business)
+    business = result_business.scalar_one_or_none()
+
+    if not business:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Business not found or inactive",
+        )
+
+    business_tz = business.timezone
+
+    # Default to today if not provided (using business timezone)
+    target_date = date_param or today_local(business_tz)
 
     # Check cache (use 24-hour TTL for past dates, 1-hour for today)
+    # Include timezone in cache key to prevent cross-timezone collisions
     cache_key = make_cache_key(
-        "daily_revenue", date=str(target_date), business_id=str(business_uuid)
+        "daily_revenue",
+        date=str(target_date),
+        business_id=str(business_uuid),
+        timezone=business_tz,
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
         return cached_result
 
     # Determine cache TTL: 24 hours for past dates, 1 hour for today
-    is_today = target_date == today_local()
+    is_today = target_date == today_local(business_tz)
     cache_ttl = 3600 if is_today else 86400
 
     # Base filter for closed sessions
