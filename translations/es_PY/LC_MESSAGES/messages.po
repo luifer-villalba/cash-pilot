@@ -68,6 +68,10 @@ msgstr "Semana"
 msgid "Highest Revenue Day"
 msgstr "Día de Mayor Ingreso"
 
+#: templates/reports/weekly-trend.html:125
+msgid "Error Loading Report"
+msgstr "Error al Cargar el Reporte"
+
 #: templates/reports/weekly-trend.html:128
 msgid "Lowest Revenue Day"
 msgstr "Día de Menor Ingreso"
