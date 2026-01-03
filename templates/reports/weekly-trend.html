@@ -387,6 +387,10 @@
         // Calculate ISO week from date
         const { year, week } = getISOWeek(dateStr);
 
+        // Update URL with parameters
+        const newUrl = `${window.location.pathname}?year=${year}&week=${week}&business_id=${businessId}`;
+        window.history.pushState({year, week, businessId}, '', newUrl);
+
         // Show loading state
         document.getElementById('loadingState').classList.remove('hidden');
         document.getElementById('errorState').classList.add('hidden');
