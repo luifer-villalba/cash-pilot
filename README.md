@@ -112,6 +112,21 @@ This isn't a toy app. It's solving a real business problem for real businesses. 
 - **Linting** — ruff, black, isort with pre-commit hooks
 - **Error Handling** — Custom exceptions with context, structured JSON logging
 - **Async Throughout** — No blocking I/O, connection pooling, proper session management
+- **Security Best Practices** — XSS prevention using `createElement`/`textContent` instead of `innerHTML`, CSRF protection
+
+---
+
+## Development Guidelines
+
+**Reports & Analytics:**
+- **Always update URL with filters** — Use `window.history.pushState()` to update URL parameters when users change filters (business, date, etc.)
+  - Makes reports shareable (users can copy/paste URL with specific filters)
+  - Browser back/forward buttons work correctly
+  - Page refresh preserves selected filters
+  - Example: `/reports/weekly-trend?year=2026&week=1&business_id=abc123`
+- **Prevent XSS** — Use `createElement()` and `textContent` instead of `innerHTML` when displaying dynamic data
+- **Cache strategically** — Use versioned cache keys (e.g., `v4`) for calculation logic changes
+- **Error handling** — Always show user-friendly error messages, log technical details to console
 
 ---
 

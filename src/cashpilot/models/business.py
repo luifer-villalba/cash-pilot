@@ -57,6 +57,13 @@ class Business(Base):
         nullable=True,
     )
 
+    timezone: Mapped[str] = mapped_column(
+        String(64),
+        nullable=False,
+        default="America/Asuncion",
+        doc="IANA timezone identifier (e.g., 'America/New_York', 'Europe/London')",
+    )
+
     is_active: Mapped[bool] = mapped_column(
         default=True,
         nullable=False,

@@ -7,15 +7,17 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
+from cashpilot.api.auth import get_current_user
+from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession, User, UserRole
-from cashpilot.utils.datetime import now_utc
+from cashpilot.utils.datetime import current_time_local, now_local, now_utc, today_local
 
 TEMPLATES_DIR = Path("/app/templates")
 
@@ -495,3 +497,65 @@ async def update_closed_session_fields(
     _update_field(session, "notes", notes, session.notes, changed_fields, old_values, new_values)
 
     return changed_fields, old_values, new_values
+
+
+@router.get("/api/current-time")
+async def get_current_time(
+    business_id: str = Query(..., description="Business UUID"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """
+    Get current date/time for a specific business timezone.
+
+    Returns current date, datetime, and time in the business's configured timezone.
+    Used by frontend to display correct local time for the business location.
+
+    Args:
+        business_id: UUID of the business
+
+    Returns:
+        {
+            "date": "2026-01-03",
+            "datetime": "2026-01-03T14:30:00",
+            "time": "14:30:00",
+            "timezone": "America/Asuncion",
+            "utc_offset": "-03:00"
+        }
+    """
+    # Validate and parse business_id
+    try:
+        business_uuid = UUID(business_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid business_id format",
+        )
+
+    # Fetch business to get timezone
+    stmt = select(Business).where(Business.id == business_uuid, Business.is_active)
+    result = await db.execute(stmt)
+    business = result.scalar_one_or_none()
+
+    if not business:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Business not found or inactive",
+        )
+
+    # Get current time in business timezone
+    business_tz = business.timezone
+    now = now_local(business_tz)
+
+    # Calculate UTC offset
+    utc_offset = now.strftime("%z")
+    # Format as "+03:00" or "-03:00"
+    utc_offset_formatted = f"{utc_offset[:3]}:{utc_offset[3:]}"
+
+    return {
+        "date": today_local(business_tz).isoformat(),
+        "datetime": now.isoformat(),
+        "time": current_time_local(business_tz).isoformat(),
+        "timezone": business_tz,
+        "utc_offset": utc_offset_formatted,
+    }
