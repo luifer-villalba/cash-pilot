@@ -388,10 +388,8 @@
         document.getElementById('reportContent').classList.add('hidden');
 
         try {
-            // Add timestamp to prevent browser caching
-            const timestamp = new Date().getTime();
             const response = await fetch(
-                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}&_t=${timestamp}`,
+                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}`,
                 {
                     headers: {
                         'Accept': 'application/json',
@@ -424,71 +422,64 @@
             document.getElementById('selectedPeriodBanner').classList.remove('hidden');
         }
 
-        // Display summary cards (clear first to show change)
+        // Display summary cards
         const highestDayEl = document.getElementById('highestDay');
         const lowestDayEl = document.getElementById('lowestDay');
         
-        // Clear with loading state
-        highestDayEl.textContent = '...';
-        lowestDayEl.textContent = '...';
-        document.getElementById('currentWeekTotal').textContent = '...';
-        document.getElementById('weekGrowthPercent').textContent = '...';
+        // Update highest day
+        if (data.highest_day && data.highest_day.day_name) {
+            highestDayEl.textContent = translateDayName(data.highest_day.day_name);
+            document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
+            document.getElementById('highestDayDate').textContent = data.highest_day.date;
+        } else {
+            highestDayEl.textContent = '-';
+            document.getElementById('highestDayRevenue').textContent = '-';
+            document.getElementById('highestDayDate').textContent = '-';
+        }
+
+        // Update lowest day
+        if (data.lowest_day && data.lowest_day.day_name) {
+            lowestDayEl.textContent = translateDayName(data.lowest_day.day_name);
+            document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
+            document.getElementById('lowestDayDate').textContent = data.lowest_day.date;
+        } else {
+            lowestDayEl.textContent = '-';
+            document.getElementById('lowestDayRevenue').textContent = '-';
+            document.getElementById('lowestDayDate').textContent = '-';
+        }
+
+        // Update week-over-week growth
+        const currentWeekTotalEl = document.getElementById('currentWeekTotal');
+        const growthPercentEl = document.getElementById('weekGrowthPercent');
+        const growthDiffEl = document.getElementById('weekGrowthDifference');
         
-        // Update after small delay to show change
-        setTimeout(() => {
-            if (data.highest_day && data.highest_day.day_name) {
-                highestDayEl.textContent = translateDayName(data.highest_day.day_name);
-                document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
-                document.getElementById('highestDayDate').textContent = data.highest_day.date;
-            } else {
-                highestDayEl.textContent = '-';
-                document.getElementById('highestDayRevenue').textContent = '-';
-                document.getElementById('highestDayDate').textContent = '-';
-            }
-
-            if (data.lowest_day && data.lowest_day.day_name) {
-                lowestDayEl.textContent = translateDayName(data.lowest_day.day_name);
-                document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
-                document.getElementById('lowestDayDate').textContent = data.lowest_day.date;
-            } else {
-                lowestDayEl.textContent = '-';
-                document.getElementById('lowestDayRevenue').textContent = '-';
-                document.getElementById('lowestDayDate').textContent = '-';
-            }
-
-            // Update week-over-week growth
-            const currentWeekTotalEl = document.getElementById('currentWeekTotal');
-            const growthPercentEl = document.getElementById('weekGrowthPercent');
-            const growthDiffEl = document.getElementById('weekGrowthDifference');
+        // Show current week total
+        currentWeekTotalEl.textContent = formatCurrency(data.current_week_total);
+        
+        if (data.week_over_week_growth !== null && data.week_over_week_growth !== undefined) {
+            const growth = parseFloat(data.week_over_week_growth);
+            const isPositive = growth > 0;
+            const isNegative = growth < 0;
             
-            // Show current week total
-            currentWeekTotalEl.textContent = formatCurrency(data.current_week_total);
+            // Color and arrow based on growth
+            const colorClass = isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-base-content/60';
+            const arrow = isPositive ? '↑' : isNegative ? '↓' : '→';
             
-            if (data.week_over_week_growth !== null && data.week_over_week_growth !== undefined) {
-                const growth = parseFloat(data.week_over_week_growth);
-                const isPositive = growth > 0;
-                const isNegative = growth < 0;
-                
-                // Color and arrow based on growth
-                const colorClass = isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-base-content/60';
-                const arrow = isPositive ? '↑' : isNegative ? '↓' : '→';
-                
-                growthPercentEl.className = `text-2xl font-bold font-mono tabular-nums ${colorClass}`;
-                growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
-                
-                // Show difference
-                const diff = parseFloat(data.week_over_week_difference);
-                const diffText = diff > 0 ? `+${formatCurrency(Math.abs(diff))}` : 
-                                diff < 0 ? `-${formatCurrency(Math.abs(diff))}` : 
-                                formatCurrency(0);
-                growthDiffEl.className = `text-sm font-mono tabular-nums mt-1 ${colorClass}`;
-                growthDiffEl.textContent = diffText;
-            } else {
-                growthPercentEl.className = 'text-2xl font-bold text-base-content/60';
-                growthPercentEl.textContent = '-';
-                growthDiffEl.textContent = '{{ _("No previous data") }}';
-            }
-        }, 100);
+            growthPercentEl.className = `text-2xl font-bold font-mono tabular-nums ${colorClass}`;
+            growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
+            
+            // Show difference
+            const diff = parseFloat(data.week_over_week_difference);
+            const diffText = diff > 0 ? `+${formatCurrency(Math.abs(diff))}` : 
+                            diff < 0 ? `-${formatCurrency(Math.abs(diff))}` : 
+                            formatCurrency(0);
+            growthDiffEl.className = `text-sm font-mono tabular-nums mt-1 ${colorClass}`;
+            growthDiffEl.textContent = diffText;
+        } else {
+            growthPercentEl.className = 'text-2xl font-bold text-base-content/60';
+            growthPercentEl.textContent = '-';
+            growthDiffEl.textContent = '{{ _("No previous data") }}';
+        }
 
 
         // Display current week table
@@ -539,38 +530,47 @@
 
         const labels = ['{{ _("Mon") }}', '{{ _("Tue") }}', '{{ _("Wed") }}', '{{ _("Thu") }}', '{{ _("Fri") }}', '{{ _("Sat") }}', '{{ _("Sun") }}'];
         
-        const previousWeek = data.previous_weeks[data.previous_weeks.length - 1]; // Last week
+        // Get last week data (may be undefined if no previous weeks exist)
+        const previousWeek = data.previous_weeks && data.previous_weeks.length > 0 
+            ? data.previous_weeks[data.previous_weeks.length - 1] 
+            : null;
+        
+        // Build datasets array - only include previous week if data exists
+        const datasets = [];
+        
+        if (previousWeek) {
+            datasets.push({
+                label: '{{ _("Last Week") }}',
+                data: previousWeek.map(day => day.has_data ? parseFloat(day.revenue) : null),
+                borderColor: 'rgb(156, 163, 175)', // Gray
+                backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                spanGaps: false,
+                borderDash: [5, 5], // Dashed line
+            });
+        }
+        
+        datasets.push({
+            label: '{{ _("This Week") }}',
+            data: data.current_week.map(day => day.has_data ? parseFloat(day.revenue) : null),
+            borderColor: 'rgb(99, 102, 241)', // Primary blue
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            spanGaps: false,
+            fill: true,
+        });
         
         comparisonChart = new Chart(comparisonCtx, {
             type: 'line',
             data: {
                 labels: labels,
-                datasets: [
-                    {
-                        label: '{{ _("Last Week") }}',
-                        data: previousWeek.map(day => day.has_data ? parseFloat(day.revenue) : null),
-                        borderColor: 'rgb(156, 163, 175)', // Gray
-                        backgroundColor: 'rgba(156, 163, 175, 0.1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        spanGaps: false,
-                        borderDash: [5, 5], // Dashed line
-                    },
-                    {
-                        label: '{{ _("This Week") }}',
-                        data: data.current_week.map(day => day.has_data ? parseFloat(day.revenue) : null),
-                        borderColor: 'rgb(99, 102, 241)', // Primary blue
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        pointRadius: 5,
-                        pointHoverRadius: 7,
-                        spanGaps: false,
-                        fill: true,
-                    },
-                ]
+                datasets: datasets
             },
             options: {
                 responsive: true,

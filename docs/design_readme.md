@@ -561,12 +561,12 @@ Filter and selection controls in a bordered card:
 
 ```html
 <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
-    <!-- Business Selector (Most Important) -->
+    <!-- Business Selector (Most Important - Full Width) -->
     <div class="mb-4">
         <label for="businessId" class="label py-1">
             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
         </label>
-        <select id="businessId" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
+        <select id="businessId" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-label="{{ _('Select business to analyze') }}">
             <option value="">{{ _('Select Business') }}</option>
             {% for business in businesses %}
             <option value="{{ business.id }}">{{ business.name }}</option>
@@ -576,42 +576,80 @@ Filter and selection controls in a bordered card:
 
     <div class="divider my-3 text-xs text-base-content/50">{{ _('Select time period') }}</div>
 
-    <!-- Quick Action Buttons -->
+    <!-- Selected Period Banner (Hidden by default, shown when report loaded) -->
+    <div id="selectedPeriodBanner" class="hidden mb-3 p-3 bg-info/10 border border-info/30 rounded-lg">
+        <div class="flex items-center gap-2 text-sm">
+            <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="font-medium text-info">{{ _('Viewing') }}:</span>
+            <span id="selectedPeriodText" class="text-base-content font-semibold"></span>
+        </div>
+    </div>
+
+    <!-- Quick Action Buttons (First button with icon, starts as btn-outline) -->
     <div class="flex flex-wrap gap-2 mb-4">
-        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02]" data-offset="0">
+        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="0" aria-label="{{ _('Show current week') }}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <!-- Icon -->
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
             {{ _('This Week') }}
         </button>
-        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02]" data-offset="1">
+        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="1" aria-label="{{ _('Show last week') }}">
             {{ _('Last Week') }}
+        </button>
+        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="2" aria-label="{{ _('Show 2 weeks ago') }}">
+            {{ _('2 Weeks Ago') }}
+        </button>
+        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="4" aria-label="{{ _('Show 4 weeks ago') }}">
+            {{ _('Last Month') }}
         </button>
     </div>
 
-    <!-- Advanced Options (Collapsible) -->
+    <!-- Custom Date Selector (Collapsed by Default) -->
     <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
         <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
             <div class="flex items-center gap-2">
                 <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <!-- Icon -->
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
                 <span>{{ _('Pick Custom Date') }}</span>
             </div>
         </summary>
         <div class="collapse-content pt-3">
-            <!-- Custom date picker or advanced filters -->
+            <div class="form-control">
+                <label for="reportDate" class="label py-1">
+                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Any date in the week') }}</span>
+                </label>
+                <input type="date" id="reportDate" class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-describedby="weekDisplay" />
+                <label class="label pt-2" id="week-display-container">
+                    <span class="label-text-alt text-info font-medium flex items-center gap-1" id="weekDisplay">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ _('Select a date to see its week') }}
+                    </span>
+                </label>
+            </div>
         </div>
     </details>
 </div>
 ```
 
 **Key Features:**
-- Most important control first (business selector)
-- Visual dividers to separate control groups
-- Quick action buttons with icons
-- Advanced options collapsed by default
-- Focus states and transitions
+- **Business selector at top:** Full width, most prominent position (no grid layout)
+- **Visual hierarchy:** Business selection is clearly the first step
+- **Selected period banner:** Info-styled banner shows what data is being viewed (hidden until report loads)
+- **Quick action buttons:** First button includes icon, all have proper aria-labels
+- **Collapsed custom picker:** Advanced date selection hidden by default to reduce visual clutter
+- **Auto-generate pattern:** No explicit "Generate Report" button - report updates on selection changes
+- **Focus states:** All interactive elements have visible focus rings for accessibility
+- **Transitions:** Smooth hover/active effects on all buttons
+
+**Adaptive Patterns:**
+- For daily reports: Use quick buttons for "Today", "Yesterday", "7 Days Ago", "30 Days Ago"
+- For weekly reports: Use quick buttons for "This Week", "Last Week", "2 Weeks Ago", "Last Month"
+- For monthly reports: Use quick buttons for "This Month", "Last Month", "3 Months Ago", "Last Year"
 
 ### Report States
 
@@ -649,19 +687,28 @@ Clear error display with icon:
 ```
 
 #### Selected Period Banner
-Show what data is being displayed:
+Show what data is being displayed (placed within the controls card, after divider and before quick action buttons):
 
 ```html
+<!-- Placed inside the controls card, after the divider -->
 <div id="selectedPeriodBanner" class="hidden mb-3 p-3 bg-info/10 border border-info/30 rounded-lg">
     <div class="flex items-center gap-2 text-sm">
         <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <!-- Calendar icon -->
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
         </svg>
         <span class="font-medium text-info">{{ _('Viewing') }}:</span>
         <span id="selectedPeriodText" class="text-base-content font-semibold"></span>
     </div>
 </div>
 ```
+
+**Usage Pattern:**
+- Hidden by default (`hidden` class)
+- Shown when report is successfully loaded
+- Updated via JavaScript: `selectedPeriodText.textContent = "Week of Dec 29 - Jan 4"`
+- Provides visual confirmation of what data the user is viewing
+- Uses info color scheme to stand out without alarming
+- Positioned within the controls card for context
 
 ### Summary Cards Pattern
 
@@ -874,36 +921,151 @@ data.current_week.forEach(day => {
 
 ### Interactive Report Controls
 
-#### Quick Action Buttons with Active State
-```javascript
-document.querySelectorAll('.quick-week-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Remove active class from all
-        document.querySelectorAll('.quick-week-btn').forEach(b => {
-            b.classList.remove('btn-primary');
-            b.classList.add('btn-outline');
-        });
-        
-        // Add active to clicked
-        btn.classList.remove('btn-outline');
-        btn.classList.add('btn-primary');
-        
-        // Update data and regenerate
-        const offset = parseInt(btn.dataset.offset);
-        updateDateAndGenerate(offset);
-    });
-});
-```
+**Modern Pattern:** Reports auto-generate when filters change. No separate "Generate Report" button needed.
 
-#### Auto-Generate on Selection
+#### Complete Auto-Generate Pattern
 ```javascript
-// Business change handler - auto-generate report
-document.getElementById('businessId').addEventListener('change', () => {
-    if (document.getElementById('businessId').value) {
-        generateReport(); // Don't wait for manual trigger
+document.addEventListener('DOMContentLoaded', function() {
+    // Read URL parameters for deep linking
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlDate = urlParams.get('date');
+    const urlBusinessId = urlParams.get('business_id');
+    
+    // Set default date (today for daily reports, this week for weekly reports)
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('reportDate').value = urlDate || today;
+    
+    // Set business from URL param if exists
+    if (urlBusinessId) {
+        document.getElementById('businessId').value = urlBusinessId;
+    }
+    
+    // Auto-generate report if URL has params (deep linking support)
+    if (urlDate && urlBusinessId) {
+        generateReport();
+        // Highlight the appropriate quick button if applicable
+        highlightMatchingQuickButton();
+    }
+
+    // Auto-generate when business changes
+    document.getElementById('businessId').addEventListener('change', function() {
+        const date = document.getElementById('reportDate').value;
+        if (this.value && date) {
+            generateReport();
+        }
+    });
+
+    // Auto-generate when date changes (from custom date picker)
+    document.getElementById('reportDate').addEventListener('change', function() {
+        const businessId = document.getElementById('businessId').value;
+        if (this.value && businessId) {
+            // Clear quick button highlights when custom date is used
+            document.querySelectorAll('.quick-week-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline');
+            });
+            generateReport();
+        }
+    });
+
+    // Quick action buttons with active state
+    document.querySelectorAll('.quick-week-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const offset = parseInt(this.getAttribute('data-offset'));
+            const date = new Date();
+            date.setDate(date.getDate() - (offset * 7)); // For weekly reports
+            // For daily reports: date.setDate(date.getDate() - offset);
+            
+            document.getElementById('reportDate').value = date.toISOString().split('T')[0];
+            
+            // Highlight active button
+            document.querySelectorAll('.quick-week-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline');
+            });
+            this.classList.remove('btn-outline');
+            this.classList.add('btn-primary');
+
+            // Auto-generate if business is selected
+            const businessId = document.getElementById('businessId').value;
+            if (businessId) {
+                generateReport();
+            }
+        });
+    });
+
+    // Highlight default button if today/this week is selected
+    if (document.getElementById('reportDate').value === today && !urlDate) {
+        const defaultBtn = document.querySelector('.quick-week-btn[data-offset="0"]');
+        if (defaultBtn) {
+            defaultBtn.classList.remove('btn-outline');
+            defaultBtn.classList.add('btn-primary');
+        }
     }
 });
 ```
+
+#### Update URL for Deep Linking
+```javascript
+async function generateReport() {
+    const date = document.getElementById('reportDate').value;
+    const businessId = document.getElementById('businessId').value;
+
+    if (!businessId) {
+        showError('{{ _("Please select a business") }}');
+        return;
+    }
+
+    // Update URL with parameters for deep linking and sharing
+    const newUrl = `${window.location.pathname}?date=${date}&business_id=${businessId}`;
+    window.history.pushState({date, businessId}, '', newUrl);
+
+    try {
+        showLoading(true);
+        hideError();
+
+        const response = await fetch(`/reports/endpoint/data?date=${date}&business_id=${businessId}`);
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || '{{ _("Failed to generate report") }}');
+        }
+
+        const data = await response.json();
+        displayReport(data);
+        
+        // Show selected period banner
+        updateSelectedPeriodBanner(data.period_display);
+    } catch (error) {
+        showError(error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+```
+
+#### Update Selected Period Banner
+```javascript
+function updateSelectedPeriodBanner(periodText) {
+    const banner = document.getElementById('selectedPeriodBanner');
+    const textEl = document.getElementById('selectedPeriodText');
+    
+    if (periodText) {
+        textEl.textContent = periodText;
+        banner.classList.remove('hidden');
+    } else {
+        banner.classList.add('hidden');
+    }
+}
+```
+
+**Key Principles:**
+1. **No manual trigger:** Reports generate automatically when filters change
+2. **Deep linking:** Support URL parameters for sharing specific report views
+3. **Active state management:** Visual feedback on which quick action is selected
+4. **Clear custom selection:** When custom date is picked, clear quick button highlights
+5. **Default highlighting:** Pre-select the most common option (Today/This Week)
+6. **Graceful degradation:** Show helpful error if business not selected
 
 ### Currency Formatting in Reports
 
@@ -1006,6 +1168,8 @@ See these files for complete implementations:
 - `templates/sessions/close_session.html` - Complete form with sections
 - `templates/partials/transfer_items_table.html` - Line item table pattern
 - `templates/partials/expense_items_table.html` - Line item table pattern
-- `templates/reports/weekly-trend.html` - Complete report with charts and tables
+- `templates/reports/weekly-trend.html` - Complete report with charts, tables, and modern filter pattern
+- `templates/reports/daily-revenue.html` - Complete report with modern filter pattern and auto-generate behavior
 - `templates/reports/dashboard.html` - Report dashboard/listing page
 - `src/cashpilot/api/weekly_trend.py` - Report API endpoint pattern
+- `src/cashpilot/api/daily_revenue.py` - Report API endpoint pattern

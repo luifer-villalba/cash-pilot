@@ -162,17 +162,20 @@ async def get_weekly_trend(
         select(
             CashSession.session_date,
             func.sum(
-                # Cash Sales
+                # Total Revenue Calculation:
+                # 1. Cash Sales = (final_cash - initial_cash) + envelope
+                #                 - credit_payments_collected + expenses
+                #    - Represents net cash movement during the session
                 (CashSession.final_cash - CashSession.initial_cash)
                 + func.coalesce(CashSession.envelope_amount, 0)
                 + func.coalesce(CashSession.expenses, 0)
                 - func.coalesce(CashSession.credit_payments_collected, 0)
-                # Card Sales
+                # 2. Card Sales (credit + debit cards)
                 + func.coalesce(CashSession.credit_card_total, 0)
                 + func.coalesce(CashSession.debit_card_total, 0)
-                # Bank Transfers
+                # 3. Bank Transfers
                 + func.coalesce(CashSession.bank_transfer_total, 0)
-                # Credit Sales
+                # 4. Credit Sales (sales on account)
                 + func.coalesce(CashSession.credit_sales_total, 0)
             ).label("total_revenue"),
         )
@@ -194,7 +197,6 @@ async def get_weekly_trend(
 
     # Build day-by-day data for each week
     day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    all_days = []
 
     for week_info in weeks_data:
         week_days = []
@@ -216,7 +218,6 @@ async def get_weekly_trend(
             # Store whether we have data for this day
             day_data.has_data = revenue is not None
             week_days.append(day_data)
-            all_days.append(day_data)
 
         week_info["days"] = week_days
 
