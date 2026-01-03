@@ -506,13 +506,35 @@
             const revenueDisplay = day.has_data ? formatCurrency(day.revenue) : '-';
             const revenueClass = day.has_data ? 'font-mono' : 'text-base-content/40';
             
-            row.innerHTML = `
-                <td class="font-medium">${translateDayName(day.day_name)}</td>
-                <td>${day.date}</td>
-                <td class="text-right ${revenueClass}">${revenueDisplay}</td>
-                <td class="text-right font-mono ${growthClass}">${growthText}</td>
-                <td class="text-center text-lg">${day.trend_arrow}</td>
-            `;
+            // Day name cell
+            const dayCell = document.createElement('td');
+            dayCell.className = 'font-medium';
+            dayCell.textContent = translateDayName(day.day_name);
+            row.appendChild(dayCell);
+            
+            // Date cell
+            const dateCell = document.createElement('td');
+            dateCell.textContent = day.date;
+            row.appendChild(dateCell);
+            
+            // Revenue cell
+            const revenueCell = document.createElement('td');
+            revenueCell.className = `text-right ${revenueClass}`;
+            revenueCell.textContent = revenueDisplay;
+            row.appendChild(revenueCell);
+            
+            // Growth percent cell
+            const growthCell = document.createElement('td');
+            growthCell.className = `text-right font-mono ${growthClass}`;
+            growthCell.textContent = growthText;
+            row.appendChild(growthCell);
+            
+            // Trend arrow cell
+            const trendCell = document.createElement('td');
+            trendCell.className = 'text-center text-lg';
+            trendCell.textContent = day.trend_arrow || '';
+            row.appendChild(trendCell);
+            
             tableBody.appendChild(row);
         });
 
@@ -529,7 +551,7 @@
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
             console.error('Chart.js is not loaded. Cannot create charts.');
-            showError('{{ _("Chart library failed to load. Please refresh the page.") }}');
+            showError('Chart library failed to load. Please refresh the page.');
             return;
         }
         
