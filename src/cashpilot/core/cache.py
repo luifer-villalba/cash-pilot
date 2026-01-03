@@ -1,6 +1,6 @@
 """Caching utility for reports and frequently accessed data."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
 # Simple in-memory cache with TTL
@@ -13,7 +13,7 @@ def get_cache(key: str) -> Optional[Any]:
         return None
 
     value, expires_at = _cache[key]
-    if datetime.utcnow() > expires_at:
+    if datetime.now(timezone.utc) > expires_at:
         del _cache[key]
         return None
 
@@ -22,7 +22,7 @@ def get_cache(key: str) -> Optional[Any]:
 
 def set_cache(key: str, value: Any, ttl_seconds: int = 3600) -> None:
     """Set value in cache with TTL (default 1 hour)."""
-    expires_at = datetime.utcnow() + timedelta(seconds=ttl_seconds)
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
     _cache[key] = (value, expires_at)
 
 

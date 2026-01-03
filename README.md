@@ -77,6 +77,14 @@ make logs               # View live logs
 - View and restore deleted cash sessions
 - View audit logs of who edited what and when
 
+**Reports & Analytics**
+- **Weekly Revenue Trend** — Compare current week vs previous 4 weeks with day-by-day breakdown
+  - Interactive charts showing week-over-week comparison
+  - Growth percentage calculations with trend indicators (↑ ↓ →)
+  - Identify highest/lowest revenue days
+  - Cached results for performance (5min for current week, 1hr for historical)
+  - Supports all businesses with real-time filtering
+
 **Permission System**
 - **Admin:** Can create/edit/delete businesses, manage all sessions, reset passwords, view/restore deleted sessions
 - **Cashier:** Limited to assigned businesses only; within those, can create and view only their own sessions (edit within 12hr window) and cannot view sessions created by other cashiers. Cannot access deleted sessions (even their own)
@@ -124,14 +132,17 @@ Multi-location = concurrent sessions. Async handles it without complexity. Alemb
 **Structured Logging with Request IDs**  
 When something breaks, trace the exact request through the logs. Every log entry includes a correlation ID.
 
+**Cache Versioning Strategy**  
+Reports use versioned cache keys (e.g., `weekly_trend_v4`) to handle calculation logic changes. When logic changes, increment the version constant—old entries naturally expire via TTL. Prevents stale data after deployments without requiring manual cache flushes.
+
 ---
 
 ## Project Structure
 ```
 src/cashpilot/
 ├── api/                    # FastAPI routers
-│   ├── routes/             # Frontend routes (dashboard, sessions, businesses)
-│   └── *.py                # API endpoints (auth, business, sessions, admin, user)
+│   ├── routes/             # Frontend routes (dashboard, sessions, businesses, reports)
+│   └── *.py                # API endpoints (auth, business, sessions, admin, user, reports)
 ├── models/                 # SQLAlchemy ORM + Pydantic schemas
 ├── core/                   # Database, security, errors, logging, validation
 ├── middleware/             # Request ID correlation
@@ -150,6 +161,7 @@ templates/                  # Jinja2 HTML + Tailwind
 ├── businesses/
 ├── sessions/
 ├── admin/
+├── reports/               # Analytics & reporting templates
 └── partials/
 
 alembic/                    # Database migrations
@@ -251,11 +263,12 @@ Use Linear for ticket tracking (MIZ-XXX prefix). Reference in commit messages.
 
 ## What's Missing
 
-**Analytics Dashboard** — Revenue trends, discrepancy patterns, cashier performance  
+**Extended Analytics** — Discrepancy patterns, cashier performance metrics, predictive trends  
 **CSV Export** — Download sessions for accounting  
 **Email Alerts** — Notify admin of large discrepancies  
+**Mobile App** — Native iOS/Android for on-the-go session management
 
-These are intentionally not built yet. v1 focuses on core reconciliation working perfectly.
+These are intentionally not built yet. Current focus is on core reconciliation and essential reporting.
 
 ---
 

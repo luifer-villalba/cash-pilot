@@ -29,56 +29,71 @@
     </div>
 
     <!-- Controls Section -->
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-3">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
+        <!-- Business Selector (Most Important) -->
+        <div class="mb-4">
+            <label for="businessId" class="label py-1">
+                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+            </label>
+            <select id="businessId" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-label="{{ _('Select business to analyze') }}">
+                <option value="">{{ _('Select Business') }}</option>
+                {% for business in businesses %}
+                <option value="{{ business.id }}">{{ business.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="divider my-3 text-xs text-base-content/50">{{ _('Select date') }}</div>
+
+        <!-- Selected Period Display -->
+        <div id="selectedPeriodBanner" class="hidden mb-3 p-3 bg-info/10 border border-info/30 rounded-lg">
+            <div class="flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span class="font-medium text-info">{{ _('Viewing') }}:</span>
+                <span id="selectedPeriodText" class="text-base-content font-semibold"></span>
+            </div>
+        </div>
+
         <!-- Quick Date Buttons -->
-        <div class="flex flex-wrap gap-2 items-center mb-3">
-            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="0">
+        <div class="flex flex-wrap gap-2 mb-4">
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-days="0" aria-label="{{ _('Show today') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
                 {{ _('Today') }}
             </button>
-            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="1">
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-days="1" aria-label="{{ _('Show yesterday') }}">
                 {{ _('Yesterday') }}
             </button>
-            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="7">
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-days="7" aria-label="{{ _('Show 7 days ago') }}">
                 {{ _('7 Days Ago') }}
             </button>
-            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98]" data-days="30">
+            <button class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-days="30" aria-label="{{ _('Show 30 days ago') }}">
                 {{ _('30 Days Ago') }}
             </button>
         </div>
 
-        <!-- Filters -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <!-- Business Selector -->
-            <div class="form-control">
-                <label for="businessId" class="label py-1">
-                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
-                </label>
-                <select id="businessId" class="select select-bordered select-sm focus:ring-2 focus:ring-primary/20 transition-all">
-                    <option value="">{{ _('Select Business') }}</option>
-                    {% for business in businesses %}
-                    <option value="{{ business.id }}">{{ business.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Date Selector -->
-            <div class="form-control">
-                <label for="reportDate" class="label py-1">
-                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Date') }}</span>
-                </label>
-                <input type="date" id="reportDate" class="input input-bordered input-sm focus:ring-2 focus:ring-primary/20 transition-all" />
-            </div>
-
-            <!-- Action Button -->
-            <div class="form-control flex flex-col justify-end">
-                <button id="generateReport" class="btn btn-primary btn-sm gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        <!-- Custom Date Selector -->
+        <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
+            <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    {{ _('Generate Report') }}
-                </button>
+                    <span>{{ _('Pick Custom Date') }}</span>
+                </div>
+            </summary>
+            <div class="collapse-content pt-3">
+                <div class="form-control">
+                    <label for="reportDate" class="label py-1">
+                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Date') }}</span>
+                    </label>
+                    <input type="date" id="reportDate" class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all" />
+                </div>
             </div>
-        </div>
+        </details>
     </div>
 
     <!-- Loading State -->
@@ -312,8 +327,26 @@ document.addEventListener('DOMContentLoaded', function() {
         generateReport();
     }
 
-    // Generate report on button click
-    document.getElementById('generateReport').addEventListener('click', generateReport);
+    // Auto-generate report when business changes
+    document.getElementById('businessId').addEventListener('change', function() {
+        const date = document.getElementById('reportDate').value;
+        if (this.value && date) {
+            generateReport();
+        }
+    });
+
+    // Auto-generate report when date changes
+    document.getElementById('reportDate').addEventListener('change', function() {
+        const businessId = document.getElementById('businessId').value;
+        if (this.value && businessId) {
+            // Clear quick button highlights
+            document.querySelectorAll('.quick-date-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline');
+            });
+            generateReport();
+        }
+    });
 
     // Quick date buttons
     document.querySelectorAll('.quick-date-btn').forEach(btn => {
@@ -324,10 +357,30 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('reportDate').value = date.toISOString().split('T')[0];
             
             // Highlight active button
-            document.querySelectorAll('.quick-date-btn').forEach(b => b.classList.remove('btn-primary'));
+            document.querySelectorAll('.quick-date-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline');
+            });
+            this.classList.remove('btn-outline');
             this.classList.add('btn-primary');
+
+            // Auto-generate if business is selected
+            const businessId = document.getElementById('businessId').value;
+            if (businessId) {
+                generateReport();
+            }
         });
     });
+
+    // Highlight "Today" button by default if today's date is selected
+    const reportDate = document.getElementById('reportDate').value;
+    if (reportDate === today && !urlDate) {
+        const todayBtn = document.querySelector('.quick-date-btn[data-days="0"]');
+        if (todayBtn) {
+            todayBtn.classList.remove('btn-outline');
+            todayBtn.classList.add('btn-primary');
+        }
+    }
 });
 
 async function generateReport() {
