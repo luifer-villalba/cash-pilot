@@ -200,10 +200,9 @@ class CashSession(Base):
 
         Note: In Phase 3, this should use business.timezone instead of APP_TIMEZONE.
         """
-        # Combine date + time, then localize to business timezone
-        naive_dt = datetime.combine(self.session_date, self.opened_time)
+        # Combine date + time with timezone directly (DST-safe)
         business_tz = ZoneInfo(APP_TIMEZONE)
-        return naive_dt.replace(tzinfo=business_tz)
+        return datetime.combine(self.session_date, self.opened_time, tzinfo=business_tz)
 
     @property
     def closed_at(self) -> datetime | None:
@@ -216,10 +215,9 @@ class CashSession(Base):
         """
         if self.closed_time is None:
             return None
-        # Combine date + time, then localize to business timezone
-        naive_dt = datetime.combine(self.session_date, self.closed_time)
+        # Combine date + time with timezone directly (DST-safe)
         business_tz = ZoneInfo(APP_TIMEZONE)
-        return naive_dt.replace(tzinfo=business_tz)
+        return datetime.combine(self.session_date, self.closed_time, tzinfo=business_tz)
 
     @property
     def cash_sales(self) -> Decimal:

@@ -44,8 +44,8 @@ class UserBusiness(Base):
 
     assigned_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        nullable=False,
         default=now_utc,
+        nullable=False,
     )
 
     # Relationships

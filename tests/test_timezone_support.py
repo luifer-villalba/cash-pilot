@@ -19,8 +19,6 @@ from cashpilot.utils.datetime import (
     business_to_utc,
     APP_TIMEZONE,
 )
-from cashpilot.models.business import Business
-from cashpilot.models.user import User
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.expense_item import ExpenseItem
 from cashpilot.models.transfer_item import TransferItem
@@ -49,7 +47,7 @@ class TestDatetimeUtilities:
         
         # For Paraguay (UTC-3), verify timezone offset
         expected_tz = ZoneInfo(APP_TIMEZONE)
-        assert dt.tzinfo == expected_tz or str(dt.tzinfo) == APP_TIMEZONE
+        assert dt.tzinfo == expected_tz
 
     def test_now_business_with_custom_timezone(self):
         """Verify now_business() works with custom timezone."""
@@ -74,7 +72,7 @@ class TestDatetimeUtilities:
 
     def test_utc_to_business_conversion(self):
         """Verify UTC to business timezone conversion."""
-        utc_dt = datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc)  # Noon UTC
+        utc_dt = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)  # Noon UTC
         
         business_dt = utc_to_business(utc_dt)
         
@@ -84,7 +82,7 @@ class TestDatetimeUtilities:
 
     def test_utc_to_business_rejects_naive_datetime(self):
         """Verify utc_to_business() rejects naive datetimes."""
-        naive_dt = datetime(2026, 1, 15, 12, 0, 0)  # No timezone
+        naive_dt = datetime(2025, 1, 15, 12, 0, 0)  # No timezone
         
         with pytest.raises(ValueError, match="must be timezone-aware"):
             utc_to_business(naive_dt)
@@ -92,7 +90,7 @@ class TestDatetimeUtilities:
     def test_business_to_utc_conversion(self):
         """Verify business timezone to UTC conversion."""
         paraguay_tz = ZoneInfo(APP_TIMEZONE)
-        business_dt = datetime(2026, 1, 15, 9, 0, 0, tzinfo=paraguay_tz)  # 9am Paraguay
+        business_dt = datetime(2025, 1, 15, 9, 0, 0, tzinfo=paraguay_tz)  # 9am Paraguay
         
         utc_dt = business_to_utc(business_dt)
         
@@ -102,16 +100,16 @@ class TestDatetimeUtilities:
 
     def test_business_to_utc_rejects_naive_datetime(self):
         """Verify business_to_utc() rejects naive datetimes."""
-        naive_dt = datetime(2026, 1, 15, 9, 0, 0)  # No timezone
+        naive_dt = datetime(2025, 1, 15, 9, 0, 0)  # No timezone
         
         with pytest.raises(ValueError, match="must be timezone-aware"):
             business_to_utc(naive_dt)
 
     def test_timezone_aware_datetimes_are_comparable(self):
         """Verify timezone-aware datetimes can be compared across timezones."""
-        utc_dt = datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
+        utc_dt = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
         paraguay_tz = ZoneInfo(APP_TIMEZONE)
-        business_dt = datetime(2026, 1, 15, 9, 0, 0, tzinfo=paraguay_tz)
+        business_dt = datetime(2025, 1, 15, 9, 0, 0, tzinfo=paraguay_tz)
         
         # These represent the same moment in time
         assert utc_dt == business_dt
@@ -171,7 +169,7 @@ class TestModelTimezoneSupport:
         session = CashSession(
             business_id=business.id,
             cashier_id=user.id,
-            session_date=date(2026, 1, 15),
+            session_date=date(2025, 1, 15),
             opened_time=time(9, 0, 0),
             initial_cash=100000,
             status="OPEN",
@@ -194,7 +192,7 @@ class TestModelTimezoneSupport:
         session = CashSession(
             business_id=business.id,
             cashier_id=user.id,
-            session_date=date(2026, 1, 15),
+            session_date=date(2025, 1, 15),
             opened_time=time(9, 0, 0),
             closed_time=time(17, 0, 0),
             initial_cash=100000,
@@ -220,7 +218,7 @@ class TestModelTimezoneSupport:
         session = CashSession(
             business_id=business.id,
             cashier_id=user.id,
-            session_date=date(2026, 1, 15),
+            session_date=date(2025, 1, 15),
             opened_time=time(9, 0, 0),
             initial_cash=100000,
             status="OPEN",
@@ -246,7 +244,7 @@ class TestModelTimezoneSupport:
         session = CashSession(
             business_id=business.id,
             cashier_id=user.id,
-            session_date=date(2026, 1, 15),
+            session_date=date(2025, 1, 15),
             opened_time=time(9, 0, 0),
             initial_cash=100000,
             status="OPEN",
@@ -272,7 +270,7 @@ class TestModelTimezoneSupport:
         session = CashSession(
             business_id=business.id,
             cashier_id=user.id,
-            session_date=date(2026, 1, 15),
+            session_date=date(2025, 1, 15),
             opened_time=time(9, 0, 0),
             initial_cash=100000,
             status="OPEN",
@@ -305,7 +303,7 @@ class TestModelTimezoneSupport:
         session = CashSession(
             business_id=business.id,
             cashier_id=user.id,
-            session_date=date(2026, 1, 15),
+            session_date=date(2025, 1, 15),
             opened_time=time(9, 0, 0),
             initial_cash=100000,
             status="OPEN",
@@ -337,8 +335,8 @@ class TestDSTHandling:
         UTC storage is immune to DST changes.
         """
         # Create two datetimes during different DST periods (if applicable)
-        utc_dt1 = datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc)  # Summer
-        utc_dt2 = datetime(2026, 7, 15, 12, 0, 0, tzinfo=timezone.utc)  # Winter
+        utc_dt1 = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)  # Summer
+        utc_dt2 = datetime(2025, 7, 15, 12, 0, 0, tzinfo=timezone.utc)  # Winter
         
         # Both should remain in UTC unchanged
         assert utc_dt1.tzinfo == timezone.utc
@@ -357,12 +355,12 @@ class TestDSTHandling:
         ny_tz = ZoneInfo("America/New_York")
         
         # Winter time (EST = UTC-5)
-        winter_utc = datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
+        winter_utc = datetime(2025, 1, 15, 12, 0, 0, tzinfo=timezone.utc)
         winter_ny = winter_utc.astimezone(ny_tz)
         assert winter_ny.hour == 7  # 12 UTC - 5 hours
         
         # Summer time (EDT = UTC-4, DST active)
-        summer_utc = datetime(2026, 7, 15, 12, 0, 0, tzinfo=timezone.utc)
+        summer_utc = datetime(2025, 7, 15, 12, 0, 0, tzinfo=timezone.utc)
         summer_ny = summer_utc.astimezone(ny_tz)
         assert summer_ny.hour == 8  # 12 UTC - 4 hours (DST)
 
@@ -371,11 +369,11 @@ class TestDSTHandling:
         paraguay_tz = ZoneInfo(APP_TIMEZONE)
         
         # Winter
-        winter_dt = datetime(2026, 1, 15, 12, 0, 0, tzinfo=paraguay_tz)
+        winter_dt = datetime(2025, 1, 15, 12, 0, 0, tzinfo=paraguay_tz)
         assert winter_dt.utcoffset() == timedelta(hours=-3)
         
         # Summer
-        summer_dt = datetime(2026, 7, 15, 12, 0, 0, tzinfo=paraguay_tz)
+        summer_dt = datetime(2025, 7, 15, 12, 0, 0, tzinfo=paraguay_tz)
         assert summer_dt.utcoffset() == timedelta(hours=-3)
         
         # Both should have same UTC offset (no DST)
@@ -392,26 +390,24 @@ class TestBackwardCompatibility:
         
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            dt = now_utc_naive()
+            now_utc_naive()  # Call function to trigger warning
             
             # Verify deprecation warning was issued
             assert len(w) == 1
             assert issubclass(w[0].category, DeprecationWarning)
             assert "deprecated" in str(w[0].message).lower()
 
-    def test_auth_handles_legacy_naive_session_timestamps(self):
-        """Verify auth system handles legacy naive timestamps for backward compatibility."""
-        from cashpilot.api.auth import get_current_user
-        from types import SimpleNamespace
+    def test_naive_datetime_can_be_converted_to_aware(self):
+        """Verify naive datetimes can be manually converted to timezone-aware.
         
+        This is a basic utility test. For actual auth backward compatibility testing,
+        see integration tests in test_auth.py or test_cashier_timeout.py.
+        """
         # Create a legacy naive timestamp (no timezone)
-        legacy_naive_dt = datetime(2026, 1, 15, 12, 0, 0)  # No tzinfo
+        legacy_naive_dt = datetime(2025, 1, 15, 12, 0, 0)  # No tzinfo
         
-        # The auth system should handle this by adding UTC timezone
-        # This is tested in the auth.py code with backward compatibility check
+        # Verify we can convert it to timezone-aware
         iso_string = legacy_naive_dt.isoformat()
-        
-        # Verify we can parse it back
         parsed = datetime.fromisoformat(iso_string)
         
         # If naive, we should be able to add UTC timezone

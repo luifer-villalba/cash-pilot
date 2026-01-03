@@ -8,8 +8,6 @@ Create Date: 2026-01-03 00:00:00.000000
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = 'a1b2c3d4e5f6'
@@ -53,6 +51,7 @@ def upgrade() -> None:
     """)
     
     # Cash sessions table
+    # Note: NULL values are preserved during conversion (PostgreSQL handles NULL correctly)
     op.execute("""
         ALTER TABLE cash_sessions 
         ALTER COLUMN last_modified_at TYPE TIMESTAMPTZ 
