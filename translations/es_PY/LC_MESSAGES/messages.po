@@ -72,22 +72,6 @@ msgstr "Día de Mayor Ingreso"
 msgid "Lowest Revenue Day"
 msgstr "Día de Menor Ingreso"
 
-#: templates/reports/weekly-trend.html:138
-msgid "Avg Weekly Revenue"
-msgstr "Promedio Semanal de Ingresos"
-
-#: templates/reports/weekly-trend.html:141
-msgid "(5-week average)"
-msgstr "(promedio de 5 semanas)"
-
-#: templates/reports/weekly-trend.html:148
-msgid "5-Week Revenue Comparison"
-msgstr "Comparación de Ingresos de 5 Semanas"
-
-#: templates/reports/weekly-trend.html:156
-msgid "Current Week Details"
-msgstr "Detalles de la Semana Actual"
-
 #: templates/reports/weekly-trend.html:161
 msgid "Day"
 msgstr "Día"

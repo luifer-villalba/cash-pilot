@@ -138,7 +138,10 @@ class WeeklyRevenueTrend(BaseModel):
                     "revenue": 3000.00,
                     "date": "2024-12-30",
                 },
-                "avg_weekly_revenue": 45000.00,
+                "current_week_total": 45000.00,
+                "previous_week_total": 40000.00,
+                "week_over_week_growth": 12.5,
+                "week_over_week_difference": 5000.00,
             }
         }
     )
