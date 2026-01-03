@@ -515,9 +515,497 @@ document.body.addEventListener('htmx:afterSwap', function(event) {
 
 ---
 
+## 📊 Report Pages & Data Visualization
+
+Reports are a critical feature for business analytics. They follow specific UX/UI patterns to ensure clarity, ease of use, and actionability.
+
+### Report Page Structure
+
+**Pattern:** Consistent header + controls + content layout with clear visual hierarchy.
+
+#### Header Section
+All report pages start with a consistent header:
+
+```html
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
+    <div class="flex-1">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-primary/10 rounded-lg">
+                <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <!-- Report icon -->
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Report Title') }}</h1>
+                <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Brief description of report purpose') }}</p>
+            </div>
+        </div>
+    </div>
+    <a href="/reports" class="btn btn-outline btn-sm gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <!-- Back arrow icon -->
+        </svg>
+        {{ _('Back') }}
+    </a>
+</div>
+```
+
+**Key Features:**
+- Icon in colored circle (`bg-primary/10`)
+- Title + subtitle for context
+- Back button for navigation
+- Responsive flex layout
+
+#### Controls Section
+Filter and selection controls in a bordered card:
+
+```html
+<div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
+    <!-- Business Selector (Most Important) -->
+    <div class="mb-4">
+        <label for="businessId" class="label py-1">
+            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+        </label>
+        <select id="businessId" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
+            <option value="">{{ _('Select Business') }}</option>
+            {% for business in businesses %}
+            <option value="{{ business.id }}">{{ business.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="divider my-3 text-xs text-base-content/50">{{ _('Select time period') }}</div>
+
+    <!-- Quick Action Buttons -->
+    <div class="flex flex-wrap gap-2 mb-4">
+        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02]" data-offset="0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <!-- Icon -->
+            </svg>
+            {{ _('This Week') }}
+        </button>
+        <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02]" data-offset="1">
+            {{ _('Last Week') }}
+        </button>
+    </div>
+
+    <!-- Advanced Options (Collapsible) -->
+    <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
+        <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <!-- Icon -->
+                </svg>
+                <span>{{ _('Pick Custom Date') }}</span>
+            </div>
+        </summary>
+        <div class="collapse-content pt-3">
+            <!-- Custom date picker or advanced filters -->
+        </div>
+    </details>
+</div>
+```
+
+**Key Features:**
+- Most important control first (business selector)
+- Visual dividers to separate control groups
+- Quick action buttons with icons
+- Advanced options collapsed by default
+- Focus states and transitions
+
+### Report States
+
+#### Loading State
+Show loading spinner with message:
+
+```html
+<div id="loadingState" class="hidden">
+    <div class="flex items-center justify-center py-12">
+        <div class="text-center">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
+            <p class="text-base-content/60 mt-4">{{ _('Loading report data...') }}</p>
+        </div>
+    </div>
+</div>
+```
+
+#### Error State
+Clear error display with icon:
+
+```html
+<div id="errorState" class="hidden">
+    <div class="alert alert-error shadow-lg">
+        <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <h3 class="font-bold">{{ _('Error Loading Report') }}</h3>
+                <div class="text-sm" id="errorMessage"></div>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+#### Selected Period Banner
+Show what data is being displayed:
+
+```html
+<div id="selectedPeriodBanner" class="hidden mb-3 p-3 bg-info/10 border border-info/30 rounded-lg">
+    <div class="flex items-center gap-2 text-sm">
+        <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <!-- Calendar icon -->
+        </svg>
+        <span class="font-medium text-info">{{ _('Viewing') }}:</span>
+        <span id="selectedPeriodText" class="text-base-content font-semibold"></span>
+    </div>
+</div>
+```
+
+### Summary Cards Pattern
+
+Display key metrics in a grid:
+
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Metric Card: Highest Revenue Day -->
+    <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+        <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+            <h3 class="font-semibold text-sm text-base-content/70">{{ _('Highest Revenue Day') }}</h3>
+        </div>
+        <p class="text-2xl font-bold text-base-content" id="highestDay">-</p>
+        <p class="text-sm text-base-content/60 mt-1" id="highestDayRevenue">-</p>
+        <p class="text-xs text-base-content/50 mt-1" id="highestDayDate">-</p>
+    </div>
+
+    <!-- Metric Card: Growth (with dynamic color) -->
+    <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+        <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+            <h3 class="font-semibold text-sm text-base-content/70">{{ _('Growth vs Previous') }}</h3>
+        </div>
+        <p class="text-2xl font-bold font-mono tabular-nums" id="weekGrowthPercent">-</p>
+        <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1" id="weekGrowthDifference">-</p>
+    </div>
+</div>
+```
+
+**Key Features:**
+- Icon with semantic color (success/error/info)
+- Clear label with uppercase
+- Large primary value
+- Supporting secondary and tertiary values
+- Placeholder `-` while loading
+- `tabular-nums` for numeric values
+
+**JavaScript Pattern for Dynamic Colors:**
+```javascript
+// Update growth with dynamic color based on value
+const growth = parseFloat(data.week_over_week_growth);
+const isPositive = growth > 0;
+const isNegative = growth < 0;
+
+const colorClass = isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-base-content/60';
+const arrow = isPositive ? '↑' : isNegative ? '↓' : '→';
+
+growthPercentEl.className = `text-2xl font-bold font-mono tabular-nums ${colorClass}`;
+growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
+```
+
+### Chart Integration
+
+Use Chart.js with consistent styling:
+
+```html
+<!-- Chart Container -->
+<div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">{{ _('Chart Title') }}</h2>
+        <div class="text-xs text-base-content/60">{{ _('Subtitle or context') }}</div>
+    </div>
+    <div class="relative" style="height: 350px;">
+        <canvas id="chartId"></canvas>
+    </div>
+</div>
+```
+
+**Chart.js Configuration Pattern:**
+```javascript
+// Line chart configuration
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [
+            {
+                label: 'Last Week',
+                data: previousWeekData,
+                borderColor: 'rgb(156, 163, 175)', // Gray
+                backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                borderWidth: 2,
+                borderDash: [5, 5], // Dashed for historical
+                tension: 0.4,
+                pointRadius: 4,
+                spanGaps: false, // Don't connect missing data
+            },
+            {
+                label: 'This Week',
+                data: currentWeekData,
+                borderColor: 'rgb(99, 102, 241)', // Primary blue
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 3, // Thicker for emphasis
+                tension: 0.4,
+                pointRadius: 5,
+                fill: true,
+                spanGaps: false,
+            },
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        if (context.parsed.y === null) {
+                            return 'No data';
+                        }
+                        return formatCurrency(context.parsed.y);
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return formatCurrency(value);
+                    }
+                }
+            }
+        }
+    }
+});
+```
+
+**Chart Styling Rules:**
+- Current/active data: Primary color (`rgb(99, 102, 241)`), thicker lines (3px), filled area
+- Historical data: Gray (`rgb(156, 163, 175)`), thinner lines (2px), dashed
+- Always format currency in tooltips and axes
+- Use `spanGaps: false` to show data gaps clearly
+- Set fixed height (350px) for consistency
+- `responsive: true, maintainAspectRatio: false` for proper sizing
+
+### Data Tables in Reports
+
+Show detailed day-by-day breakdowns:
+
+```html
+<div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+    <h2 class="text-lg font-semibold mb-4">{{ _('Detailed Breakdown') }}</h2>
+    <div class="overflow-x-auto">
+        <table class="table table-sm table-zebra w-full">
+            <thead>
+                <tr>
+                    <th>{{ _('Day') }}</th>
+                    <th>{{ _('Date') }}</th>
+                    <th class="text-right">{{ _('Revenue') }}</th>
+                    <th class="text-right">{{ _('WoW Growth') }}</th>
+                    <th class="text-center">{{ _('Trend') }}</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable">
+                <!-- Populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</div>
+```
+
+**JavaScript Pattern for Table Rows:**
+```javascript
+data.current_week.forEach(day => {
+    const row = document.createElement('tr');
+    
+    // Dynamic color based on growth
+    const growthClass = day.growth_percent > 0 ? 'text-success' : 
+                       day.growth_percent < 0 ? 'text-error' : 
+                       'text-base-content/60';
+    
+    const growthText = day.growth_percent !== null ? 
+        `${day.growth_percent > 0 ? '+' : ''}${day.growth_percent}%` : 
+        '-';
+    
+    // Show dash if no data, currency if we have data
+    const revenueDisplay = day.has_data ? formatCurrency(day.revenue) : '-';
+    const revenueClass = day.has_data ? 'font-mono' : 'text-base-content/40';
+    
+    row.innerHTML = `
+        <td class="font-medium">${translateDayName(day.day_name)}</td>
+        <td>${day.date}</td>
+        <td class="text-right ${revenueClass}">${revenueDisplay}</td>
+        <td class="text-right font-mono ${growthClass}">${growthText}</td>
+        <td class="text-center text-lg">${day.trend_arrow}</td>
+    `;
+    
+    tableBody.appendChild(row);
+});
+```
+
+**Key Features:**
+- Use `-` for missing/null data (not `0` or empty)
+- Right-align numeric columns
+- Center-align icon columns
+- Dynamic color for growth indicators
+- `font-mono` for all numeric values
+- Muted style (`text-base-content/40`) for missing data
+
+### Interactive Report Controls
+
+#### Quick Action Buttons with Active State
+```javascript
+document.querySelectorAll('.quick-week-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove active class from all
+        document.querySelectorAll('.quick-week-btn').forEach(b => {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-outline');
+        });
+        
+        // Add active to clicked
+        btn.classList.remove('btn-outline');
+        btn.classList.add('btn-primary');
+        
+        // Update data and regenerate
+        const offset = parseInt(btn.dataset.offset);
+        updateDateAndGenerate(offset);
+    });
+});
+```
+
+#### Auto-Generate on Selection
+```javascript
+// Business change handler - auto-generate report
+document.getElementById('businessId').addEventListener('change', () => {
+    if (document.getElementById('businessId').value) {
+        generateReport(); // Don't wait for manual trigger
+    }
+});
+```
+
+### Currency Formatting in Reports
+
+**JavaScript Utility:**
+```javascript
+// Format for Guaraníes (₲ 2.500.000 - dot separator, no decimals)
+const formatCurrency = (value) => {
+    const num = Math.round(parseFloat(value));
+    return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+};
+```
+
+**Use consistently:**
+- Chart tooltips
+- Chart axes
+- Summary cards
+- Table cells
+- All numeric displays
+
+### Report Dashboard (List of Reports)
+
+Grid of available reports:
+
+```html
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for report in reports %}
+    <div class="card bg-base-100 border border-base-300 shadow-sm hover:shadow-lg transition-all duration-200 {% if not report.enabled %}opacity-60{% else %}hover:scale-[1.02]{% endif %}">
+        <div class="card-body p-4 md:p-5">
+            <div class="flex items-start gap-3 mb-3">
+                <div class="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ report.icon }}"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="card-title text-lg font-bold">{{ report.title }}</h3>
+                </div>
+                {% if not report.enabled %}
+                <span class="badge badge-sm badge-ghost">{{ _('Coming Soon') }}</span>
+                {% endif %}
+            </div>
+            <p class="text-sm text-base-content/70 mb-4">{{ report.description }}</p>
+            <div class="card-actions">
+                {% if report.enabled %}
+                <a href="/reports/{{ report.id }}" class="btn btn-sm btn-primary w-full gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- Icon -->
+                    </svg>
+                    {{ _('View Report') }}
+                </a>
+                {% else %}
+                <button disabled class="btn btn-sm btn-primary w-full opacity-50 cursor-not-allowed">
+                    {{ _('Coming Soon') }}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+```
+
+### Report Best Practices
+
+#### Data Handling
+1. **Always show placeholders:** Use `-` while loading or for null values
+2. **Handle missing data gracefully:** Don't show `0` when there's no data
+3. **Show context:** Display date ranges, business names, and time periods prominently
+4. **Cache strategically:** Current period = 5 min TTL, past periods = 1 hour TTL
+
+#### Visual Feedback
+1. **Loading states:** Show spinner + message during data fetch
+2. **Error states:** Clear error messages with retry options
+3. **Empty states:** Explain why no data is shown
+4. **Success indicators:** Highlight selected period/filters
+
+#### Interaction Patterns
+1. **Auto-generate:** Trigger report generation on control changes (don't require "Generate" button)
+2. **Quick actions first:** Most common periods as buttons (This Week, Last Week)
+3. **Advanced options collapsed:** Keep interface clean, show advanced options on demand
+4. **Active state indication:** Show which quick action is active
+
+#### Performance
+1. **Lazy load charts:** Only initialize Chart.js when data is available
+2. **Destroy and recreate:** Always destroy existing chart before creating new one
+3. **Cache results:** Use cache key based on all parameters
+4. **Async data loading:** Use `async/await` with proper error handling
+
+#### Accessibility
+1. **ARIA labels:** All interactive controls
+2. **Screen reader announcements:** For loading/error states
+3. **Keyboard navigation:** All controls keyboard accessible
+4. **Focus management:** Maintain logical focus order
+
+---
+
 ## 📚 Reference Examples
 
 See these files for complete implementations:
 - `templates/sessions/close_session.html` - Complete form with sections
 - `templates/partials/transfer_items_table.html` - Line item table pattern
 - `templates/partials/expense_items_table.html` - Line item table pattern
+- `templates/reports/weekly-trend.html` - Complete report with charts and tables
+- `templates/reports/dashboard.html` - Report dashboard/listing page
+- `src/cashpilot/api/weekly_trend.py` - Report API endpoint pattern
