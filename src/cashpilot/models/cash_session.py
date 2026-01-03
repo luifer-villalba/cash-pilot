@@ -13,14 +13,15 @@ import uuid
 from datetime import date as date_type
 from datetime import datetime, time
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import ForeignKey, Numeric, Sequence, String, and_, or_, select
+from sqlalchemy import DateTime, ForeignKey, Numeric, Sequence, String, and_, or_, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
-from cashpilot.utils.datetime import current_time_local, today_local
+from cashpilot.utils.datetime import APP_TIMEZONE, current_time_local, today_local
 
 
 class CashSession(Base):
@@ -166,7 +167,10 @@ class CashSession(Base):
         index=True,
     )
 
-    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     deleted_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Flagging
@@ -180,21 +184,42 @@ class CashSession(Base):
     flagged_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Audit fields
-    last_modified_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    last_modified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     last_modified_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # CALCULATED PROPERTIES
     @property
     def opened_at(self) -> datetime:
-        """Reconstruct datetime from session_date + opened_time (naive, browser timezone)."""
-        return datetime.combine(self.session_date, self.opened_time)
+        """Reconstruct timezone-aware datetime from session_date + opened_time.
+
+        Combines the session date and time, assuming they represent a moment in the
+        business timezone (APP_TIMEZONE), then returns a timezone-aware datetime.
+
+        Note: In Phase 3, this should use business.timezone instead of APP_TIMEZONE.
+        """
+        # Combine date + time, then localize to business timezone
+        naive_dt = datetime.combine(self.session_date, self.opened_time)
+        business_tz = ZoneInfo(APP_TIMEZONE)
+        return naive_dt.replace(tzinfo=business_tz)
 
     @property
     def closed_at(self) -> datetime | None:
-        """Reconstruct datetime from session_date + closed_time (naive, browser timezone)."""
+        """Reconstruct timezone-aware datetime from session_date + closed_time.
+
+        Combines the session date and time, assuming they represent a moment in the
+        business timezone (APP_TIMEZONE), then returns a timezone-aware datetime.
+
+        Note: In Phase 3, this should use business.timezone instead of APP_TIMEZONE.
+        """
         if self.closed_time is None:
             return None
-        return datetime.combine(self.session_date, self.closed_time)
+        # Combine date + time, then localize to business timezone
+        naive_dt = datetime.combine(self.session_date, self.closed_time)
+        business_tz = ZoneInfo(APP_TIMEZONE)
+        return naive_dt.replace(tzinfo=business_tz)
 
     @property
     def cash_sales(self) -> Decimal:
