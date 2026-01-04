@@ -303,6 +303,9 @@ async def close_session_post(
 
     try:
         # Business logic: parse currency formats (es-PY specific)
+        # Note: envelope_amount, credit_card_total, and debit_card_total have Form("0") defaults,
+        # so parse_currency will receive "0" if not provided. parse_currency handles "0" correctly
+        # and returns Decimal("0"), with fallback to Decimal("0") if parsing fails.
         final_cash_val = parse_currency(final_cash)
         if final_cash_val is None:
             raise ValueError("Invalid final_cash format")

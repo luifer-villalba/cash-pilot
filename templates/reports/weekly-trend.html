@@ -275,7 +275,7 @@
     function getISOWeek(dateStr) {
         // Parse YYYY-MM-DD string to avoid timezone issues
         const parts = dateStr.split('-');
-        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         d.setHours(0, 0, 0, 0);
         // Set to nearest Thursday (current date + 4 - current day number, making Sunday's day number 7)
         d.setDate(d.getDate() + 4 - (d.getDay() || 7));
@@ -290,7 +290,7 @@
     function formatWeekRange(dateStr) {
         // Parse YYYY-MM-DD string to avoid timezone issues
         const parts = dateStr.split('-');
-        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         
         // Get Monday of the week
         const day = d.getDay();

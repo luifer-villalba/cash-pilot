@@ -365,7 +365,7 @@
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base-content/60">{{ _('Envelope') }}</span>
-                        <span class="font-mono font-semibold tabular-nums">Gs {{ "{:,.0f}".format(session.envelope_amount) if session.envelope_amount else '' }}</span>
+                        <span class="font-mono font-semibold tabular-nums">Gs {{ "{:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base-content/60">{{ _('Credit Card') }}</span>

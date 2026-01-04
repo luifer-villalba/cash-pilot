@@ -4,8 +4,8 @@
 
 <div class="collapse collapse-arrow {% if has_items %}bg-base-100 border-2 border-error/30 shadow-md{% else %}bg-base-100 border-2 border-error/40 border-dashed shadow-lg{% endif %} rounded-lg hover:shadow-xl transition-all duration-200 {% if not has_items %}hover:border-error/60 hover:bg-error/5 cursor-pointer{% endif %}" id="expense-items-collapse">
     <input type="checkbox" id="expense-items-toggle" {% if has_items %}checked{% endif %} aria-label="{{ _('Toggle expenses section') }}" />
-    <div class="collapse-title text-base font-semibold p-4 min-h-0 {% if not has_items %}hover:bg-error/5 pr-12{% endif %} transition-colors duration-200 cursor-pointer" onclick="document.getElementById('expense-items-toggle').click()">
-        <div class="flex items-center justify-between w-full pointer-events-none">
+    <div class="collapse-title text-base font-semibold p-4 min-h-0 {% if not has_items %}hover:bg-error/5 pr-12{% endif %} transition-colors duration-200 cursor-pointer" onclick="if (!event.target.closest('button, a, input, select, textarea')) document.getElementById('expense-items-toggle').click()">
+        <div class="flex items-center justify-between w-full">
             <div class="flex items-center gap-3">
                 <svg class="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
