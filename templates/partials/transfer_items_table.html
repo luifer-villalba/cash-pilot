@@ -1,0 +1,159 @@
+<!-- File: templates/partials/transfer_items_table.html -->
+{% set active_items = session.transfer_items | selectattr('is_deleted', 'equalto', False) | list %}
+{% set has_items = active_items | length > 0 %}
+
+<div class="collapse collapse-arrow {% if has_items %}bg-base-100 border-2 border-info/30 shadow-md{% else %}bg-base-100 border-2 border-info/40 border-dashed shadow-lg{% endif %} rounded-lg hover:shadow-xl transition-all duration-200 {% if not has_items %}hover:border-info/60 hover:bg-info/5 cursor-pointer{% endif %}" id="transfer-items-collapse">
+    <input type="checkbox" id="transfer-items-toggle" {% if has_items %}checked{% endif %} aria-label="{{ _('Toggle bank transfers section') }}" />
+    <div class="collapse-title text-base font-semibold p-4 min-h-0 {% if not has_items %}hover:bg-info/5 pr-12{% endif %} transition-colors duration-200 cursor-pointer" onclick="if (!event.target.closest('button, a, input, select, textarea')) document.getElementById('transfer-items-toggle').click()">
+        <div class="flex items-center justify-between w-full">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+                </svg>
+                <div class="flex flex-col">
+                    <span class="text-base font-bold uppercase tracking-wider text-base-content">{{ _('Bank Transfers') }}</span>
+                    {% if not has_items %}
+                    <span class="text-base text-info font-semibold mt-1">{{ _('Click here to add your first transfer') }}</span>
+                    {% endif %}
+                </div>
+                {% if has_items %}
+                <span class="badge badge-info badge-md ml-2">{{ active_items | length }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="collapse-content p-4 pt-0">
+        <div class="space-y-4" id="transfer-items-container">
+    <!-- Inline Add Form (NO <form> tag - use HTMX directly) -->
+    {% if editable %}
+    <div class="bg-gradient-to-br from-info/10 to-base-100 border border-info/30 rounded-lg p-4 space-y-3 transition-all duration-200">
+        <div class="flex items-center gap-2 mb-2">
+            <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span class="text-xs font-bold uppercase tracking-wider text-info">{{ _('Add Transfer') }}</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <!-- Description -->
+            <div class="md:col-span-2">
+                <label for="transfer-description" class="sr-only">{{ _('Transfer description') }}</label>
+                <input
+                    type="text"
+                    id="transfer-description"
+                    class="input input-bordered w-full focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                    placeholder="{{ _('e.g., Cliente Juan Pérez / Pago factura 12345') }}"
+                    maxlength="100"
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Amount -->
+            <div class="flex gap-2">
+                <div class="relative flex-1">
+                    <label for="transfer-amount" class="sr-only">{{ _('Transfer amount') }}</label>
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                    <input
+                        type="text"
+                        id="transfer-amount"
+                        name="transfer-amount"
+                        class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                        placeholder="10.000"
+                        inputmode="decimal"
+                        data-currency-input
+                        autocomplete="off"
+                        aria-describedby="transfer-amount-help"
+                    />
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-primary gap-2 transition-all hover:scale-105 active:scale-95"
+                    hx-post="/sessions/{{ session.id }}/transfer-items"
+                    hx-target="#transfer-items-collapse"
+                    hx-swap="outerHTML"
+                    hx-include="[id='transfer-description'],[id='transfer-amount']"
+                    hx-vals='js:{"description": document.getElementById("transfer-description").value, "amount": document.getElementById("transfer-amount").value}'
+                    hx-indicator="#transfer-loading"
+                    hx-on::after-swap="const collapse = document.getElementById('transfer-items-collapse'); if (collapse) { const desc = collapse.querySelector('#transfer-description'); if (desc) { desc.focus(); desc.value = ''; } const amount = collapse.querySelector('#transfer-amount'); if (amount) amount.value = ''; }"
+                    aria-label="{{ _('Add transfer') }}"
+                >
+                    <span class="loading loading-spinner loading-xs hidden" id="transfer-loading"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span>{{ _('Add') }}</span>
+                </button>
+            </div>
+        </div>
+        <p class="text-xs text-base-content/60 flex items-center gap-1" id="transfer-amount-help">
+            <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>{{ _('Minimum Gs 100') }}</span>
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Items List (Modern Card Design) -->
+    {% if active_items %}
+    <div class="space-y-2" role="list" aria-label="{{ _('Transfer items list') }}">
+        {% for item in active_items %}
+        <div class="bg-base-100 border border-base-300 rounded-lg p-3 flex items-center justify-between hover:shadow-md hover:border-info/40 transition-all duration-200 group" role="listitem">
+            <div class="flex-1 min-w-0 pr-3">
+                <p class="text-sm font-medium text-base-content truncate" title="{{ item.description }}">{{ item.description }}</p>
+                <p class="text-xs text-base-content/60 mt-0.5 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <time datetime="{{ item.created_at.isoformat() if item.created_at else '' }}">{{ item.created_at | format_time_business }}</time>
+                </p>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <p class="text-base font-bold font-mono text-base-content tabular-nums">Gs {{ "{:,.0f}".format(item.amount) }}</p>
+                {% if editable %}
+                <button
+                    type="button"
+                    class="btn btn-ghost btn-sm btn-circle text-error hover:bg-error/20 focus:bg-error/20 focus:outline-none focus:ring-2 focus:ring-error/50 transition-all"
+                    aria-label="{{ _('Delete transfer') }}: {{ item.description }}"
+                    hx-delete="/sessions/{{ session.id }}/transfer-items/{{ item.id }}"
+                    hx-target="#transfer-items-collapse"
+                    hx-swap="outerHTML"
+                    hx-confirm="{{ _('Delete this transfer?') }}"
+                    hx-indicator="#transfer-delete-{{ item.id }}"
+                >
+                    <span class="loading loading-spinner loading-xs hidden" id="transfer-delete-{{ item.id }}"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-gradient-to-br from-info/5 to-base-100 border-2 border-dashed border-info/30 rounded-lg p-8 text-center transition-all duration-200">
+        <svg class="w-12 h-12 mx-auto text-info/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+        </svg>
+        <p class="text-sm font-medium text-base-content/70 mb-1">{{ _('No bank transfers recorded') }}</p>
+        <p class="text-xs text-base-content/50">{{ _('Add transfers to track bank deposits') }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Total (Modern Card) -->
+    <div class="bg-gradient-to-br from-info/5 to-base-100 border border-info/20 rounded-lg p-4 transition-all duration-200">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-info flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span class="text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Total Transfers') }}</span>
+            </div>
+            <p class="text-2xl font-bold font-mono text-base-content tabular-nums" data-bank-transfer-total="{{ '{:.0f}'.format(session.bank_transfer_total) if session.bank_transfer_total else '0' }}" aria-label="{{ _('Total bank transfers') }}: Gs {{ '{:,.0f}'.format(session.bank_transfer_total) if session.bank_transfer_total else '0' }}">
+                Gs {{ "{:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total else "0" }}
+            </p>
+        </div>
+    </div>
+    </div>
+</div>
+</div>

@@ -16,7 +16,7 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_utc_naive
+from cashpilot.utils.datetime import now_utc
 
 logger = get_logger(__name__)
 
@@ -53,6 +53,13 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """Dependency to get current authenticated user from session."""
+    # Get session safely (session middleware may not be configured)
+    if not hasattr(request, "session") or not request.session:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
     user_id = request.session.get("user_id")
 
     if not user_id:
@@ -61,24 +68,22 @@ async def get_current_user(
             detail="Not authenticated",
         )
 
-    user_role = request.session.get("user_role")
+    user_role = request.session.get("user_role") if request.session else None
 
     # Enforce role-based inactivity timeout
-    if user_role in ROLE_TIMEOUTS:
+    if user_role and user_role in ROLE_TIMEOUTS:
         timeout = ROLE_TIMEOUTS[user_role]
-        now_naive = now_utc_naive()
+        now = now_utc()
 
-        last_activity_raw = request.session.get("last_activity")
+        last_activity_raw = request.session.get("last_activity") if request.session else None
 
         try:
-            last_activity_naive = (
-                datetime.fromisoformat(last_activity_raw) if last_activity_raw else None
-            )
-
-            now = now_naive.replace(tzinfo=timezone.utc)
-
-            if last_activity_naive:
-                last_activity = last_activity_naive.replace(tzinfo=timezone.utc)
+            if last_activity_raw and isinstance(last_activity_raw, str):
+                # Parse ISO format string - it should include timezone info
+                last_activity = datetime.fromisoformat(last_activity_raw)
+                # Ensure it's timezone-aware (backward compatibility)
+                if last_activity.tzinfo is None:
+                    last_activity = last_activity.replace(tzinfo=timezone.utc)
             else:
                 last_activity = None
 
@@ -86,7 +91,8 @@ async def get_current_user(
             last_activity = None
 
         if last_activity and (now - last_activity) > timedelta(seconds=timeout):
-            request.session.clear()
+            if request.session:
+                request.session.clear()
 
             time_elapsed = now - last_activity
             logger.info(
@@ -99,7 +105,7 @@ async def get_current_user(
                 current_time_utc=now.isoformat(),
             )
 
-            is_htmx = request.headers.get("HX-Request") == "true"
+            is_htmx = request.headers.get("HX-Request") == "true" if request.headers else False
 
             if is_htmx:
                 raise HTTPException(
@@ -114,11 +120,14 @@ async def get_current_user(
                     headers={"Location": "/login?expired=true"},
                 )
         else:
-            request.session["last_activity"] = now_naive.isoformat()
+            if request.session:
+                request.session["last_activity"] = now.isoformat()
 
     try:
+        if not isinstance(user_id, str):
+            raise ValueError("user_id must be a string")
         user_uuid = UUID(user_id)
-    except ValueError:
+    except (ValueError, TypeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid user session",
@@ -144,24 +153,58 @@ async def login(
     db: AsyncSession = Depends(get_db),
 ):
     """Login endpoint - validates credentials and creates session."""
-    stmt = select(User).where(User.email == form_data.username)
+    # Extract credentials from validated form data
+    username = form_data.username
+    password = form_data.password
+
+    # Basic sanity checks for empty credentials
+    if not username or not username.strip():
+        logger.warning("auth.login_failed", email="invalid")
+        return RedirectResponse(url="/login?error=true", status_code=303)
+
+    if not password:
+        logger.warning("auth.login_failed", email=username)
+        return RedirectResponse(url="/login?error=true", status_code=303)
+
+    stmt = select(User).where(User.email == username)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(form_data.password, user.hashed_password):
-        logger.warning("auth.login_failed", email=form_data.username)
+    if not user:
+        logger.warning("auth.login_failed", email=username)
+        return RedirectResponse(url="/login?error=true", status_code=303)
+
+    if not user.hashed_password:
+        logger.warning("auth.login_failed", email=username)
+        return RedirectResponse(url="/login?error=true", status_code=303)
+
+    if not verify_password(password, user.hashed_password):
+        logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
     if not user.is_active:
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
         return RedirectResponse(url="/login?error=true", status_code=303)
 
+    # Session should be available via SessionMiddleware, but check safely
+    if not hasattr(request, "session"):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Session middleware not configured",
+        )
+
+    # Initialize session if it's None (shouldn't happen with SessionMiddleware, but be safe)
+    if request.session is None:
+        request.session = {}
+
     request.session["user_id"] = str(user.id)
-    request.session["user_role"] = user.role
-    request.session["user_display_name"] = user.display_name
+    request.session["user_role"] = (
+        user.role.value if hasattr(user.role, "value") else str(user.role)
+    )
+    request.session["user_display_name"] = user.display_name or ""
 
     if user.role in ROLE_TIMEOUTS:
-        request.session["last_activity"] = now_utc_naive().isoformat()
+        request.session["last_activity"] = now_utc().isoformat()
 
     logger.info(
         "auth.login_success",

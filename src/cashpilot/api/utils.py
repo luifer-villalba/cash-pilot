@@ -2,7 +2,7 @@
 """Frontend routes - dashboard only. Session/business routes moved to routes/."""
 
 import gettext
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from uuid import UUID
@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from cashpilot.models import Business, CashSession, User, UserRole
+from cashpilot.utils.datetime import now_utc, utc_to_business
 
 TEMPLATES_DIR = Path("/app/templates")
 
@@ -22,7 +23,11 @@ TEMPLATES_DIR = Path("/app/templates")
 # Define filter BEFORE templates initialization
 def format_currency_py(value):
     """Format number as es-PY currency (dots for thousands, no decimals)."""
-    if value is None or value == 0:
+    if value is None:
+        return "0"
+    if not isinstance(value, (int, float, Decimal)):
+        return "0"
+    if value == 0:
         return "0"
 
     from babel.numbers import format_decimal
@@ -30,11 +35,71 @@ def format_currency_py(value):
     return format_decimal(value, locale="es_PY", group_separator=".")
 
 
+# Shared Jinja2Templates instance - import this in other modules instead of creating new instances
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 TRANSLATIONS_DIR = Path("/app/translations")
 
-# Register custom Jinja2 filter
+# Register all custom Jinja2 filters in the shared instance
 templates.env.filters["format_currency_py"] = format_currency_py
+
+
+def format_time_business(dt: datetime | None) -> str:
+    """Format datetime in business timezone as HH:MM.
+
+    Converts UTC datetime to business timezone and formats as time only.
+    Returns empty string if dt is None.
+    """
+    if dt is None:
+        return ""
+    if dt.tzinfo is None:
+        # If naive, assume UTC
+        dt = dt.replace(tzinfo=now_utc().tzinfo)
+    business_dt = utc_to_business(dt)
+    return business_dt.strftime("%H:%M")
+
+
+def format_datetime_business(dt: datetime | None, format_str: str = "%d/%m/%Y %H:%M") -> str:
+    """Format datetime in business timezone.
+
+    Converts UTC datetime to business timezone and formats it.
+    Returns empty string if dt is None.
+
+    Args:
+        dt: Timezone-aware datetime in UTC
+        format_str: Format string (default: '%d/%m/%Y %H:%M')
+    """
+    if dt is None:
+        return ""
+    if dt.tzinfo is None:
+        # If naive, assume UTC
+        dt = dt.replace(tzinfo=now_utc().tzinfo)
+    business_dt = utc_to_business(dt)
+    return business_dt.strftime(format_str)
+
+
+def format_date_business(dt: datetime | None, format_str: str = "%Y-%m-%d") -> str:
+    """Format date from datetime in business timezone.
+
+    Converts UTC datetime to business timezone and formats as date only.
+    Returns empty string if dt is None.
+
+    Args:
+        dt: Timezone-aware datetime in UTC
+        format_str: Format string (default: '%Y-%m-%d')
+    """
+    if dt is None:
+        return ""
+    if dt.tzinfo is None:
+        # If naive, assume UTC
+        dt = dt.replace(tzinfo=now_utc().tzinfo)
+    business_dt = utc_to_business(dt)
+    return business_dt.strftime(format_str)
+
+
+# Register timezone-related filters in the shared instance
+templates.env.filters["format_time_business"] = format_time_business
+templates.env.filters["format_datetime_business"] = format_datetime_business
+templates.env.filters["format_date_business"] = format_date_business
 
 router = APIRouter(tags=["frontend"])
 
@@ -70,7 +135,12 @@ def get_translation_function(locale: str):
 
 def parse_currency(value: str | None) -> Decimal | None:
     """Parse Paraguay currency format (5.000.000 → 5000000 or 750000.00 → 750000.00)."""
-    if not value or not value.strip():
+    # Validate input
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        return None
+    if not value.strip():
         return None
 
     value = value.strip()
@@ -108,11 +178,15 @@ async def _build_session_filters(
     business_id: str | None,
     status: str | None,
     current_user: User,
-) -> list:
+    include_deleted: bool = False,
+) -> tuple[list, bool]:
     """Build SQLAlchemy filter list from query params.
 
     Cashier sees only own sessions.
     Admin sees all sessions.
+
+    Returns:
+        Tuple of (filters list, include_deleted flag)
     """
     filters = []
 
@@ -134,7 +208,11 @@ async def _build_session_filters(
     if status and status.strip():
         filters.append(_parse_status(status))
 
-    return [f for f in filters if f is not None]
+    # Deleted filter (only exclude if not including deleted)
+    # Note: This filter will be added in _get_paginated_sessions if needed
+    # We return a flag here instead
+
+    return [f for f in filters if f is not None], include_deleted
 
 
 def _build_role_filter(current_user: User):
@@ -146,27 +224,48 @@ def _build_role_filter(current_user: User):
 
 def _parse_from_date(from_date: str):
     """Parse from_date query param."""
+    if from_date is None:
+        return None
+    if not isinstance(from_date, str):
+        return None
+    if not from_date.strip():
+        return None
+
     try:
         from_dt = datetime.fromisoformat(from_date).date()
         return CashSession.session_date >= from_dt
-    except ValueError:
+    except (ValueError, TypeError, AttributeError):
         return None
 
 
 def _parse_to_date(to_date: str):
     """Parse to_date query param."""
+    if to_date is None:
+        return None
+    if not isinstance(to_date, str):
+        return None
+    if not to_date.strip():
+        return None
+
     try:
         to_dt = datetime.fromisoformat(to_date).date()
         return CashSession.session_date <= to_dt
-    except ValueError:
+    except (ValueError, TypeError, AttributeError):
         return None
 
 
 def _parse_business_id(business_id: str):
     """Parse business_id query param."""
+    if business_id is None:
+        return None
+    if not isinstance(business_id, str):
+        return None
+    if not business_id.strip():
+        return None
+
     try:
         return CashSession.business_id == UUID(business_id)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 
@@ -182,6 +281,7 @@ async def _get_paginated_sessions(
     filters: list,
     page: int = 1,
     per_page: int = 10,
+    include_deleted: bool = False,
 ) -> tuple[list, int, int]:
     """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages)."""
     skip = (page - 1) * per_page
@@ -192,8 +292,9 @@ async def _get_paginated_sessions(
     )
     count_stmt = select(func.count(CashSession.id))
 
-    # Add deleted filter
-    filters.append(~CashSession.is_deleted)
+    # Add deleted filter only if not including deleted
+    if not include_deleted:
+        filters.append(~CashSession.is_deleted)
 
     # If filtering by cashier_name, join User table
     has_cashier_filter = any(
@@ -280,7 +381,6 @@ async def get_active_businesses(db: AsyncSession) -> list:
 async def update_open_session_fields(
     session: CashSession,
     initial_cash: str | None,
-    expenses: str | None,
     credit_sales_total: str | None,
     credit_payments_collected: str | None,
     opened_time: str | None,
@@ -293,7 +393,6 @@ async def update_open_session_fields(
     # Currency fields with parse_currency
     currency_fields = {
         "initial_cash": initial_cash,
-        "expenses": expenses,
         "credit_sales_total": credit_sales_total,
         "credit_payments_collected": credit_payments_collected,
     }
@@ -329,5 +428,130 @@ async def update_open_session_fields(
         new_values["notes"] = ""
         session.notes = ""
         changed_fields.append("notes")
+
+    return changed_fields, old_values, new_values
+
+
+def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
+    """Check if current user can edit a closed session (12-hour window for cashiers)."""
+    if current_user.role == UserRole.ADMIN:
+        return True
+
+    if session.status != "CLOSED":
+        return False
+
+    if session.cashier_id != current_user.id:
+        return False
+
+    if not session.closed_at:
+        return False
+
+    time_since_close = now_utc() - session.closed_at
+    return time_since_close <= timedelta(hours=12)
+
+
+def _update_field(
+    session: CashSession,
+    field_name: str,
+    new_value: Decimal | str | None,
+    current_value: Decimal | str | None,
+    changed_fields: list[str],
+    old_values: dict,
+    new_values: dict,
+) -> None:
+    """Update a single field and track changes."""
+    if new_value is None:
+        return
+
+    new_val_str = str(new_value) if new_value else None
+    current_val_str = str(current_value) if current_value else None
+
+    if new_val_str != current_val_str:
+        changed_fields.append(field_name)
+        old_values[field_name] = current_val_str
+        new_values[field_name] = new_val_str
+        setattr(session, field_name, new_value)
+
+
+async def update_closed_session_fields(
+    session: CashSession,
+    final_cash: str | None = None,
+    envelope_amount: str | None = None,
+    credit_card_total: str | None = None,
+    debit_card_total: str | None = None,
+    credit_sales_total: str | None = None,
+    credit_payments_collected: str | None = None,
+    closing_ticket: str | None = None,
+    notes: str | None = None,
+) -> tuple[list[str], dict, dict]:
+    """Track field changes for closed session edit."""
+    changed_fields = []
+    old_values = {}
+    new_values = {}
+
+    _update_field(
+        session,
+        "final_cash",
+        parse_currency(final_cash),
+        session.final_cash,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "envelope_amount",
+        parse_currency(envelope_amount) or Decimal("0"),
+        session.envelope_amount,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "credit_card_total",
+        parse_currency(credit_card_total) or Decimal("0"),
+        session.credit_card_total,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "debit_card_total",
+        parse_currency(debit_card_total) or Decimal("0"),
+        session.debit_card_total,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "credit_sales_total",
+        parse_currency(credit_sales_total) or Decimal("0"),
+        session.credit_sales_total,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "credit_payments_collected",
+        parse_currency(credit_payments_collected) or Decimal("0"),
+        session.credit_payments_collected,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(
+        session,
+        "closing_ticket",
+        closing_ticket,
+        session.closing_ticket,
+        changed_fields,
+        old_values,
+        new_values,
+    )
+    _update_field(session, "notes", notes, session.notes, changed_fields, old_values, new_values)
 
     return changed_fields, old_values, new_values

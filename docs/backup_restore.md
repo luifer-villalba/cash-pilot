@@ -9,6 +9,7 @@
 |--------|---------|--------|--------|
 | `backup_production.sh` | Create backup | Railway Production | ✅ Safe (read-only) |
 | `restore_to_local.sh` | Test restore | Local Docker | ✅ Safe (isolated) |
+| `restore_to_railway.sh` | Restore to any Railway DB | Any Railway environment | ⚠️ Use with caution |
 | `restore_production.sh` | Emergency restore | Railway Production | ⚠️ DANGEROUS |
 
 ---
@@ -32,15 +33,20 @@ pg_dump --version  # Should show 17.x
 ```
 
 ### 2. Create `.env.backup` File
+
+**Option A: Copy from example (recommended)**
+```bash
+cp .env.backup.example .env.backup
+# Then edit .env.backup and replace PASSWORD with your actual database password
+```
+
+**Option B: Create manually**
 ```bash
 # Get public URL from Railway dashboard → PostgreSQL → Connect → Public Network
 echo 'DATABASE_PUBLIC_URL=postgresql://postgres:PASSWORD@switchyard.proxy.rlwy.net:PORT/railway' > .env.backup
 ```
 
-### 3. Add to `.gitignore`
-```bash
-echo '.env.backup' >> .gitignore
-```
+**Note:** The `.env.backup` file is already in `.gitignore` and won't be committed to git.
 
 ---
 
@@ -140,6 +146,46 @@ dropdb cashpilot_dev
 createdb cashpilot_dev -O cashpilot
 gunzip -c backups/cashpilot_20251220_161902.sql.gz | psql cashpilot_dev
 ```
+
+---
+
+## Restore to Any Railway Database (Preview/Staging/Test)
+
+**Use Case:** Copy production data to a preview deployment, staging environment, or test database.
+
+**Script:** `restore_to_railway.sh`
+
+### Get Database URL from Railway
+
+1. Go to Railway Dashboard → Your Service → PostgreSQL
+2. Click "Connect" → "Public Network"
+3. Copy the connection string
+
+### Restore Process
+
+```bash
+./scripts/restore_to_railway.sh \
+  "postgresql://postgres:PASSWORD@HOST:PORT/railway" \
+  backups/cashpilot_20251229_145054.sql.gz
+```
+
+**Example:**
+```bash
+./scripts/restore_to_railway.sh \
+  "postgresql://postgres:mypass@switchyard.proxy.rlwy.net:12345/railway" \
+  backups/cashpilot_20251229_145054.sql.gz
+```
+
+**What it does:**
+1. Prompts for confirmation (type "YES")
+2. Drops and recreates the target database schema
+3. Restores the backup
+4. Verifies the restore was successful
+
+**Safety:**
+- ✅ Generic script works with any Railway database
+- ⚠️ Always verify you're using the correct database URL
+- ⚠️ This will replace all data in the target database
 
 ---
 

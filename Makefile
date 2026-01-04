@@ -1,8 +1,8 @@
 # File: Makefile
 
-.PHONY: fmt lint sh hook-install run dev up down logs watch dev-watch test \
+.PHONY: fmt lint audit audit-full sh hook-install run dev up down logs watch dev-watch test \
         migrate migration migrate-up migrate-down migrate-current migrate-history \
-        check-db rebuild rebuild-quick fix-perms clean-branches seed seed-reset \
+        check-db rebuild rebuild-quick fix-perms fix-line-endings clean-branches seed seed-reset \
         createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update \
         build-css watch-css favicons db-reset
 
@@ -13,12 +13,17 @@ fmt:
 lint:
 	docker compose run --rm app bash -lc "ruff check src && black --check src && isort --check-only src"
 
+audit:  ## Run security audit (fails on any vulnerabilities found)
+	docker compose run --rm --no-deps app bash -lc "pip-audit --desc"
+
 # ---------- Utilities ----------
 sh:
 	docker compose exec app bash
 
 hook-install:
 	git config core.hooksPath .githooks
+	@echo "🔧 Fixing line endings in git hooks..."
+	@find .githooks -type f -exec sed -i 's/\r$$//' {} \;
 	chmod +x .githooks/pre-commit
 	@echo '✔ Pre-commit hook installed.'
 
@@ -27,6 +32,12 @@ fix-perms:
 	sudo chown -R $$USER:$$USER .
 	chmod -R u+w src/
 	@echo "✅ File permissions fixed"
+
+fix-line-endings:
+	@echo "🔧 Fixing line endings in git hooks and shell scripts..."
+	@find .githooks -type f -exec sed -i 's/\r$$//' {} \; 2>/dev/null || true
+	@find scripts -name "*.sh" -type f -exec sed -i 's/\r$$//' {} \; 2>/dev/null || true
+	@echo "✅ Line endings fixed"
 
 # ---------- Git ----------
 clean-branches:
@@ -176,7 +187,7 @@ build-css:
 
 watch-css:
 	@echo "👀 Watching CSS for changes..."
-	docker compose run --rm css-builder npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch
+	docker compose run --rm css-builder sh -c "npm ci && npx postcss ./static/css/input.css -o ./static/css/main.css --watch"
 
 # ---------- Favicons ----------
 favicons:

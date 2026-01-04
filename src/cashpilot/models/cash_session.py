@@ -5,20 +5,23 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from cashpilot.models.business import Business
+    from cashpilot.models.expense_item import ExpenseItem
+    from cashpilot.models.transfer_item import TransferItem
     from cashpilot.models.user import User
 
 import uuid
 from datetime import date as date_type
 from datetime import datetime, time
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import ForeignKey, Numeric, Sequence, String, and_, or_, select
+from sqlalchemy import DateTime, ForeignKey, Numeric, Sequence, String, and_, or_, select
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
-from cashpilot.utils.datetime import current_time_local, today_local
+from cashpilot.utils.datetime import APP_TIMEZONE, current_time_local, today_local
 
 
 class CashSession(Base):
@@ -63,6 +66,21 @@ class CashSession(Base):
         "User",
         foreign_keys=[cashier_id],
         lazy="selectin",
+    )
+
+    # Line item relationships
+    transfer_items: Mapped[list["TransferItem"]] = relationship(
+        "TransferItem",
+        back_populates="session",
+        lazy="selectin",
+        order_by="TransferItem.created_at",
+    )
+
+    expense_items: Mapped[list["ExpenseItem"]] = relationship(
+        "ExpenseItem",
+        back_populates="session",
+        lazy="selectin",
+        order_by="ExpenseItem.created_at",
     )
 
     # User who created this session (for audit trail)
@@ -149,7 +167,10 @@ class CashSession(Base):
         index=True,
     )
 
-    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     deleted_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Flagging
@@ -163,45 +184,69 @@ class CashSession(Base):
     flagged_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # Audit fields
-    last_modified_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    last_modified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     last_modified_by: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # CALCULATED PROPERTIES
     @property
     def opened_at(self) -> datetime:
-        """Reconstruct datetime from session_date + opened_time (naive, browser timezone)."""
-        return datetime.combine(self.session_date, self.opened_time)
+        """Reconstruct timezone-aware datetime from session_date + opened_time.
+
+        Combines the session date and time, assuming they represent a moment in the
+        business timezone (APP_TIMEZONE), then returns a timezone-aware datetime.
+
+        Note: In Phase 3, this should use business.timezone instead of APP_TIMEZONE.
+        """
+        # Combine date + time with timezone directly (DST-safe)
+        business_tz = ZoneInfo(APP_TIMEZONE)
+        return datetime.combine(self.session_date, self.opened_time, tzinfo=business_tz)
 
     @property
     def closed_at(self) -> datetime | None:
-        """Reconstruct datetime from session_date + closed_time (naive, browser timezone)."""
+        """Reconstruct timezone-aware datetime from session_date + closed_time.
+
+        Combines the session date and time, assuming they represent a moment in the
+        business timezone (APP_TIMEZONE), then returns a timezone-aware datetime.
+
+        Note: In Phase 3, this should use business.timezone instead of APP_TIMEZONE.
+        """
         if self.closed_time is None:
             return None
-        return datetime.combine(self.session_date, self.closed_time)
+        # Combine date + time with timezone directly (DST-safe)
+        business_tz = ZoneInfo(APP_TIMEZONE)
+        return datetime.combine(self.session_date, self.closed_time, tzinfo=business_tz)
 
     @property
     def cash_sales(self) -> Decimal:
         """Calculate cash sales: (final - initial) + envelope + expenses
         - credit_payments_collected.
 
-        Expenses reduce physical cash but represent revenue that flowed through register.
-        Envelope is cash removed from register.
-        Credit payments collected are from another day and are separated from the cash flow.
+        Expenses are added back because they reduce physical cash but represent
+        sales revenue that was used for business expenses (for example, cash paid
+        out for supplies during the shift). The envelope amount is cash that was
+        intentionally removed from the register (such as deposits or drops) and
+        therefore must be included to reconstruct total cash sales.
+
+        Credit payments collected represent cash received today for prior credit
+        sales. They are subtracted so that this cash is not counted again as
+        today's sales revenue.
         """
         if self.final_cash is None:
             return Decimal("0.00")
         credit_payments = self.credit_payments_collected or Decimal("0.00")
-        return (
-            (self.final_cash - self.initial_cash)
-            + self.envelope_amount
-            + self.expenses
-            - credit_payments
-        )
+        envelope_amount = self.envelope_amount or Decimal("0.00")
+        expenses = self.expenses or Decimal("0.00")
+        return (self.final_cash - self.initial_cash) + envelope_amount + expenses - credit_payments
 
     @property
     def total_sales(self) -> Decimal:
         """All revenue across all payment methods: Cash Sales + Card Sales
-        + Bank Transfers + Credit Sales."""
+        + Bank Transfers + Credit Sales on account (sales made on credit terms,
+        not credit card transactions, which are tracked via credit_card_total
+        and debit_card_total)."""
         return (
             self.cash_sales
             + (self.credit_card_total or Decimal("0.00"))
@@ -215,20 +260,6 @@ class CashSession(Base):
         """Total sales minus business expenses."""
         expenses = self.expenses or Decimal("0.00")
         return self.total_sales - expenses
-
-    @property
-    def shortage_surplus(self) -> Decimal:
-        """Calculate cash shortage (-) or surplus (+).
-
-        This is the difference between expected and actual cash.
-        Positive = surplus (more cash than expected)
-        Negative = shortage (less cash than expected)
-        """
-        if self.final_cash is None:
-            return Decimal("0.00")
-
-        expected_final = self.initial_cash + self.cash_sales
-        return self.final_cash - expected_final
 
     async def get_conflicting_sessions(self, db: AsyncSession) -> list["CashSession"]:
         """Find all sessions that overlap with this one in same business."""

@@ -59,8 +59,6 @@ function initializeCurrencyInputs() {
     const calculatorFields = new Set([
         'credit_card_total',
         'debit_card_total',
-        'bank_transfer_total',
-        'expenses',
         'credit_sales_total',
         'credit_payments_collected'
     ]);
@@ -71,8 +69,6 @@ function initializeCurrencyInputs() {
         'envelope_amount',
         'credit_card_total',
         'debit_card_total',
-        'bank_transfer_total',
-        'expenses',
         'credit_sales_total',
         'credit_payments_collected'
     ];

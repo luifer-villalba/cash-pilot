@@ -1,54 +1,29 @@
 # File: src/cashpilot/api/routes/dashboard.py
 """Dashboard routes (HTML endpoints)."""
 
-from datetime import timedelta
 from decimal import Decimal
-from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.utils import (
     _build_session_filters,
+    _can_edit_closed_session,
     _get_paginated_sessions,
-    format_currency_py,
     get_locale,
     get_translation_function,
+    templates,
 )
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_local, now_utc, today_local
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-
-templates.env.filters["format_currency_py"] = format_currency_py
+from cashpilot.utils.datetime import now_local, today_local
 
 router = APIRouter(tags=["dashboard"])
-
-
-def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
-    """Check if current user can edit a closed session (12-hour window for cashiers)."""
-    if current_user.role == UserRole.ADMIN:
-        return True
-
-    if session.status != "CLOSED":
-        return False
-
-    if session.cashier_id != current_user.id:
-        return False
-
-    if not session.closed_at:
-        return False
-
-    time_since_close = now_utc() - session.closed_at
-    return time_since_close <= timedelta(hours=12)
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -72,11 +47,16 @@ async def dashboard(
     _ = get_translation_function(locale)
 
     # NO server defaults - client handles timezone
-    filters = await _build_session_filters(
-        from_date, to_date, cashier_name, business_id, status, current_user
+    include_deleted = request.query_params.get("include_deleted", "false").lower() == "true"
+    # Only admins can include deleted sessions
+    if include_deleted and current_user.role != UserRole.ADMIN:
+        include_deleted = False
+
+    filters, include_deleted_flag = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
-        db, filters, page=page, per_page=10
+        db, filters, page=page, per_page=10, include_deleted=include_deleted_flag
     )
 
     stmt_active = select(func.count(CashSession.id)).where(
@@ -91,14 +71,26 @@ async def dashboard(
     businesses_count = len(list(businesses))
 
     today = today_local()
+    # Calculate total_revenue to match model's total_sales property:
+    # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses
+    #              - credit_payments_collected
+    # total_sales = cash_sales + credit_card + debit_card + bank_transfer + credit_sales_total
     stmt_today = select(
         func.sum(
-            CashSession.final_cash
-            + CashSession.envelope_amount
-            + CashSession.credit_card_total
-            + CashSession.debit_card_total
-            + CashSession.bank_transfer_total
-            - CashSession.initial_cash
+            case(
+                (
+                    CashSession.final_cash.is_not(None),
+                    (CashSession.final_cash - CashSession.initial_cash)
+                    + func.coalesce(CashSession.envelope_amount, 0)
+                    + func.coalesce(CashSession.expenses, 0)
+                    - func.coalesce(CashSession.credit_payments_collected, 0)
+                    + func.coalesce(CashSession.credit_card_total, 0)
+                    + func.coalesce(CashSession.debit_card_total, 0)
+                    + func.coalesce(CashSession.bank_transfer_total, 0)
+                    + func.coalesce(CashSession.credit_sales_total, 0),
+                ),
+                else_=0,
+            )
         )
     ).where(
         CashSession.session_date == today,
@@ -153,6 +145,7 @@ async def dashboard(
                 "business_id": business_id,
                 "status": status,
             },
+            "include_deleted": include_deleted,
             "locale": locale,
             "_": _,
         },
@@ -175,11 +168,16 @@ async def sessions_table(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    filters = await _build_session_filters(
-        from_date, to_date, cashier_name, business_id, status, current_user
+    include_deleted = request.query_params.get("include_deleted", "false").lower() == "true"
+    # Only admins can include deleted sessions
+    if include_deleted and current_user.role != UserRole.ADMIN:
+        include_deleted = False
+
+    filters, include_deleted_flag = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
-        db, filters, page=page, per_page=10
+        db, filters, page=page, per_page=10, include_deleted=include_deleted_flag
     )
 
     query_params = []
@@ -195,6 +193,13 @@ async def sessions_table(
     query_string = "&".join(query_params)
     if query_string:
         query_string = "&" + query_string
+
+    # Add include_deleted to query_string if needed
+    if include_deleted_flag:
+        if query_string:
+            query_string += "&include_deleted=true"
+        else:
+            query_string = "&include_deleted=true"
 
     # ✅ Add can_edit_closed for each session
     for session in sessions:
@@ -217,6 +222,7 @@ async def sessions_table(
                 "status": status,
             },
             "query_string": query_string,
+            "include_deleted": include_deleted_flag,
             "locale": locale,
             "now": now_local(),
             "_": _,
@@ -240,8 +246,9 @@ async def get_dashboard_stats(
     _ = get_translation_function(locale)
 
     # Build filters (reuse logic from sessions table)
-    filters = await _build_session_filters(
-        from_date, to_date, cashier_name, business_id, status, current_user
+    # Stats should NEVER include deleted sessions
+    filters, _include_deleted_flag = await _build_session_filters(
+        from_date, to_date, cashier_name, business_id, status, current_user, include_deleted=False
     )
 
     # Use database aggregations for efficiency
@@ -262,7 +269,8 @@ async def get_dashboard_stats(
     # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses
     #              - credit_payments_collected
     # Note: Only include sessions where final_cash is not NULL
-    # Credit payments collected are from another day and are separated from the cash flow
+    # credit_payments_collected is cash received today for prior credit sales and is
+    # subtracted here so it is not counted as today's cash sales revenue.
     stmt_aggs = select(
         func.sum(
             case(
@@ -333,7 +341,7 @@ async def get_dashboard_stats(
     # Already calculated as credit_payments_val
 
     # Card #9: Payment Mix % (for collapsible section)
-    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val
+    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val + credit_sales_val
     cash_pct = (cash_sales_val / total_income * 100) if total_income > 0 else 0
     card_pct = (card_payments_total / total_income * 100) if total_income > 0 else 0
     bank_pct = (bank_val / total_income * 100) if total_income > 0 else 0

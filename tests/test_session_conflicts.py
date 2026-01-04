@@ -15,7 +15,7 @@ class TestSessionConflicts:
     @pytest.fixture
     async def business_id(self, db_session: AsyncSession) -> str:
         """Create a test business."""
-        business = await BusinessFactory.create(db_session, name="Test Farmacia")
+        business = await BusinessFactory.create(db_session, name="Test Business")
         return str(business.id)
 
     async def test_no_conflict_non_overlapping_shifts(

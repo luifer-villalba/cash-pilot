@@ -1,0 +1,72 @@
+<!-- File: templates/reports/dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Reports') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
+        <div class="flex-1">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-primary/10 rounded-lg">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Reports') }}</h1>
+                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Analytics and insights for your business') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for report in reports %}
+        <div class="card bg-base-100 border border-base-300 shadow-sm hover:shadow-lg transition-all duration-200 {% if not report.enabled %}opacity-60{% else %}hover:scale-[1.02]{% endif %}">
+            <div class="card-body p-4 md:p-5">
+                <!-- Icon and Title -->
+                <div class="flex items-start gap-3 mb-3">
+                    <div class="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation" aria-label="{{ report.title }}">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ report.icon }}"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="card-title text-lg font-bold text-base-content">{{ report.title }}</h3>
+                    </div>
+                    {% if not report.enabled %}
+                    <span class="badge badge-sm badge-ghost">{{ _('Coming Soon') }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <p class="text-sm text-base-content/70 mb-4">{{ report.description }}</p>
+
+                <!-- Action Button -->
+                <div class="card-actions">
+                    {% if report.enabled %}
+                    <a href="/reports/{{ report.id }}" class="btn btn-sm btn-primary w-full gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        {{ _('View Report') }}
+                    </a>
+                    {% else %}
+                    <button disabled tabindex="-1" aria-disabled="true" class="btn btn-sm btn-primary w-full opacity-50 cursor-not-allowed gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        {{ _('Coming Soon') }}
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

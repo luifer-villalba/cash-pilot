@@ -19,8 +19,8 @@ class TestAssignBusinessesToUser:
         """Test admin can assign businesses to a user."""
         # Create cashier and businesses
         cashier = await UserFactory.create(db_session, role=UserRole.CASHIER)
-        business1 = await BusinessFactory.create(db_session, name="Farmacia A")
-        business2 = await BusinessFactory.create(db_session, name="Farmacia B")
+        business1 = await BusinessFactory.create(db_session, name="Business A")
+        business2 = await BusinessFactory.create(db_session, name="Business B")
 
         response = await admin_client.post(
             f"/users/{cashier.id}/assign-businesses",
@@ -31,7 +31,7 @@ class TestAssignBusinessesToUser:
         data = response.json()
         assert len(data["businesses"]) == 2
         business_names = {b["name"] for b in data["businesses"]}
-        assert business_names == {"Farmacia A", "Farmacia B"}
+        assert business_names == {"Business A", "Business B"}
 
     @pytest.mark.asyncio
     async def test_assignment_is_idempotent(
@@ -39,9 +39,9 @@ class TestAssignBusinessesToUser:
     ):
         """Test reassigning replaces previous assignments."""
         cashier = await UserFactory.create(db_session, role=UserRole.CASHIER)
-        business1 = await BusinessFactory.create(db_session, name="Farmacia A")
-        business2 = await BusinessFactory.create(db_session, name="Farmacia B")
-        business3 = await BusinessFactory.create(db_session, name="Farmacia C")
+        business1 = await BusinessFactory.create(db_session, name="Business A")
+        business2 = await BusinessFactory.create(db_session, name="Business B")
+        business3 = await BusinessFactory.create(db_session, name="Business C")
 
         # First assignment
         await admin_client.post(
@@ -58,7 +58,7 @@ class TestAssignBusinessesToUser:
         assert response.status_code == 200
         data = response.json()
         assert len(data["businesses"]) == 1
-        assert data["businesses"][0]["name"] == "Farmacia C"
+        assert data["businesses"][0]["name"] == "Business C"
 
     @pytest.mark.asyncio
     async def test_nonexistent_business_returns_404(
@@ -113,7 +113,7 @@ class TestSessionCreationRBAC:
         self, admin_client: AsyncClient, db_session: AsyncSession
     ):
         """Test admin can create session for any business without assignment."""
-        business = await BusinessFactory.create(db_session, name="Unassigned Farmacia")
+        business = await BusinessFactory.create(db_session, name="Unassigned Business")
 
         response = await admin_client.post(
             "/cash-sessions",
@@ -157,7 +157,7 @@ class TestSessionCreationRBAC:
         """Test cashier can create session for assigned business."""
         # Create cashier and business
         cashier = client.test_user
-        business = await BusinessFactory.create(db_session, name="Assigned Farmacia")
+        business = await BusinessFactory.create(db_session, name="Assigned Business")
 
         # Assign business (as admin)
         await admin_client.post(

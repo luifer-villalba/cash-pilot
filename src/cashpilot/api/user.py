@@ -51,7 +51,7 @@ async def create_user(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a new user with optional business assignments. Admin only."""
-    # Check email uniqueness
+    # Business logic: check email uniqueness
     stmt = select(User).where(User.email == user.email)
     result = await db.execute(stmt)
     if result.scalar_one_or_none():
@@ -117,6 +117,27 @@ async def assign_businesses_to_user(
     db: AsyncSession = Depends(get_db),
 ):
     """Replace user's business assignments. Admin only."""
+    # Validate inputs
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="user_id is required",
+        )
+    if request is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Request data is required",
+        )
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User authentication required",
+        )
+    if db is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database connection error",
+        )
     # Verify user exists
     stmt = select(User).where(User.id == user_id)
     result = await db.execute(stmt)
@@ -147,7 +168,10 @@ async def _assign_businesses(
     db: AsyncSession,
 ) -> None:
     """Helper to replace user's business assignments."""
-    # Validate all businesses exist
+    if not business_ids:
+        return  # No businesses to assign
+
+    # Business logic: validate all businesses exist
     stmt = select(Business).where(Business.id.in_(business_ids))
     result = await db.execute(stmt)
     found_businesses = result.scalars().all()
@@ -155,7 +179,7 @@ async def _assign_businesses(
     if len(found_businesses) != len(business_ids):
         found_ids = {b.id for b in found_businesses}
         missing_ids = set(business_ids) - found_ids
-        raise NotFoundError("Business", str(list(missing_ids)[0]))
+        raise NotFoundError("Business", str(next(iter(missing_ids))))
 
     # Delete existing assignments
     stmt = select(UserBusiness).where(UserBusiness.user_id == user_id)

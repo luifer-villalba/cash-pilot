@@ -3,7 +3,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,7 +63,15 @@ async def get_business(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a single business by ID. All roles can read."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
+    try:
+        business_uuid = UUID(business_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid business_id format",
+        )
+
+    stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
 
@@ -81,7 +89,15 @@ async def update_business(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a business. Admin only."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
+    try:
+        business_uuid = UUID(business_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid business_id format",
+        )
+
+    stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
 
@@ -91,7 +107,8 @@ async def update_business(
     # Update fields (only non-null ones)
     update_data = business.model_dump(exclude_unset=True)
     for key, value in update_data.items():
-        setattr(business_obj, key, value)
+        if value is not None:
+            setattr(business_obj, key, value)
 
     db.add(business_obj)
     await db.commit()

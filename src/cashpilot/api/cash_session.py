@@ -7,7 +7,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_own_session
+from cashpilot.api.auth_helpers import require_admin, require_own_session
+from cashpilot.api.cash_session_helpers import (
+    _determine_cashier_for_session,
+    _validate_restore_session_inputs,
+)
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import ConflictError, InvalidStateError, NotFoundError
 from cashpilot.core.logging import get_logger
@@ -43,6 +47,14 @@ async def list_shifts(
     Admin: sees all sessions
     Cashier: sees only own sessions (filtered by cashier_id)
     """
+    # Validate skip and limit (range only; FastAPI enforces type and defaults)
+    if skip < 0:
+        skip = 0
+    if limit <= 0:
+        limit = 50
+    if limit > 1000:  # Prevent excessive queries
+        limit = 1000
+
     stmt = select(CashSession)
 
     # Cashier filter: only see sessions where they are the cashier
@@ -50,7 +62,14 @@ async def list_shifts(
         stmt = stmt.where(CashSession.cashier_id == current_user.id)
 
     if business_id:
-        stmt = stmt.where(CashSession.business_id == UUID(business_id))
+        try:
+            business_uuid = UUID(business_id)
+            stmt = stmt.where(CashSession.business_id == business_uuid)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid business_id format",
+            )
 
     if status_filter:
         stmt = stmt.where(CashSession.status == status_filter)
@@ -60,81 +79,6 @@ async def list_shifts(
 
     result = await db.execute(stmt)
     return result.scalars().all()
-
-
-# File: src/cashpilot/api/cash_session.py
-# Add these helper functions before the open_shift endpoint:
-
-
-async def _determine_cashier_for_session(
-    session: CashSessionCreate,
-    current_user: User,
-    db: AsyncSession,
-) -> tuple[UUID, UUID]:
-    """Determine cashier_id and created_by based on user role and RBAC.
-
-    Returns: (cashier_id, created_by)
-    """
-    if current_user.role == UserRole.ADMIN:
-        return await _admin_session_creation(session, current_user, db)
-    else:
-        return await _cashier_session_creation(session, current_user, db)
-
-
-async def _admin_session_creation(
-    session: CashSessionCreate,
-    current_user: User,
-    db: AsyncSession,
-) -> tuple[UUID, UUID]:
-    """Handle admin session creation logic."""
-    cashier_id = session.for_cashier_id if session.for_cashier_id else current_user.id
-    created_by = current_user.id
-
-    # Verify cashier exists if different from admin
-    if cashier_id != current_user.id:
-        stmt = select(User).where(User.id == cashier_id)
-        result = await db.execute(stmt)
-        if not result.scalar_one_or_none():
-            raise NotFoundError("User", str(cashier_id))
-
-    return cashier_id, created_by
-
-
-async def _cashier_session_creation(
-    session: CashSessionCreate,
-    current_user: User,
-    db: AsyncSession,
-) -> tuple[UUID, UUID]:
-    """Handle cashier session creation with business assignment validation."""
-    if session.for_cashier_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cashiers cannot create sessions for other users",
-        )
-
-    # Load cashier's assigned businesses
-    stmt = select(User).where(User.id == current_user.id)
-    result = await db.execute(stmt)
-    user_with_businesses = result.scalar_one()
-    await db.refresh(user_with_businesses, ["businesses"])
-
-    assigned_business_ids = {b.id for b in user_with_businesses.businesses}
-
-    # Check if cashier has any assigned businesses
-    if not assigned_business_ids:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="No businesses assigned. Contact an administrator.",
-        )
-
-    # Validate business is assigned
-    if session.business_id not in assigned_business_ids:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You are not assigned to this business",
-        )
-
-    return current_user.id, current_user.id
 
 
 @router.post("", response_model=CashSessionRead, status_code=status.HTTP_201_CREATED)
@@ -224,12 +168,14 @@ async def close_shift(
     db: AsyncSession = Depends(get_db),
 ):
     """Close a cash session."""
+    # Business logic: session must be OPEN to close
     if session.status != SessionStatus.OPEN.value:
         raise InvalidStateError(
             "Session is not open",
             details={"status": session.status},
         )
 
+    # Business logic: required fields for closing session
     if (
         session_update.final_cash is None
         or session_update.envelope_amount is None
@@ -281,7 +227,17 @@ async def delete_session(
     """Soft delete a cash session."""
     session.is_deleted = True
     session.deleted_at = now_utc()
-    session.deleted_by = current_user.display_name
+
+    # Get display_name with informative fallback if somehow falsy
+    display_name = current_user.display_name
+    if not display_name:
+        logger.warning(
+            "User missing display_name when deleting session",
+            user_id=str(current_user.id),
+            session_id=str(session.id),
+        )
+        display_name = f"User-{current_user.id}"
+    session.deleted_by = display_name
 
     db.add(session)
     await db.commit()
@@ -291,3 +247,86 @@ async def delete_session(
         session_id=str(session.id),
         deleted_by=str(current_user.id),
     )
+
+
+@router.patch("/{session_id}/restore", response_model=CashSessionRead)
+async def restore_session(
+    session_id: str,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Restore a soft-deleted cash session. Admin only."""
+    from cashpilot.core.audit import log_session_edit
+
+    # Validate inputs
+    _validate_restore_session_inputs(session_id, current_user, db)
+
+    try:
+        session_uuid = UUID(session_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid session_id format",
+        )
+
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise NotFoundError("CashSession", session_id)
+
+    if not session.is_deleted:
+        raise InvalidStateError(
+            "Session is not deleted",
+            details={"session_id": session_id},
+        )
+
+    # Capture old values for audit
+    old_values = {
+        "is_deleted": True,
+    }
+
+    # Restore session (keep deleted_at and deleted_by for audit trail)
+    session.is_deleted = False
+
+    # Update audit fields
+    session.last_modified_at = now_utc()
+
+    # Get display_name with informative fallback if somehow falsy
+    display_name = current_user.display_name
+    if not display_name:
+        logger.warning(
+            "User missing display_name when restoring session",
+            user_id=str(current_user.id),
+            session_id=str(session.id),
+        )
+        display_name = f"User-{current_user.id}"
+    session.last_modified_by = display_name
+
+    new_values = {
+        "is_deleted": False,
+    }
+
+    # Log restore to audit trail
+    await log_session_edit(
+        db,
+        session,
+        display_name,
+        "RESTORE",
+        old_values,
+        new_values,
+        reason=f"Session restored by {display_name}",
+    )
+
+    db.add(session)
+    await db.commit()
+    await db.refresh(session)
+
+    logger.info(
+        "session.restored",
+        session_id=str(session.id),
+        restored_by=str(current_user.id),
+    )
+
+    return session

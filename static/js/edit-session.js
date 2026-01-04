@@ -19,8 +19,10 @@ function updatePreview() {
     const envelope = parseInt(document.querySelector('[name="envelope_amount"]')?.value?.replace(/\D/g, '')) || 0;
     const creditCard = parseCalculator(document.querySelector('[name="credit_card_total"]')?.value);
     const debitCard = parseCalculator(document.querySelector('[name="debit_card_total"]')?.value);
-    const bankTransfer = parseCalculator(document.querySelector('[name="bank_transfer_total"]')?.value);
-    const expenses = parseCalculator(document.querySelector('[name="expenses"]')?.value);
+
+    // Get bank_transfer and expenses from session totals (read-only display)
+    const bankTransfer = parseInt(document.querySelector('[data-bank-transfer-total]')?.dataset.bankTransferTotal) || 0;
+    const expenses = parseInt(document.querySelector('[data-expenses-total]')?.dataset.expensesTotal) || 0;
 
     const cashSales = (finalCash - initialCash) + envelope;
     const totalSales = cashSales + creditCard + debitCard + bankTransfer;
@@ -37,14 +39,13 @@ function updatePreview() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Calculator-enabled fields
+    // Calculator-enabled fields (credit only now)
     const calculatorFields = [
         'credit_card_total',
         'debit_card_total',
-        'bank_transfer_total',
-        'expenses',
         'credit_sales_total',
         'credit_payments_collected'
+        // Removed: 'bank_transfer_total', 'expenses'
     ];
 
     calculatorFields.forEach(fieldName => {

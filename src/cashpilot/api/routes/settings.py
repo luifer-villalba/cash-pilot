@@ -1,16 +1,13 @@
 # File: src/cashpilot/api/routes/settings.py
 """User settings endpoints."""
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.utils import get_locale, get_translation_function
+from cashpilot.api.utils import get_locale, get_translation_function, templates
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import hash_password, verify_password
@@ -19,9 +16,6 @@ from cashpilot.models.user import User
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/settings", tags=["settings"])
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 # Add this route before the POST endpoint:

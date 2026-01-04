@@ -18,14 +18,14 @@ class TestSessionFormRBAC:
             self, admin_client: AsyncClient, db_session: AsyncSession
     ):
         """Test admin sees all businesses in dropdown."""
-        await BusinessFactory.create(db_session, name="Farmacia A")
-        await BusinessFactory.create(db_session, name="Farmacia B")
+        await BusinessFactory.create(db_session, name="Business A")
+        await BusinessFactory.create(db_session, name="Business B")
 
         response = await admin_client.get("/sessions/create")
 
         assert response.status_code == 200
-        assert "Farmacia A" in response.text
-        assert "Farmacia B" in response.text
+        assert "Business A" in response.text
+        assert "Business B" in response.text
         assert 'name="business_id"' in response.text
         # Cashier field is now read-only for everyone (no dropdown)
         assert admin_client.test_user.display_name in response.text
@@ -48,7 +48,7 @@ class TestSessionFormRBAC:
             self, client: AsyncClient, db_session: AsyncSession
     ):
         """Test cashier with 1 assigned business sees pre-filled field."""
-        business = await BusinessFactory.create(db_session, name="Mi Farmacia")
+        business = await BusinessFactory.create(db_session, name="Mi Business")
 
         # Assign business to cashier using UserBusiness
         assignment = UserBusiness(user_id=client.test_user.id, business_id=business.id)
@@ -58,7 +58,7 @@ class TestSessionFormRBAC:
         response = await client.get("/sessions/create")
 
         assert response.status_code == 200
-        assert "Mi Farmacia" in response.text
+        assert "Mi Business" in response.text
         assert f'value="{business.id}"' in response.text
         assert "disabled" in response.text
         assert client.test_user.display_name in response.text
@@ -68,9 +68,9 @@ class TestSessionFormRBAC:
             self, client: AsyncClient, db_session: AsyncSession
     ):
         """Test cashier with 2+ businesses sees dropdown of assigned only."""
-        business1 = await BusinessFactory.create(db_session, name="Farmacia 1")
-        business2 = await BusinessFactory.create(db_session, name="Farmacia 2")
-        business3 = await BusinessFactory.create(db_session, name="Farmacia 3 (Unassigned)")
+        business1 = await BusinessFactory.create(db_session, name="Business 1")
+        business2 = await BusinessFactory.create(db_session, name="Business 2")
+        business3 = await BusinessFactory.create(db_session, name="Business 3 (Unassigned)")
 
         # Assign only business1 and business2 using UserBusiness
         assignment1 = UserBusiness(user_id=client.test_user.id, business_id=business1.id)
@@ -82,9 +82,9 @@ class TestSessionFormRBAC:
         response = await client.get("/sessions/create")
 
         assert response.status_code == 200
-        assert "Farmacia 1" in response.text
-        assert "Farmacia 2" in response.text
-        assert "Farmacia 3" not in response.text
+        assert "Business 1" in response.text
+        assert "Business 2" in response.text
+        assert "Business 3" not in response.text
         assert 'name="business_id"' in response.text
         assert 'select' in response.text.lower()
 

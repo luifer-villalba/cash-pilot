@@ -1,9 +1,9 @@
 # File: src/cashpilot/models/business.py
-"""Business model for pharmacy locations."""
+"""Business model for business locations."""
 
 from typing import TYPE_CHECKING
 
-from cashpilot.utils.datetime import now_utc_naive
+from cashpilot.utils.datetime import now_utc
 
 if TYPE_CHECKING:
     from cashpilot.models.cash_session import CashSession
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String
+from sqlalchemy import DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -22,9 +22,9 @@ from cashpilot.core.db import Base
 
 class Business(Base):
     """
-    Represents a pharmacy location.
+    Represents a business location.
 
-    Each pharmacy location operates independently with its own:
+    Each business location operates independently with its own:
     - Cash register operations
     - Daily reconciliation
     - Employees (managed via UserBusiness relationship)
@@ -64,14 +64,16 @@ class Business(Base):
     )
 
     created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
         nullable=False,
-        default=now_utc_naive,
+        default=now_utc,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
         nullable=False,
-        default=now_utc_naive,
-        onupdate=now_utc_naive,
+        default=now_utc,
+        onupdate=now_utc,
     )
 
     # Relationships

@@ -14,10 +14,14 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
 
 from cashpilot.core.logging import configure_logging, get_logger
+from cashpilot.core.sentry import init_sentry
 from cashpilot.utils.datetime import now_utc
 
 configure_logging()
 logger = get_logger(__name__)
+
+# Initialize Sentry (only if DSN is set)
+init_sentry()
 
 
 class AdminRedirectMiddleware(BaseHTTPMiddleware):
@@ -74,17 +78,24 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
     """
 
     # 1. RequestIDMiddleware (Added First, Runs LAST)
+    # Sets request_id in context var, which SentryContextMiddleware needs
     from cashpilot.middleware.logging import RequestIDMiddleware
 
     app.add_middleware(RequestIDMiddleware)
 
-    # 2. AdminRedirectMiddleware (Runs THIRD)
+    # 2. SentryContextMiddleware (Added Second, Runs SECOND TO LAST)
+    # Runs before RequestIDMiddleware, so must parse request_id from headers first
+    from cashpilot.middleware.sentry import SentryContextMiddleware
+
+    app.add_middleware(SentryContextMiddleware)
+
+    # 3. AdminRedirectMiddleware (Runs THIRD)
     app.add_middleware(AdminRedirectMiddleware)
 
-    # 3. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
+    # 4. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
     app.add_middleware(AuthRedirectMiddleware)
 
-    # 4. SessionMiddleware
+    # 5. SessionMiddleware (Runs FIRST)
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
@@ -120,16 +131,29 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(settings.router)
 
     # Cash Sessions (UI)
+    from cashpilot.api.routes.line_items import router as line_items_router
     from cashpilot.api.routes.sessions import router as sessions_router
     from cashpilot.api.routes.sessions_edit import router as sessions_edit_router
 
     app.include_router(sessions_router)
     app.include_router(sessions_edit_router)
+    app.include_router(line_items_router)
 
     # Businesses (UI)
     from cashpilot.api.routes.businesses import router as businesses_router
 
     app.include_router(businesses_router)
+
+    # Reports (UI + API)
+    from cashpilot.api.daily_revenue import router as daily_revenue_router
+    from cashpilot.api.routes.business_stats import router as business_stats_router
+    from cashpilot.api.routes.reports import router as reports_router
+    from cashpilot.api.weekly_trend import router as weekly_trend_router
+
+    app.include_router(daily_revenue_router)
+    app.include_router(weekly_trend_router)
+    app.include_router(reports_router)
+    app.include_router(business_stats_router)
 
     # Admin (UI + API)
     from cashpilot.api.admin import router as admin_router
@@ -156,7 +180,7 @@ def create_app() -> FastAPI:
     """Application factory for CashPilot."""
     app = FastAPI(
         title="CashPilot API",
-        description="Pharmacy cash register reconciliation system",
+        description="Business cash register reconciliation system",
         version="0.1.0",
         lifespan=lifespan,
     )

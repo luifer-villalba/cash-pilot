@@ -30,16 +30,22 @@ async def edit_open_session(
     db: AsyncSession = Depends(get_db),
 ):
     """Edit an OPEN session (initial_cash, opened_time, expenses, credit fields)."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    try:
+        session_uuid = UUID(session_id)
+    except (ValueError, TypeError):
+        raise NotFoundError("CashSession", session_id)
+
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
 
     if not session:
         raise NotFoundError("CashSession", session_id)
 
-    if session.status != "OPEN":
+    if session.status is None or session.status != "OPEN":
         raise InvalidStateError(
-            f"Session must be OPEN to edit with this endpoint (current: {session.status})"
+            f"Session must be OPEN to edit with this endpoint "
+            f"(current: {session.status or 'unknown'})"
         )
 
     # Capture old values
@@ -52,7 +58,7 @@ async def edit_open_session(
         "notes": session.notes,
     }
 
-    # Apply updates
+    # Apply updates (Pydantic has already validated patch field types)
     if patch.initial_cash is not None:
         session.initial_cash = patch.initial_cash
     if patch.opened_time is not None:
@@ -114,7 +120,7 @@ def _capture_session_values(session: CashSession) -> dict:
 
 
 def _apply_patch_updates(session: CashSession, patch: CashSessionPatchClosed) -> None:
-    """Apply patch updates to session."""
+    """Apply patch updates to session. Pydantic has already validated patch field types."""
     if patch.final_cash is not None:
         session.final_cash = patch.final_cash
     if patch.envelope_amount is not None:
@@ -143,16 +149,22 @@ async def edit_closed_session(
     db: AsyncSession = Depends(get_db),
 ):
     """Edit a CLOSED session (manager/admin only)."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    try:
+        session_uuid = UUID(session_id)
+    except (ValueError, TypeError):
+        raise NotFoundError("CashSession", session_id)
+
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
 
     if not session:
         raise NotFoundError("CashSession", session_id)
 
-    if session.status != "CLOSED":
+    if session.status is None or session.status != "CLOSED":
         raise InvalidStateError(
-            f"Session must be CLOSED to edit with this endpoint (current: {session.status})"
+            f"Session must be CLOSED to edit with this endpoint "
+            f"(current: {session.status or 'unknown'})"
         )
 
     # Capture old values

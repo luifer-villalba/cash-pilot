@@ -3,23 +3,21 @@
 
 from datetime import datetime
 from decimal import Decimal
-from pathlib import Path
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_own_session
 from cashpilot.api.utils import (
     _get_session_calculations,
-    format_currency_py,
     get_active_businesses,
     get_locale,
     get_translation_function,
     parse_currency,
+    templates,
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
@@ -28,10 +26,6 @@ from cashpilot.models.user import User
 from cashpilot.utils.datetime import current_time_local, today_local
 
 logger = get_logger(__name__)
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(prefix="/sessions", tags=["sessions-frontend"])
 
@@ -82,19 +76,36 @@ async def create_session_post(
     _ = get_translation_function(locale)
 
     try:
+        # Business logic: parse currency format (es-PY specific)
         initial_cash_val = parse_currency(initial_cash)
-        if not initial_cash_val:
+        if initial_cash_val is None:
             raise ValueError("Initial cash required")
 
-        session_date_val = (
-            datetime.fromisoformat(session_date).date() if session_date else today_local()
-        )
-        opened_time_val = (
-            datetime.strptime(opened_time, "%H:%M").time() if opened_time else current_time_local()
-        )
+        # Business logic: parse date/time formats
+        if session_date:
+            try:
+                session_date_val = datetime.fromisoformat(session_date).date()
+            except (ValueError, TypeError):
+                raise ValueError("Invalid session_date format")
+        else:
+            session_date_val = today_local()
+
+        if opened_time:
+            try:
+                opened_time_val = datetime.strptime(opened_time, "%H:%M").time()
+            except (ValueError, TypeError):
+                raise ValueError("Invalid opened_time format (expected HH:MM)")
+        else:
+            opened_time_val = current_time_local()
+
+        # Business logic: validate UUID format
+        try:
+            business_uuid = UUID(business_id)
+        except (ValueError, TypeError):
+            raise ValueError("Invalid business_id format")
 
         session = CashSession(
-            business_id=UUID(business_id),
+            business_id=business_uuid,
             cashier_id=current_user.id,
             initial_cash=initial_cash_val,
             session_date=session_date_val,
@@ -135,12 +146,94 @@ async def session_detail(
     request: Request,
     session_id: str,
     current_user: User = Depends(get_current_user),
-    session: CashSession = Depends(require_own_session),
     db: AsyncSession = Depends(get_db),
 ):
     """Display single session details (with permission check)."""
+
+    from cashpilot.api.auth_helpers import require_own_session
+    from cashpilot.core.errors import NotFoundError
+
     locale = get_locale(request)
     _ = get_translation_function(locale)
+
+    try:
+        # Try to get session with permission check
+        session = await require_own_session(session_id, current_user, db)
+    except NotFoundError:
+        # Session doesn't exist
+        return templates.TemplateResponse(
+            request,
+            "sessions/error.html",
+            {
+                "current_user": current_user,
+                "error_type": "not_found",
+                "session_id": session_id,
+                "locale": locale,
+                "_": _,
+            },
+            status_code=404,
+        )
+    except HTTPException as e:
+        if e.status_code == 404:
+            # Check if it's a deleted session or not owned
+            from uuid import UUID
+
+            from sqlalchemy import select
+
+            try:
+                stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+                result = await db.execute(stmt)
+                session_check = result.scalar_one_or_none()
+
+                if session_check and session_check.is_deleted:
+                    # Deleted session - cashiers can't access
+                    return templates.TemplateResponse(
+                        request,
+                        "sessions/error.html",
+                        {
+                            "current_user": current_user,
+                            "error_type": "deleted",
+                            "session_id": session_id,
+                            "locale": locale,
+                            "_": _,
+                        },
+                        status_code=404,
+                    )
+                elif session_check and session_check.cashier_id != current_user.id:
+                    # Not owned by cashier
+                    return templates.TemplateResponse(
+                        request,
+                        "sessions/error.html",
+                        {
+                            "current_user": current_user,
+                            "error_type": "not_owned",
+                            "session_id": session_id,
+                            "locale": locale,
+                            "_": _,
+                        },
+                        status_code=403,
+                    )
+            except (ValueError, TypeError):
+                # If session_id is not a valid UUID (or a related type error occurs),
+                # fall through to the generic "not_owned" error handling below.
+                logger.debug(
+                    "Invalid session_id '%s' while checking session permissions",
+                    session_id,
+                )
+
+        # Generic permission denied
+        return templates.TemplateResponse(
+            request,
+            "sessions/error.html",
+            {
+                "current_user": current_user,
+                "error_type": "not_owned",
+                "session_id": session_id,
+                "locale": locale,
+                "_": _,
+            },
+            status_code=403,
+        )
 
     # Ensure business is loaded (eager load to avoid template lazy loading)
     await db.refresh(session, ["business"])
@@ -149,7 +242,14 @@ async def session_detail(
     return templates.TemplateResponse(
         request,
         "sessions/session_detail.html",
-        {"current_user": current_user, "session": session, **calcs, "locale": locale, "_": _},
+        {
+            "current_user": current_user,
+            "session": session,
+            **calcs,
+            "locale": locale,
+            "_": _,
+            "editable": False,
+        },
     )
 
 
@@ -170,7 +270,13 @@ async def edit_session_form(
     return templates.TemplateResponse(
         request,
         "sessions/close_session.html",
-        {"current_user": current_user, "session": session, "locale": locale, "_": _},
+        {
+            "current_user": current_user,
+            "session": session,
+            "locale": locale,
+            "_": _,
+            "editable": True,
+        },
     )
 
 
@@ -181,11 +287,9 @@ async def close_session_post(
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
     final_cash: str = Form(...),
-    envelope_amount: str = Form(...),
-    credit_card_total: str = Form(...),
-    debit_card_total: str = Form(...),
-    bank_transfer_total: str = Form(...),
-    expenses: str = Form("0"),
+    envelope_amount: str = Form("0"),
+    credit_card_total: str = Form("0"),
+    debit_card_total: str = Form("0"),
     credit_sales_total: str = Form("0"),
     credit_payments_collected: str = Form("0"),
     closed_time: str = Form(...),
@@ -198,19 +302,43 @@ async def close_session_post(
     _ = get_translation_function(locale)
 
     try:
-        session.final_cash = parse_currency(final_cash)
-        session.envelope_amount = parse_currency(envelope_amount) or Decimal("0")
-        session.credit_card_total = parse_currency(credit_card_total) or Decimal("0")
-        session.debit_card_total = parse_currency(debit_card_total) or Decimal("0")
-        session.bank_transfer_total = parse_currency(bank_transfer_total) or Decimal("0")
-        session.expenses = parse_currency(expenses) or Decimal("0")
-        session.credit_sales_total = parse_currency(credit_sales_total) or Decimal("0")
-        session.credit_payments_collected = parse_currency(credit_payments_collected) or Decimal(
-            "0"
+        # Business logic: parse currency formats (es-PY specific)
+        # Note: envelope_amount, credit_card_total, and debit_card_total have Form("0") defaults,
+        # so parse_currency will receive "0" if not provided. parse_currency handles "0" correctly
+        # and returns Decimal("0"), with fallback to Decimal("0") if parsing fails.
+        final_cash_val = parse_currency(final_cash)
+        if final_cash_val is None:
+            raise ValueError("Invalid final_cash format")
+        session.final_cash = final_cash_val
+
+        envelope_val = parse_currency(envelope_amount)
+        session.envelope_amount = envelope_val if envelope_val is not None else Decimal("0")
+
+        credit_card_val = parse_currency(credit_card_total)
+        session.credit_card_total = credit_card_val if credit_card_val is not None else Decimal("0")
+
+        debit_card_val = parse_currency(debit_card_total)
+        session.debit_card_total = debit_card_val if debit_card_val is not None else Decimal("0")
+
+        credit_sales_val = parse_currency(credit_sales_total)
+        session.credit_sales_total = (
+            credit_sales_val if credit_sales_val is not None else Decimal("0")
         )
-        session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
-        session.closing_ticket = closing_ticket
-        session.notes = notes
+
+        credit_payments_val = parse_currency(credit_payments_collected)
+        session.credit_payments_collected = (
+            credit_payments_val if credit_payments_val is not None else Decimal("0")
+        )
+
+        # Business logic: parse time format
+        try:
+            session.closed_time = datetime.strptime(closed_time, "%H:%M").time()
+        except (ValueError, TypeError):
+            raise ValueError("Invalid closed_time format (expected HH:MM)")
+
+        # Optional fields: normalize empty strings to None
+        session.closing_ticket = closing_ticket or None
+        session.notes = notes or None
         session.status = "CLOSED"
 
         db.add(session)
@@ -238,6 +366,7 @@ async def close_session_post(
                 "session": session,
                 "error": str(e),
                 "locale": locale,
+                "editable": True,
                 "_": _,
             },
             status_code=400,

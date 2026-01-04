@@ -5,12 +5,12 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from cashpilot.core.db import Base
-from cashpilot.utils.datetime import now_utc_naive
+from cashpilot.utils.datetime import now_utc
 
 if TYPE_CHECKING:
     from cashpilot.models.business import Business
@@ -43,8 +43,9 @@ class UserBusiness(Base):
     )
 
     assigned_at: Mapped[datetime] = mapped_column(
-        default=now_utc_naive,
+        DateTime(timezone=True),
         nullable=False,
+        default=now_utc,
     )
 
     # Relationships
