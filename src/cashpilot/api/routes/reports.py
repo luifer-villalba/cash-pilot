@@ -10,7 +10,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth_helpers import require_admin
-from cashpilot.api.utils import get_locale, get_translation_function
+from cashpilot.api.utils import (
+    format_datetime_business,
+    format_time_business,
+    get_locale,
+    get_translation_function,
+)
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import Business, User
@@ -19,6 +24,8 @@ logger = get_logger(__name__)
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+templates.env.filters["format_time_business"] = format_time_business
+templates.env.filters["format_datetime_business"] = format_datetime_business
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

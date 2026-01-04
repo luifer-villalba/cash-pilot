@@ -100,9 +100,9 @@
                         <td class="text-xs text-base-content/70 font-mono">
                             <div><span class="font-semibold">#{{ "%03d" | format(session.session_number) }}</span> • {{ session.session_date.strftime('%d/%m/%Y') }}</div>
                             <div class="opacity-80">
-                                {{ session.opened_time.strftime('%H:%M') }}
-                                {% if session.closed_time %}
-                                    → {{ session.closed_time.strftime('%H:%M') }}
+                                {{ session.opened_at | format_time_business if session.opened_at else '' }}
+                                {% if session.closed_at %}
+                                    → {{ session.closed_at | format_time_business }}
                                 {% else %}
                                     → <span class="text-sky-600 dark:text-sky-400">{{ _('Open') }}</span>
                                 {% endif %}
@@ -277,10 +277,10 @@
                     </p>
                     <p class="text-sm text-base-content/70 font-mono">
                         <span class="font-semibold">{{ _('Period') }}:</span>
-                        {{ session.opened_time.strftime('%H:%M') }}
+                        {{ session.opened_at | format_time_business if session.opened_at else '' }}
                         →
-                        {% if session.closed_time %}
-                            {{ session.closed_time.strftime('%H:%M') }}
+                        {% if session.closed_at %}
+                            {{ session.closed_at | format_time_business }}
                         {% else %}
                             <span class="text-sky-600 dark:text-sky-400">{{ _('Open') }}</span>
                         {% endif %}

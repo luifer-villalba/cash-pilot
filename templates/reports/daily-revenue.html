@@ -313,8 +313,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlDate = urlParams.get('date');
     const urlBusinessId = urlParams.get('business_id');
     
-    // Set default date to today or URL param
-    const today = new Date().toISOString().split('T')[0];
+    // Set default date to today or URL param (use local date to avoid timezone issues)
+    const todayLocal = new Date();
+    const todayYear = todayLocal.getFullYear();
+    const todayMonth = String(todayLocal.getMonth() + 1).padStart(2, '0');
+    const todayDay = String(todayLocal.getDate()).padStart(2, '0');
+    const today = `${todayYear}-${todayMonth}-${todayDay}`;
     document.getElementById('reportDate').value = urlDate || today;
     
     // Set business from URL param if exists
@@ -352,9 +356,17 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.quick-date-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const daysAgo = parseInt(this.getAttribute('data-days'));
-            const date = new Date();
-            date.setDate(date.getDate() - daysAgo);
-            document.getElementById('reportDate').value = date.toISOString().split('T')[0];
+            // Use local date to avoid timezone issues
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const day = today.getDate();
+            const targetDate = new Date(year, month, day - daysAgo);
+            // Format as YYYY-MM-DD for input[type="date"]
+            const yearStr = targetDate.getFullYear();
+            const monthStr = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(targetDate.getDate()).padStart(2, '0');
+            document.getElementById('reportDate').value = `${yearStr}-${monthStr}-${dayStr}`;
             
             // Highlight active button
             document.querySelectorAll('.quick-date-btn').forEach(b => {
@@ -418,8 +430,14 @@ async function generateReport() {
 
 function displayReport(data) {
     // Update date and business display
-    const reportDate = new Date(data.date);
-    document.getElementById('reportDateDisplay').textContent = reportDate.toLocaleDateString('es-PY');
+    // Parse date string (YYYY-MM-DD) without timezone issues
+    const dateParts = data.date.split('-');
+    const reportDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+    // Format as DD/MM/YYYY for es-PY locale
+    const day = String(reportDate.getDate()).padStart(2, '0');
+    const month = String(reportDate.getMonth() + 1).padStart(2, '0');
+    const year = reportDate.getFullYear();
+    document.getElementById('reportDateDisplay').textContent = `${day}/${month}/${year}`;
     
     const businessName = document.getElementById('businessId').options[document.getElementById('businessId').selectedIndex].text;
     document.getElementById('businessNameDisplay').textContent = businessName;

@@ -15,6 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cashpilot.api.auth_helpers import require_admin
 from cashpilot.api.utils import (
     format_currency_py,
+    format_datetime_business,
+    format_time_business,
     get_active_businesses,
     get_locale,
     get_translation_function,
@@ -34,6 +36,8 @@ TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 templates.env.filters["format_currency_py"] = format_currency_py
+templates.env.filters["format_time_business"] = format_time_business
+templates.env.filters["format_datetime_business"] = format_datetime_business
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

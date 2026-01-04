@@ -17,6 +17,8 @@ from cashpilot.api.utils import (
     _can_edit_closed_session,
     _get_paginated_sessions,
     format_currency_py,
+    format_datetime_business,
+    format_time_business,
     get_locale,
     get_translation_function,
 )
@@ -29,6 +31,8 @@ TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 templates.env.filters["format_currency_py"] = format_currency_py
+templates.env.filters["format_time_business"] = format_time_business
+templates.env.filters["format_datetime_business"] = format_datetime_business
 
 router = APIRouter(tags=["dashboard"])
 

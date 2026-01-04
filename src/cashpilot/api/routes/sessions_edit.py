@@ -12,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_admin, require_own_session
 from cashpilot.api.utils import (
+    format_datetime_business,
+    format_time_business,
     get_locale,
     get_translation_function,
     update_closed_session_fields,
@@ -28,6 +30,8 @@ logger = get_logger(__name__)
 
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+templates.env.filters["format_time_business"] = format_time_business
+templates.env.filters["format_datetime_business"] = format_datetime_business
 
 router = APIRouter(prefix="/sessions", tags=["sessions-edit"])
 

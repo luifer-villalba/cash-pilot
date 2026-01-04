@@ -68,7 +68,7 @@
                                     name="envelope_amount"
                                     id="envelope_amount"
                                     class="input input-lg input-bordered w-full font-mono pl-10 text-lg focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                                    value="{{ " {:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0' }}"
+                                    value="{{ " {:,.0f}".format(session.envelope_amount) if session.envelope_amount else '' }}"
                                     placeholder="0"
                                     inputmode="decimal"
                                     required

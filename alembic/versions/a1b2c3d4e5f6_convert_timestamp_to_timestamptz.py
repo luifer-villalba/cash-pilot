@@ -51,7 +51,8 @@ def upgrade() -> None:
     """)
     
     # Cash sessions table
-    # Note: NULL values are preserved during conversion (PostgreSQL handles NULL correctly)
+    # Note: PostgreSQL's AT TIME ZONE automatically preserves NULL values.
+    # No explicit NULL handling needed - NULL remains NULL after conversion.
     op.execute("""
         ALTER TABLE cash_sessions 
         ALTER COLUMN last_modified_at TYPE TIMESTAMPTZ 

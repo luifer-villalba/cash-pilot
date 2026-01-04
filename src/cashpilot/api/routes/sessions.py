@@ -16,6 +16,8 @@ from cashpilot.api.auth_helpers import require_own_session
 from cashpilot.api.utils import (
     _get_session_calculations,
     format_currency_py,
+    format_datetime_business,
+    format_time_business,
     get_active_businesses,
     get_locale,
     get_translation_function,
@@ -32,6 +34,8 @@ logger = get_logger(__name__)
 TEMPLATES_DIR = Path("/app/templates")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.filters["format_currency_py"] = format_currency_py
+templates.env.filters["format_time_business"] = format_time_business
+templates.env.filters["format_datetime_business"] = format_datetime_business
 
 router = APIRouter(prefix="/sessions", tags=["sessions-frontend"])
 
@@ -294,8 +298,8 @@ async def close_session_post(
     session: CashSession = Depends(require_own_session),
     final_cash: str = Form(...),
     envelope_amount: str = Form(...),
-    credit_card_total: str = Form(...),
-    debit_card_total: str = Form(...),
+    credit_card_total: str = Form("0"),
+    debit_card_total: str = Form("0"),
     credit_sales_total: str = Form("0"),
     credit_payments_collected: str = Form("0"),
     closed_time: str = Form(...),

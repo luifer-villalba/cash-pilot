@@ -120,11 +120,11 @@
                 <div class="stats stats-vertical lg:stats-horizontal shadow w-full">
                     <div class="stat">
                         <div class="stat-title">{{ _('Created') }}</div>
-                        <div class="stat-value text-sm">{{ business.created_at.strftime('%Y-%m-%d') }}</div>
+                        <div class="stat-value text-sm">{{ business.created_at | format_date_business }}</div>
                     </div>
                     <div class="stat">
                         <div class="stat-title">{{ _('Updated') }}</div>
-                        <div class="stat-value text-sm">{{ business.updated_at.strftime('%Y-%m-%d') }}</div>
+                        <div class="stat-value text-sm">{{ business.updated_at | format_date_business }}</div>
                     </div>
                     <div class="stat">
                         <div class="stat-title">{{ _('Assigned Users') }}</div>
