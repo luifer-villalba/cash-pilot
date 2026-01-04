@@ -509,12 +509,12 @@ msgid "Yesterday"
 msgstr "Ayer"
 
 #: templates/index.html:102
-msgid "This Week"
-msgstr "Esta Semana"
+msgid "Last 7 Days"
+msgstr "Últimos 7 días"
 
 #: templates/index.html:111
-msgid "This Month"
-msgstr "Este Mes"
+msgid "Last 30 Days"
+msgstr "Últimos 30 días"
 
 #: templates/index.html:118
 msgid "All Businesses"

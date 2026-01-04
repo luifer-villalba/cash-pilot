@@ -182,7 +182,7 @@
                             {% if session.deleted_at %}
                             <p class="text-base-content/70">
                                 <span class="font-semibold">{{ _('Deleted on') }}:</span> 
-                                <time datetime="{{ session.deleted_at.isoformat() }}">{{ session.deleted_at.strftime('%d/%m/%Y %H:%M') }}</time>
+                                <time datetime="{{ session.deleted_at.isoformat() }}">{{ session.deleted_at | format_datetime_business }}</time>
                             </p>
                             {% endif %}
                         </div>
@@ -241,7 +241,7 @@
                                     {{ _('Opened') }}
                                 </p>
                                 <p class="text-base font-semibold font-mono mt-2 tabular-nums">
-                                    <time datetime="{{ session.opened_time.isoformat() if session.opened_time else '' }}">{{ session.opened_time.strftime('%H:%M') }}</time>
+                                    <time datetime="{{ session.opened_at.isoformat() if session.opened_at else '' }}">{{ session.opened_at | format_time_business if session.opened_at else '' }}</time>
                                 </p>
                             </div>
                             <div>
@@ -249,7 +249,7 @@
                                     {{ _('Closed') }}
                                 </p>
                                 <p class="text-base font-semibold font-mono mt-2 tabular-nums">
-                                    {% if session.closed_time %}<time datetime="{{ session.closed_time.isoformat() }}">{{ session.closed_time.strftime('%H:%M') }}</time>{% else %}—{% endif %}
+                                    {% if session.closed_at %}<time datetime="{{ session.closed_at.isoformat() }}">{{ session.closed_at | format_time_business }}</time>{% else %}—{% endif %}
                                 </p>
                             </div>
                         </div>

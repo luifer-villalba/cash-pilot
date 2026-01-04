@@ -2,12 +2,10 @@
 """Dashboard routes (HTML endpoints)."""
 
 from decimal import Decimal
-from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,19 +14,14 @@ from cashpilot.api.utils import (
     _build_session_filters,
     _can_edit_closed_session,
     _get_paginated_sessions,
-    format_currency_py,
     get_locale,
     get_translation_function,
+    templates,
 )
 from cashpilot.core.db import get_db
 from cashpilot.models import Business, CashSession
 from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import now_local, today_local
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-
-templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(tags=["dashboard"])
 

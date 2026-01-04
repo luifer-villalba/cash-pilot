@@ -16,7 +16,7 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import verify_password
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_utc_naive
+from cashpilot.utils.datetime import now_utc
 
 logger = get_logger(__name__)
 
@@ -73,20 +73,17 @@ async def get_current_user(
     # Enforce role-based inactivity timeout
     if user_role and user_role in ROLE_TIMEOUTS:
         timeout = ROLE_TIMEOUTS[user_role]
-        now_naive = now_utc_naive()
+        now = now_utc()
 
         last_activity_raw = request.session.get("last_activity") if request.session else None
 
         try:
             if last_activity_raw and isinstance(last_activity_raw, str):
-                last_activity_naive = datetime.fromisoformat(last_activity_raw)
-            else:
-                last_activity_naive = None
-
-            now = now_naive.replace(tzinfo=timezone.utc)
-
-            if last_activity_naive:
-                last_activity = last_activity_naive.replace(tzinfo=timezone.utc)
+                # Parse ISO format string - it should include timezone info
+                last_activity = datetime.fromisoformat(last_activity_raw)
+                # Ensure it's timezone-aware (backward compatibility)
+                if last_activity.tzinfo is None:
+                    last_activity = last_activity.replace(tzinfo=timezone.utc)
             else:
                 last_activity = None
 
@@ -124,7 +121,7 @@ async def get_current_user(
                 )
         else:
             if request.session:
-                request.session["last_activity"] = now_naive.isoformat()
+                request.session["last_activity"] = now.isoformat()
 
     try:
         if not isinstance(user_id, str):
@@ -207,7 +204,7 @@ async def login(
     request.session["user_display_name"] = user.display_name or ""
 
     if user.role in ROLE_TIMEOUTS:
-        request.session["last_activity"] = now_utc_naive().isoformat()
+        request.session["last_activity"] = now_utc().isoformat()
 
     logger.info(
         "auth.login_success",

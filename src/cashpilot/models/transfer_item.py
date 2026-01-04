@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, Numeric, String
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
@@ -47,8 +47,9 @@ class TransferItem(Base):
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        default=now_utc,
+        DateTime(timezone=True),
         nullable=False,
+        default=now_utc,
     )
 
     is_deleted: Mapped[bool] = mapped_column(

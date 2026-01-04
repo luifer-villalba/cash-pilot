@@ -2,11 +2,9 @@
 """Session edit routes (edit-open, edit-closed)."""
 
 from datetime import timedelta
-from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
@@ -14,6 +12,7 @@ from cashpilot.api.auth_helpers import require_admin, require_own_session
 from cashpilot.api.utils import (
     get_locale,
     get_translation_function,
+    templates,
     update_closed_session_fields,
     update_open_session_fields,
 )
@@ -25,9 +24,6 @@ from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import now_utc
 
 logger = get_logger(__name__)
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 router = APIRouter(prefix="/sessions", tags=["sessions-edit"])
 

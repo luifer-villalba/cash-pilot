@@ -11,8 +11,8 @@ from cashpilot.models.user import UserRole
 from tests.factories import UserFactory
 from cashpilot.core.security import hash_password
 
-# Import now_utc_naive for consistency in test setup (optional, but good practice)
-from cashpilot.utils.datetime import now_utc_naive
+# Import now_utc for timezone-aware datetimes in test setup
+from cashpilot.utils.datetime import now_utc
 
 
 @pytest.mark.asyncio
@@ -27,15 +27,14 @@ async def test_cashier_session_not_expired_updates_last_activity(db_session):
     )
 
     cashier_timeout = ROLE_TIMEOUTS[UserRole.CASHIER]
-    # Use now_utc_naive() for consistency with the application logic for storing last_activity
-    recent_naive = now_utc_naive() - timedelta(seconds=cashier_timeout // 2)
+    # Use now_utc() for timezone-aware datetime
+    recent_aware = now_utc() - timedelta(seconds=cashier_timeout // 2)
 
     request = SimpleNamespace(
         session={
             "user_id": str(user.id),
             "user_role": UserRole.CASHIER,
-            # Store naive time, matching application behavior
-            "last_activity": recent_naive.isoformat(),
+            "last_activity": recent_aware.isoformat(),
         },
         headers={},
     )
@@ -44,11 +43,10 @@ async def test_cashier_session_not_expired_updates_last_activity(db_session):
     assert result_user.id == user.id
     assert "last_activity" in request.session
 
-    # The application saves a naive datetime. We must load it as naive and convert to aware UTC for comparison.
-    refreshed_naive = datetime.fromisoformat(request.session["last_activity"])
-    refreshed_aware = refreshed_naive.replace(tzinfo=timezone.utc)
+    # The application now saves timezone-aware datetime in ISO format with timezone info
+    refreshed_aware = datetime.fromisoformat(request.session["last_activity"])
 
-    # Compare aware time (now) with aware time (refreshed_aware)
+    # Compare aware times
     assert (datetime.now(timezone.utc) - refreshed_aware) < timedelta(seconds=2)
 
 
@@ -64,14 +62,13 @@ async def test_cashier_session_expired_redirects_to_login(db_session):
     )
 
     cashier_timeout = ROLE_TIMEOUTS[UserRole.CASHIER]
-    # Use now_utc_naive() for consistency
-    old_naive = now_utc_naive() - timedelta(seconds=cashier_timeout + 5)
+    # Use now_utc() for timezone-aware datetime
+    old_aware = now_utc() - timedelta(seconds=cashier_timeout + 5)
 
     session_store = {
         "user_id": str(user.id),
         "user_role": UserRole.CASHIER,
-        # Store naive time
-        "last_activity": old_naive.isoformat(),
+        "last_activity": old_aware.isoformat(),
     }
     request = SimpleNamespace(session=session_store, headers={})
 
@@ -96,15 +93,14 @@ async def test_admin_session_not_expired_updates_last_activity(db_session):
     )
 
     admin_timeout = ROLE_TIMEOUTS[UserRole.ADMIN]
-    # Use now_utc_naive() for consistency
-    recent_naive = now_utc_naive() - timedelta(seconds=admin_timeout // 2)
+    # Use now_utc() for timezone-aware datetime
+    recent_aware = now_utc() - timedelta(seconds=admin_timeout // 2)
 
     request = SimpleNamespace(
         session={
             "user_id": str(user.id),
             "user_role": UserRole.ADMIN,
-            # Store naive time, matching application behavior
-            "last_activity": recent_naive.isoformat(),
+            "last_activity": recent_aware.isoformat(),
         },
         headers={},
     )
@@ -113,11 +109,10 @@ async def test_admin_session_not_expired_updates_last_activity(db_session):
     assert result_user.id == user.id
     assert "last_activity" in request.session
 
-    # The application saves a naive datetime. We must load it as naive and convert to aware UTC for comparison.
-    refreshed_naive = datetime.fromisoformat(request.session["last_activity"])
-    refreshed_aware = refreshed_naive.replace(tzinfo=timezone.utc)
+    # The application now saves timezone-aware datetime in ISO format with timezone info
+    refreshed_aware = datetime.fromisoformat(request.session["last_activity"])
 
-    # Compare aware time (now) with aware time (refreshed_aware)
+    # Compare aware times
     assert (datetime.now(timezone.utc) - refreshed_aware) < timedelta(seconds=2)
 
 
@@ -133,14 +128,13 @@ async def test_admin_session_expired_redirects_to_login(db_session):
     )
 
     admin_timeout = ROLE_TIMEOUTS[UserRole.ADMIN]
-    # Use now_utc_naive() for consistency
-    old_naive = now_utc_naive() - timedelta(seconds=admin_timeout + 5)
+    # Use now_utc() for timezone-aware datetime
+    old_aware = now_utc() - timedelta(seconds=admin_timeout + 5)
 
     session_store = {
         "user_id": str(user.id),
         "user_role": UserRole.ADMIN,
-        # Store naive time
-        "last_activity": old_naive.isoformat(),
+        "last_activity": old_aware.isoformat(),
     }
     request = SimpleNamespace(session=session_store, headers={})
 

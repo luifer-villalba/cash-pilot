@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from cashpilot.models import Business, CashSession, User, UserRole
-from cashpilot.utils.datetime import now_utc
+from cashpilot.utils.datetime import now_utc, utc_to_business
 
 TEMPLATES_DIR = Path("/app/templates")
 
@@ -35,11 +35,71 @@ def format_currency_py(value):
     return format_decimal(value, locale="es_PY", group_separator=".")
 
 
+# Shared Jinja2Templates instance - import this in other modules instead of creating new instances
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 TRANSLATIONS_DIR = Path("/app/translations")
 
-# Register custom Jinja2 filter
+# Register all custom Jinja2 filters in the shared instance
 templates.env.filters["format_currency_py"] = format_currency_py
+
+
+def format_time_business(dt: datetime | None) -> str:
+    """Format datetime in business timezone as HH:MM.
+
+    Converts UTC datetime to business timezone and formats as time only.
+    Returns empty string if dt is None.
+    """
+    if dt is None:
+        return ""
+    if dt.tzinfo is None:
+        # If naive, assume UTC
+        dt = dt.replace(tzinfo=now_utc().tzinfo)
+    business_dt = utc_to_business(dt)
+    return business_dt.strftime("%H:%M")
+
+
+def format_datetime_business(dt: datetime | None, format_str: str = "%d/%m/%Y %H:%M") -> str:
+    """Format datetime in business timezone.
+
+    Converts UTC datetime to business timezone and formats it.
+    Returns empty string if dt is None.
+
+    Args:
+        dt: Timezone-aware datetime in UTC
+        format_str: Format string (default: '%d/%m/%Y %H:%M')
+    """
+    if dt is None:
+        return ""
+    if dt.tzinfo is None:
+        # If naive, assume UTC
+        dt = dt.replace(tzinfo=now_utc().tzinfo)
+    business_dt = utc_to_business(dt)
+    return business_dt.strftime(format_str)
+
+
+def format_date_business(dt: datetime | None, format_str: str = "%Y-%m-%d") -> str:
+    """Format date from datetime in business timezone.
+
+    Converts UTC datetime to business timezone and formats as date only.
+    Returns empty string if dt is None.
+
+    Args:
+        dt: Timezone-aware datetime in UTC
+        format_str: Format string (default: '%Y-%m-%d')
+    """
+    if dt is None:
+        return ""
+    if dt.tzinfo is None:
+        # If naive, assume UTC
+        dt = dt.replace(tzinfo=now_utc().tzinfo)
+    business_dt = utc_to_business(dt)
+    return business_dt.strftime(format_str)
+
+
+# Register timezone-related filters in the shared instance
+templates.env.filters["format_time_business"] = format_time_business
+templates.env.filters["format_datetime_business"] = format_datetime_business
+templates.env.filters["format_date_business"] = format_date_business
 
 router = APIRouter(tags=["frontend"])
 
