@@ -35,8 +35,12 @@ def format_currency_py(value):
     return format_decimal(value, locale="es_PY", group_separator=".")
 
 
+# Shared Jinja2Templates instance - import this in other modules instead of creating new instances
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 TRANSLATIONS_DIR = Path("/app/translations")
+
+# Register all custom Jinja2 filters in the shared instance
+templates.env.filters["format_currency_py"] = format_currency_py
 
 
 def format_time_business(dt: datetime | None) -> str:
@@ -92,8 +96,7 @@ def format_date_business(dt: datetime | None, format_str: str = "%Y-%m-%d") -> s
     return business_dt.strftime(format_str)
 
 
-# Register custom Jinja2 filters
-templates.env.filters["format_currency_py"] = format_currency_py
+# Register timezone-related filters in the shared instance
 templates.env.filters["format_time_business"] = format_time_business
 templates.env.filters["format_datetime_business"] = format_datetime_business
 templates.env.filters["format_date_business"] = format_date_business

@@ -4,22 +4,18 @@
 import asyncio
 from datetime import date, timedelta
 from decimal import Decimal
-from pathlib import Path
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth_helpers import require_admin
 from cashpilot.api.utils import (
-    format_currency_py,
-    format_datetime_business,
-    format_time_business,
     get_active_businesses,
     get_locale,
     get_translation_function,
+    templates,
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
@@ -31,13 +27,6 @@ logger = get_logger(__name__)
 
 # Threshold for determining neutral delta direction (percentage)
 NEUTRAL_DELTA_THRESHOLD_PERCENT = 3
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-
-templates.env.filters["format_currency_py"] = format_currency_py
-templates.env.filters["format_time_business"] = format_time_business
-templates.env.filters["format_datetime_business"] = format_datetime_business
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

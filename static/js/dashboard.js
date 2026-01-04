@@ -83,19 +83,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (preset === 'today') {
                 fromDate = toDate = today;
+            } else if (preset === 'yesterday') {
+                fromDate = new Date(today);
+                fromDate.setDate(fromDate.getDate() - 1);
+                toDate = fromDate;
             } else if (preset === 'week') {
-                const day = today.getDay();
-                const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-                fromDate = new Date(today.setDate(diff));
-                toDate = new Date(fromDate);
-                toDate.setDate(toDate.getDate() + 6);
+                // Last 7 days: today - 6 days to today (7 days total)
+                fromDate = new Date(today);
+                fromDate.setDate(fromDate.getDate() - 6);
+                toDate = new Date(today);
             } else if (preset === 'month') {
-                fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                toDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                // Last 30 days: today - 29 days to today (30 days total)
+                fromDate = new Date(today);
+                fromDate.setDate(fromDate.getDate() - 29);
+                toDate = new Date(today);
             }
 
-            document.getElementById('from_date').value = fromDate.toISOString().split('T')[0];
-            document.getElementById('to_date').value = toDate.toISOString().split('T')[0];
+            // Format dates as YYYY-MM-DD using local date to avoid timezone issues
+            function formatLocalDate(d) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+            
+            document.getElementById('from_date').value = formatLocalDate(fromDate);
+            document.getElementById('to_date').value = formatLocalDate(toDate);
 
             document.querySelectorAll('[data-field="from_date"], [data-field="to_date"]').forEach(clearBtn => {
                 const fieldId = clearBtn.dataset.field;
