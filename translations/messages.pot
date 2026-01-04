@@ -224,11 +224,11 @@ msgid "Yesterday"
 msgstr ""
 
 #: templates/index.html:102
-msgid "This Week"
+msgid "Last 7 Days"
 msgstr ""
 
 #: templates/index.html:111
-msgid "This Month"
+msgid "Last 30 Days"
 msgstr ""
 
 #: templates/index.html:118

@@ -1,24 +1,18 @@
 # File: src/cashpilot/api/routes/reports.py
 """Reports routes (HTML endpoints)."""
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth_helpers import require_admin
-from cashpilot.api.utils import get_locale, get_translation_function
+from cashpilot.api.utils import get_locale, get_translation_function, templates
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import Business, User
 
 logger = get_logger(__name__)
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

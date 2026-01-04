@@ -271,9 +271,11 @@
         return translations[dayName] || dayName;
     };
 
-    // Calculate ISO week from date
-    function getISOWeek(date) {
-        const d = new Date(date);
+    // Calculate ISO week from date (parse date string to avoid timezone issues)
+    function getISOWeek(dateStr) {
+        // Parse YYYY-MM-DD string to avoid timezone issues
+        const parts = dateStr.split('-');
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
         d.setHours(0, 0, 0, 0);
         // Set to nearest Thursday (current date + 4 - current day number, making Sunday's day number 7)
         d.setDate(d.getDate() + 4 - (d.getDay() || 7));
@@ -284,13 +286,16 @@
         return { year: d.getFullYear(), week: weekNo };
     }
 
-    // Format date range for week
-    function formatWeekRange(date) {
-        const d = new Date(date);
+    // Format date range for week (parse date string to avoid timezone issues)
+    function formatWeekRange(dateStr) {
+        // Parse YYYY-MM-DD string to avoid timezone issues
+        const parts = dateStr.split('-');
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        
         // Get Monday of the week
         const day = d.getDay();
         const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        const monday = new Date(d.setDate(diff));
+        const monday = new Date(d.getFullYear(), d.getMonth(), diff);
         
         // Get Sunday
         const sunday = new Date(monday);
@@ -318,10 +323,13 @@
         }
     }
 
-    // Initialize date picker with today
+    // Initialize date picker with today (use local date to avoid timezone issues)
     function initializeDatePickers() {
         const today = new Date();
-        const dateStr = today.toISOString().split('T')[0];
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
         document.getElementById('reportDate').value = dateStr;
         updateWeekDisplay();
     }
@@ -355,11 +363,17 @@
             btn.classList.add('btn-primary');
             
             const offset = parseInt(btn.dataset.offset);
+            // Use local date to avoid timezone issues
             const today = new Date();
-            const targetDate = new Date(today);
-            targetDate.setDate(targetDate.getDate() - (offset * 7));
-            
-            const dateStr = targetDate.toISOString().split('T')[0];
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const day = today.getDate();
+            const targetDate = new Date(year, month, day - (offset * 7));
+            // Format as YYYY-MM-DD for input[type="date"]
+            const yearStr = targetDate.getFullYear();
+            const monthStr = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(targetDate.getDate()).padStart(2, '0');
+            const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
             document.getElementById('reportDate').value = dateStr;
             updateWeekDisplay();
             

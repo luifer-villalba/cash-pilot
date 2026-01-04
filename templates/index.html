@@ -99,7 +99,7 @@
                             <rect x="7" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <rect x="14" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        <span>{{ _('This Week') }}</span>
+                        <span>{{ _('Last 7 Days') }}</span>
                     </button>
                     <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-all duration-200 hover:scale-105 active:scale-95" data-preset="month">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@
                             <rect x="11" y="9" width="3" height="10" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             <rect x="15" y="6" width="3" height="13" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        <span>{{ _('This Month') }}</span>
+                        <span>{{ _('Last 30 Days') }}</span>
                     </button>
                 </div>
                 
@@ -349,15 +349,17 @@
         yesterday.setDate(yesterday.getDate() - 1);
         const yesterdayStr = formatLocalDate(yesterday);
         
-        const day = now.getDay();
-        const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-        const weekStart = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), diff));
-        const weekEnd = new Date(now.getFullYear(), now.getMonth(), diff);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        const weekEndStr = formatLocalDate(weekEnd);
+        // Last 7 days: today - 6 days to today (7 days total)
+        const weekStartDate = new Date(now);
+        weekStartDate.setDate(weekStartDate.getDate() - 6);
+        const weekStart = formatLocalDate(weekStartDate);
+        const weekEndStr = today;
         
-        const monthStart = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
-        const monthEnd = formatLocalDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+        // Last 30 days: today - 29 days to today (30 days total)
+        const monthStartDate = new Date(now);
+        monthStartDate.setDate(monthStartDate.getDate() - 29);
+        const monthStart = formatLocalDate(monthStartDate);
+        const monthEnd = today;
         
         if (fromDate === today && toDate === today) {
             setActivePreset('today');
@@ -385,14 +387,15 @@
                 startDate.setDate(startDate.getDate() - 1);
                 endDate = startDate;
             } else if (preset === 'week') {
-                const day = now.getDay();
-                const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-                startDate = new Date(now.getFullYear(), now.getMonth(), diff);
-                endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + 6);
+                // Last 7 days: today - 6 days to today (7 days total)
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(now);
             } else if (preset === 'month') {
-                startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                // Last 30 days: today - 29 days to today (30 days total)
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(now);
             }
 
             function formatLocalDate(d) {

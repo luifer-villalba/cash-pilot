@@ -36,9 +36,20 @@ _app_start_time: datetime | None = None
 
 
 def set_app_start_time(start_time: datetime) -> None:
-    """Called by lifespan to track when app started."""
+    """Called by lifespan to track when app started.
+
+    Args:
+        start_time: Timezone-aware datetime (should use now_utc()).
+                   If naive, will be converted to UTC.
+    """
     global _app_start_time
-    _app_start_time = start_time
+    # Ensure timezone-aware (convert naive to UTC if needed)
+    if start_time.tzinfo is None:
+        from datetime import timezone
+
+        _app_start_time = start_time.replace(tzinfo=timezone.utc)
+    else:
+        _app_start_time = start_time
 
 
 def get_uptime_seconds() -> int:

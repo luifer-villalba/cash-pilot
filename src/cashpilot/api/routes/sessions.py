@@ -3,23 +3,21 @@
 
 from datetime import datetime
 from decimal import Decimal
-from pathlib import Path
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_own_session
 from cashpilot.api.utils import (
     _get_session_calculations,
-    format_currency_py,
     get_active_businesses,
     get_locale,
     get_translation_function,
     parse_currency,
+    templates,
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
@@ -28,10 +26,6 @@ from cashpilot.models.user import User
 from cashpilot.utils.datetime import current_time_local, today_local
 
 logger = get_logger(__name__)
-
-TEMPLATES_DIR = Path("/app/templates")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
-templates.env.filters["format_currency_py"] = format_currency_py
 
 router = APIRouter(prefix="/sessions", tags=["sessions-frontend"])
 
@@ -293,9 +287,9 @@ async def close_session_post(
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
     final_cash: str = Form(...),
-    envelope_amount: str = Form(...),
-    credit_card_total: str = Form(...),
-    debit_card_total: str = Form(...),
+    envelope_amount: str = Form("0"),
+    credit_card_total: str = Form("0"),
+    debit_card_total: str = Form("0"),
     credit_sales_total: str = Form("0"),
     credit_payments_collected: str = Form("0"),
     closed_time: str = Form(...),
@@ -309,6 +303,9 @@ async def close_session_post(
 
     try:
         # Business logic: parse currency formats (es-PY specific)
+        # Note: envelope_amount, credit_card_total, and debit_card_total have Form("0") defaults,
+        # so parse_currency will receive "0" if not provided. parse_currency handles "0" correctly
+        # and returns Decimal("0"), with fallback to Decimal("0") if parsing fails.
         final_cash_val = parse_currency(final_cash)
         if final_cash_val is None:
             raise ValueError("Invalid final_cash format")
