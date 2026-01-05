@@ -113,9 +113,9 @@ async def aggregate_business_metrics(
         select(
             CashSession.business_id,
             # Cash Sales = (final_cash - initial_cash) + envelope + expenses
-            # - credit_payments_collected
-            # Note: bank_transfer_total is NOT included in cash_sales
-            # (it's a separate payment method)
+            # - credit_payments_collected + bank_transfer_total
+            # Note: bank_transfer_total IS included in cash_sales
+            # (transferencias are part of cash sales, but shown separately for info)
             func.sum(
                 case(
                     (
@@ -123,7 +123,8 @@ async def aggregate_business_metrics(
                         (CashSession.final_cash - CashSession.initial_cash)
                         + func.coalesce(CashSession.envelope_amount, 0)
                         + func.coalesce(CashSession.expenses, 0)
-                        - func.coalesce(CashSession.credit_payments_collected, 0),
+                        - func.coalesce(CashSession.credit_payments_collected, 0)
+                        + func.coalesce(CashSession.bank_transfer_total, 0),
                     ),
                     else_=0,
                 )
@@ -199,8 +200,10 @@ async def aggregate_business_metrics(
         bank_transfer_total = Decimal(row.bank_transfer_total or 0)
         total_expenses = Decimal(row.total_expenses or 0)
 
-        # Total Sales = cash_sales + card_payments_total + bank_transfer_total
-        total_sales = cash_sales + card_payments_total + bank_transfer_total
+        # Total Sales = cash_sales + card_payments_total + credit_sales_total
+        # Note: bank_transfer_total is already included in cash_sales, so we don't add it again
+        # The bank_transfer_total column is shown separately for informational purposes only
+        total_sales = cash_sales + card_payments_total + credit_sales_total
 
         # Cash Profit = cash_sales - expenses
         cash_profit = cash_sales - total_expenses
