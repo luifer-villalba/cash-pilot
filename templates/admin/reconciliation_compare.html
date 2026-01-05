@@ -158,6 +158,27 @@
 
     <!-- Comparison Table -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-x-auto">
+        <style>
+            /* Hover tint */
+            .table tbody tr.session-row:hover td {
+                background-color: hsl(var(--p) / 0.10) !important;
+            }
+        
+            .table tbody tr.session-row.flagged:hover td {
+                background-color: hsl(var(--b2) / 0.7) !important;
+            }
+        
+            /* Horizontal borders between rows */
+            .table tbody tr {
+                border-bottom: 1px solid hsl(var(--b2));
+            }
+        
+            /* Vertical borders between columns */
+            .table tbody td:not(:last-child),
+            .table thead th:not(:last-child) {
+                border-right: 1px solid hsl(var(--bc) / 0.1);
+            }
+        </style>
         <table class="table table-sm w-full">
             <thead>
                 <tr class="bg-base-200">
@@ -173,75 +194,99 @@
             </thead>
             <tbody>
                 {% for item in comparison_data %}
-                <tr class="hover:bg-base-200/50">
+                <tr class="session-row transition-all duration-200 cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50 hover:bg-base-200/70{% endif %}">
                     <td class="font-medium">{{ item.business.name }}</td>
                     <td class="text-right">
                         {% if item.is_closed %}
-                        <span class="badge badge-warning badge-sm">{{ _('Closed') }}</span>
+                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                            </svg>
+                            {{ _('Closed') }}
+                        </span>
                         {% elif item.status == 'Needs Review' %}
-                        <span class="badge badge-error badge-sm">{{ _('Needs Review') }}</span>
+                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950/50 text-xs font-medium text-amber-700 dark:text-amber-300">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            {{ _('Needs Review') }}
+                        </span>
                         {% elif item.manual_entry %}
-                        <span class="badge badge-success badge-sm">{{ _('Entered') }}</span>
+                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {{ _('Entered') }}
+                        </span>
                         {% else %}
-                        <span class="badge badge-ghost badge-sm">{{ _('Not Entered') }}</span>
+                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-200 dark:bg-base-800 text-xs font-medium text-base-content/60">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            {{ _('Not Entered') }}
+                        </span>
                         {% endif %}
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="text-sm">
+                        <div class="space-y-0.5">
                             {% if item.manual.cash_sales is not none %}
-                            <div class="text-base-content font-semibold">{{ "{:,.0f}".format(item.manual.cash_sales) }}</div>
-                            {% else %}
-                            <div class="text-base-content/40">-</div>
-                            {% endif %}
-                            <div class="text-xs text-base-content/60">{{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.cash_sales) }}</div>
+                            <div class="text-sm font-semibold text-base-content">{{ "{:,.0f}".format(item.manual.cash_sales) }}</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.cash_sales) }})</div>
                             {% if item.differences.cash_sales is not none and item.differences.cash_sales != 0 %}
                             {% set cash_diff = item.differences.cash_sales %}
-                            <div class="text-xs {% if cash_diff > 0 %}text-error{% else %}text-success{% endif %}">
+                            <div class="text-xs font-medium {% if cash_diff > 0 %}text-warning{% else %}text-error{% endif %}">
                                 {% if cash_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(cash_diff) }}
                             </div>
                             {% endif %}
+                            {% else %}
+                            <div class="text-sm text-base-content/40">-</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.cash_sales) }})</div>
+                            {% endif %}
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="text-sm">
+                        <div class="space-y-0.5">
                             {% if item.manual.card_sales is not none %}
-                            <div class="text-base-content font-semibold">{{ "{:,.0f}".format(item.manual.card_sales) }}</div>
-                            {% else %}
-                            <div class="text-base-content/40">-</div>
-                            {% endif %}
-                            <div class="text-xs text-base-content/60">{{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.card_sales) }}</div>
+                            <div class="text-sm font-semibold text-base-content">{{ "{:,.0f}".format(item.manual.card_sales) }}</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.card_sales) }})</div>
                             {% if item.differences.card_sales is not none and item.differences.card_sales != 0 %}
                             {% set card_diff = item.differences.card_sales %}
-                            <div class="text-xs {% if card_diff > 0 %}text-error{% else %}text-success{% endif %}">
+                            <div class="text-xs font-medium {% if card_diff > 0 %}text-warning{% else %}text-error{% endif %}">
                                 {% if card_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(card_diff) }}
                             </div>
                             {% endif %}
+                            {% else %}
+                            <div class="text-sm text-base-content/40">-</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.card_sales) }})</div>
+                            {% endif %}
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="text-sm">
+                        <div class="space-y-0.5">
                             {% if item.manual.credit_sales is not none %}
-                            <div class="text-base-content font-semibold">{{ "{:,.0f}".format(item.manual.credit_sales) }}</div>
-                            {% else %}
-                            <div class="text-base-content/40">-</div>
-                            {% endif %}
-                            <div class="text-xs text-base-content/60">{{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.credit_sales) }}</div>
+                            <div class="text-sm font-semibold text-base-content">{{ "{:,.0f}".format(item.manual.credit_sales) }}</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.credit_sales) }})</div>
                             {% if item.differences.credit_sales is not none and item.differences.credit_sales != 0 %}
                             {% set credit_diff = item.differences.credit_sales %}
-                            <div class="text-xs {% if credit_diff > 0 %}text-error{% else %}text-success{% endif %}">
+                            <div class="text-xs font-medium {% if credit_diff > 0 %}text-warning{% else %}text-error{% endif %}">
                                 {% if credit_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(credit_diff) }}
                             </div>
                             {% endif %}
+                            {% else %}
+                            <div class="text-sm text-base-content/40">-</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.credit_sales) }})</div>
+                            {% endif %}
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="text-sm">
+                        <div class="space-y-0.5">
                             {% if item.manual.total_sales is not none %}
-                            <div class="text-base-content font-bold">{{ "{:,.0f}".format(item.manual.total_sales) }}</div>
+                            <div class="text-sm font-bold text-base-content">{{ "{:,.0f}".format(item.manual.total_sales) }}</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.total_sales) }})</div>
                             {% else %}
-                            <div class="text-base-content/40">-</div>
+                            <div class="text-sm text-base-content/40">-</div>
+                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.total_sales) }})</div>
                             {% endif %}
-                            <div class="text-xs text-base-content/60">{{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.total_sales) }}</div>
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
@@ -250,43 +295,68 @@
                         {% set variance_pct = item.variance.total_sales %}
                         {% if diff != 0 %}
                             {% if variance_pct is not none and (variance_pct > 2.0 or variance_pct < -2.0) %}
-                            <div class="flex flex-col items-end gap-1">
-                                <span class="badge badge-error badge-sm font-bold">
-                                    {% if diff > 0 %}+{% endif %}{{ "{:,.0f}".format(diff) }}
-                                </span>
-                                <span class="text-xs text-error/70">{{ "{:+.2f}".format(variance_pct) }}%</span>
+                            <div class="space-y-0.5">
+                                {% if diff > 0 %}
+                                <div class="text-sm font-bold text-warning">
+                                    +{{ "{:,.0f}".format(diff) }}
+                                </div>
+                                <div class="text-xs text-warning/70">{{ "{:+.2f}".format(variance_pct) }}%</div>
+                                {% else %}
+                                <div class="text-sm font-bold text-error">
+                                    {{ "{:,.0f}".format(diff) }}
+                                </div>
+                                <div class="text-xs text-error/70">{{ "{:+.2f}".format(variance_pct) }}%</div>
+                                {% endif %}
                             </div>
                             {% elif variance_pct is not none and variance_pct != 0 %}
-                            <div class="flex flex-col items-end gap-1">
-                                <span class="badge badge-warning badge-sm font-semibold">
-                                    {% if diff > 0 %}+{% endif %}{{ "{:,.0f}".format(diff) }}
-                                </span>
-                                <span class="text-xs text-warning/70">{{ "{:+.2f}".format(variance_pct) }}%</span>
+                            <div class="space-y-0.5">
+                                {% if diff > 0 %}
+                                <div class="text-sm font-semibold text-warning/80">
+                                    +{{ "{:,.0f}".format(diff) }}
+                                </div>
+                                <div class="text-xs text-warning/60">{{ "{:+.2f}".format(variance_pct) }}%</div>
+                                {% else %}
+                                <div class="text-sm font-semibold text-error/80">
+                                    {{ "{:,.0f}".format(diff) }}
+                                </div>
+                                <div class="text-xs text-error/60">{{ "{:+.2f}".format(variance_pct) }}%</div>
+                                {% endif %}
                             </div>
                             {% else %}
-                            <span class="badge badge-success badge-sm">
-                                {% if diff > 0 %}+{% endif %}{{ "{:,.0f}".format(diff) }}
-                            </span>
+                            {% if diff > 0 %}
+                            <div class="text-sm font-medium text-warning/60">
+                                +{{ "{:,.0f}".format(diff) }}
+                            </div>
+                            {% else %}
+                            <div class="text-sm font-medium text-error/60">
+                                {{ "{:,.0f}".format(diff) }}
+                            </div>
+                            {% endif %}
                             {% endif %}
                         {% else %}
-                            <span class="badge badge-success badge-sm">0</span>
+                            <div class="text-sm text-base-content/60">0</div>
                         {% endif %}
                         {% else %}
-                        <span class="text-base-content/40">-</span>
+                        <div class="text-sm text-base-content/40">-</div>
                         {% endif %}
                     </td>
-                    <td class="text-right">
-                        {% if item.system.session_count > 0 %}
-                        <a 
-                            href="/?business_id={{ item.business.id }}&from_date={{ comparison_date.isoformat() }}&to_date={{ comparison_date.isoformat() }}&from_report={{ comparison_date.isoformat() }}" 
-                            class="badge badge-info badge-sm hover:badge-primary transition-all cursor-pointer"
-                            title="{{ _('View sessions for this business and date') }}"
-                        >
-                            {{ item.system.session_count }}
-                        </a>
-                        {% else %}
-                        <span class="badge badge-ghost badge-sm">{{ item.system.session_count }}</span>
-                        {% endif %}
+                    <td class="text-right" onclick="event.stopPropagation()">
+                        <div class="flex justify-end">
+                            {% if item.system.session_count > 0 %}
+                            <a 
+                                href="/?business_id={{ item.business.id }}&from_date={{ comparison_date.isoformat() }}&to_date={{ comparison_date.isoformat() }}&from_report={{ comparison_date.isoformat() }}" 
+                                class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md bg-info/10 hover:bg-info/20 text-info hover:text-info-focus font-medium text-sm transition-all duration-200 hover:scale-105 active:scale-95 border border-info/20 hover:border-info/40 min-w-[2.5rem]"
+                                title="{{ _('View sessions for this business and date') }}"
+                            >
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                                <span class="font-mono tabular-nums">{{ item.system.session_count }}</span>
+                            </a>
+                            {% else %}
+                            <span class="text-sm text-base-content/40 font-mono tabular-nums">{{ item.system.session_count }}</span>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
