@@ -1,24 +1,30 @@
 # File: src/cashpilot/api/admin.py
 import secrets
 import string
+from datetime import date as date_type
+from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
-from sqlalchemy import delete, select
+from sqlalchemy import and_, case, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from cashpilot.api.auth_helpers import require_admin
-from cashpilot.api.utils import get_locale, get_translation_function
+from cashpilot.api.utils import get_active_businesses, get_locale, get_translation_function
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import hash_password
 from cashpilot.models.business import Business
+from cashpilot.models.cash_session import CashSession
+from cashpilot.models.daily_reconciliation import DailyReconciliation
 from cashpilot.models.user import User
 from cashpilot.models.user_business import UserBusiness
+from cashpilot.utils.datetime import today_local
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = get_logger(__name__)
@@ -321,3 +327,167 @@ async def toggle_user_active(
         "username": user.display_name,
         "is_active": user.is_active,
     }
+
+
+@router.get("/reconciliation/compare", response_class=HTMLResponse)
+async def reconciliation_compare_dashboard(
+    request: Request,
+    date: str | None = Query(None, description="Date in YYYY-MM-DD format"),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Comparison dashboard: manual entries vs system records (cash count vs system records)."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    # Parse date or use today
+    if date:
+        try:
+            comparison_date = datetime.fromisoformat(date).date()
+        except (ValueError, TypeError):
+            comparison_date = today_local()
+    else:
+        comparison_date = today_local()
+
+    # Get all active businesses
+    businesses = await get_active_businesses(db)
+
+    # Build comparison data for each business
+    comparison_data = []
+
+    for business in businesses:
+        # Get manual entry (DailyReconciliation)
+        stmt_recon = select(DailyReconciliation).where(
+            and_(
+                DailyReconciliation.business_id == business.id,
+                DailyReconciliation.date == comparison_date,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+        result_recon = await db.execute(stmt_recon)
+        manual_entry = result_recon.scalar_one_or_none()
+
+        # Calculate system totals from CashSessions
+        stmt_system = select(
+            # Cash Sales = (final_cash - initial_cash) + envelope + expenses
+            # - credit_payments_collected + bank_transfer_total
+            func.sum(
+                case(
+                    (
+                        and_(
+                            CashSession.status == "CLOSED",
+                            CashSession.final_cash.is_not(None),
+                        ),
+                        (CashSession.final_cash - CashSession.initial_cash)
+                        + func.coalesce(CashSession.envelope_amount, 0)
+                        + func.coalesce(CashSession.expenses, 0)
+                        - func.coalesce(CashSession.credit_payments_collected, 0)
+                        + func.coalesce(CashSession.bank_transfer_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("cash_sales"),
+            # Card Sales = credit_card + debit_card
+            func.sum(
+                func.coalesce(CashSession.credit_card_total, 0)
+                + func.coalesce(CashSession.debit_card_total, 0)
+            ).label("card_sales"),
+            # Credit Sales (on-account)
+            func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
+            # Total Sales = cash + card + credit
+            func.sum(
+                case(
+                    (
+                        and_(
+                            CashSession.status == "CLOSED",
+                            CashSession.final_cash.is_not(None),
+                        ),
+                        (CashSession.final_cash - CashSession.initial_cash)
+                        + func.coalesce(CashSession.envelope_amount, 0)
+                        + func.coalesce(CashSession.expenses, 0)
+                        - func.coalesce(CashSession.credit_payments_collected, 0)
+                        + func.coalesce(CashSession.bank_transfer_total, 0)
+                        + func.coalesce(CashSession.credit_card_total, 0)
+                        + func.coalesce(CashSession.debit_card_total, 0)
+                        + func.coalesce(CashSession.credit_sales_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("total_sales"),
+            # Session count
+            func.count(CashSession.id).label("session_count"),
+        ).where(
+            and_(
+                CashSession.business_id == business.id,
+                CashSession.session_date == comparison_date,
+                ~CashSession.is_deleted,
+            )
+        )
+
+        result_system = await db.execute(stmt_system)
+        system_data = result_system.one()
+
+        system_cash_sales = system_data.cash_sales or Decimal("0.00")
+        system_card_sales = system_data.card_sales or Decimal("0.00")
+        system_credit_sales = system_data.credit_sales or Decimal("0.00")
+        system_total_sales = system_data.total_sales or Decimal("0.00")
+        session_count = system_data.session_count or 0
+
+        # Manual entry values
+        manual_cash_sales = manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
+        manual_card_sales = manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
+        manual_credit_sales = manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
+        manual_total_sales = manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
+        manual_refunds = manual_entry.refunds if manual_entry and manual_entry.refunds else None
+        is_closed = manual_entry.is_closed if manual_entry else False
+
+        # Calculate differences
+        def calc_diff(manual: Decimal | None, system: Decimal) -> Decimal | None:
+            if manual is None:
+                return None
+            return manual - system
+
+        diff_cash = calc_diff(manual_cash_sales, system_cash_sales)
+        diff_card = calc_diff(manual_card_sales, system_card_sales)
+        diff_credit = calc_diff(manual_credit_sales, system_credit_sales)
+        diff_total = calc_diff(manual_total_sales, system_total_sales)
+
+        comparison_data.append(
+            {
+                "business": business,
+                "manual_entry": manual_entry,
+                "is_closed": is_closed,
+                "manual": {
+                    "cash_sales": manual_cash_sales,
+                    "card_sales": manual_card_sales,
+                    "credit_sales": manual_credit_sales,
+                    "total_sales": manual_total_sales,
+                    "refunds": manual_refunds,
+                },
+                "system": {
+                    "cash_sales": system_cash_sales,
+                    "card_sales": system_card_sales,
+                    "credit_sales": system_credit_sales,
+                    "total_sales": system_total_sales,
+                    "session_count": session_count,
+                },
+                "differences": {
+                    "cash_sales": diff_cash,
+                    "card_sales": diff_card,
+                    "credit_sales": diff_credit,
+                    "total_sales": diff_total,
+                },
+            }
+        )
+
+    return templates.TemplateResponse(
+        request,
+        "admin/reconciliation_compare.html",
+        {
+            "current_user": current_user,
+            "comparison_date": comparison_date,
+            "comparison_data": comparison_data,
+            "locale": locale,
+            "_": _,
+        },
+    )

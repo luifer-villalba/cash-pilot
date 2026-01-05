@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from cashpilot.core.security import hash_password
 from cashpilot.models.business import Business
 from cashpilot.models.cash_session import CashSession
+from cashpilot.models.daily_reconciliation import DailyReconciliation
 from cashpilot.models.user import User
 
 
@@ -150,3 +151,58 @@ class CashSessionFactory:
         await session.refresh(cash_session)
 
         return cash_session
+
+
+class DailyReconciliationFactory:
+    """Factory for creating DailyReconciliation objects."""
+
+    @staticmethod
+    async def create(
+        session: AsyncSession,
+        business_id: Optional[uuid.UUID] = None,
+        admin_id: Optional[uuid.UUID] = None,
+        date: Optional[date_type] = None,
+        cash_sales: Optional[Decimal] = None,
+        credit_sales: Optional[Decimal] = None,
+        card_sales: Optional[Decimal] = None,
+        refunds: Optional[Decimal] = None,
+        total_sales: Optional[Decimal] = None,
+        is_closed: bool = False,
+        **kwargs,
+    ) -> DailyReconciliation:
+        """Create a test daily reconciliation."""
+        # Create business if not provided
+        if business_id is None:
+            business = await BusinessFactory.create(session)
+            business_id = business.id
+
+        # Create admin user if not provided
+        if admin_id is None:
+            admin = await UserFactory.create(
+                session,
+                email=f"admin_{uuid.uuid4().hex[:8]}@test.com",
+                role="ADMIN",
+            )
+            admin_id = admin.id
+
+        if date is None:
+            date = date_type.today()
+
+        reconciliation = DailyReconciliation(
+            id=kwargs.get("id", uuid.uuid4()),
+            business_id=business_id,
+            admin_id=admin_id,
+            date=date,
+            cash_sales=cash_sales,
+            credit_sales=credit_sales,
+            card_sales=card_sales,
+            refunds=refunds,
+            total_sales=total_sales,
+            is_closed=is_closed,
+        )
+
+        session.add(reconciliation)
+        await session.commit()
+        await session.refresh(reconciliation)
+
+        return reconciliation

@@ -1,0 +1,421 @@
+<!-- File: templates/reconciliation/daily_form.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Daily Reconciliation') }} - CashPilot{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
+        <div class="flex-1">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 shadow-sm transition-all duration-200 hover:scale-105">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Daily Reconciliation') }}</h1>
+                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Enter daily sales data for all business locations') }}</p>
+                </div>
+            </div>
+        </div>
+        <a href="/" class="btn btn-outline btn-sm gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            {{ _('Back') }}
+        </a>
+    </div>
+
+    <form method="POST" action="/reconciliation/daily" class="space-y-6" id="reconciliation-form" onsubmit="document.getElementById('submit-loading').classList.remove('hidden');">
+        <!-- STEP 1: Date Selection -->
+        <div class="bg-gradient-to-br from-primary/5 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
+            <div class="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <div class="w-8 h-8 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">1</div>
+                <h2 class="text-lg font-bold text-base-content">{{ _('Select Date') }}</h2>
+            </div>
+
+            <div class="form-control">
+                <label class="label pb-2">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Date') }}</span>
+                </label>
+                
+                <!-- Quick Date Buttons -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <button 
+                        type="button"
+                        class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                        data-days="0" 
+                        aria-label="{{ _('Select today') }}"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        {{ _('Today') }}
+                    </button>
+                    <button 
+                        type="button"
+                        class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                        data-days="1" 
+                        aria-label="{{ _('Select yesterday') }}"
+                    >
+                        {{ _('Yesterday') }}
+                    </button>
+                    <button 
+                        type="button"
+                        class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                        data-days="2" 
+                        aria-label="{{ _('Select 2 days ago') }}"
+                    >
+                        {{ _('2 Days Ago') }}
+                    </button>
+                    <button 
+                        type="button"
+                        class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                        data-days="7" 
+                        aria-label="{{ _('Select 7 days ago') }}"
+                    >
+                        {{ _('7 Days Ago') }}
+                    </button>
+                    <button 
+                        type="button"
+                        class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                        data-days="30" 
+                        aria-label="{{ _('Select 30 days ago') }}"
+                    >
+                        {{ _('30 Days Ago') }}
+                    </button>
+                </div>
+                
+                <input
+                    type="date"
+                    name="date"
+                    id="date"
+                    class="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                    value="{{ selected_date }}"
+                    required
+                    aria-describedby="date-help"
+                />
+                <label class="label pt-2" id="date-help">
+                    <span class="label-text-alt text-xs text-base-content/60">{{ _('Date for reconciliation entry') }}</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- STEP 2: Business Data Entry -->
+        <div class="bg-base-100 border-2 border-base-300 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">
+            <div class="flex items-center gap-3 pb-2 border-b border-base-300">
+                <div class="w-8 h-8 rounded-full bg-info text-info-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">2</div>
+                <h2 class="text-lg font-bold text-base-content">{{ _('Business Locations') }}</h2>
+            </div>
+
+            <div class="space-y-6">
+                {% for business in businesses %}
+                {% set existing = existing_reconciliations.get(business.id|string) %}
+                <div class="bg-base-200/50 border border-base-300 rounded-lg p-3 sm:p-4 space-y-4" data-business-id="{{ business.id }}">
+                    <!-- Business Header with Closed Checkbox -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 pb-2 border-b border-base-300">
+                        <h3 class="text-sm sm:text-base font-semibold text-base-content break-words">{{ business.name }}</h3>
+                        <label class="flex items-center gap-2 cursor-pointer flex-shrink-0">
+                            <input
+                                type="checkbox"
+                                name="is_closed_{{ business.id }}"
+                                id="is_closed_{{ business.id }}"
+                                class="checkbox checkbox-warning checkbox-sm sm:checkbox-md"
+                                {% if existing and existing.is_closed %}checked{% endif %}
+                                onchange="toggleBusinessFields('{{ business.id }}', this.checked)"
+                            />
+                            <span class="text-xs font-semibold uppercase tracking-wider text-warning whitespace-nowrap">{{ _('Closed') }}</span>
+                        </label>
+                    </div>
+
+                    <!-- Sales Fields (Hidden when closed) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" id="fields_{{ business.id }}">
+                        <!-- Cash Sales -->
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cash Sales') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="cash_sales_{{ business.id }}"
+                                    id="cash_sales_{{ business.id }}"
+                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                    {% if existing and existing.is_closed %}disabled{% endif %}
+                                    {% if existing and existing.cash_sales %}value="{{ '{:,.0f}'.format(existing.cash_sales) }}"{% endif %}
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Credit Sales -->
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Credit Sales') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="credit_sales_{{ business.id }}"
+                                    id="credit_sales_{{ business.id }}"
+                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                    {% if existing and existing.is_closed %}disabled{% endif %}
+                                    {% if existing and existing.credit_sales %}value="{{ '{:,.0f}'.format(existing.credit_sales) }}"{% endif %}
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Card Sales -->
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Card Sales') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="card_sales_{{ business.id }}"
+                                    id="card_sales_{{ business.id }}"
+                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                    {% if existing and existing.is_closed %}disabled{% endif %}
+                                    {% if existing and existing.card_sales %}value="{{ '{:,.0f}'.format(existing.card_sales) }}"{% endif %}
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Refunds -->
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Refunds') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="refunds_{{ business.id }}"
+                                    id="refunds_{{ business.id }}"
+                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                    {% if existing and existing.is_closed %}disabled{% endif %}
+                                    {% if existing and existing.refunds %}value="{{ '{:,.0f}'.format(existing.refunds) }}"{% endif %}
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Total Sales -->
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Total Sales') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="total_sales_{{ business.id }}"
+                                    id="total_sales_{{ business.id }}"
+                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    autocomplete="off"
+                                    {% if existing and existing.is_closed %}disabled{% endif %}
+                                    {% if existing and existing.total_sales %}value="{{ '{:,.0f}'.format(existing.total_sales) }}"{% endif %}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- STEP 3: Reason (for edits) -->
+        {% if existing_reconciliations %}
+        <div class="bg-base-100 border border-base-300 rounded-xl shadow p-6 space-y-6 transition-all duration-200">
+            <div class="flex items-center gap-3 pb-2 border-b border-base-300">
+                <div class="w-8 h-8 rounded-full bg-base-300 text-base-content flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">3</div>
+                <h2 class="text-lg font-bold text-base-content/70">{{ _('Edit Reason') }}</h2>
+            </div>
+            <div class="form-control">
+                <label class="label pb-2">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Reason for Changes') }}</span>
+                </label>
+                <textarea
+                    name="reason"
+                    id="reason"
+                    class="textarea textarea-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                    rows="3"
+                    placeholder="{{ _('Explain what changed and why...') }}"
+                    minlength="5"
+                    required
+                    aria-describedby="reason-help"
+                ></textarea>
+                <label class="label pt-2" id="reason-help">
+                    <span class="label-text-alt text-xs text-base-content/60">{{ _('Required when editing existing data (minimum 5 characters)') }}</span>
+                </label>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-4">
+            <button
+                type="submit"
+                class="btn btn-primary btn-md sm:btn-lg flex-[2] gap-2 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50 w-full sm:w-auto"
+                aria-label="{{ _('Save daily reconciliation') }}"
+            >
+                <span class="loading loading-spinner loading-sm hidden" id="submit-loading"></span>
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span class="truncate">{{ _('Save Reconciliation') }}</span>
+            </button>
+            <a 
+                href="/" 
+                class="btn btn-outline btn-md sm:btn-lg flex-1 transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-base-content/20 w-full sm:w-auto"
+                aria-label="{{ _('Cancel and return to dashboard') }}"
+            >
+                {{ _('Cancel') }}
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize: disable fields for businesses marked as closed
+        document.querySelectorAll('[id^="is_closed_"]').forEach(checkbox => {
+            const businessId = checkbox.id.replace('is_closed_', '');
+            toggleBusinessFields(businessId, checkbox.checked);
+        });
+
+        // Auto-format currency inputs on blur
+        document.querySelectorAll('[data-currency-input]').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value && !this.disabled) {
+                    const digits = this.value.replace(/\D/g, '');
+                    if (digits) {
+                        const num = parseInt(digits);
+                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                    }
+                }
+            });
+
+            input.addEventListener('input', function() {
+                if (!this.disabled) {
+                    this.value = this.value.replace(/[^\d.,]/g, '');
+                }
+            });
+        });
+
+        // Quick date buttons
+        document.querySelectorAll('.quick-date-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const daysAgo = parseInt(this.getAttribute('data-days'));
+                // Use local date to avoid timezone issues
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = today.getMonth();
+                const day = today.getDate();
+                const targetDate = new Date(year, month, day - daysAgo);
+                // Format as YYYY-MM-DD for input[type="date"]
+                const yearStr = targetDate.getFullYear();
+                const monthStr = String(targetDate.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(targetDate.getDate()).padStart(2, '0');
+                const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
+                
+                // Update the date input
+                document.getElementById('date').value = dateStr;
+                
+                // Highlight active button
+                document.querySelectorAll('.quick-date-btn').forEach(b => {
+                    b.classList.remove('btn-primary');
+                    b.classList.add('btn-outline');
+                });
+                this.classList.remove('btn-outline');
+                this.classList.add('btn-primary');
+                
+                // Reload the form with the new date to fetch existing reconciliations
+                window.location.href = `/reconciliation/daily?date=${dateStr}`;
+            });
+        });
+
+        // Highlight active button based on current date
+        const dateInput = document.getElementById('date');
+        const currentDate = dateInput.value;
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const day = today.getDate();
+        
+        function formatLocalDate(d) {
+            const yearStr = d.getFullYear();
+            const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(d.getDate()).padStart(2, '0');
+            return `${yearStr}-${monthStr}-${dayStr}`;
+        }
+        
+        const todayStr = formatLocalDate(today);
+        const yesterday = new Date(year, month, day - 1);
+        const yesterdayStr = formatLocalDate(yesterday);
+        const twoDaysAgo = new Date(year, month, day - 2);
+        const twoDaysAgoStr = formatLocalDate(twoDaysAgo);
+        const sevenDaysAgo = new Date(year, month, day - 7);
+        const sevenDaysAgoStr = formatLocalDate(sevenDaysAgo);
+        const thirtyDaysAgo = new Date(year, month, day - 30);
+        const thirtyDaysAgoStr = formatLocalDate(thirtyDaysAgo);
+        
+        let activeBtn = null;
+        if (currentDate === todayStr) {
+            activeBtn = document.querySelector('.quick-date-btn[data-days="0"]');
+        } else if (currentDate === yesterdayStr) {
+            activeBtn = document.querySelector('.quick-date-btn[data-days="1"]');
+        } else if (currentDate === twoDaysAgoStr) {
+            activeBtn = document.querySelector('.quick-date-btn[data-days="2"]');
+        } else if (currentDate === sevenDaysAgoStr) {
+            activeBtn = document.querySelector('.quick-date-btn[data-days="7"]');
+        } else if (currentDate === thirtyDaysAgoStr) {
+            activeBtn = document.querySelector('.quick-date-btn[data-days="30"]');
+        }
+        
+        if (activeBtn) {
+            activeBtn.classList.remove('btn-outline');
+            activeBtn.classList.add('btn-primary');
+        }
+    });
+
+    function toggleBusinessFields(businessId, isClosed) {
+        const fieldsContainer = document.getElementById('fields_' + businessId);
+        if (!fieldsContainer) return;
+
+        const inputs = fieldsContainer.querySelectorAll('input[data-currency-input]');
+        inputs.forEach(input => {
+            if (isClosed) {
+                input.disabled = true;
+                input.value = '';
+            } else {
+                input.disabled = false;
+            }
+        });
+    }
+</script>
+{% endblock %}
+
