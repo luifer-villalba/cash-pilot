@@ -29,6 +29,12 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 logger = get_logger(__name__)
 templates = Jinja2Templates(directory="/app/templates")
 
+# Variance threshold for flagging discrepancies (2%)
+VARIANCE_THRESHOLD = Decimal("2.0")
+
+# Variance threshold for flagging discrepancies (2%)
+VARIANCE_THRESHOLD = Decimal("2.0")
+
 
 # ===== SCHEMAS =====
 class PasswordResetRequest(BaseModel):
@@ -332,10 +338,11 @@ async def toggle_user_active(
 async def reconciliation_compare_dashboard(
     request: Request,
     date: str | None = Query(None, description="Date in YYYY-MM-DD format"),
+    business_id: str | None = Query(None, description="Filter by business ID"),
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Comparison dashboard: manual entries vs system records (cash count vs system records)."""
+    """Comparison dashboard: manual entries vs system records with variance calculation."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -348,8 +355,17 @@ async def reconciliation_compare_dashboard(
     else:
         comparison_date = today_local()
 
-    # Get all active businesses
-    businesses = await get_active_businesses(db)
+    # Get businesses (filtered if business_id provided)
+    stmt_businesses = select(Business).where(Business.is_active)
+    selected_business_id = None
+    if business_id and business_id.strip():
+        try:
+            selected_business_id = UUID(business_id)
+            stmt_businesses = stmt_businesses.where(Business.id == selected_business_id)
+        except (ValueError, TypeError):
+            selected_business_id = None
+    result_businesses = await db.execute(stmt_businesses)
+    businesses = result_businesses.scalars().all()
 
     # Build comparison data for each business
     comparison_data = []
@@ -386,13 +402,27 @@ async def reconciliation_compare_dashboard(
                     else_=0,
                 )
             ).label("cash_sales"),
-            # Card Sales = credit_card + debit_card
+            # Card Sales = credit_card + debit_card (only closed sessions)
             func.sum(
-                func.coalesce(CashSession.credit_card_total, 0)
-                + func.coalesce(CashSession.debit_card_total, 0)
+                case(
+                    (
+                        CashSession.status == "CLOSED",
+                        func.coalesce(CashSession.credit_card_total, 0)
+                        + func.coalesce(CashSession.debit_card_total, 0),
+                    ),
+                    else_=0,
+                )
             ).label("card_sales"),
-            # Credit Sales (on-account)
-            func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
+            # Credit Sales (on-account) - only closed sessions
+            func.sum(
+                case(
+                    (
+                        CashSession.status == "CLOSED",
+                        func.coalesce(CashSession.credit_sales_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("credit_sales"),
             # Total Sales = cash + card + credit
             func.sum(
                 case(
@@ -448,16 +478,31 @@ async def reconciliation_compare_dashboard(
         manual_refunds = manual_entry.refunds if manual_entry and manual_entry.refunds else None
         is_closed = manual_entry.is_closed if manual_entry else False
 
-        # Calculate differences
-        def calc_diff(manual: Decimal | None, system: Decimal) -> Decimal | None:
-            if manual is None:
-                return None
-            return manual - system
+        # Calculate differences and variance
+        def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
+            """Calculate difference and variance percentage."""
+            if manual is None or calculated == 0:
+                return {
+                    "difference": None,
+                    "variance_percent": None,
+                }
+            diff = manual - calculated
+            variance_pct = (diff / calculated) * 100 if calculated != 0 else None
+            return {
+                "difference": diff,
+                "variance_percent": variance_pct,
+            }
 
-        diff_cash = calc_diff(manual_cash_sales, system_cash_sales)
-        diff_card = calc_diff(manual_card_sales, system_card_sales)
-        diff_credit = calc_diff(manual_credit_sales, system_credit_sales)
-        diff_total = calc_diff(manual_total_sales, system_total_sales)
+        cash_variance = calc_variance(manual_cash_sales, system_cash_sales)
+        card_variance = calc_variance(manual_card_sales, system_card_sales)
+        credit_variance = calc_variance(manual_credit_sales, system_credit_sales)
+        total_variance = calc_variance(manual_total_sales, system_total_sales)
+
+        # Determine status: "Match" if variance <= 2%, "Needs Review" if > 2%
+        status = "Match"
+        if total_variance["variance_percent"] is not None:
+            if abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD:
+                status = "Needs Review"
 
         comparison_data.append(
             {
@@ -479,13 +524,23 @@ async def reconciliation_compare_dashboard(
                     "session_count": session_count,
                 },
                 "differences": {
-                    "cash_sales": diff_cash,
-                    "card_sales": diff_card,
-                    "credit_sales": diff_credit,
-                    "total_sales": diff_total,
+                    "cash_sales": cash_variance["difference"],
+                    "card_sales": card_variance["difference"],
+                    "credit_sales": credit_variance["difference"],
+                    "total_sales": total_variance["difference"],
                 },
+                "variance": {
+                    "cash_sales": cash_variance["variance_percent"],
+                    "card_sales": card_variance["variance_percent"],
+                    "credit_sales": credit_variance["variance_percent"],
+                    "total_sales": total_variance["variance_percent"],
+                },
+                "status": status,
             }
         )
+
+    # Get all businesses for the selector
+    all_businesses = await get_active_businesses(db)
 
     return templates.TemplateResponse(
         request,
@@ -493,6 +548,8 @@ async def reconciliation_compare_dashboard(
         {
             "current_user": current_user,
             "comparison_date": comparison_date,
+            "selected_business_id": str(selected_business_id) if selected_business_id else None,
+            "businesses": all_businesses,
             "comparison_data": comparison_data,
             "locale": locale,
             "_": _,
