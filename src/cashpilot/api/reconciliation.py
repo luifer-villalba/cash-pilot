@@ -10,7 +10,6 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_admin
 from cashpilot.api.utils import (
     get_active_businesses,
@@ -22,7 +21,7 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import NotFoundError, ValidationError
 from cashpilot.core.logging import get_logger
-from cashpilot.models import Business, DailyReconciliation, User
+from cashpilot.models import DailyReconciliation, User
 from cashpilot.models.daily_reconciliation_audit_log import DailyReconciliationAuditLog
 from cashpilot.utils.datetime import now_utc, today_local
 
@@ -109,7 +108,7 @@ async def daily_reconciliation_post(
 
         # Get all active businesses
         businesses = await get_active_businesses(db)
-        business_ids = {str(b.id) for b in businesses}
+        {str(b.id) for b in businesses}
 
         # Process form data for each business
         form_data = await request.form()
@@ -464,4 +463,3 @@ async def log_daily_reconciliation_edit(
 
     db.add(audit_log)
     return audit_log
-

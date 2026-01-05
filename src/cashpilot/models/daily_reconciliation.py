@@ -116,4 +116,3 @@ class DailyReconciliation(Base):
             f"<DailyReconciliation(id={self.id}, business_id={self.business_id}, "
             f"date={self.date}, is_closed={self.is_closed})>"
         )
-
