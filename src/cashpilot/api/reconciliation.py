@@ -311,10 +311,24 @@ async def get_reconciliation_compare(
                 )
             ).label("cash_sales"),
             func.sum(
-                func.coalesce(CashSession.credit_card_total, 0)
-                + func.coalesce(CashSession.debit_card_total, 0)
+                case(
+                    (
+                        CashSession.status == "CLOSED",
+                        func.coalesce(CashSession.credit_card_total, 0)
+                        + func.coalesce(CashSession.debit_card_total, 0),
+                    ),
+                    else_=0,
+                )
             ).label("card_sales"),
-            func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
+            func.sum(
+                case(
+                    (
+                        CashSession.status == "CLOSED",
+                        func.coalesce(CashSession.credit_sales_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("credit_sales"),
             func.sum(
                 case(
                     (
@@ -346,40 +360,70 @@ async def get_reconciliation_compare(
         result_system = await db.execute(stmt_system)
         system_data = result_system.one()
 
-        system_cash_sales = system_data.cash_sales or Decimal("0.00")
-        system_card_sales = system_data.card_sales or Decimal("0.00")
-        system_credit_sales = system_data.credit_sales or Decimal("0.00")
-        system_total_sales = system_data.total_sales or Decimal("0.00")
-        session_count = system_data.session_count or 0
+        system_cash_sales = (
+            system_data.cash_sales if system_data.cash_sales is not None else Decimal("0.00")
+        )
+        system_card_sales = (
+            system_data.card_sales if system_data.card_sales is not None else Decimal("0.00")
+        )
+        system_credit_sales = (
+            system_data.credit_sales if system_data.credit_sales is not None else Decimal("0.00")
+        )
+        system_total_sales = (
+            system_data.total_sales if system_data.total_sales is not None else Decimal("0.00")
+        )
+        session_count = system_data.session_count if system_data.session_count is not None else 0
 
         # Manual entry values
         manual_cash_sales = (
-            manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
+            manual_entry.cash_sales
+            if manual_entry and manual_entry.cash_sales is not None
+            else None
         )
         manual_card_sales = (
-            manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
+            manual_entry.card_sales
+            if manual_entry and manual_entry.card_sales is not None
+            else None
         )
         manual_credit_sales = (
-            manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
+            manual_entry.credit_sales
+            if manual_entry and manual_entry.credit_sales is not None
+            else None
         )
         manual_total_sales = (
-            manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
+            manual_entry.total_sales
+            if manual_entry and manual_entry.total_sales is not None
+            else None
         )
         is_closed = manual_entry.is_closed if manual_entry else False
 
         # Calculate differences and variance
         def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
             """Calculate difference and variance percentage."""
-            if manual is None or calculated == 0:
+            if manual is None:
                 return {
                     "difference": None,
                     "variance_percent": None,
                 }
             diff = manual - calculated
-            variance_pct = (diff / calculated) * 100 if calculated != 0 else None
+            # When both are 0, difference is 0.0 (not None)
+            calculated_float = float(calculated)
+            manual_float = float(manual)
+            if calculated_float == 0.0:
+                if manual_float == 0.0:
+                    return {
+                        "difference": 0.0,
+                        "variance_percent": None,
+                    }
+                else:
+                    return {
+                        "difference": float(diff),
+                        "variance_percent": None,
+                    }
+            variance_pct = (diff / calculated) * 100
             return {
                 "difference": float(diff),
-                "variance_percent": float(variance_pct) if variance_pct is not None else None,
+                "variance_percent": float(variance_pct),
             }
 
         cash_variance = calc_variance(manual_cash_sales, system_cash_sales)
