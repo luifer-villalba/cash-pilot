@@ -10,8 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models.daily_reconciliation import DailyReconciliation
 from cashpilot.models.daily_reconciliation_audit_log import DailyReconciliationAuditLog
-from cashpilot.models.user import UserRole
-from tests.factories import BusinessFactory, DailyReconciliationFactory, UserFactory
+from tests.factories import BusinessFactory, DailyReconciliationFactory
 
 
 class TestDailyReconciliationAdminAccess:
@@ -80,9 +79,10 @@ class TestDailyReconciliationAdminAccess:
             db_session, business_id=business.id
         )
 
-        response = await client.delete(
+        response = await client.request(
+            "DELETE",
             f"/reconciliation/daily/{reconciliation.id}",
-            data={"reason": "Test reason"},  # type: ignore[arg-type]
+            data={"reason": "Test reason"},
             follow_redirects=False,
         )
         assert response.status_code == 403
@@ -145,9 +145,10 @@ class TestDailyReconciliationSchemaValidation:
             db_session, business_id=business.id
         )
 
-        response = await admin_client.delete(
+        response = await admin_client.request(
+            "DELETE",
             f"/reconciliation/daily/{reconciliation.id}",
-            data={"reason": "abc"},  # type: ignore[arg-type]  # Too short
+            data={"reason": "abc"},  # Too short
             follow_redirects=False,
         )
         assert response.status_code == 422  # Validation error
@@ -166,9 +167,10 @@ class TestDailyReconciliationSoftDelete:
             db_session, business_id=business.id
         )
 
-        response = await admin_client.delete(
+        response = await admin_client.request(
+            "DELETE",
             f"/reconciliation/daily/{reconciliation.id}",
-            data={"reason": "Test deletion reason"},  # type: ignore[arg-type]
+            data={"reason": "Test deletion reason"},
             follow_redirects=False,
         )
         assert response.status_code == 204
@@ -190,9 +192,10 @@ class TestDailyReconciliationSoftDelete:
             credit_sales=Decimal("500000.00"),
         )
 
-        response = await admin_client.delete(
+        response = await admin_client.request(
+            "DELETE",
             f"/reconciliation/daily/{reconciliation.id}",
-            data={"reason": "Test deletion reason"},  # type: ignore[arg-type]
+            data={"reason": "Test deletion reason"},
             follow_redirects=False,
         )
         assert response.status_code == 204
@@ -220,9 +223,10 @@ class TestDailyReconciliationSoftDelete:
         )
 
         # Delete it
-        await admin_client.delete(
+        await admin_client.request(
+            "DELETE",
             f"/reconciliation/daily/{reconciliation.id}",
-            data={"reason": "Test deletion"},  # type: ignore[arg-type]
+            data={"reason": "Test deletion"},
         )
 
         # Get all reconciliations
@@ -249,9 +253,10 @@ class TestDailyReconciliationSoftDelete:
         await db_session.commit()
 
         # Try to delete again
-        response = await admin_client.delete(
+        response = await admin_client.request(
+            "DELETE",
             f"/reconciliation/daily/{reconciliation.id}",
-            data={"reason": "Test deletion"},  # type: ignore[arg-type]
+            data={"reason": "Test deletion"},
             follow_redirects=False,
         )
         assert response.status_code == 404
@@ -487,7 +492,7 @@ class TestDailyReconciliationGetAPI:
         business1 = await BusinessFactory.create(db_session)
         business2 = await BusinessFactory.create(db_session)
 
-        recon1 = await DailyReconciliationFactory.create(
+        await DailyReconciliationFactory.create(
             db_session, business_id=business1.id
         )
         await DailyReconciliationFactory.create(db_session, business_id=business2.id)
