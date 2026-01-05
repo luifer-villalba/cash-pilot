@@ -1,7 +1,8 @@
 # File: src/cashpilot/models/daily_reconciliation_schemas.py
 """Pydantic schemas for DailyReconciliation API."""
 
-from datetime import date as date_type, datetime
+from datetime import date as date_type
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -83,7 +84,10 @@ class DailyReconciliationBulkCreate(BaseModel):
     date: date_type
     businesses: list[dict] = Field(
         ...,
-        description="List of business data: {business_id, cash_sales, credit_sales, card_sales, refunds, total_sales, is_closed}",
+        description=(
+            "List of business data: {business_id, cash_sales, credit_sales, "
+            "card_sales, refunds, total_sales, is_closed}"
+        ),
     )
 
     @field_validator("date")
@@ -91,4 +95,3 @@ class DailyReconciliationBulkCreate(BaseModel):
     def validate_date(cls, v: date_type) -> date_type:
         """Ensure date is not in the future."""
         return validate_no_future_date(v, "Date")
-
