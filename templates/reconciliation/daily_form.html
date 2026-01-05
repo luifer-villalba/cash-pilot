@@ -20,12 +20,20 @@
                 </div>
             </div>
         </div>
-        <a href="/" class="btn btn-outline btn-sm gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
-            {{ _('Back') }}
-        </a>
+        <div class="flex gap-2">
+            <a href="/admin/reconciliation/compare?date={{ selected_date }}" class="btn btn-outline btn-sm gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                {{ _('View Comparison Report') }}
+            </a>
+            <a href="/" class="btn btn-outline btn-sm gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                {{ _('Back') }}
+            </a>
+        </div>
     </div>
 
     <form method="POST" action="/reconciliation/daily" class="space-y-6" id="reconciliation-form" onsubmit="document.getElementById('submit-loading').classList.remove('hidden');">

@@ -24,12 +24,44 @@
         </div>
         {% if current_user.role == 'ADMIN' %}
         <div class="flex gap-2">
-            <a href="/reconciliation/daily" class="btn btn-outline btn-sm gap-2 transition-all hover:scale-105 active:scale-95">
+            {% if from_report %}
+            <a href="/admin/reconciliation/compare?date={{ from_report }}" class="btn btn-outline btn-sm gap-2 transition-all hover:scale-105 active:scale-95">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-                {{ _('Daily Reconciliation') }}
+                {{ _('Back to Report') }}
             </a>
+            {% endif %}
+            <div class="dropdown dropdown-end">
+                <button tabindex="0" class="btn btn-outline btn-sm gap-2 transition-all hover:scale-105 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    {{ _('Reconciliation') }}
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-56 border border-base-200 mt-2">
+                    <li>
+                        <a href="/reconciliation/daily" class="gap-2 transition-colors hover:bg-primary/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            {{ _('Add Reconciliation') }}
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/reconciliation/compare" class="gap-2 transition-colors hover:bg-primary/10">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            {{ _('View Reconciliations') }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
         {% endif %}
     </div>
@@ -46,9 +78,6 @@
                         </svg>
                         {{ _('Filter Sessions') }}
                     </h2>
-                    <span id="filter-badge" class="badge badge-sm badge-primary hidden shadow-sm">
-                        <span id="filter-count">0</span> {{ _('active') }}
-                    </span>
                 </div>
                 <div class="flex gap-2 items-center">
                     {% if current_user.role == 'ADMIN' %}
@@ -150,7 +179,7 @@
                                     type="date"
                                     id="from_date"
                                     name="from_date"
-                                    class="input input-sm input-bordered w-full pr-10 h-9"
+                                    class="input input-sm input-bordered w-full pr-10 h-9{% if current_filters.from_date %} input-primary{% endif %}"
                                     value="{{ current_filters.from_date }}"
                             />
                             <button type="button"
@@ -174,7 +203,7 @@
                                     type="date"
                                     id="to_date"
                                     name="to_date"
-                                    class="input input-sm input-bordered w-full pr-10 h-9"
+                                    class="input input-sm input-bordered w-full pr-10 h-9{% if current_filters.to_date %} input-primary{% endif %}"
                                     value="{{ current_filters.to_date }}"
                             />
                             <button type="button"
@@ -194,7 +223,7 @@
                             <span class="label-text text-xs font-semibold text-base-content/70">{{ _('Status') }}</span>
                         </label>
                         <div class="relative">
-                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10 h-9">
+                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10 h-9{% if current_filters.status %} select-primary{% endif %}">
                                 <option value="">{{ _('All') }}</option>
                                 <option value="OPEN" {% if current_filters.status=='OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
                                 <option value="CLOSED" {% if current_filters.status=='CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
@@ -220,7 +249,7 @@
                                     type="text"
                                     id="cashier_name"
                                     name="cashier_name"
-                                    class="input input-sm input-bordered w-full pr-10 h-9"
+                                    class="input input-sm input-bordered w-full pr-10 h-9{% if current_filters.cashier_name %} input-primary{% endif %}"
                                     placeholder="{{ _('Search...') }}"
                                     value="{{ current_filters.cashier_name or '' }}"
                             />
@@ -248,8 +277,19 @@
          hx-get="/stats"
          hx-include="#filter-form"
          hx-trigger="load, #filter-form input changed delay:500ms, #filter-form select changed"
-         hx-swap="outerHTML">
-        <!-- Skeleton: 5 metric cards -->
+         hx-swap="outerHTML"
+         hx-indicator="#stats-loading">
+        <div id="stats-loading" class="htmx-indicator">
+            <!-- Skeleton: 5 metric cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+                <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+                <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+                <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+                <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
+            </div>
+        </div>
+        <!-- Initial skeleton (shown before HTMX loads) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
             <div class="bg-base-200 rounded-lg h-28 animate-pulse"></div>
@@ -265,7 +305,16 @@
          hx-get="/sessions/table{% if include_deleted %}?include_deleted=true{% endif %}"
          hx-include="#filter-form"
          hx-trigger="load"
-         hx-swap="innerHTML">
+         hx-swap="innerHTML"
+         hx-indicator="#sessions-loading">
+        <div id="sessions-loading" class="htmx-indicator">
+            <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-8">
+                <div class="flex flex-col items-center justify-center space-y-4">
+                    <span class="loading loading-spinner loading-lg text-primary"></span>
+                    <p class="text-sm text-base-content/60">{{ _('Loading sessions...') }}</p>
+                </div>
+            </div>
+        </div>
         {% include "partials/sessions_table.html" %}
     </div>
 </div>
@@ -304,6 +353,7 @@
         filterToggle.setAttribute('aria-expanded', isExpanded);
     });
 
+
     // Helper to trigger both stats and table updates
     function applyFilters() {
         const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
@@ -314,6 +364,9 @@
         const queryString = '?' + params.toString();
 
         window.history.pushState({}, '', queryString);
+        
+        // Update visual indicators on inputs
+        updateFilterIndicators();
 
         // Only load stats if element exists (Admin only)
         // Stats should NEVER include deleted sessions
@@ -325,6 +378,32 @@
         }
 
         htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
+    }
+    
+    // Update visual indicators on filter inputs
+    function updateFilterIndicators() {
+        const inputs = {
+            'from_date': document.getElementById('from_date'),
+            'to_date': document.getElementById('to_date'),
+            'status': document.getElementById('status'),
+            'cashier_name': document.getElementById('cashier_name')
+        };
+        
+        Object.entries(inputs).forEach(([id, input]) => {
+            if (!input) return;
+            const hasValue = input.value && input.value.trim() !== '';
+            if (hasValue) {
+                input.classList.add('input-primary');
+                if (input.tagName === 'SELECT') {
+                    input.classList.add('select-primary');
+                }
+            } else {
+                input.classList.remove('input-primary');
+                if (input.tagName === 'SELECT') {
+                    input.classList.remove('select-primary');
+                }
+            }
+        });
     }
 
     // Mark active preset button
@@ -425,6 +504,9 @@
 
     // Detect active preset on page load
     detectActivePreset();
+    
+    // Initialize filter indicators
+    updateFilterIndicators();
 
     // Filter form change handler
     document.getElementById('filter-form').addEventListener('change', applyFilters);
