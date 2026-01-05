@@ -286,12 +286,12 @@ async def get_daily_reconciliations(
 @router.put("/daily/{reconciliation_id}", response_model=dict)
 async def update_daily_reconciliation(
     reconciliation_id: UUID,
-    cash_sales: Decimal | None = None,
-    credit_sales: Decimal | None = None,
-    card_sales: Decimal | None = None,
-    refunds: Decimal | None = None,
-    total_sales: Decimal | None = None,
-    is_closed: bool | None = None,
+    cash_sales: Decimal | None = Form(None),
+    credit_sales: Decimal | None = Form(None),
+    card_sales: Decimal | None = Form(None),
+    refunds: Decimal | None = Form(None),
+    total_sales: Decimal | None = Form(None),
+    is_closed: str | None = Form(None),
     reason: str = Form(..., min_length=5),
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
@@ -330,8 +330,10 @@ async def update_daily_reconciliation(
         reconciliation.refunds = refunds
     if total_sales is not None:
         reconciliation.total_sales = total_sales
+    # Convert string to bool for is_closed
     if is_closed is not None:
-        reconciliation.is_closed = is_closed
+        is_closed_bool = is_closed.lower() in ("true", "1", "yes", "on")
+        reconciliation.is_closed = is_closed_bool
 
     new_values = {
         "cash_sales": str(reconciliation.cash_sales) if reconciliation.cash_sales else None,
