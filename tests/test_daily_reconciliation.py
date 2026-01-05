@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models.daily_reconciliation import DailyReconciliation
 from cashpilot.models.daily_reconciliation_audit_log import DailyReconciliationAuditLog
-from tests.factories import BusinessFactory, DailyReconciliationFactory
+from tests.factories import BusinessFactory, DailyReconciliationFactory, CashSessionFactory
 
 
 class TestDailyReconciliationAdminAccess:
@@ -528,4 +528,252 @@ class TestDailyReconciliationGetAPI:
         data = response.json()
         assert len(data) == 1
         assert data[0]["date"] == today.isoformat()
+
+
+class TestReconciliationCompare:
+    """Test reconciliation comparison endpoint with variance calculation."""
+
+    @pytest.mark.asyncio
+    async def test_compare_variance_calculation(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test variance calculation is correct."""
+        from datetime import date
+
+        business = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        # Create manual entry
+        await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business.id,
+            date=today,
+            total_sales=Decimal("1000.00"),
+        )
+
+        # Create cash session with calculated total = 1050.00
+        # Cash: (1200 - 200) + 0 + 0 - 0 + 0 = 1000
+        # Card: 50
+        # Total: 1050
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("200.00"),
+            final_cash=Decimal("1200.00"),
+            credit_card_total=Decimal("50.00"),
+            debit_card_total=Decimal("0.00"),
+        )
+
+        response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+
+        item = data[0]
+        assert item["business_id"] == str(business.id)
+        assert item["manual_entry"]["total_sales"] == 1000.0
+        assert item["calculated"]["total_sales"] == 1050.0
+        assert item["variance"]["total_sales"]["difference"] == -50.0
+        # Variance: ((1000 - 1050) / 1050) * 100 = -4.76%
+        assert abs(item["variance"]["total_sales"]["variance_percent"] - (-4.76)) < 0.1
+        assert item["status"] == "Needs Review"  # > 2% threshold
+
+    @pytest.mark.asyncio
+    async def test_compare_multiple_sessions_same_day(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test that multiple sessions on same day are summed correctly."""
+        from datetime import date
+
+        business = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        # Create manual entry
+        await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business.id,
+            date=today,
+            total_sales=Decimal("3000.00"),
+        )
+
+        # Session 1: Cash 1000, Card 500 = 1500 total
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("500.00"),
+            final_cash=Decimal("1500.00"),  # Cash sales = 1000
+            credit_card_total=Decimal("500.00"),
+            debit_card_total=Decimal("0.00"),
+        )
+
+        # Session 2: Cash 800, Card 700 = 1500 total
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("200.00"),
+            final_cash=Decimal("1000.00"),  # Cash sales = 800
+            credit_card_total=Decimal("700.00"),
+            debit_card_total=Decimal("0.00"),
+        )
+
+        response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+
+        item = data[0]
+        # Total calculated: (1000 + 500) + (800 + 700) = 3000
+        assert item["calculated"]["total_sales"] == 3000.0
+        assert item["calculated"]["session_count"] == 2
+        assert item["variance"]["total_sales"]["difference"] == 0.0
+        assert item["variance"]["total_sales"]["variance_percent"] == 0.0
+        assert item["status"] == "Match"
+
+    @pytest.mark.asyncio
+    async def test_compare_edge_case_zero_sales(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test edge case with 0 sales."""
+        from datetime import date
+
+        business = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        # Create manual entry with 0 sales
+        await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business.id,
+            date=today,
+            total_sales=Decimal("0.00"),
+        )
+
+        # Create cash session with 0 sales
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("500.00"),
+            final_cash=Decimal("500.00"),  # No cash sales
+            credit_card_total=Decimal("0.00"),
+            debit_card_total=Decimal("0.00"),
+        )
+
+        response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+
+        item = data[0]
+        assert item["calculated"]["total_sales"] == 0.0
+        assert item["variance"]["total_sales"]["difference"] == 0.0
+        # When calculated is 0, variance_percent should be None
+        assert item["variance"]["total_sales"]["variance_percent"] is None
+        assert item["status"] == "Match"
+
+    @pytest.mark.asyncio
+    async def test_compare_no_manual_entry(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test comparison when no manual entry exists."""
+        from datetime import date
+
+        business = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        # Create cash session but no manual entry
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("500.00"),
+            final_cash=Decimal("1500.00"),
+            credit_card_total=Decimal("200.00"),
+        )
+
+        response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+
+        item = data[0]
+        assert item["manual_entry"]["total_sales"] is None
+        assert item["calculated"]["total_sales"] == 1200.0  # 1000 cash + 200 card
+        assert item["variance"]["total_sales"]["difference"] is None
+        assert item["variance"]["total_sales"]["variance_percent"] is None
+        assert item["status"] == "Match"
+
+    @pytest.mark.asyncio
+    async def test_compare_variance_threshold_match(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test that variance <= 2% shows as Match."""
+        from datetime import date
+
+        business = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        # Manual: 1000, Calculated: 1015 (1.5% variance)
+        await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business.id,
+            date=today,
+            total_sales=Decimal("1000.00"),
+        )
+
+        # Calculated total should be ~1015 (1.5% difference)
+        # Cash: (1215 - 200) = 1015
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("200.00"),
+            final_cash=Decimal("1215.00"),  # Cash sales = 1015
+            credit_card_total=Decimal("0.00"),
+        )
+
+        response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+
+        item = data[0]
+        variance_pct = item["variance"]["total_sales"]["variance_percent"]
+        # Manual (1000) < Calculated (1015), so variance is negative: -1.48%
+        assert abs(variance_pct - (-1.48)) < 0.1  # ~-1.48%
+        assert item["status"] == "Match"  # <= 2% threshold
+
+    @pytest.mark.asyncio
+    async def test_compare_filter_by_business_id(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test filtering by business_id."""
+        from datetime import date
+
+        business1 = await BusinessFactory.create(db_session)
+        business2 = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        await DailyReconciliationFactory.create(
+            db_session, business_id=business1.id, date=today
+        )
+        await DailyReconciliationFactory.create(
+            db_session, business_id=business2.id, date=today
+        )
+
+        response = await admin_client.get(
+            f"/reconciliation/compare/?date={today.isoformat()}&business_id={business1.id}"
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["business_id"] == str(business1.id)
 
