@@ -29,6 +29,119 @@ logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reconciliation", tags=["reconciliation"])
 
+
+@router.get("/badge", response_class=HTMLResponse)
+async def reconciliation_badge(
+    request: Request,
+    from_date: str | None = Query(None, description="From date in YYYY-MM-DD format"),
+    to_date: str | None = Query(None, description="To date in YYYY-MM-DD format"),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return reconciliation badge HTML (HTMX endpoint).
+
+    Handles both single date and date ranges:
+    - Single date: Shows badge if reconciliation exists for that date
+    - Date range: Shows badge with count of dates that have reconciliation
+    """
+    from datetime import datetime, timedelta
+
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    # Parse dates
+    start_date = today_local()
+    end_date = today_local()
+
+    if from_date:
+        try:
+            start_date = datetime.fromisoformat(from_date).date()
+        except (ValueError, TypeError):
+            pass
+
+    if to_date:
+        try:
+            end_date = datetime.fromisoformat(to_date).date()
+        except (ValueError, TypeError):
+            pass
+
+    # Determine if it's a range or single date
+    is_range = start_date != end_date
+
+    if is_range:
+        # Date range: count how many dates have reconciliation
+        date_list = []
+        current = start_date
+        while current <= end_date:
+            date_list.append(current)
+            current += timedelta(days=1)
+
+        # Count unique dates that have at least one reconciliation
+        stmt_recon = select(func.distinct(DailyReconciliation.date)).where(
+            and_(
+                DailyReconciliation.date >= start_date,
+                DailyReconciliation.date <= end_date,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+
+        result_recon = await db.execute(stmt_recon)
+        reconciled_dates_set = {row[0] for row in result_recon.all()}
+
+        reconciled_dates = len(reconciled_dates_set)
+        total_dates = len(date_list)
+
+        if reconciled_dates > 0:
+            # Show badge with count
+            return templates.TemplateResponse(
+                "partials/reconciliation_badge.html",
+                {
+                    "request": request,
+                    "reconciliation_date": None,  # Range, not single date
+                    "from_date": start_date.isoformat(),
+                    "to_date": end_date.isoformat(),
+                    "reconciled_count": reconciled_dates,
+                    "total_count": total_dates,
+                    "is_range": True,
+                    "locale": locale,
+                    "_": _,
+                },
+            )
+        else:
+            return HTMLResponse(content="", status_code=200)
+    else:
+        # Single date: check if reconciliation exists
+        check_date = end_date  # Use to_date (or from_date if to_date not set)
+
+        stmt_recon = select(func.count(DailyReconciliation.id)).where(
+            and_(
+                DailyReconciliation.date == check_date,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+        result_recon = await db.execute(stmt_recon)
+        recon_count = result_recon.scalar() or 0
+        has_reconciliation = recon_count > 0
+
+        if has_reconciliation:
+            return templates.TemplateResponse(
+                "partials/reconciliation_badge.html",
+                {
+                    "request": request,
+                    "reconciliation_date": check_date.isoformat(),
+                    "from_date": None,
+                    "to_date": None,
+                    "reconciled_count": None,
+                    "total_count": None,
+                    "is_range": False,
+                    "locale": locale,
+                    "_": _,
+                },
+            )
+        else:
+            return HTMLResponse(content="", status_code=200)
+
+
 # Variance thresholds for flagging discrepancies
 # Uses dual threshold approach (OR logic):
 # - Absolute: 20,000 Gs (based on local practice in Paraguay)
