@@ -1,7 +1,6 @@
 # File: src/cashpilot/api/admin.py
 import secrets
 import string
-from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
@@ -434,10 +433,18 @@ async def reconciliation_compare_dashboard(
         session_count = system_data.session_count or 0
 
         # Manual entry values
-        manual_cash_sales = manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
-        manual_card_sales = manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
-        manual_credit_sales = manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
-        manual_total_sales = manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
+        manual_cash_sales = (
+            manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
+        )
+        manual_card_sales = (
+            manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
+        )
+        manual_credit_sales = (
+            manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
+        )
+        manual_total_sales = (
+            manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
+        )
         manual_refunds = manual_entry.refunds if manual_entry and manual_entry.refunds else None
         is_closed = manual_entry.is_closed if manual_entry else False
 

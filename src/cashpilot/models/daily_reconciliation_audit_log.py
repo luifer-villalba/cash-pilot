@@ -80,4 +80,3 @@ class DailyReconciliationAuditLog(Base):
             f"<DailyReconciliationAuditLog(reconciliation_id={self.reconciliation_id}, "
             f"action={self.action}, changed_by={self.changed_by})>"
         )
-
