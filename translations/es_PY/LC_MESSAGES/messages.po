@@ -156,6 +156,38 @@ msgstr "Abrir Sesión de Caja"
 msgid "Daily Reconciliation"
 msgstr "Reconciliación Diaria"
 
+#: /app/templates/index.html
+msgid "Add Reconciliation"
+msgstr "Agregar Reconciliación"
+
+#: /app/templates/index.html
+msgid "View Reconciliations"
+msgstr "Ver Reconciliaciones"
+
+#: /app/templates/index.html
+msgid "Loading sessions..."
+msgstr "Cargando sesiones..."
+
+#: /app/templates/partials/sessions_table.html
+msgid "No sessions found"
+msgstr "No se encontraron sesiones"
+
+#: /app/templates/partials/sessions_table.html
+msgid "No cash sessions match your current filters. Try adjusting your search criteria or create a new session."
+msgstr "No hay sesiones de caja que coincidan con tus filtros actuales. Intentá ajustar los criterios de búsqueda o creá una nueva sesión."
+
+#: /app/templates/partials/sessions_table.html
+msgid "Create New Session"
+msgstr "Crear Nueva Sesión"
+
+#: /app/templates/partials/sessions_table.html
+msgid "session"
+msgstr "sesión"
+
+#: /app/templates/partials/sessions_table.html
+msgid "sessions"
+msgstr "sesiones"
+
 #: /app/templates/index.html:53
 msgid "Filter Sessions"
 msgstr "Filtrar Sesiones"
@@ -449,6 +481,9 @@ msgstr "Ventas con Tarjeta"
 #: /app/templates/sessions/session_detail.html:473
 msgid "Credit Sales"
 msgstr "Ventas a Crédito"
+
+msgid "Sessions"
+msgstr "Sesiones"
 
 #: /app/templates/admin/reconciliation_compare.html:73
 #: /app/templates/reconciliation/daily_form.html:226

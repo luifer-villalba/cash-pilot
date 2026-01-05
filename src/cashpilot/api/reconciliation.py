@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Query, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlalchemy import and_, select
+from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth_helpers import require_admin
@@ -28,6 +28,9 @@ from cashpilot.utils.datetime import now_utc, today_local
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reconciliation", tags=["reconciliation"])
+
+# Variance threshold for flagging discrepancies (2%)
+VARIANCE_THRESHOLD = 2.0
 
 
 # ─────── FORM ENDPOINTS ────────
@@ -244,6 +247,182 @@ async def daily_reconciliation_post(
 
 
 # ─────── API ENDPOINTS ────────
+
+
+@router.get("/compare/", response_model=list[dict])
+async def get_reconciliation_compare(
+    business_id: UUID | None = Query(None, description="Filter by business ID"),
+    date: date | None = Query(None, description="Date in YYYY-MM-DD format"),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get reconciliation comparison data with variance calculation.
+
+    Returns JSON with manual entries vs calculated cash sessions totals,
+    including variance percentage and status flags.
+    """
+
+    from cashpilot.models.business import Business
+    from cashpilot.models.cash_session import CashSession
+
+    # Parse date or use today
+    if date:
+        comparison_date = date
+    else:
+        comparison_date = today_local()
+
+    # Build query for businesses
+    stmt_businesses = select(Business).where(Business.is_active)
+    if business_id:
+        stmt_businesses = stmt_businesses.where(Business.id == business_id)
+    result_businesses = await db.execute(stmt_businesses)
+    businesses = result_businesses.scalars().all()
+
+    comparison_results = []
+
+    for business in businesses:
+        # Get manual entry (DailyReconciliation)
+        stmt_recon = select(DailyReconciliation).where(
+            and_(
+                DailyReconciliation.business_id == business.id,
+                DailyReconciliation.date == comparison_date,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+        result_recon = await db.execute(stmt_recon)
+        manual_entry = result_recon.scalar_one_or_none()
+
+        # Calculate system totals from CashSessions (same logic as admin.py)
+        stmt_system = select(
+            func.sum(
+                case(
+                    (
+                        and_(
+                            CashSession.status == "CLOSED",
+                            CashSession.final_cash.is_not(None),
+                        ),
+                        (CashSession.final_cash - CashSession.initial_cash)
+                        + func.coalesce(CashSession.envelope_amount, 0)
+                        + func.coalesce(CashSession.expenses, 0)
+                        - func.coalesce(CashSession.credit_payments_collected, 0)
+                        + func.coalesce(CashSession.bank_transfer_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("cash_sales"),
+            func.sum(
+                func.coalesce(CashSession.credit_card_total, 0)
+                + func.coalesce(CashSession.debit_card_total, 0)
+            ).label("card_sales"),
+            func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
+            func.sum(
+                case(
+                    (
+                        and_(
+                            CashSession.status == "CLOSED",
+                            CashSession.final_cash.is_not(None),
+                        ),
+                        (CashSession.final_cash - CashSession.initial_cash)
+                        + func.coalesce(CashSession.envelope_amount, 0)
+                        + func.coalesce(CashSession.expenses, 0)
+                        - func.coalesce(CashSession.credit_payments_collected, 0)
+                        + func.coalesce(CashSession.bank_transfer_total, 0)
+                        + func.coalesce(CashSession.credit_card_total, 0)
+                        + func.coalesce(CashSession.debit_card_total, 0)
+                        + func.coalesce(CashSession.credit_sales_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("total_sales"),
+            func.count(CashSession.id).label("session_count"),
+        ).where(
+            and_(
+                CashSession.business_id == business.id,
+                CashSession.session_date == comparison_date,
+                ~CashSession.is_deleted,
+            )
+        )
+
+        result_system = await db.execute(stmt_system)
+        system_data = result_system.one()
+
+        system_cash_sales = system_data.cash_sales or Decimal("0.00")
+        system_card_sales = system_data.card_sales or Decimal("0.00")
+        system_credit_sales = system_data.credit_sales or Decimal("0.00")
+        system_total_sales = system_data.total_sales or Decimal("0.00")
+        session_count = system_data.session_count or 0
+
+        # Manual entry values
+        manual_cash_sales = (
+            manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
+        )
+        manual_card_sales = (
+            manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
+        )
+        manual_credit_sales = (
+            manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
+        )
+        manual_total_sales = (
+            manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
+        )
+        is_closed = manual_entry.is_closed if manual_entry else False
+
+        # Calculate differences and variance
+        def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
+            """Calculate difference and variance percentage."""
+            if manual is None or calculated == 0:
+                return {
+                    "difference": None,
+                    "variance_percent": None,
+                }
+            diff = manual - calculated
+            variance_pct = (diff / calculated) * 100 if calculated != 0 else None
+            return {
+                "difference": float(diff),
+                "variance_percent": float(variance_pct) if variance_pct is not None else None,
+            }
+
+        cash_variance = calc_variance(manual_cash_sales, system_cash_sales)
+        card_variance = calc_variance(manual_card_sales, system_card_sales)
+        credit_variance = calc_variance(manual_credit_sales, system_credit_sales)
+        total_variance = calc_variance(manual_total_sales, system_total_sales)
+
+        # Determine status: "Match" if variance <= 2%, "Needs Review" if > 2%
+        status = "Match"
+        if total_variance["variance_percent"] is not None:
+            if abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD:
+                status = "Needs Review"
+
+        comparison_results.append(
+            {
+                "business_id": str(business.id),
+                "business_name": business.name,
+                "date": comparison_date.isoformat(),
+                "is_closed": is_closed,
+                "manual_entry": {
+                    "cash_sales": float(manual_cash_sales) if manual_cash_sales else None,
+                    "card_sales": float(manual_card_sales) if manual_card_sales else None,
+                    "credit_sales": float(manual_credit_sales) if manual_credit_sales else None,
+                    "total_sales": float(manual_total_sales) if manual_total_sales else None,
+                },
+                "calculated": {
+                    "cash_sales": float(system_cash_sales),
+                    "card_sales": float(system_card_sales),
+                    "credit_sales": float(system_credit_sales),
+                    "total_sales": float(system_total_sales),
+                    "session_count": session_count,
+                },
+                "variance": {
+                    "cash_sales": cash_variance,
+                    "card_sales": card_variance,
+                    "credit_sales": credit_variance,
+                    "total_sales": total_variance,
+                },
+                "status": status,
+            }
+        )
+
+    return comparison_results
 
 
 @router.get("/daily/", response_model=list[dict])
