@@ -267,10 +267,11 @@ async def get_dashboard_stats(
 
     # Calculate financial aggregations for closed sessions only
     # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses
-    #              - credit_payments_collected
+    #              - credit_payments_collected + bank_transfer_total
     # Note: Only include sessions where final_cash is not NULL
     # credit_payments_collected is cash received today for prior credit sales and is
     # subtracted here so it is not counted as today's cash sales revenue.
+    # bank_transfer_total IS included in cash_sales (transferencias are part of cash sales)
     stmt_aggs = select(
         func.sum(
             case(
@@ -279,7 +280,8 @@ async def get_dashboard_stats(
                     (CashSession.final_cash - CashSession.initial_cash)
                     + func.coalesce(CashSession.envelope_amount, 0)
                     + func.coalesce(CashSession.expenses, 0)
-                    - func.coalesce(CashSession.credit_payments_collected, 0),
+                    - func.coalesce(CashSession.credit_payments_collected, 0)
+                    + func.coalesce(CashSession.bank_transfer_total, 0),
                 ),
                 else_=0,
             )
@@ -317,19 +319,22 @@ async def get_dashboard_stats(
     credit_payments_val = Decimal(aggs_row.credit_payments_collected or 0)
 
     # Card #1: Cash Sales (includes bank transfers)
-    cash_and_transfers = cash_sales_val + bank_val
+    # bank_transfer_total is already included in cash_sales_val from the query
+    # We show bank_val separately for informational purposes only
+    cash_and_transfers = cash_sales_val  # Already includes bank_val
 
     # Card #2: Bank Transfers
-    # Already calculated as bank_val
+    # Already calculated as bank_val (shown for informational purposes only)
 
     # Card #3: Total Expenses
     total_expenses = expenses_val
 
-    # Card #4: Cash Profit = cash_sales + bank - expenses
-    cash_profit = cash_sales_val + bank_val - expenses_val
+    # Card #4: Cash Profit = cash_sales - expenses (cash_sales already includes bank transfers)
+    cash_profit = cash_sales_val - expenses_val
 
-    # Card #5: Total Sales = Cash Sales + Card Sales + Bank Transfers + Credit Sales
-    total_sales = cash_sales_val + credit_card_val + debit_card_val + bank_val + credit_sales_val
+    # Card #5: Total Sales = Cash Sales (which includes bank transfers) + Card Sales + Credit Sales
+    # Note: bank_val is NOT added again because it's already included in cash_sales_val
+    total_sales = cash_sales_val + credit_card_val + debit_card_val + credit_sales_val
 
     # Card #6: Card Payments (for collapsible section)
     card_payments_total = credit_card_val + debit_card_val
