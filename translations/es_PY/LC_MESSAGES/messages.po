@@ -482,11 +482,7 @@ msgstr "Fecha"
 
 #: templates/admin/reconciliation_compare.html:150
 msgid "Select a date to compare reconciliation data"
-<<<<<<< HEAD
-msgstr ""
-=======
 msgstr "Seleccioná una fecha para comparar datos de reconciliación"
->>>>>>> 370b825 (chore: Update translations for reconciliation compare report)
 
 #: templates/admin/reconciliation_compare.html:187
 #: templates/partials/sessions_table.html:92
@@ -552,7 +548,7 @@ msgstr "Sesiones"
 
 #: templates/admin/reconciliation_compare.html:212
 msgid "Needs Review"
-msgstr ""
+msgstr "Requiere revisión"
 
 #: templates/admin/reconciliation_compare.html:219
 msgid "Entered"
@@ -1467,7 +1463,7 @@ msgstr "Ingresá datos de ventas diarias para todas las ubicaciones del negocio"
 
 #: templates/reconciliation/daily_form.html:28
 msgid "View Comparison Report"
-msgstr ""
+msgstr "Ver informe de comparación"
 
 #: templates/reconciliation/daily_form.html:44
 msgid "Select Date"

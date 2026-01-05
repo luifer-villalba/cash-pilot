@@ -29,8 +29,13 @@ logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reconciliation", tags=["reconciliation"])
 
-# Variance threshold for flagging discrepancies (2%)
-VARIANCE_THRESHOLD = 2.0
+# Variance thresholds for flagging discrepancies
+# Uses dual threshold approach (OR logic):
+# - Absolute: 20,000 Gs (based on local practice in Paraguay)
+# - Percentage: 2% (industry standard)
+# Flags "Needs Review" if EITHER threshold is exceeded
+ABSOLUTE_THRESHOLD = Decimal("20000.00")  # 20,000 guaraníes
+VARIANCE_THRESHOLD = 2.0  # 2%
 
 
 # ─────── FORM ENDPOINTS ────────
@@ -431,11 +436,22 @@ async def get_reconciliation_compare(
         credit_variance = calc_variance(manual_credit_sales, system_credit_sales)
         total_variance = calc_variance(manual_total_sales, system_total_sales)
 
-        # Determine status: "Match" if variance <= 2%, "Needs Review" if > 2%
+        # Determine status using dual threshold (OR logic):
+        # "Needs Review" if absolute difference > 20,000 Gs OR variance % > 2%
         status = "Match"
+        if total_variance["difference"] is not None:
+            abs_diff = abs(Decimal(str(total_variance["difference"])))
+            exceeds_absolute = abs_diff > ABSOLUTE_THRESHOLD
+        else:
+            exceeds_absolute = False
+
         if total_variance["variance_percent"] is not None:
-            if abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD:
-                status = "Needs Review"
+            exceeds_percentage = abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD
+        else:
+            exceeds_percentage = False
+
+        if exceeds_absolute or exceeds_percentage:
+            status = "Needs Review"
 
         comparison_results.append(
             {
