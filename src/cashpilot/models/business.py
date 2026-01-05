@@ -7,6 +7,7 @@ from cashpilot.utils.datetime import now_utc
 
 if TYPE_CHECKING:
     from cashpilot.models.cash_session import CashSession
+    from cashpilot.models.daily_reconciliation import DailyReconciliation
     from cashpilot.models.user import User
     from cashpilot.models.user_business import UserBusiness
 
@@ -93,6 +94,12 @@ class Business(Base):
         "User",
         secondary="user_businesses",
         viewonly=True,
+    )
+
+    daily_reconciliations: Mapped[list["DailyReconciliation"]] = relationship(
+        "DailyReconciliation",
+        back_populates="business",
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
