@@ -558,6 +558,14 @@ msgstr "Ingresado"
 msgid "Not Entered"
 msgstr "No Ingresado"
 
+#: templates/index.html:32
+msgid "Reconciled"
+msgstr "Reconciliado"
+
+#: templates/index.html:38
+msgid "View"
+msgstr "Ver"
+
 #: templates/admin/reconciliation_compare.html:349
 msgid "View sessions for this business and date"
 msgstr ""

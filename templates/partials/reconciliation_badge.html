@@ -1,0 +1,32 @@
+<!-- File: templates/partials/reconciliation_badge.html -->
+<!-- Reconciliation verified badge (Twitter/X style) -->
+{% if is_range %}
+<a href="/admin/reconciliation/compare?from_date={{ from_date }}&to_date={{ to_date }}" 
+   class="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-base-100 border border-base-300 rounded-full hover:bg-base-200 dark:hover:bg-base-300 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">
+    <div class="flex items-center justify-center w-6 h-6 bg-blue-600 rounded-full flex-shrink-0 shadow-sm">
+        <svg class="w-4 h-4" fill="white" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+    </div>
+    <span class="text-sm font-semibold text-blue-700 dark:text-blue-300 whitespace-nowrap">
+        {{ reconciled_count }}/{{ total_count }} {{ _('Reconciled') }}
+    </span>
+    <svg class="w-4 h-4 text-base-content/60 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+</a>
+{% else %}
+<a href="/admin/reconciliation/compare?date={{ reconciliation_date }}" 
+   class="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-base-100 border border-base-300 rounded-full hover:bg-base-200 dark:hover:bg-base-300 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">
+    <div class="flex items-center justify-center w-6 h-6 bg-blue-600 rounded-full flex-shrink-0 shadow-sm">
+        <svg class="w-4 h-4" fill="white" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+    </div>
+    <span class="text-sm font-semibold text-blue-700 dark:text-blue-300 whitespace-nowrap">{{ _('Reconciled') }}</span>
+    <svg class="w-4 h-4 text-base-content/60 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+</a>
+{% endif %}
+
