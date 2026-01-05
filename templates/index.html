@@ -23,7 +23,13 @@
             </div>
         </div>
         {% if current_user.role == 'ADMIN' %}
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
+            <div id="reconciliation-badge"
+                 hx-get="/reconciliation/badge"
+                 hx-include="#filter-form"
+                 hx-trigger="load, reconciliationBadgeUpdate from:body"
+                 hx-swap="innerHTML">
+            </div>
             {% if from_report %}
             <a href="/admin/reconciliation/compare?date={{ from_report }}" class="btn btn-outline btn-sm gap-2 transition-all hover:scale-105 active:scale-95">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -348,6 +354,11 @@
         }
 
         htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
+        
+        // Update reconciliation badge
+        if (typeof htmx !== 'undefined') {
+            htmx.trigger(document.body, 'reconciliationBadgeUpdate');
+        }
     }
     
     // Update visual indicators on filter inputs
@@ -470,6 +481,13 @@
             setActivePreset(preset);
             updateReconciliationLinks();
             applyFilters();
+            
+            // Update reconciliation badge after filters are applied
+            setTimeout(() => {
+                if (typeof htmx !== 'undefined') {
+                    htmx.trigger(document.body, 'reconciliationBadgeUpdate');
+                }
+            }, 100);
         });
     });
 
@@ -523,6 +541,13 @@
     document.getElementById('filter-form').addEventListener('change', function() {
         applyFilters();
         updateReconciliationLinks();
+        
+        // Update reconciliation badge
+        setTimeout(() => {
+            if (typeof htmx !== 'undefined') {
+                htmx.trigger(document.body, 'reconciliationBadgeUpdate');
+            }
+        }, 100);
     });
     
     // Toggle deleted sessions (Admin only)

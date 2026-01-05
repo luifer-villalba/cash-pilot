@@ -1,6 +1,7 @@
 # File: src/cashpilot/api/routes/dashboard.py
 """Dashboard routes (HTML endpoints)."""
 
+from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
@@ -19,7 +20,7 @@ from cashpilot.api.utils import (
     templates,
 )
 from cashpilot.core.db import get_db
-from cashpilot.models import Business, CashSession
+from cashpilot.models import Business, CashSession, DailyReconciliation
 from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import now_local, today_local
 
@@ -125,6 +126,33 @@ async def dashboard(
     # Check if coming from reconciliation report
     from_report = request.query_params.get("from_report")
 
+    # Determine date to check for reconciliation
+    # Use to_date if available, otherwise from_date, otherwise today
+    reconciliation_check_date = today_local()
+    if to_date:
+        try:
+            reconciliation_check_date = datetime.fromisoformat(to_date).date()
+        except (ValueError, TypeError):
+            pass
+    elif from_date:
+        try:
+            reconciliation_check_date = datetime.fromisoformat(from_date).date()
+        except (ValueError, TypeError):
+            pass
+
+    # Check if there's any reconciliation for this date (admin only)
+    has_reconciliation = False
+    if current_user and current_user.role == UserRole.ADMIN:
+        stmt_recon = select(func.count(DailyReconciliation.id)).where(
+            and_(
+                DailyReconciliation.date == reconciliation_check_date,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+        result_recon = await db.execute(stmt_recon)
+        recon_count = result_recon.scalar() or 0
+        has_reconciliation = recon_count > 0
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -150,6 +178,8 @@ async def dashboard(
             },
             "include_deleted": include_deleted,
             "from_report": from_report,
+            "has_reconciliation": has_reconciliation,
+            "reconciliation_date": reconciliation_check_date.isoformat(),
             "locale": locale,
             "_": _,
         },
