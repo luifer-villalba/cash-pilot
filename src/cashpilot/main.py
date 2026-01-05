@@ -42,10 +42,10 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
         if any(request.url.path.startswith(path) for path in public_paths):
             return await call_next(request)
 
-        # Check session (access via scope, not request.session)
-        # NOTE: Session is now guaranteed to be loaded by SessionMiddleware which runs before this.
+        # Check session - SessionMiddleware runs first, so session should be in scope
+        # Access session via scope (as set by SessionMiddleware) for consistency
         session = request.scope.get("session", {})
-        user_id = session.get("user_id")
+        user_id = session.get("user_id") if session else None
 
         if not user_id:
             # Detect browser (HTML request)

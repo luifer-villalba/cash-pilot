@@ -122,6 +122,9 @@ async def dashboard(
     for session in sessions:
         session.can_edit_closed = _can_edit_closed_session(session, current_user)
 
+    # Check if coming from reconciliation report
+    from_report = request.query_params.get("from_report")
+
     return templates.TemplateResponse(
         "index.html",
         {
@@ -146,6 +149,7 @@ async def dashboard(
                 "status": status,
             },
             "include_deleted": include_deleted,
+            "from_report": from_report,
             "locale": locale,
             "_": _,
         },
