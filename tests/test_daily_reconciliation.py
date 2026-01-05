@@ -749,7 +749,91 @@ class TestReconciliationCompare:
         variance_pct = item["variance"]["total_sales"]["variance_percent"]
         # Manual (1000) < Calculated (1015), so variance is negative: -1.48%
         assert abs(variance_pct - (-1.48)) < 0.1  # ~-1.48%
-        assert item["status"] == "Match"  # <= 2% threshold
+        assert item["status"] == "Match"  # <= 2% threshold and < 20,000 Gs absolute
+
+    @pytest.mark.asyncio
+    async def test_compare_absolute_threshold_exceeds_20k(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test that absolute difference > 20,000 Gs flags as Needs Review even if % < 2%."""
+        from datetime import date
+
+        business = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        # Manual: 1,000,000, Calculated: 1,025,000 (2.5% variance, but 25,000 Gs absolute)
+        # This should trigger "Needs Review" because absolute > 20,000 Gs
+        await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business.id,
+            date=today,
+            total_sales=Decimal("1000000.00"),  # 1M Gs
+        )
+
+        # Calculated total: 1,025,000 (25,000 Gs difference, 2.44% variance)
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("0.00"),
+            final_cash=Decimal("1025000.00"),  # Cash sales = 1,025,000
+            credit_card_total=Decimal("0.00"),
+        )
+
+        response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+
+        item = data[0]
+        assert item["variance"]["total_sales"]["difference"] == -25000.0  # 25,000 Gs
+        variance_pct = item["variance"]["total_sales"]["variance_percent"]
+        assert abs(variance_pct - (-2.44)) < 0.1  # ~-2.44%
+        # Should be "Needs Review" because absolute difference (25,000) > 20,000 Gs
+        assert item["status"] == "Needs Review"
+
+    @pytest.mark.asyncio
+    async def test_compare_absolute_threshold_within_20k(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test that absolute difference < 20,000 Gs and % < 2% shows as Match."""
+        from datetime import date
+
+        business = await BusinessFactory.create(db_session)
+        today = date.today()
+
+        # Manual: 1,000,000, Calculated: 1,015,000 (1.5% variance, 15,000 Gs absolute)
+        # This should be "Match" because both thresholds are within limits
+        await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business.id,
+            date=today,
+            total_sales=Decimal("1000000.00"),  # 1M Gs
+        )
+
+        # Calculated total: 1,015,000 (15,000 Gs difference, 1.48% variance)
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            session_date=today,
+            status="CLOSED",
+            initial_cash=Decimal("0.00"),
+            final_cash=Decimal("1015000.00"),  # Cash sales = 1,015,000
+            credit_card_total=Decimal("0.00"),
+        )
+
+        response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+
+        item = data[0]
+        assert item["variance"]["total_sales"]["difference"] == -15000.0  # 15,000 Gs
+        variance_pct = item["variance"]["total_sales"]["variance_percent"]
+        assert abs(variance_pct - (-1.48)) < 0.1  # ~-1.48%
+        # Should be "Match" because both absolute (15,000) < 20,000 Gs and % (1.48%) < 2%
+        assert item["status"] == "Match"
 
     @pytest.mark.asyncio
     async def test_compare_filter_by_business_id(

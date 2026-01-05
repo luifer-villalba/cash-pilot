@@ -468,6 +468,7 @@
             document.getElementById('to_date').value = formatLocalDate(endDate);
 
             setActivePreset(preset);
+            updateReconciliationLinks();
             applyFilters();
         });
     });
@@ -478,8 +479,51 @@
     // Initialize filter indicators
     updateFilterIndicators();
 
+    // Update reconciliation links with current filter date
+    function updateReconciliationLinks() {
+        const fromDateInput = document.getElementById('from_date');
+        const toDateInput = document.getElementById('to_date');
+        const addReconLink = document.getElementById('add-reconciliation-link');
+        const viewReconLink = document.getElementById('view-reconciliations-link');
+        
+        if (!fromDateInput || !toDateInput) return;
+        
+        const fromDate = fromDateInput.value;
+        const toDate = toDateInput.value;
+        
+        // Use to_date if available, otherwise from_date, otherwise today
+        let selectedDate = toDate || fromDate;
+        if (!selectedDate) {
+            const today = new Date();
+            selectedDate = today.toISOString().split('T')[0];
+        }
+        
+        // If both dates are the same, use that date; otherwise use to_date
+        if (fromDate && toDate && fromDate === toDate) {
+            selectedDate = fromDate;
+        } else if (toDate) {
+            selectedDate = toDate;
+        } else if (fromDate) {
+            selectedDate = fromDate;
+        }
+        
+        // Update links if they exist
+        if (addReconLink) {
+            addReconLink.href = `/reconciliation/daily?date=${selectedDate}`;
+        }
+        if (viewReconLink) {
+            viewReconLink.href = `/admin/reconciliation/compare?date=${selectedDate}`;
+        }
+    }
+    
+    // Update reconciliation links on page load and filter changes
+    updateReconciliationLinks();
+    
     // Filter form change handler
-    document.getElementById('filter-form').addEventListener('change', applyFilters);
+    document.getElementById('filter-form').addEventListener('change', function() {
+        applyFilters();
+        updateReconciliationLinks();
+    });
     
     // Toggle deleted sessions (Admin only)
     function toggleDeletedSessions() {

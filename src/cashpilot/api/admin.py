@@ -29,11 +29,13 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 logger = get_logger(__name__)
 templates = Jinja2Templates(directory="/app/templates")
 
-# Variance threshold for flagging discrepancies (2%)
-VARIANCE_THRESHOLD = Decimal("2.0")
-
-# Variance threshold for flagging discrepancies (2%)
-VARIANCE_THRESHOLD = Decimal("2.0")
+# Variance thresholds for flagging discrepancies
+# Uses dual threshold approach (OR logic):
+# - Absolute: 20,000 Gs (based on local practice in Paraguay)
+# - Percentage: 2% (industry standard)
+# Flags "Needs Review" if EITHER threshold is exceeded
+ABSOLUTE_THRESHOLD = Decimal("20000.00")  # 20,000 guaraníes
+VARIANCE_THRESHOLD = Decimal("2.0")  # 2%
 
 
 # ===== SCHEMAS =====
@@ -481,13 +483,27 @@ async def reconciliation_compare_dashboard(
         # Calculate differences and variance
         def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
             """Calculate difference and variance percentage."""
-            if manual is None or calculated == 0:
+            if manual is None:
                 return {
                     "difference": None,
                     "variance_percent": None,
                 }
             diff = manual - calculated
-            variance_pct = (diff / calculated) * 100 if calculated != 0 else None
+            # When both are 0, difference is 0.0 (not None)
+            calculated_float = float(calculated)
+            manual_float = float(manual)
+            if calculated_float == 0.0:
+                if manual_float == 0.0:
+                    return {
+                        "difference": Decimal("0.00"),
+                        "variance_percent": None,
+                    }
+                else:
+                    return {
+                        "difference": diff,
+                        "variance_percent": None,
+                    }
+            variance_pct = (diff / calculated) * 100
             return {
                 "difference": diff,
                 "variance_percent": variance_pct,
@@ -498,11 +514,22 @@ async def reconciliation_compare_dashboard(
         credit_variance = calc_variance(manual_credit_sales, system_credit_sales)
         total_variance = calc_variance(manual_total_sales, system_total_sales)
 
-        # Determine status: "Match" if variance <= 2%, "Needs Review" if > 2%
+        # Determine status using dual threshold (OR logic):
+        # "Needs Review" if absolute difference > 20,000 Gs OR variance % > 2%
         status = "Match"
+        if total_variance["difference"] is not None:
+            abs_diff = abs(total_variance["difference"])
+            exceeds_absolute = abs_diff > ABSOLUTE_THRESHOLD
+        else:
+            exceeds_absolute = False
+
         if total_variance["variance_percent"] is not None:
-            if abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD:
-                status = "Needs Review"
+            exceeds_percentage = abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD
+        else:
+            exceeds_percentage = False
+
+        if exceeds_absolute or exceeds_percentage:
+            status = "Needs Review"
 
         comparison_data.append(
             {
