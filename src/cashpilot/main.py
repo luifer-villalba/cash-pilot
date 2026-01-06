@@ -8,7 +8,6 @@ from typing import AsyncIterator
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.requests import Request
@@ -112,16 +111,14 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
     )
 
 
-def _mount_static(app: FastAPI) -> None:
-    """Mount static files directory with absolute path resolution."""
-    import os
-    from pathlib import Path
-    
+def _get_static_dir() -> Path:
+    """Get the static directory path based on environment."""
     # In production (Railway), use hardcoded path since __file__ points to site-packages
     # In development, calculate from __file__ location
-    environment = (os.getenv("ENVIRONMENT") or os.getenv("RAILWAY_ENVIRONMENT", "development")).lower()
+    env = os.getenv("ENVIRONMENT") or os.getenv("RAILWAY_ENVIRONMENT", "development")
+    environment = env.lower()
     is_production = environment in {"production", "prod"}
-    
+
     if is_production:
         # Production: hardcoded path
         static_dir = Path("/app/static")
@@ -129,34 +126,96 @@ def _mount_static(app: FastAPI) -> None:
         # Development: calculate from __file__
         base_dir = Path(__file__).resolve().parent.parent.parent
         static_dir = base_dir / "static"
-    
+
     # Allow override via environment variable
     static_env = os.getenv("STATIC_DIR")
     if static_env:
         static_dir = Path(static_env).resolve()
-    
+
+    return static_dir
+
+
+def _get_environment_info() -> tuple[str, bool]:
+    """Get environment information (name and production flag)."""
+    env = os.getenv("ENVIRONMENT") or os.getenv("RAILWAY_ENVIRONMENT", "development")
+    environment = env.lower()
+    is_production = environment in {"production", "prod"}
+    return environment, is_production
+
+
+def _mount_static(app: FastAPI) -> None:
+    """Register static files route handler.
+
+    Uses a catch-all route handler instead of mount to ensure it's checked
+    as a regular route. The actual fix for static files is in the exception
+    handler (exception_handlers.py) which returns plain text instead of JSON
+    for /static/* paths.
+    """
+    static_dir = _get_static_dir()
+
     if static_dir.exists():
         logger.info(
             "static.mounted",
             path=str(static_dir),
-            file_count=sum(1 for _ in static_dir.rglob("*"))
         )
-        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+        # Use route handler approach - register a catch-all route for /static/*
+        # This ensures it's checked as a regular route and works reliably
+        @app.get("/static/{file_path:path}")
+        async def serve_static(file_path: str, request: Request):
+            """Serve static files from the static directory."""
+            from fastapi import HTTPException, status
+            from fastapi.responses import FileResponse
+
+            file_path_obj = static_dir / file_path
+
+            # Security: prevent directory traversal and symlink attacks
+            try:
+                resolved_path = file_path_obj.resolve(strict=True)
+                # Verify path is within static directory
+                resolved_path.relative_to(static_dir.resolve())
+                # Reject symlinks for additional security
+                if resolved_path.is_symlink():
+                    logger.warning(
+                        "static.route_handler.symlink_rejected",
+                        requested_path=file_path,
+                        resolved_path=str(resolved_path),
+                    )
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+            except (ValueError, FileNotFoundError):
+                logger.warning(
+                    "static.route_handler.security_violation",
+                    requested_path=file_path,
+                    resolved_path=str(file_path_obj.resolve()) if file_path_obj.exists() else "N/A",
+                )
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+
+            if file_path_obj.exists() and file_path_obj.is_file():
+                return FileResponse(
+                    path=str(file_path_obj),
+                    headers={
+                        "Cache-Control": "public, max-age=31536000, immutable",
+                    },
+                )
+            else:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+
     else:
+        environment, is_production = _get_environment_info()
         logger.error(
             "static.missing",
             attempted_path=str(static_dir),
             cwd=os.getcwd(),
             environment=environment,
-            file_location=str(Path(__file__).resolve())
+            file_location=str(Path(__file__).resolve()),
         )
-        
+
         if is_production:
             raise RuntimeError(f"Static directory not found: {static_dir}")
         else:
             logger.warning(
                 "static.missing.non_production",
-                message="Continuing without static files in non-production"
+                message="Continuing without static files in non-production",
             )
 
 
@@ -237,15 +296,18 @@ def create_app() -> FastAPI:
         root_path=root_path if root_path else None,
     )
 
+    session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
+    environment = os.getenv("ENVIRONMENT", "development")
+
+    # Register static files route handler before exception handlers
+    # The actual fix is in exception_handlers.py which returns plain text for /static/* paths
+    _mount_static(app)
+
     from cashpilot.core.exception_handlers import register_exception_handlers
 
     register_exception_handlers(app)
 
-    session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
-    environment = os.getenv("ENVIRONMENT", "development")
-
     _setup_middleware(app, environment, session_secret_key)
-    _mount_static(app)
     _register_routers(app)
 
     logger.info("app.configured", message="FastAPI application created successfully")
