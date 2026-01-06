@@ -11,18 +11,106 @@
 /* Tailwind Forms plugin */
 @plugin "@tailwindcss/forms";
 
+/* Fallbacks for older browsers (Windows 7, IE11)
+ * These ensure basic styling works even if CSS variables or modern features fail
+ * Using @supports to only apply when needed - safe for modern browsers (Windows 11)
+ */
+@layer base {
+  /* Fallback for backdrop-blur - solid background for older browsers */
+  @supports not (backdrop-filter: blur(1px)) {
+    .backdrop-blur-sm {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: none !important;
+    }
+  }
+  
+  /* Fallback for gradient backgrounds - ensure it works even if opacity syntax fails */
+  @supports not (background: linear-gradient(to bottom right, transparent, transparent)) {
+    .bg-gradient-to-br {
+      background-color: #f9fafb; /* Base-200 fallback */
+    }
+  }
+  
+  /* Fallback for CSS variables - only apply if variables aren't supported
+   * Using a more reliable detection: test if var() function works with a fallback
+   */
+  @supports not (color: var(--test-var, red)) {
+    /* Fallback for input borders - ensure primary border on focus */
+    .input-bordered:focus,
+    .input.input-bordered:focus,
+    input.input-bordered:focus {
+      border-color: #3b82f6 !important; /* Blue-500 fallback for primary */
+      outline-color: #3b82f6 !important;
+      outline-width: 2px !important;
+      outline-offset: 2px !important;
+    }
+    
+    /* Fallback for primary button - ensure blue background (DaisyUI default) */
+    .btn-primary,
+    button.btn-primary,
+    button[type="submit"].btn-primary {
+      background-color: #3b82f6 !important; /* Blue-500 fallback */
+      border-color: #3b82f6 !important;
+      color: #ffffff !important;
+    }
+    
+    .btn-primary:hover,
+    button.btn-primary:hover,
+    button[type="submit"].btn-primary:hover {
+      background-color: #2563eb !important; /* Blue-600 fallback */
+      border-color: #2563eb !important;
+    }
+    
+    /* Fallback for primary text color */
+    .text-primary {
+      color: #3b82f6 !important;
+    }
+    
+    /* Fallback for primary borders */
+    .border-primary {
+      border-color: #3b82f6 !important;
+    }
+    
+    /* Ensure base colors work even if CSS variables fail */
+    .bg-base-100 {
+      background-color: #ffffff; /* White fallback */
+    }
+    
+    .bg-base-200 {
+      background-color: #f9fafb; /* Light gray fallback */
+    }
+    
+    .text-base-content {
+      color: #1f2937; /* Dark gray fallback */
+    }
+    
+    .border-base-200,
+    .border-base-300 {
+      border-color: #e5e7eb; /* Gray-200 fallback */
+    }
+  }
+}
+
 /* Placeholder styling - WCAG compliant (4.5:1 contrast ratio)
  * Override Tailwind Forms default dark placeholder color with lighter, accessible color
- * Using base-content at 50% opacity for good visibility while distinguishing from user input
+ * Using opacity for compatibility with older browsers (Windows 7, IE11, etc.)
+ * Fallback: Use base-content color with 50% opacity for browsers that support it
  */
 input::placeholder,
 textarea::placeholder {
-  color: color-mix(in oklab, var(--color-base-content) 50%, transparent);
-  opacity: 1; /* Required for consistent rendering across browsers */
+  color: var(--color-base-content, #1f2937); /* Fallback to dark gray */
+  opacity: 0.5; /* 50% opacity for good visibility while distinguishing from user input */
 }
 
 input::-moz-placeholder,
 textarea::-moz-placeholder {
-  color: color-mix(in oklab, var(--color-base-content) 50%, transparent);
-  opacity: 1; /* Required for consistent rendering across browsers */
+  color: var(--color-base-content, #1f2937); /* Fallback to dark gray */
+  opacity: 0.5;
+}
+
+/* IE11 and older browsers fallback */
+/* IE11 does not support opacity on :-ms-input-placeholder; use rgba() instead */
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: rgba(31, 41, 55, 0.5); /* Direct rgba color for IE11 (doesn't support CSS variables or opacity on placeholder) */
 }

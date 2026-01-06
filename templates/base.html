@@ -28,6 +28,452 @@
 
     <link rel="stylesheet" href="/static/css/main.css">
 
+    <!-- Polyfills and fallbacks for older browsers (Windows 7, IE11) -->
+    <script>
+        (function() {
+            // String.padStart polyfill for IE11 and older browsers
+            // Note: Does not use String.repeat() which is not supported in IE11
+            if (!String.prototype.padStart) {
+                String.prototype.padStart = function(targetLength, padString) {
+                    targetLength = targetLength >> 0;
+                    var str = String(this);
+                    padString = typeof padString !== 'undefined' ? String(padString) : ' ';
+                    if (str.length >= targetLength) {
+                        return str;
+                    }
+                    var padLength = targetLength - str.length;
+                    // Ensure padString is non-empty to avoid infinite loops
+                    if (padString === '') {
+                        padString = ' ';
+                    }
+                    var padding = '';
+                    while (padding.length < padLength) {
+                        padding += padString;
+                    }
+                    if (padding.length > padLength) {
+                        padding = padding.slice(0, padLength);
+                    }
+                    return padding + str;
+                };
+            }
+            // String.padEnd polyfill
+            // Note: Does not use String.repeat() which is not supported in IE11
+            if (!String.prototype.padEnd) {
+                String.prototype.padEnd = function(targetLength, padString) {
+                    targetLength = targetLength >> 0;
+                    var str = String(this);
+                    padString = typeof padString !== 'undefined' ? String(padString) : ' ';
+                    if (str.length >= targetLength) {
+                        return str;
+                    }
+                    var padLength = targetLength - str.length;
+                    // Ensure padString is non-empty to avoid infinite loops
+                    if (padString === '') {
+                        padString = ' ';
+                    }
+                    var padding = '';
+                    while (padding.length < padLength) {
+                        padding += padString;
+                    }
+                    if (padding.length > padLength) {
+                        padding = padding.slice(0, padLength);
+                    }
+                    return str + padding;
+                };
+            }
+            // Array.includes polyfill for IE11
+            if (!Array.prototype.includes) {
+                Array.prototype.includes = function(searchElement, fromIndex) {
+                    if (this === null || this === undefined) {
+                        throw new TypeError('"this" is null or not defined');
+                    }
+                    var o = Object(this);
+                    var len = o.length >>> 0;
+                    if (len === 0) {
+                        return false;
+                    }
+                    var n = fromIndex | 0;
+                    var k = n >= 0 ? n : Math.max(len + n, 0);
+                    function sameValueZero(x, y) {
+                        return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+                    }
+                    for (; k < len; k++) {
+                        if (k in o && sameValueZero(o[k], searchElement)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
+            }
+            
+            // Array.from polyfill for IE11
+            if (!Array.from) {
+                Array.from = function(arrayLike, mapFn, thisArg) {
+                    var C = this;
+                    var items = Object(arrayLike);
+                    if (arrayLike == null) {
+                        throw new TypeError('Array.from requires an array-like object - not null or undefined');
+                    }
+                    var mapFunction = mapFn !== undefined;
+                    var T;
+                    if (typeof mapFn !== 'undefined') {
+                        if (typeof mapFn !== 'function') {
+                            throw new TypeError('Array.from: when provided, the second argument must be a function');
+                        }
+                        if (arguments.length > 2) {
+                            T = thisArg;
+                        }
+                    }
+                    var len = parseInt(items.length, 10) || 0;
+                    var A = typeof C === 'function' ? Object(new C(len)) : new Array(len);
+                    var k = 0;
+                    var kValue;
+                    while (k < len) {
+                        kValue = items[k];
+                        if (mapFunction) {
+                            A[k] = typeof T === 'undefined' ? mapFn(kValue, k) : mapFn.call(T, kValue, k);
+                        } else {
+                            A[k] = kValue;
+                        }
+                        k += 1;
+                    }
+                    A.length = len;
+                    return A;
+                };
+            }
+            
+            // Set polyfill for IE11 (basic implementation)
+            if (typeof Set === 'undefined') {
+                window.Set = function(iterable) {
+                    this._values = [];
+                    this.size = 0;
+                    if (iterable) {
+                        for (var i = 0; i < iterable.length; i++) {
+                            this.add(iterable[i]);
+                        }
+                    }
+                };
+                window.Set.prototype.add = function(value) {
+                    if (this._values.indexOf(value) === -1) {
+                        this._values.push(value);
+                        this.size = this._values.length;
+                    }
+                    return this;
+                };
+                window.Set.prototype.has = function(value) {
+                    return this._values.indexOf(value) !== -1;
+                };
+                window.Set.prototype.delete = function(value) {
+                    var index = this._values.indexOf(value);
+                    if (index !== -1) {
+                        this._values.splice(index, 1);
+                        this.size = this._values.length;
+                        return true;
+                    }
+                    return false;
+                };
+                window.Set.prototype.clear = function() {
+                    this._values = [];
+                    this.size = 0;
+                };
+                window.Set.prototype.forEach = function(callback, thisArg) {
+                    for (var i = 0; i < this._values.length; i++) {
+                        callback.call(thisArg, this._values[i], this._values[i], this);
+                    }
+                };
+            }
+            
+            // URLSearchParams polyfill for IE11
+            if (typeof URLSearchParams === 'undefined') {
+                window.URLSearchParams = function(search) {
+                    this._params = {};
+                    if (search) {
+                        if (typeof search === 'string') {
+                            if (search.charAt(0) === '?') {
+                                search = search.slice(1);
+                            }
+                            var pairs = search.split('&');
+                            for (var i = 0; i < pairs.length; i++) {
+                                var pair = pairs[i].split('=');
+                                var key = decodeURIComponent(pair[0] || '');
+                                var value = decodeURIComponent(pair[1] || '');
+                                if (this._params[key]) {
+                                    if (!Array.isArray(this._params[key])) {
+                                        this._params[key] = [this._params[key]];
+                                    }
+                                    this._params[key].push(value);
+                                } else {
+                                    this._params[key] = value;
+                                }
+                            }
+                        } else if (search.forEach) {
+                            var self = this;
+                            search.forEach(function(value, key) {
+                                self.append(key, value);
+                            });
+                        }
+                    }
+                };
+                window.URLSearchParams.prototype.append = function(name, value) {
+                    name = String(name);
+                    value = String(value);
+                    if (this._params[name]) {
+                        if (!Array.isArray(this._params[name])) {
+                            this._params[name] = [this._params[name]];
+                        }
+                        this._params[name].push(value);
+                    } else {
+                        this._params[name] = value;
+                    }
+                };
+                window.URLSearchParams.prototype.get = function(name) {
+                    var value = this._params[name];
+                    if (Array.isArray(value)) {
+                        return value[0];
+                    }
+                    return value !== undefined ? value : null;
+                };
+                window.URLSearchParams.prototype.getAll = function(name) {
+                    var value = this._params[name];
+                    if (Array.isArray(value)) {
+                        return value.slice();
+                    }
+                    return value !== undefined ? [value] : [];
+                };
+                window.URLSearchParams.prototype.has = function(name) {
+                    return this._params[name] !== undefined;
+                };
+                window.URLSearchParams.prototype.set = function(name, value) {
+                    this._params[name] = String(value);
+                };
+                window.URLSearchParams.prototype.delete = function(name) {
+                    delete this._params[name];
+                };
+                window.URLSearchParams.prototype.toString = function() {
+                    var pairs = [];
+                    for (var key in this._params) {
+                        if (this._params.hasOwnProperty(key)) {
+                            var values = Array.isArray(this._params[key]) ? this._params[key] : [this._params[key]];
+                            for (var i = 0; i < values.length; i++) {
+                                pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(values[i]));
+                            }
+                        }
+                    }
+                    return pairs.join('&');
+                };
+            }
+            
+            // Promise polyfill for IE11 (basic implementation)
+            if (typeof Promise === 'undefined') {
+                window.Promise = function(executor) {
+                    var self = this;
+                    self.state = 'pending';
+                    self.value = undefined;
+                    self.handlers = [];
+                    
+                    function resolve(result) {
+                        if (self.state === 'pending') {
+                            self.state = 'fulfilled';
+                            self.value = result;
+                            self.handlers.forEach(handle);
+                            self.handlers = null;
+                        }
+                    }
+                    
+                    function reject(error) {
+                        if (self.state === 'pending') {
+                            self.state = 'rejected';
+                            self.value = error;
+                            self.handlers.forEach(handle);
+                            self.handlers = null;
+                        }
+                    }
+                    
+                    function handle(handler) {
+                        if (self.state === 'pending') {
+                            self.handlers.push(handler);
+                        } else {
+                            if (self.state === 'fulfilled' && typeof handler.onFulfilled === 'function') {
+                                handler.onFulfilled(self.value);
+                            }
+                            if (self.state === 'rejected' && typeof handler.onRejected === 'function') {
+                                handler.onRejected(self.value);
+                            }
+                        }
+                    }
+                    
+                    self.then = function(onFulfilled, onRejected) {
+                        return new Promise(function(resolve, reject) {
+                            handle({
+                                onFulfilled: function(result) {
+                                    try {
+                                        resolve(onFulfilled ? onFulfilled(result) : result);
+                                    } catch (ex) {
+                                        reject(ex);
+                                    }
+                                },
+                                onRejected: function(error) {
+                                    try {
+                                        resolve(onRejected ? onRejected(error) : reject(error));
+                                    } catch (ex) {
+                                        reject(ex);
+                                    }
+                                }
+                            });
+                        });
+                    };
+                    
+                    self.catch = function(onRejected) {
+                        return self.then(null, onRejected);
+                    };
+                    
+                    try {
+                        executor(resolve, reject);
+                    } catch (ex) {
+                        reject(ex);
+                    }
+                };
+                
+                window.Promise.resolve = function(value) {
+                    return new Promise(function(resolve) {
+                        resolve(value);
+                    });
+                };
+                
+                window.Promise.reject = function(reason) {
+                    return new Promise(function(resolve, reject) {
+                        reject(reason);
+                    });
+                };
+            }
+            
+            // fetch polyfill for IE11 (basic implementation using XMLHttpRequest)
+            if (typeof fetch === 'undefined') {
+                window.fetch = function(url, options) {
+                    options = options || {};
+                    return new Promise(function(resolve, reject) {
+                        var xhr = new XMLHttpRequest();
+                        var method = options.method || 'GET';
+                        var headers = options.headers || {};
+                        var body = options.body;
+                        
+                        xhr.open(method, url, true);
+                        
+                        for (var headerName in headers) {
+                            if (headers.hasOwnProperty(headerName)) {
+                                xhr.setRequestHeader(headerName, headers[headerName]);
+                            }
+                        }
+                        
+                        xhr.onload = function() {
+                            var response = {
+                                ok: xhr.status >= 200 && xhr.status < 300,
+                                status: xhr.status,
+                                statusText: xhr.statusText,
+                                url: xhr.responseURL,
+                                headers: {},
+                                text: function() {
+                                    return Promise.resolve(xhr.responseText);
+                                },
+                                json: function() {
+                                    try {
+                                        return Promise.resolve(JSON.parse(xhr.responseText));
+                                    } catch (e) {
+                                        return Promise.reject(e);
+                                    }
+                                }
+                            };
+                            
+                            var headerStr = xhr.getAllResponseHeaders();
+                            if (headerStr) {
+                                var headerPairs = headerStr.split('\r\n');
+                                for (var i = 0; i < headerPairs.length; i++) {
+                                    var headerPair = headerPairs[i];
+                                    if (headerPair) {
+                                        var index = headerPair.indexOf(': ');
+                                        if (index > 0) {
+                                            var key = headerPair.substring(0, index);
+                                            var value = headerPair.substring(index + 2);
+                                            response.headers[key.toLowerCase()] = value;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // Fetch resolves for all HTTP status codes; consumers should check response.ok
+                            resolve(response);
+                        };
+                        
+                        xhr.onerror = function() {
+                            reject(new Error('Network request failed'));
+                        };
+                        
+                        xhr.send(body);
+                    });
+                };
+            }
+            
+            // Intl.NumberFormat polyfill for IE11 (basic implementation)
+            if (typeof Intl === 'undefined' || !Intl.NumberFormat) {
+                if (typeof Intl === 'undefined') {
+                    window.Intl = {};
+                }
+                window.Intl.NumberFormat = function(locale, options) {
+                    this.locale = locale || 'en-US';
+                    this.options = options || {};
+                };
+                window.Intl.NumberFormat.prototype.format = function(number) {
+                    var num = Number(number);
+                    if (isNaN(num)) {
+                        return 'NaN';
+                    }
+                    var minimumFractionDigits = this.options.minimumFractionDigits || 0;
+                    var maximumFractionDigits = this.options.maximumFractionDigits !== undefined ? this.options.maximumFractionDigits : (minimumFractionDigits || 3);
+                    
+                    var parts = num.toString().split('.');
+                    var integerPart = parts[0];
+                    var decimalPart = parts[1] || '';
+                    
+                    if (decimalPart.length < minimumFractionDigits) {
+                        var zerosToAdd = minimumFractionDigits - decimalPart.length;
+                        while (zerosToAdd > 0) {
+                            decimalPart += '0';
+                            zerosToAdd--;
+                        }
+                    } else if (decimalPart.length > maximumFractionDigits) {
+                        decimalPart = decimalPart.substring(0, maximumFractionDigits);
+                    }
+                    
+                    if (this.locale.indexOf('es') === 0) {
+                        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        return decimalPart ? integerPart + ',' + decimalPart : integerPart;
+                    } else {
+                        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                        return decimalPart ? integerPart + '.' + decimalPart : integerPart;
+                    }
+                };
+            }
+            
+            // Detect if CSS variables are supported and inject fallback styles if needed
+            // Test with a real variable that has a fallback to ensure var() function works
+            var supportsCSSVars = window.CSS && CSS.supports && CSS.supports('color', 'var(--test-var, red)');
+            if (!supportsCSSVars) {
+                // Add inline styles for critical elements if CSS variables don't work
+                // Using blue (#3b82f6) to match DaisyUI default primary color
+                var style = document.createElement('style');
+                style.textContent = [
+                    '.input-bordered:focus { border-color: #3b82f6 !important; outline-color: #3b82f6 !important; }',
+                    '.btn-primary { background-color: #3b82f6 !important; border-color: #3b82f6 !important; color: #ffffff !important; }',
+                    '.btn-primary:hover { background-color: #2563eb !important; border-color: #2563eb !important; }',
+                    '.text-primary { color: #3b82f6 !important; }',
+                    '.border-primary { border-color: #3b82f6 !important; }',
+                    '.backdrop-blur-sm { background-color: rgba(255, 255, 255, 0.95) !important; }'
+                ].join('\n');
+                document.head.appendChild(style);
+            }
+        })();
+    </script>
+
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
@@ -36,10 +482,10 @@
     <!-- Locale Detection Script -->
     <script>
         function detectLocale() {
-            const params = new URLSearchParams(window.location.search);
-            const queryLang = params.get('lang');
+            var params = new URLSearchParams(window.location.search);
+            var queryLang = params.get('lang');
             if (queryLang && ['es', 'en'].includes(queryLang)) return queryLang;
-            const browserLang = navigator.language.split('-')[0].toLowerCase();
+            var browserLang = navigator.language.split('-')[0].toLowerCase();
             return browserLang === 'es' ? 'es' : 'en';
         }
         window.LOCALE = detectLocale();
@@ -131,7 +577,7 @@
             <div class="dropdown dropdown-end">
                 <button tabindex="0" class="btn btn-ghost btn-circle btn-sm transition-all duration-200 hover:scale-110 active:scale-95" aria-label="{{ _('User menu') }}">
                     <div class="avatar">
-                        <div class="w-8 rounded-full text-white font-bold text-xs shadow-lg bg-gradient-to-br from-primary to-primary-focus flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-full text-white font-bold text-sm shadow-lg flex items-center justify-center bg-primary" style="min-width: 2.5rem; min-height: 2.5rem; line-height: 1;">
                             {{ current_user.email[0].upper() }}
                         </div>
                     </div>
