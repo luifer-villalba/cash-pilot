@@ -44,7 +44,7 @@ async def reconciliation_badge(
     - Single date: Shows badge if reconciliation exists for that date
     - Date range: Shows badge with count of dates that have reconciliation
     """
-    from datetime import datetime, timedelta
+    from datetime import timedelta
 
     locale = get_locale(request)
     _ = get_translation_function(locale)
@@ -57,12 +57,14 @@ async def reconciliation_badge(
         try:
             start_date = datetime.fromisoformat(from_date).date()
         except (ValueError, TypeError):
+            # Invalid date format in query param, fall back to today_local()
             pass
 
     if to_date:
         try:
             end_date = datetime.fromisoformat(to_date).date()
         except (ValueError, TypeError):
+            # Invalid date format in query param, fall back to today_local()
             pass
 
     # Determine if it's a range or single date
@@ -278,6 +280,22 @@ async def daily_reconciliation_post(
                 refunds = parse_currency(refunds_str) if refunds_str else None
                 total_sales = parse_currency(total_sales_str) if total_sales_str else None
 
+                # When is_closed=false, require at least one sales field to be provided
+                # Note: This validation fails the entire batch operation if any business
+                # fails validation. This all-or-nothing approach ensures data consistency
+                # across all businesses for a given date.
+                if (
+                    cash_sales is None
+                    and credit_sales is None
+                    and card_sales is None
+                    and refunds is None
+                    and total_sales is None
+                ):
+                    raise ValidationError(
+                        f"Sales data is required when business is not closed "
+                        f"(business: {business.name})"
+                    )
+
             if existing:
                 # Update existing reconciliation
                 old_values = {
@@ -288,6 +306,19 @@ async def daily_reconciliation_post(
                     "total_sales": str(existing.total_sales) if existing.total_sales else None,
                     "is_closed": existing.is_closed,
                 }
+
+                # When is_closed=True, preserve existing sales data if not provided
+                # This prevents data loss when marking a business as closed
+                if is_closed and cash_sales is None:
+                    cash_sales = existing.cash_sales
+                if is_closed and credit_sales is None:
+                    credit_sales = existing.credit_sales
+                if is_closed and card_sales is None:
+                    card_sales = existing.card_sales
+                if is_closed and refunds is None:
+                    refunds = existing.refunds
+                if is_closed and total_sales is None:
+                    total_sales = existing.total_sales
 
                 existing.cash_sales = cash_sales
                 existing.credit_sales = credit_sales
