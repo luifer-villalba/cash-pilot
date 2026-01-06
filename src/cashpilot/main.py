@@ -111,19 +111,8 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
     )
 
 
-# Global variable to store static directory path
-_static_dir: Path | None = None
-
-
 def _get_static_dir() -> Path:
-    """Get the static directory path, calculating it once."""
-    global _static_dir
-    if _static_dir is not None:
-        return _static_dir
-
-    import os
-    from pathlib import Path
-
+    """Get the static directory path based on environment."""
     # In production (Railway), use hardcoded path since __file__ points to site-packages
     # In development, calculate from __file__ location
     env = os.getenv("ENVIRONMENT") or os.getenv("RAILWAY_ENVIRONMENT", "development")
@@ -143,27 +132,31 @@ def _get_static_dir() -> Path:
     if static_env:
         static_dir = Path(static_env).resolve()
 
-    _static_dir = static_dir
     return static_dir
 
 
+def _get_environment_info() -> tuple[str, bool]:
+    """Get environment information (name and production flag)."""
+    env = os.getenv("ENVIRONMENT") or os.getenv("RAILWAY_ENVIRONMENT", "development")
+    environment = env.lower()
+    is_production = environment in {"production", "prod"}
+    return environment, is_production
+
+
 def _mount_static(app: FastAPI) -> None:
-    """Mount static files directory using route handler approach.
+    """Register static files route handler.
 
     Uses a catch-all route handler instead of mount to ensure it's checked
-    as a regular route and works reliably with FastAPI's routing system.
+    as a regular route. The actual fix for static files is in the exception
+    handler (exception_handlers.py) which returns plain text instead of JSON
+    for /static/* paths.
     """
-    import os
-    from pathlib import Path
-
     static_dir = _get_static_dir()
 
     if static_dir.exists():
-        file_count = sum(1 for _ in static_dir.rglob("*"))
         logger.info(
             "static.mounted",
             path=str(static_dir),
-            file_count=file_count,
         )
 
         # Use route handler approach - register a catch-all route for /static/*
@@ -171,20 +164,29 @@ def _mount_static(app: FastAPI) -> None:
         @app.get("/static/{file_path:path}")
         async def serve_static(file_path: str, request: Request):
             """Serve static files from the static directory."""
+            from fastapi import HTTPException, status
             from fastapi.responses import FileResponse
 
             file_path_obj = static_dir / file_path
 
-            # Security: prevent directory traversal
+            # Security: prevent directory traversal and symlink attacks
             try:
-                file_path_obj.resolve().relative_to(static_dir.resolve())
-            except ValueError:
-                from fastapi import HTTPException, status
-
+                resolved_path = file_path_obj.resolve(strict=True)
+                # Verify path is within static directory
+                resolved_path.relative_to(static_dir.resolve())
+                # Reject symlinks for additional security
+                if resolved_path.is_symlink():
+                    logger.warning(
+                        "static.route_handler.symlink_rejected",
+                        requested_path=file_path,
+                        resolved_path=str(resolved_path),
+                    )
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
+            except (ValueError, FileNotFoundError):
                 logger.warning(
                     "static.route_handler.security_violation",
                     requested_path=file_path,
-                    resolved_path=str(file_path_obj.resolve()),
+                    resolved_path=str(file_path_obj.resolve()) if file_path_obj.exists() else "N/A",
                 )
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
 
@@ -196,14 +198,10 @@ def _mount_static(app: FastAPI) -> None:
                     },
                 )
             else:
-                from fastapi import HTTPException, status
-
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
 
     else:
-        env = os.getenv("ENVIRONMENT") or os.getenv("RAILWAY_ENVIRONMENT", "development")
-        environment = env.lower()
-        is_production = environment in {"production", "prod"}
+        environment, is_production = _get_environment_info()
         logger.error(
             "static.missing",
             attempted_path=str(static_dir),
@@ -301,8 +299,8 @@ def create_app() -> FastAPI:
     session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
     environment = os.getenv("ENVIRONMENT", "development")
 
-    # CRITICAL: Mount static files BEFORE exception handlers and routers
-    # This ensures the static file route handler is checked first during route matching
+    # Register static files route handler before exception handlers
+    # The actual fix is in exception_handlers.py which returns plain text for /static/* paths
     _mount_static(app)
 
     from cashpilot.core.exception_handlers import register_exception_handlers

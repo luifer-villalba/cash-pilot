@@ -37,10 +37,10 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     if request.url.path.startswith("/static"):
         # Return plain text instead of JSON for static file requests
         # Use exc.status_code to preserve the original error code (404, 500, etc.)
+        # PlainTextResponse already sets Content-Type header, no need to specify it
         return PlainTextResponse(
             content=str(exc.detail) if exc.detail else "Not Found",
             status_code=exc.status_code,
-            headers={"Content-Type": "text/plain; charset=utf-8"},
         )
 
     # Handle 303 redirects (session expiration for regular requests)
