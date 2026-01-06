@@ -4,6 +4,10 @@ Business cash register reconciliation system built for multi-location operations
 
 **Live:** https://cash-pilot-production.up.railway.app
 
+[![Documentation](https://img.shields.io/badge/docs-available-blue)](docs/README.md)
+[![Security](https://img.shields.io/badge/security-policy-green)](SECURITY.md)
+[![Tests](https://img.shields.io/badge/tests-167+-success)](tests/)
+
 ---
 
 ## What It Does
@@ -21,11 +25,13 @@ Business cash register reconciliation system built for multi-location operations
 
 ## Built With
 
-**Backend:** FastAPI • SQLAlchemy 2.0 async • PostgreSQL • asyncpg  
-**Frontend:** Jinja2 templates • Tailwind CSS • DaisyUI • HTMX pagination  
-**DevOps:** Docker • Alembic migrations • Railway deployment • GitHub auto-deploy  
-**Testing:** pytest • 167+ async tests • RBAC coverage  
-**i18n:** Spanish/English (Babel)
+**Backend:** FastAPI 0.128.0+ • SQLAlchemy 2.0.35 • PostgreSQL • asyncpg 0.29.0  
+**Frontend:** Jinja2 3.1.0+ • Tailwind CSS 4.1.18 • DaisyUI 5.5.14 • HTMX 1.9.10  
+**DevOps:** Docker • Alembic 1.13.3 • Railway deployment • GitHub auto-deploy  
+**Testing:** pytest 8.3.2 • 167+ async tests • RBAC coverage  
+**i18n:** Spanish/English (Babel 2.14.0)
+
+**Compatibility:** Windows 7+ (IE11, Chrome 50+, Firefox 45+) - See [Windows 7 Compatibility Guide](docs/w7-compatibility.md)
 
 ---
 
@@ -173,6 +179,21 @@ Makefile                    # make test, make seed, etc.
 
 ---
 
+## Documentation
+
+📚 **Full documentation available in [`/docs`](docs/README.md)**
+
+**Quick Links:**
+- [Documentation Index](docs/README.md) - Complete guide to all documentation
+- [Design System](docs/design_readme.md) - UI/UX patterns and component guidelines
+- [Windows 7 Compatibility](docs/w7-compatibility.md) - Legacy browser support guide
+- [Backup & Restore](docs/backup_restore.md) - Database backup procedures
+- [Security Policy](SECURITY.md) - Security practices and vulnerability tracking
+
+**For New Developers:** Start with the [Documentation Index](docs/README.md) for recommended reading paths.
+
+---
+
 ## Deployment
 
 **Production:** Railway (auto-deploy from `main` branch)
@@ -182,27 +203,38 @@ git push origin main
 # Check logs at https://railway.app
 ```
 
-**Environment:**
+**Environment Variables:**
 ```env
+# Required
 DATABASE_URL=postgresql://...
 SESSION_SECRET_KEY=...
 ENVIRONMENT=production
+
+# Optional
+RAILWAY_STATIC_URL=...  # For static file serving
+ROOT_PATH=...           # For reverse proxy setups
+SENTRY_DSN=...          # For error tracking
 ```
 
 **Monitoring:**
 - Railway metrics (CPU, memory, response times)
 - JSON structured logs with request IDs
 - Alembic migrations tracked in git
+- Sentry error tracking (if configured)
+
+**See Also:** [Backup & Restore Guide](docs/backup_restore.md) for production database management
 
 ---
 
-## Database Backups (Optional)
+## Database Backups
 
 > **Note:** Backup scripts are configured for Railway deployments. Adapt for your hosting provider.
 
 Railway's Hobby plan doesn't include automated backups. The `scripts/` directory includes optional backup/restore tooling for production safety.
 
-### Quick Start (Railway)
+**📖 Complete Guide:** See [Backup & Restore Guide](docs/backup_restore.md) for detailed instructions.
+
+**Quick Start:**
 ```bash
 # Setup (one-time)
 cp .env.backup.example .env.backup
@@ -212,20 +244,27 @@ cp .env.backup.example .env.backup
 ./scripts/backup_production.sh
 
 # Test restore locally
-./scripts/restore_to_local.sh backups/cashpilot_20251220_160224.sql.gz
-
-# Restore to Railway PR deployment (for testing)
-./scripts/restore_to_railway.sh "DATABASE_URL" backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz
+./scripts/restore_to_local.sh backups/cashpilot_YYYYMMDD_HHMMSS.sql.gz
 ```
-
-**See [docs/backup_restore.md](docs/backup_restore.md) for complete setup guide.**
 
 **Critical moments to backup:**
 - Before schema migrations (`alembic upgrade`)
 - Before deploying to production
 - Weekly (recommended)
 
-**Other hosting providers:** Adapt scripts in `scripts/` directory or use provider's native backup features (Heroku Postgres, AWS RDS, etc).
+---
+
+## Security
+
+⚠️ **Important:** Review our [Security Policy](SECURITY.md) before contributing.
+
+**Security Practices:**
+- Automated security audits via `pip-audit` (pre-commit + CI)
+- Monthly manual audits (first Monday of each month)
+- All CVEs tracked and documented in [SECURITY.md](SECURITY.md)
+- Vulnerability reporting process documented
+
+**Current Status:** No active critical or high-severity CVEs. See [SECURITY.md](SECURITY.md) for details.
 
 ---
 
@@ -242,7 +281,13 @@ git push origin feature/your-feature
 # Create PR to main
 ```
 
-Use Linear for ticket tracking (MIZ-XXX prefix). Reference in commit messages.
+**Guidelines:**
+- Use Linear for ticket tracking (MIZ-XXX prefix). Reference in commit messages.
+- Follow [Design System Guide](docs/design_readme.md) for UI changes
+- Ensure [Windows 7 compatibility](docs/w7-compatibility.md) for frontend changes
+- Review [Security Policy](SECURITY.md) before submitting PRs
+
+**See Also:** [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines
 
 ---
 
