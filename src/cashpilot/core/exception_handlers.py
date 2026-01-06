@@ -30,11 +30,31 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handle HTTP exceptions with redirect support for session expiration."""
 
+    # DEBUG: Log all exceptions to trace static file requests
+    logger.info(
+        "exception_handler.called",
+        path=request.url.path,
+        status_code=exc.status_code,
+        detail=exc.detail,
+        method=request.method,
+        is_static=request.url.path.startswith("/static"),
+    )
+
     # CRITICAL: Skip JSON conversion for static file paths
     # StaticFiles should handle its own 404s with proper responses
     # If we get here for a static file path, it means the mount didn't match
     # Return a proper 404 response (not JSON) to allow browsers to handle it correctly
     if request.url.path.startswith("/static"):
+        logger.warning(
+            "exception_handler.static_path_404",
+            path=request.url.path,
+            status_code=exc.status_code,
+            detail=exc.detail,
+            message=(
+                "Static file request reached exception handler - "
+                "route handler may not have matched"
+            ),
+        )
         # Return plain text 404 instead of JSON for static file requests
         # This allows the browser to handle the 404 properly
         return PlainTextResponse(
