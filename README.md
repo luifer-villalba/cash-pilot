@@ -118,7 +118,7 @@ This isn't a toy app. It's solving a real business problem for real businesses. 
 ## Technical Decisions (And Why)
 
 **Session-Based Auth (Not JWT)**  
-Users stay logged in across browser reloads. Simpler for business staff who aren't tech-savvy. Timeout enforced: 30min for cashiers, 2hrs for admins.
+Users stay logged in across browser reloads. Simpler for business staff who aren't tech-savvy. Timeout enforced: 10 hours for cashiers, 2hrs for admins.
 
 **Server-Rendered Templates (Not SPA)**  
 HTML from the backend keeps things lean. No JavaScript framework bloat. HTMX for pagination. Jinja2 for i18n. Works fine.
