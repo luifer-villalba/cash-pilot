@@ -44,7 +44,7 @@ async def reconciliation_badge(
     - Single date: Shows badge if reconciliation exists for that date
     - Date range: Shows badge with count of dates that have reconciliation
     """
-    from datetime import datetime, timedelta
+    from datetime import timedelta
 
     locale = get_locale(request)
     _ = get_translation_function(locale)
@@ -57,12 +57,14 @@ async def reconciliation_badge(
         try:
             start_date = datetime.fromisoformat(from_date).date()
         except (ValueError, TypeError):
+            # Invalid date format in query param, fall back to today_local()
             pass
 
     if to_date:
         try:
             end_date = datetime.fromisoformat(to_date).date()
         except (ValueError, TypeError):
+            # Invalid date format in query param, fall back to today_local()
             pass
 
     # Determine if it's a range or single date
@@ -279,6 +281,9 @@ async def daily_reconciliation_post(
                 total_sales = parse_currency(total_sales_str) if total_sales_str else None
 
                 # When is_closed=false, require at least one sales field to be provided
+                # Note: This validation fails the entire batch operation if any business
+                # fails validation. This all-or-nothing approach ensures data consistency
+                # across all businesses for a given date.
                 if (
                     cash_sales is None
                     and credit_sales is None
