@@ -89,13 +89,26 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
 
     app.add_middleware(SentryContextMiddleware)
 
-    # 3. AdminRedirectMiddleware (Runs THIRD)
+    # 3. Starlette's built-in ProxyHeadersMiddleware (Runs FOURTH)
+    # Handles X-Forwarded-* headers from Cloudflare/Railway proxy
+    # This is the recommended approach per FastAPI/Starlette documentation
+    from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
+
+    # 4. StaticAssetHeadersMiddleware (Runs FIFTH)
+    # Adds proper headers for static assets when behind proxy
+    from cashpilot.middleware.proxy import StaticAssetHeadersMiddleware
+
+    app.add_middleware(StaticAssetHeadersMiddleware)
+
+    # 5. AdminRedirectMiddleware (Runs THIRD)
     app.add_middleware(AdminRedirectMiddleware)
 
-    # 4. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
+    # 6. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
     app.add_middleware(AuthRedirectMiddleware)
 
-    # 5. SessionMiddleware (Runs FIRST)
+    # 7. SessionMiddleware (Runs FIRST)
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
@@ -180,11 +193,15 @@ def _register_routers(app: FastAPI) -> None:
 
 def create_app() -> FastAPI:
     """Application factory for CashPilot."""
+    # Get root_path from environment (Railway/Cloudflare may set this)
+    root_path = os.getenv("RAILWAY_STATIC_URL", "").rstrip("/") or os.getenv("ROOT_PATH", "")
+
     app = FastAPI(
         title="CashPilot API",
         description="Business cash register reconciliation system",
         version="0.1.0",
         lifespan=lifespan,
+        root_path=root_path if root_path else None,
     )
 
     from cashpilot.core.exception_handlers import register_exception_handlers
