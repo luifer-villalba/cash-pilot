@@ -89,26 +89,20 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
 
     app.add_middleware(SentryContextMiddleware)
 
-    # 3. Starlette's built-in ProxyHeadersMiddleware (Runs FOURTH)
-    # Handles X-Forwarded-* headers from Cloudflare/Railway proxy
-    # This is the recommended approach per FastAPI/Starlette documentation
-    from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
-
-    app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
-
-    # 4. StaticAssetHeadersMiddleware (Runs FIFTH)
+    # 3. StaticAssetHeadersMiddleware (Runs FOURTH)
     # Adds proper headers for static assets when behind proxy
+    # Note: X-Forwarded-* headers are handled by Uvicorn's --proxy-headers flag
     from cashpilot.middleware.proxy import StaticAssetHeadersMiddleware
 
     app.add_middleware(StaticAssetHeadersMiddleware)
 
-    # 5. AdminRedirectMiddleware (Runs THIRD)
+    # 4. AdminRedirectMiddleware (Runs THIRD)
     app.add_middleware(AdminRedirectMiddleware)
 
-    # 6. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
+    # 5. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
     app.add_middleware(AuthRedirectMiddleware)
 
-    # 7. SessionMiddleware (Runs FIRST)
+    # 6. SessionMiddleware (Runs FIRST)
     app.add_middleware(
         SessionMiddleware,
         secret_key=session_secret_key,
