@@ -118,24 +118,22 @@ def _mount_static(app: FastAPI) -> None:
     # __file__ = /app/src/cashpilot/main.py → need /app/static
     base_dir = Path(__file__).resolve().parent.parent.parent  # Go up 3 levels to /app
     static_dir = base_dir / "static"
-    
+
     # Allow override via environment variable
     static_env = os.getenv("STATIC_DIR")
     if static_env:
         static_dir = Path(static_env).resolve()
-    
+
     if static_dir.exists():
         logger.info(
-            "static.mounted",
-            path=str(static_dir),
-            file_count=sum(1 for _ in static_dir.rglob("*"))
+            "static.mounted", path=str(static_dir), file_count=sum(1 for _ in static_dir.rglob("*"))
         )
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     else:
         # ✅ Fix #3: Only fail in production, warn in dev/tests
         environment = os.getenv("ENVIRONMENT", "development").lower()
         is_production = environment in {"production", "prod"}
-        
+
         if is_production:
             logger.error(
                 "static.missing",
