@@ -216,7 +216,7 @@ if (typeof fetch === 'undefined') {
 if (typeof Intl === 'undefined' || !Intl.NumberFormat) {
     window.Intl.NumberFormat = function(locale, options) {
         // Basic implementation with locale-aware number formatting
-        // Supports Spanish (es) locale for Guaraníes formatting
+        // Supports Spanish (es) locale for guaraníes formatting
     };
 }
 ```

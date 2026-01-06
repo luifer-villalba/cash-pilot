@@ -10,20 +10,20 @@ Welcome to the CashPilot documentation. This index helps you find the right docu
 
 ### For New Developers
 1. Start with [Main README](../README.md) - Project overview and quick start
-2. Read [Architecture Overview](#architecture) - Understand the system design
-3. Review [Local Setup Guide](#development) - Get running locally
-4. Explore [Code Map](#architecture) - Find where functionality lives
+2. Read [Architecture Decisions](architecture-decisions.md) - Understand the system design
+3. Review Local Setup Guide (coming soon) - Get running locally
+4. Explore Code Map (coming soon) - Find where functionality lives
 
 ### For Maintainers
-1. [Deployment Guide](#deployment) - Railway-specific deployment steps
-2. [Troubleshooting](#development) - Common issues and solutions
-3. [Windows 7 Compatibility](#development) - Legacy browser support
+1. Deployment Guide (coming soon) - Railway-specific deployment steps
+2. Troubleshooting Guide (coming soon) - Common issues and solutions
+3. [Windows 7 Compatibility](w7-compatibility.md) - Legacy browser support
 4. [Security Policy](../SECURITY.md) - Security practices and vulnerability management
 
 ### For Contributors
 1. [Contributing Guide](../CONTRIBUTING.md) - Contribution guidelines
 2. [Design System](design_readme.md) - UI/UX patterns and component guidelines
-3. [API Reference](#architecture) - Endpoint documentation
+3. API Reference (coming soon) - Endpoint documentation
 
 ---
 
@@ -189,7 +189,7 @@ Welcome to the CashPilot documentation. This index helps you find the right docu
 2. [Design System Guide](design_readme.md) - 10 min (skim patterns)
 3. [Windows 7 Compatibility](w7-compatibility.md) - 5 min (awareness)
 4. [Backup & Restore](backup_restore.md) - 5 min (awareness)
-5. Explore codebase with [Code Map](#) - 5 min (when available)
+5. Explore codebase with Code Map (coming soon) - 5 min
 
 ### Path 2: Frontend Developer
 1. [Design System Guide](design_readme.md) - Complete read
@@ -199,14 +199,14 @@ Welcome to the CashPilot documentation. This index helps you find the right docu
 
 ### Path 3: Backend Developer
 1. [Main README](../README.md) - Architecture section
-2. [Architecture Decisions](#) - When available
-3. [Data Model](#) - When available
+2. [Architecture Decisions](architecture-decisions.md)
+3. Data Model (coming soon)
 4. Review `src/cashpilot/` directory structure
 5. Review `tests/` for API patterns
 
 ### Path 4: DevOps/Maintainer
 1. [Backup & Restore Guide](backup_restore.md) - Complete read
-2. [Railway Deployment Guide](#) - When available
+2. Railway Deployment Guide (coming soon)
 3. [Environment Configuration](#) - When available
 4. [Security Policy](../SECURITY.md) - Complete read
 
@@ -231,13 +231,13 @@ Welcome to the CashPilot documentation. This index helps you find the right docu
 | Backup the database? | [Backup & Restore Guide](backup_restore.md) |
 | Report a security issue? | [Security Policy](../SECURITY.md) |
 | Understand the data model? | [Data Model](#) (coming soon) |
-| Find where X feature is implemented? | [Code Map](#) (coming soon) |
+| Find where X feature is implemented? | Code Map (coming soon) |
 
 ### "What is...?"
 
 | Concept | Document |
 |---------|----------|
-| The architecture? | [Main README](../README.md) + [Architecture Decisions](#) |
+| The architecture? | [Main README](../README.md) + [Architecture Decisions](architecture-decisions.md) |
 | The design system? | [Design System Guide](design_readme.md) |
 | The database schema? | [Data Model](#) (coming soon) |
 | The deployment process? | [Railway Deployment Guide](#) (coming soon) |
