@@ -11,6 +11,50 @@
 /* Tailwind Forms plugin */
 @plugin "@tailwindcss/forms";
 
+/* Fallbacks for older browsers (Windows 7, IE11)
+ * These ensure basic styling works even if CSS variables or modern features fail
+ * Using !important to override any conflicting styles from Tailwind/DaisyUI
+ */
+@layer base {
+  /* Fallback for input borders - ensure purple border on focus */
+  .input-bordered:focus,
+  .input.input-bordered:focus {
+    border-color: #9333ea !important; /* Purple-600 fallback for primary */
+    outline-color: #9333ea !important;
+    outline-width: 2px !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* Fallback for primary button - ensure purple background */
+  .btn-primary,
+  button.btn-primary {
+    background-color: #9333ea !important; /* Purple-600 fallback */
+    border-color: #9333ea !important;
+    color: #ffffff !important;
+  }
+  
+  .btn-primary:hover,
+  button.btn-primary:hover {
+    background-color: #7e22ce !important; /* Purple-700 fallback */
+    border-color: #7e22ce !important;
+  }
+  
+  /* Fallback for backdrop-blur - solid background for older browsers */
+  @supports not (backdrop-filter: blur(1px)) {
+    .backdrop-blur-sm {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: none !important;
+    }
+  }
+  
+  /* Fallback for gradient backgrounds - solid color for older browsers */
+  @supports not (background: linear-gradient(to bottom right, transparent, transparent)) {
+    .bg-gradient-to-br {
+      background: #f9fafb !important; /* Base-200 fallback */
+    }
+  }
+}
+
 /* Placeholder styling - WCAG compliant (4.5:1 contrast ratio)
  * Override Tailwind Forms default dark placeholder color with lighter, accessible color
  * Using opacity for compatibility with older browsers (Windows 7, IE11, etc.)
@@ -18,19 +62,19 @@
  */
 input::placeholder,
 textarea::placeholder {
-  color: var(--color-base-content);
+  color: var(--color-base-content, #1f2937); /* Fallback to dark gray */
   opacity: 0.5; /* 50% opacity for good visibility while distinguishing from user input */
 }
 
 input::-moz-placeholder,
 textarea::-moz-placeholder {
-  color: var(--color-base-content);
+  color: var(--color-base-content, #1f2937); /* Fallback to dark gray */
   opacity: 0.5;
 }
 
 /* IE11 and older browsers fallback */
 input:-ms-input-placeholder,
 textarea:-ms-input-placeholder {
-  color: var(--color-base-content);
+  color: #1f2937; /* Direct color for IE11 (doesn't support CSS variables well) */
   opacity: 0.5;
 }

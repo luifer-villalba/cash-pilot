@@ -7,6 +7,25 @@
     <title>CashPilot - {{ _('Login') }}</title>
     <link rel="stylesheet" href="/static/css/main.css">
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    
+    <!-- Fallback styles for older browsers (Windows 7, IE11) -->
+    <script>
+        // Detect if CSS variables are supported
+        (function() {
+            var supportsCSSVars = window.CSS && CSS.supports && CSS.supports('color', 'var(--fake-var)');
+            if (!supportsCSSVars) {
+                // Add inline styles for critical elements if CSS variables don't work
+                var style = document.createElement('style');
+                style.textContent = [
+                    '.input-bordered:focus { border-color: #9333ea !important; outline-color: #9333ea !important; }',
+                    '.btn-primary { background-color: #9333ea !important; border-color: #9333ea !important; color: #ffffff !important; }',
+                    '.btn-primary:hover { background-color: #7e22ce !important; border-color: #7e22ce !important; }',
+                    '.backdrop-blur-sm { background-color: rgba(255, 255, 255, 0.95) !important; }'
+                ].join('\n');
+                document.head.appendChild(style);
+            }
+        })();
+    </script>
 </head>
 <body class="bg-gradient-to-br from-primary/5 via-base-200 to-primary/10 min-h-screen">
     <div class="flex items-center justify-center min-h-screen px-4 py-12">
