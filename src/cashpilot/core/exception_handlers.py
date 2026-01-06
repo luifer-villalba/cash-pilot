@@ -2,7 +2,7 @@
 """Global exception handlers for FastAPI."""
 
 from fastapi import Request, status
-from fastapi.responses import JSONResponse, RedirectResponse, Response
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse, Response
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from cashpilot.api.auth import logger
@@ -29,6 +29,19 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handle HTTP exceptions with redirect support for session expiration."""
+
+    # CRITICAL: Skip JSON conversion for static file paths
+    # StaticFiles should handle its own 404s with proper responses
+    # If we get here for a static file path, it means the mount didn't match
+    # Return a proper 404 response (not JSON) to allow browsers to handle it correctly
+    if request.url.path.startswith("/static"):
+        # Return plain text 404 instead of JSON for static file requests
+        # This allows the browser to handle the 404 properly
+        return PlainTextResponse(
+            content="Not Found",
+            status_code=status.HTTP_404_NOT_FOUND,
+            headers={"Content-Type": "text/plain; charset=utf-8"},
+        )
 
     # Handle 303 redirects (session expiration for regular requests)
     if (
