@@ -2288,7 +2288,7 @@ msgstr ""
 #: templates/sessions/edit_closed_session.html:4
 #: templates/sessions/edit_closed_session.html:11
 msgid "Edit Closed Cash Session"
-msgstr "Editar Sesión de Caja Abierta"
+msgstr "Editar Sesión de Caja Cerrada"
 
 #: templates/sessions/edit_closed_session.html:65
 msgid "Amount counted from cash"

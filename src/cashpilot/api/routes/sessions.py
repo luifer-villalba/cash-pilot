@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/routes/sessions.py
 """Session management routes (HTML endpoints)."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -22,8 +22,8 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
-from cashpilot.models.user import User
-from cashpilot.utils.datetime import current_time_local, today_local
+from cashpilot.models.user import User, UserRole
+from cashpilot.utils.datetime import current_time_local, now_utc, today_local
 
 logger = get_logger(__name__)
 
@@ -238,6 +238,35 @@ async def session_detail(
     # Ensure business is loaded (eager load to avoid template lazy loading)
     await db.refresh(session, ["business"])
 
+    # Calculate edit window for closed sessions
+    can_edit = False
+    edit_expired_msg = None
+
+    if session.status == "CLOSED":
+        if current_user.role == UserRole.ADMIN:
+            # Admins can always edit closed sessions
+            can_edit = True
+        elif current_user.id == session.cashier_id:
+            # Cashiers can edit their own closed sessions within 12 hours
+            # Check if closed_time is set (required for closed sessions)
+            if session.closed_time:
+                # Use closed_at property (combines session_date + closed_time with timezone)
+                closed_at = session.closed_at
+                if closed_at:
+                    time_since_close = now_utc() - closed_at
+                    if time_since_close <= timedelta(hours=12):
+                        can_edit = True
+                    else:
+                        can_edit = False
+                        edit_expired_msg = _("Edit window expired (12 hours passed)")
+                else:
+                    # closed_at property returned None (timezone issue?),
+                    # but closed_time exists, so allow editing (session was just closed)
+                    can_edit = True
+            else:
+                # Session is closed but has no closed_time (shouldn't happen normally)
+                can_edit = False
+
     calcs = _get_session_calculations(session)
     return templates.TemplateResponse(
         request,
@@ -249,6 +278,8 @@ async def session_detail(
             "locale": locale,
             "_": _,
             "editable": False,
+            "can_edit": can_edit,
+            "edit_expired_msg": edit_expired_msg,
         },
     )
 
