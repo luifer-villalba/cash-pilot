@@ -58,4 +58,4 @@ RUN pip install --no-cache-dir .[dev]
 # Compile translations for production
 RUN pybabel compile -d translations
 
-CMD sh -c "alembic upgrade head && uvicorn cashpilot.main:create_app --factory --host 0.0.0.0 --port 8000"
+CMD sh -c "alembic upgrade head && uvicorn cashpilot.main:create_app --factory --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips '*'"
