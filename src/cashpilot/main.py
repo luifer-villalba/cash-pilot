@@ -113,12 +113,46 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
 
 
 def _mount_static(app: FastAPI) -> None:
-    """Mount static files directory."""
-    static_dir = Path(os.getenv("STATIC_DIR", "static")).resolve()
+    """Mount static files directory with absolute path resolution."""
+    # Calculate absolute path based on file location
+    # __file__ = /app/src/cashpilot/main.py → need /app/static
+    base_dir = Path(__file__).resolve().parent.parent.parent  # Go up 3 levels to /app
+    static_dir = base_dir / "static"
+    
+    # Allow override via environment variable
+    static_env = os.getenv("STATIC_DIR")
+    if static_env:
+        static_dir = Path(static_env).resolve()
+    
     if static_dir.exists():
+        logger.info(
+            "static.mounted",
+            path=str(static_dir),
+            file_count=sum(1 for _ in static_dir.rglob("*"))
+        )
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
     else:
-        logger.warning(f"Static directory not found: {static_dir}")
+        # ✅ Fix #3: Only fail in production, warn in dev/tests
+        environment = os.getenv("ENVIRONMENT", "development").lower()
+        is_production = environment in {"production", "prod"}
+        
+        if is_production:
+            logger.error(
+                "static.missing",
+                attempted_path=str(static_dir),
+                cwd=os.getcwd(),
+                base_dir=str(base_dir),
+                environment=environment,
+            )
+            raise RuntimeError(f"Static directory not found: {static_dir}")
+        else:
+            logger.warning(
+                "static.missing.non_production",
+                attempted_path=str(static_dir),
+                cwd=os.getcwd(),
+                base_dir=str(base_dir),
+                environment=environment,
+            )
 
 
 def _register_routers(app: FastAPI) -> None:
