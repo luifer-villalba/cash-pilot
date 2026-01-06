@@ -4,11 +4,12 @@ module.exports = {
     'postcss-preset-env': {
       stage: 2, // Enable features that are stable
       features: {
-        // Enable oklch() polyfill to convert to rgb/hex for older browsers
-        // This will automatically convert oklch() to rgb() for browsers that don't support it
-        'oklch-function': true,
+        // Note: oklch() conversion is handled by CSS fallbacks in input.css
+        // postcss-preset-env doesn't have native oklch() support yet
         'color-mix': false, // Don't use color-mix (we removed it)
         'logical-properties-and-values': false, // Don't convert logical properties
+        'is-pseudo-class': false, // Disable to avoid warnings about complex selectors
+        'cascade-layers': false, // Disable to avoid revert-layer warnings
       },
       browsers: [
         '> 0.5%',
