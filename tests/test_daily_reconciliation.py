@@ -374,9 +374,11 @@ class TestDailyReconciliationIsClosed:
         today_str = today.isoformat()
 
         # Create reconciliation with sales data
+        # Use the same date as the POST request to ensure we update, not create
         reconciliation = await DailyReconciliationFactory.create(
             db_session,
             business_id=business_id,
+            date=today,  # Explicitly set date to match POST request
             is_closed=False,
             cash_sales=Decimal("1000000.00"),
             credit_sales=Decimal("500000.00"),
