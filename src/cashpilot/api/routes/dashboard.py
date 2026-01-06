@@ -133,11 +133,13 @@ async def dashboard(
         try:
             reconciliation_check_date = datetime.fromisoformat(to_date).date()
         except (ValueError, TypeError):
+            # Invalid date format in query param, keep default reconciliation_check_date
             pass
     elif from_date:
         try:
             reconciliation_check_date = datetime.fromisoformat(from_date).date()
         except (ValueError, TypeError):
+            # Invalid date format in query param, keep default reconciliation_check_date
             pass
 
     # Check if there's any reconciliation for this date (admin only)

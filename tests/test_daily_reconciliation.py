@@ -270,14 +270,18 @@ class TestDailyReconciliationIsClosed:
         self, admin_client: AsyncClient, db_session: AsyncSession
     ):
         """Test when is_closed=true, sales fields can be null."""
+        from cashpilot.utils.datetime import today_local
+
         business = await BusinessFactory.create(db_session)
-        today = date.today().isoformat()
+        business_id = business.id  # Capture ID before async operations
+        today = today_local()
+        today_str = today.isoformat()
 
         response = await admin_client.post(
             "/reconciliation/daily",
             data={
-                "date": today,
-                f"is_closed_{business.id}": "on",  # Checkbox checked
+                "date": today_str,
+                f"is_closed_{business_id}": "on",  # Checkbox checked
             },
             follow_redirects=False,
         )
@@ -285,8 +289,8 @@ class TestDailyReconciliationIsClosed:
 
         # Verify reconciliation was created with is_closed=True
         stmt = select(DailyReconciliation).where(
-            DailyReconciliation.business_id == business.id,
-            DailyReconciliation.date == date.today(),
+            DailyReconciliation.business_id == business_id,
+            DailyReconciliation.date == today,
             DailyReconciliation.deleted_at.is_(None),
         )
         result = await db_session.execute(stmt)
@@ -301,32 +305,35 @@ class TestDailyReconciliationIsClosed:
     async def test_is_closed_false_requires_sales_data(
         self, admin_client: AsyncClient, db_session: AsyncSession
     ):
-        """Test when is_closed=false, can still have null sales (optional fields)."""
+        """Test when is_closed=false, sales data is required."""
+        from cashpilot.utils.datetime import today_local
+
         business = await BusinessFactory.create(db_session)
-        today = date.today().isoformat()
+        business_id = business.id  # Capture ID before async operations
+        today = today_local()
+        today_str = today.isoformat()
 
         # Create without is_closed (defaults to False) and no sales data
         response = await admin_client.post(
             "/reconciliation/daily",
             data={
-                "date": today,
+                "date": today_str,
                 # No is_closed checkbox, no sales data
             },
             follow_redirects=False,
         )
-        assert response.status_code == 302  # Should still succeed
+        assert response.status_code == 400  # Should fail validation
 
-        # Verify reconciliation was created
+        # Verify reconciliation was NOT created due to validation error
         stmt = select(DailyReconciliation).where(
-            DailyReconciliation.business_id == business.id,
-            DailyReconciliation.date == date.today(),
+            DailyReconciliation.business_id == business_id,
+            DailyReconciliation.date == today,
             DailyReconciliation.deleted_at.is_(None),
         )
         result = await db_session.execute(stmt)
         reconciliation = result.scalar_one_or_none()
 
-        assert reconciliation is not None
-        assert reconciliation.is_closed is False
+        assert reconciliation is None  # Should not be created
 
     @pytest.mark.asyncio
     async def test_update_is_closed_flag(
@@ -353,6 +360,51 @@ class TestDailyReconciliationIsClosed:
 
         await db_session.refresh(reconciliation)
         assert reconciliation.is_closed is True
+
+    @pytest.mark.asyncio
+    async def test_update_is_closed_preserves_sales_data(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test that updating is_closed=True via POST preserves existing sales data."""
+        from cashpilot.utils.datetime import today_local
+
+        business = await BusinessFactory.create(db_session)
+        business_id = business.id
+        today = today_local()
+        today_str = today.isoformat()
+
+        # Create reconciliation with sales data
+        # Use the same date as the POST request to ensure we update, not create
+        reconciliation = await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business_id,
+            date=today,  # Explicitly set date to match POST request
+            is_closed=False,
+            cash_sales=Decimal("1000000.00"),
+            credit_sales=Decimal("500000.00"),
+            card_sales=Decimal("200000.00"),
+            total_sales=Decimal("1700000.00"),
+        )
+
+        # Update via POST with is_closed=True (no sales fields in form)
+        response = await admin_client.post(
+            "/reconciliation/daily",
+            data={
+                "date": today_str,
+                f"is_closed_{business_id}": "on",  # Checkbox checked
+                # No sales fields provided
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 302  # Should succeed
+
+        # Verify sales data is preserved
+        await db_session.refresh(reconciliation)
+        assert reconciliation.is_closed is True
+        assert reconciliation.cash_sales == Decimal("1000000.00")
+        assert reconciliation.credit_sales == Decimal("500000.00")
+        assert reconciliation.card_sales == Decimal("200000.00")
+        assert reconciliation.total_sales == Decimal("1700000.00")
 
 
 class TestDailyReconciliationEditAuditTrail:
