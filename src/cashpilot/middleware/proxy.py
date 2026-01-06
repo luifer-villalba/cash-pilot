@@ -4,10 +4,6 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
 
-from cashpilot.core.logging import get_logger
-
-logger = get_logger(__name__)
-
 
 class StaticAssetHeadersMiddleware(BaseHTTPMiddleware):
     """
@@ -18,24 +14,11 @@ class StaticAssetHeadersMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
-        is_static = request.url.path.startswith("/static")
-        if is_static:
-            logger.info(
-                "middleware.static_headers.request",
-                path=request.url.path,
-                method=request.method,
-            )
-
         response = await call_next(request)
 
         # Add proper headers for static assets to ensure they load correctly
         # behind Cloudflare proxy
-        if isinstance(response, Response) and is_static:
-            logger.info(
-                "middleware.static_headers.adding_headers",
-                path=request.url.path,
-                status_code=getattr(response, "status_code", "N/A"),
-            )
+        if isinstance(response, Response) and request.url.path.startswith("/static"):
             # Ensure static files have proper cache headers
             response.headers.setdefault("Cache-Control", "public, max-age=31536000, immutable")
             # Ensure CORS headers (shouldn't be needed for same-origin, but helps with proxy)

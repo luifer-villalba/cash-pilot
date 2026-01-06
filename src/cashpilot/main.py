@@ -36,24 +36,9 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
     """Redirect unauthenticated browser requests to login page."""
 
     async def dispatch(self, request: Request, call_next):
-        # DEBUG: Log all requests to trace static file flow
-        is_static = request.url.path.startswith("/static")
-        if is_static:
-            logger.info(
-                "middleware.auth_redirect.static_request",
-                path=request.url.path,
-                method=request.method,
-            )
-
         # Skip for public routes
         public_paths = ["/login", "/logout", "/static", "/health"]
         if any(request.url.path.startswith(path) for path in public_paths):
-            if is_static:
-                logger.info(
-                    "middleware.auth_redirect.passing_through",
-                    path=request.url.path,
-                    reason="public_path",
-                )
             return await call_next(request)
 
         # Check session - SessionMiddleware runs first, so session should be in scope
@@ -183,62 +168,27 @@ def _mount_static(app: FastAPI) -> None:
 
         # Use route handler approach - register a catch-all route for /static/*
         # This ensures it's checked as a regular route and works reliably
-        logger.info(
-            "static.route_handler.registering",
-            route_path="/static/{file_path:path}",
-            static_dir=str(static_dir),
-        )
-
         @app.get("/static/{file_path:path}")
         async def serve_static(file_path: str, request: Request):
             """Serve static files from the static directory."""
             from fastapi.responses import FileResponse
 
-            logger.info(
-                "static.route_handler.called",
-                file_path=file_path,
-                request_path=request.url.path,
-                static_dir=str(static_dir),
-                method=request.method,
-            )
-
             file_path_obj = static_dir / file_path
-            logger.info(
-                "static.route_handler.resolved_path",
-                requested=file_path,
-                resolved=str(file_path_obj),
-                exists=file_path_obj.exists(),
-                is_file=file_path_obj.is_file() if file_path_obj.exists() else False,
-            )
 
             # Security: prevent directory traversal
             try:
-                resolved_path = file_path_obj.resolve()
-                relative_path = resolved_path.relative_to(static_dir.resolve())
-                logger.info(
-                    "static.route_handler.security_check",
-                    resolved=str(resolved_path),
-                    relative=str(relative_path),
-                    passed=True,
-                )
-            except ValueError as e:
-                logger.warning(
-                    "static.route_handler.security_check",
-                    resolved=str(file_path_obj.resolve()),
-                    static_dir=str(static_dir.resolve()),
-                    error=str(e),
-                    passed=False,
-                )
+                file_path_obj.resolve().relative_to(static_dir.resolve())
+            except ValueError:
                 from fastapi import HTTPException, status
 
+                logger.warning(
+                    "static.route_handler.security_violation",
+                    requested_path=file_path,
+                    resolved_path=str(file_path_obj.resolve()),
+                )
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
 
             if file_path_obj.exists() and file_path_obj.is_file():
-                logger.info(
-                    "static.route_handler.serving_file",
-                    file_path=str(file_path_obj),
-                    size=file_path_obj.stat().st_size,
-                )
                 return FileResponse(
                     path=str(file_path_obj),
                     headers={
@@ -246,12 +196,6 @@ def _mount_static(app: FastAPI) -> None:
                     },
                 )
             else:
-                logger.warning(
-                    "static.route_handler.file_not_found",
-                    file_path=str(file_path_obj),
-                    exists=file_path_obj.exists(),
-                    is_file=file_path_obj.is_file() if file_path_obj.exists() else False,
-                )
                 from fastapi import HTTPException, status
 
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
@@ -357,40 +301,16 @@ def create_app() -> FastAPI:
     session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
     environment = os.getenv("ENVIRONMENT", "development")
 
-    # DEBUG: Log initialization order
-    logger.info("app.init.start", message="Starting application initialization")
-
     # CRITICAL: Mount static files BEFORE exception handlers and routers
-    # This ensures StaticFiles mount is checked first during route matching
-    logger.info("app.init.mounting_static", message="Mounting static files route handler")
+    # This ensures the static file route handler is checked first during route matching
     _mount_static(app)
-    logger.info("app.init.static_mounted", message="Static files route handler mounted")
 
     from cashpilot.core.exception_handlers import register_exception_handlers
 
-    logger.info("app.init.registering_exception_handlers", message="Registering exception handlers")
     register_exception_handlers(app)
-    logger.info("app.init.exception_handlers_registered", message="Exception handlers registered")
 
-    logger.info("app.init.setting_up_middleware", message="Setting up middleware")
     _setup_middleware(app, environment, session_secret_key)
-    logger.info("app.init.middleware_setup", message="Middleware setup complete")
-
-    logger.info("app.init.registering_routers", message="Registering routers")
     _register_routers(app)
-    logger.info("app.init.routers_registered", message="Routers registered")
-
-    # DEBUG: Log all registered routes to verify order
-    logger.info("app.init.logging_routes", message="Logging registered routes for debugging")
-    for route in app.routes:
-        route_info = {
-            "path": getattr(route, "path", "N/A"),
-            "name": getattr(route, "name", "N/A"),
-            "type": type(route).__name__,
-        }
-        if hasattr(route, "methods"):
-            route_info["methods"] = list(route.methods) if route.methods else []
-        logger.info("app.init.route", **route_info)
 
     logger.info("app.configured", message="FastAPI application created successfully")
 

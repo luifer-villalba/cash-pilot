@@ -30,36 +30,16 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handle HTTP exceptions with redirect support for session expiration."""
 
-    # DEBUG: Log all exceptions to trace static file requests
-    logger.info(
-        "exception_handler.called",
-        path=request.url.path,
-        status_code=exc.status_code,
-        detail=exc.detail,
-        method=request.method,
-        is_static=request.url.path.startswith("/static"),
-    )
-
     # CRITICAL: Skip JSON conversion for static file paths
-    # StaticFiles should handle its own 404s with proper responses
-    # If we get here for a static file path, it means the mount didn't match
-    # Return a proper 404 response (not JSON) to allow browsers to handle it correctly
+    # StaticFiles should handle its own errors with proper responses
+    # If we get here for a static file path, return plain text instead of JSON
+    # This allows browsers to handle the response properly
     if request.url.path.startswith("/static"):
-        logger.warning(
-            "exception_handler.static_path_404",
-            path=request.url.path,
-            status_code=exc.status_code,
-            detail=exc.detail,
-            message=(
-                "Static file request reached exception handler - "
-                "route handler may not have matched"
-            ),
-        )
-        # Return plain text 404 instead of JSON for static file requests
-        # This allows the browser to handle the 404 properly
+        # Return plain text instead of JSON for static file requests
+        # Use exc.status_code to preserve the original error code (404, 500, etc.)
         return PlainTextResponse(
-            content="Not Found",
-            status_code=status.HTTP_404_NOT_FOUND,
+            content=str(exc.detail) if exc.detail else "Not Found",
+            status_code=exc.status_code,
             headers={"Content-Type": "text/plain; charset=utf-8"},
         )
 
