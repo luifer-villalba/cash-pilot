@@ -4,9 +4,9 @@
  */
 
 function initializeThemeToggle() {
-    const toggleBtn = document.getElementById('theme-toggle');
-    const sunIcon = document.getElementById('theme-icon-sun');
-    const moonIcon = document.getElementById('theme-icon-moon');
+    var toggleBtn = document.getElementById('theme-toggle');
+    var sunIcon = document.getElementById('theme-icon-sun');
+    var moonIcon = document.getElementById('theme-icon-moon');
 
     if (!toggleBtn || !sunIcon || !moonIcon) return;
 
@@ -22,16 +22,16 @@ function initializeThemeToggle() {
         }
     }
 
-    toggleBtn.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
+    toggleBtn.addEventListener('click', function() {
+        var current = document.documentElement.getAttribute('data-theme');
+        var next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
         updateIcons(next);
     });
 
     // Set initial icon based on saved theme
-    const saved = localStorage.getItem('theme') || 'light';
+    var saved = localStorage.getItem('theme') || 'light';
     updateIcons(saved);
 }
 

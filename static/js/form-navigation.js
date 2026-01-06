@@ -8,7 +8,7 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('keydown', function(e) {
-    const target = e.target;
+    var target = e.target;
 
     // Allow Enter on textareas (multi-line input)
     if (target.tagName === 'TEXTAREA') {
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Allow Ctrl+Enter to submit form
     if (e.key === 'Enter' && e.ctrlKey) {
-      const form = target.closest('form');
+      var form = target.closest('form');
       if (form) {
         if (typeof form.requestSubmit === 'function') {
           form.requestSubmit();
@@ -38,14 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
 
       // Move focus to next focusable element
-      const form = target.closest('form');
+      var form = target.closest('form');
       if (form) {
-        const focusableElements = Array.from(
+        var focusableElements = Array.from(
           form.querySelectorAll('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])')
-        ).filter(el => el.offsetParent !== null);
+        ).filter(function(el) {
+          return el.offsetParent !== null;
+        });
 
-        const currentIndex = focusableElements.indexOf(target);
-        const nextElement = focusableElements[currentIndex + 1];
+        var currentIndex = focusableElements.indexOf(target);
+        var nextElement = focusableElements[currentIndex + 1];
 
         if (nextElement) {
           nextElement.focus();
