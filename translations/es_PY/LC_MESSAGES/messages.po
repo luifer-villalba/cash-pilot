@@ -2288,7 +2288,7 @@ msgstr ""
 #: templates/sessions/edit_closed_session.html:4
 #: templates/sessions/edit_closed_session.html:11
 msgid "Edit Closed Cash Session"
-msgstr "Editar Sesión de Caja Abierta"
+msgstr "Editar Sesión de Caja Cerrada"
 
 #: templates/sessions/edit_closed_session.html:65
 msgid "Amount counted from cash"
@@ -2560,6 +2560,10 @@ msgstr "Acción"
 msgid "Changed"
 msgstr "Campos Cambiados"
 
+#: templates/sessions/session_detail.html
+msgid "Changed Fields"
+msgstr "Campos Cambiados"
+
 #: templates/sessions/session_detail.html:573
 msgid "Loading..."
 msgstr "Cargando..."
@@ -2571,6 +2575,22 @@ msgstr "Sin ediciones aún"
 #: templates/sessions/session_detail.html:631
 msgid "Failed to load"
 msgstr "Error al cargar"
+
+#: templates/sessions/session_detail.html
+msgid "Edited (Open)"
+msgstr "Editado (Abierta)"
+
+#: templates/sessions/session_detail.html
+msgid "Edited (Closed)"
+msgstr "Editado (Cerrada)"
+
+#: templates/sessions/session_detail.html
+msgid "No fields changed"
+msgstr "Sin campos modificados"
+
+#: templates/sessions/session_detail.html
+msgid "Please refresh the page"
+msgstr "Por favor, recarga la página"
 
 #: templates/sessions/session_detail.html:653
 msgid "Active Shift"
