@@ -13,32 +13,9 @@
 
 /* Fallbacks for older browsers (Windows 7, IE11)
  * These ensure basic styling works even if CSS variables or modern features fail
- * Using !important to override any conflicting styles from Tailwind/DaisyUI
+ * Using @supports to only apply when needed - safe for modern browsers (Windows 11)
  */
 @layer base {
-  /* Fallback for input borders - ensure purple border on focus */
-  .input-bordered:focus,
-  .input.input-bordered:focus {
-    border-color: #9333ea !important; /* Purple-600 fallback for primary */
-    outline-color: #9333ea !important;
-    outline-width: 2px !important;
-    outline-offset: 2px !important;
-  }
-  
-  /* Fallback for primary button - ensure purple background */
-  .btn-primary,
-  button.btn-primary {
-    background-color: #9333ea !important; /* Purple-600 fallback */
-    border-color: #9333ea !important;
-    color: #ffffff !important;
-  }
-  
-  .btn-primary:hover,
-  button.btn-primary:hover {
-    background-color: #7e22ce !important; /* Purple-700 fallback */
-    border-color: #7e22ce !important;
-  }
-  
   /* Fallback for backdrop-blur - solid background for older browsers */
   @supports not (backdrop-filter: blur(1px)) {
     .backdrop-blur-sm {
@@ -47,10 +24,67 @@
     }
   }
   
-  /* Fallback for gradient backgrounds - solid color for older browsers */
+  /* Fallback for gradient backgrounds - ensure it works even if opacity syntax fails */
   @supports not (background: linear-gradient(to bottom right, transparent, transparent)) {
     .bg-gradient-to-br {
-      background: #f9fafb !important; /* Base-200 fallback */
+      background-color: #f9fafb; /* Base-200 fallback */
+    }
+  }
+  
+  /* Fallback for CSS variables - only apply if variables aren't supported */
+  @supports not (color: var(--fake-var)) {
+    /* Fallback for input borders - ensure purple border on focus */
+    .input-bordered:focus,
+    .input.input-bordered:focus,
+    input.input-bordered:focus {
+      border-color: #9333ea !important; /* Purple-600 fallback for primary */
+      outline-color: #9333ea !important;
+      outline-width: 2px !important;
+      outline-offset: 2px !important;
+    }
+    
+    /* Fallback for primary button - ensure purple background */
+    .btn-primary,
+    button.btn-primary,
+    button[type="submit"].btn-primary {
+      background-color: #9333ea !important; /* Purple-600 fallback */
+      border-color: #9333ea !important;
+      color: #ffffff !important;
+    }
+    
+    .btn-primary:hover,
+    button.btn-primary:hover,
+    button[type="submit"].btn-primary:hover {
+      background-color: #7e22ce !important; /* Purple-700 fallback */
+      border-color: #7e22ce !important;
+    }
+    
+    /* Fallback for primary text color */
+    .text-primary {
+      color: #9333ea !important;
+    }
+    
+    /* Fallback for primary borders */
+    .border-primary {
+      border-color: #9333ea !important;
+    }
+    
+    /* Ensure base colors work even if CSS variables fail */
+    .bg-base-100 {
+      background-color: #ffffff; /* White fallback */
+    }
+    
+    .bg-base-200 {
+      background-color: #f9fafb; /* Light gray fallback */
+    }
+    
+    .text-base-content {
+      color: #1f2937; /* Dark gray fallback */
+    }
+    
+    .border-base-200,
+    .border-base-300 {
+      border-color: #e5e7eb; /* Gray-200 fallback */
     }
   }
 }

@@ -28,70 +28,88 @@
 
     <link rel="stylesheet" href="/static/css/main.css">
 
-    <!-- Polyfills for older browsers (Windows 7, IE11) -->
+    <!-- Polyfills and fallbacks for older browsers (Windows 7, IE11) -->
     <script>
-        // String.padStart polyfill for IE11 and older browsers
-        if (!String.prototype.padStart) {
-            String.prototype.padStart = function(targetLength, padString) {
-                targetLength = targetLength >> 0;
-                padString = String(typeof padString !== 'undefined' ? padString : ' ');
-                if (this.length > targetLength) {
-                    return String(this);
-                } else {
-                    targetLength = targetLength - this.length;
-                    if (targetLength > padString.length) {
-                        padString += padString.repeat(targetLength / padString.length);
+        (function() {
+            // String.padStart polyfill for IE11 and older browsers
+            if (!String.prototype.padStart) {
+                String.prototype.padStart = function(targetLength, padString) {
+                    targetLength = targetLength >> 0;
+                    padString = String(typeof padString !== 'undefined' ? padString : ' ');
+                    if (this.length > targetLength) {
+                        return String(this);
+                    } else {
+                        targetLength = targetLength - this.length;
+                        if (targetLength > padString.length) {
+                            padString += padString.repeat(targetLength / padString.length);
+                        }
+                        return padString.slice(0, targetLength) + String(this);
                     }
-                    return padString.slice(0, targetLength) + String(this);
-                }
-            };
-        }
-        // String.padEnd polyfill
-        if (!String.prototype.padEnd) {
-            String.prototype.padEnd = function(targetLength, padString) {
-                targetLength = targetLength >> 0;
-                padString = String(typeof padString !== 'undefined' ? padString : ' ');
-                if (this.length > targetLength) {
-                    return String(this);
-                } else {
-                    targetLength = targetLength - this.length;
-                    if (targetLength > padString.length) {
-                        padString += padString.repeat(targetLength / padString.length);
+                };
+            }
+            // String.padEnd polyfill
+            if (!String.prototype.padEnd) {
+                String.prototype.padEnd = function(targetLength, padString) {
+                    targetLength = targetLength >> 0;
+                    padString = String(typeof padString !== 'undefined' ? padString : ' ');
+                    if (this.length > targetLength) {
+                        return String(this);
+                    } else {
+                        targetLength = targetLength - this.length;
+                        if (targetLength > padString.length) {
+                            padString += padString.repeat(targetLength / padString.length);
+                        }
+                        return String(this) + padString.slice(0, targetLength);
                     }
-                    return String(this) + padString.slice(0, targetLength);
-                }
-            };
-        }
-        // Array.includes polyfill for IE11
-        if (!Array.prototype.includes) {
-            Array.prototype.includes = function(searchElement, fromIndex) {
-                if (this == null) {
-                    throw new TypeError('"this" is null or not defined');
-                }
-                var o = Object(this);
-                var len = parseInt(o.length) || 0;
-                if (len === 0) {
+                };
+            }
+            // Array.includes polyfill for IE11
+            if (!Array.prototype.includes) {
+                Array.prototype.includes = function(searchElement, fromIndex) {
+                    if (this == null) {
+                        throw new TypeError('"this" is null or not defined');
+                    }
+                    var o = Object(this);
+                    var len = parseInt(o.length) || 0;
+                    if (len === 0) {
+                        return false;
+                    }
+                    var n = parseInt(fromIndex) || 0;
+                    var k;
+                    if (n >= 0) {
+                        k = n;
+                    } else {
+                        k = len + n;
+                        if (k < 0) { k = 0; }
+                    }
+                    function sameValueZero(x, y) {
+                        return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
+                    }
+                    for (; k < len; k++) {
+                        if (sameValueZero(o[k], searchElement)) {
+                            return true;
+                        }
+                    }
                     return false;
-                }
-                var n = parseInt(fromIndex) || 0;
-                var k;
-                if (n >= 0) {
-                    k = n;
-                } else {
-                    k = len + n;
-                    if (k < 0) { k = 0; }
-                }
-                function sameValueZero(x, y) {
-                    return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
-                }
-                for (; k < len; k++) {
-                    if (sameValueZero(o[k], searchElement)) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-        }
+                };
+            }
+            
+            // Detect if CSS variables are supported and inject fallback styles if needed
+            var supportsCSSVars = window.CSS && CSS.supports && CSS.supports('color', 'var(--fake-var)');
+            if (!supportsCSSVars) {
+                // Add inline styles for critical elements if CSS variables don't work
+                var style = document.createElement('style');
+                style.textContent = [
+                    '.input-bordered:focus { border-color: #9333ea !important; outline-color: #9333ea !important; }',
+                    '.btn-primary { background-color: #9333ea !important; border-color: #9333ea !important; color: #ffffff !important; }',
+                    '.btn-primary:hover { background-color: #7e22ce !important; border-color: #7e22ce !important; }',
+                    '.text-primary { color: #9333ea !important; }',
+                    '.border-primary { border-color: #9333ea !important; }',
+                    '.backdrop-blur-sm { background-color: rgba(255, 255, 255, 0.95) !important; }'
+                ].join('\n');
+                document.head.appendChild(style);
+            }
+        })();
     </script>
 
     <!-- HTMX -->
