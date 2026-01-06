@@ -280,22 +280,6 @@ async def daily_reconciliation_post(
                 refunds = parse_currency(refunds_str) if refunds_str else None
                 total_sales = parse_currency(total_sales_str) if total_sales_str else None
 
-                # When is_closed=false, require at least one sales field to be provided
-                # Note: This validation fails the entire batch operation if any business
-                # fails validation. This all-or-nothing approach ensures data consistency
-                # across all businesses for a given date.
-                if (
-                    cash_sales is None
-                    and credit_sales is None
-                    and card_sales is None
-                    and refunds is None
-                    and total_sales is None
-                ):
-                    raise ValidationError(
-                        f"Sales data is required when business is not closed "
-                        f"(business: {business.name})"
-                    )
-
             if existing:
                 # Update existing reconciliation
                 old_values = {
@@ -307,17 +291,17 @@ async def daily_reconciliation_post(
                     "is_closed": existing.is_closed,
                 }
 
-                # When is_closed=True, preserve existing sales data if not provided
-                # This prevents data loss when marking a business as closed
-                if is_closed and cash_sales is None:
+                # Preserve existing sales data if not provided in form
+                # This allows updating is_closed without re-entering all sales data
+                if cash_sales is None:
                     cash_sales = existing.cash_sales
-                if is_closed and credit_sales is None:
+                if credit_sales is None:
                     credit_sales = existing.credit_sales
-                if is_closed and card_sales is None:
+                if card_sales is None:
                     card_sales = existing.card_sales
-                if is_closed and refunds is None:
+                if refunds is None:
                     refunds = existing.refunds
-                if is_closed and total_sales is None:
+                if total_sales is None:
                     total_sales = existing.total_sales
 
                 existing.cash_sales = cash_sales
@@ -351,6 +335,21 @@ async def daily_reconciliation_post(
 
                 updated_count += 1
             else:
+                # New reconciliation: require sales data when business is not closed
+                # Note: This validation fails the entire batch operation if any business
+                # fails validation. This all-or-nothing approach ensures data consistency
+                # across all businesses for a given date.
+                if not is_closed and (
+                    cash_sales is None
+                    and credit_sales is None
+                    and card_sales is None
+                    and refunds is None
+                    and total_sales is None
+                ):
+                    raise ValidationError(
+                        f"Sales data is required when business is not closed "
+                        f"(business: {business.name})"
+                    )
                 # Create new reconciliation
                 reconciliation = DailyReconciliation(
                     business_id=business.id,

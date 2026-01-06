@@ -551,8 +551,8 @@
                     </h2>
                     <div class="bg-base-100 rounded-xl border border-base-300 shadow-lg overflow-hidden transition-all duration-200">
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead class="bg-base-100 border-b border-base-200">
+                            <table class="table table-sm w-full">
+                                <thead class="bg-base-50 border-b border-base-200">
                                 <tr>
                                     <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
                                         {{ _('When') }}
@@ -564,13 +564,18 @@
                                         {{ _('Action') }}
                                     </th>
                                     <th class="text-left px-4 py-3 text-xs font-bold text-base-content/70 uppercase tracking-wider">
-                                        {{ _('Changed') }}
+                                        {{ _('Changed Fields') }}
                                     </th>
                                 </tr>
                                 </thead>
                                 <tbody id="audit-logs-table" class="divide-y divide-base-200">
                                 <tr>
-                                    <td colspan="4" class="px-4 py-6 text-center text-sm text-base-content/50">{{ _('Loading...') }}</td>
+                                    <td colspan="4" class="px-4 py-8 text-center">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <span class="loading loading-spinner loading-md text-primary"></span>
+                                            <p class="text-sm text-base-content/50">{{ _('Loading...') }}</p>
+                                        </div>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -588,47 +593,142 @@
                             const tbody = document.getElementById('audit-logs-table');
 
                             if (logs.length === 0) {
-                                tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-6 text-center text-sm text-base-content/50">{{ _("No edits yet") }}</td></tr>';
+                                tbody.innerHTML = `
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-8 text-center">
+                                            <div class="flex flex-col items-center gap-2">
+                                                <svg class="w-8 h-8 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <p class="text-sm text-base-content/60 italic">{{ _('No edits yet') }}</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
                                 return;
                             }
 
                             const actionConfig = {
-                                'EDIT_OPEN': {label: 'Edited (Open)', color: 'badge-info', icon: '<svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'},
-                                'CLOSE': {label: 'Closed', color: 'badge-error', icon: '<svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>'},
-                                'FLAG_SESSION': {label: 'Flagged', color: 'badge-warning', icon: '<svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>'}
+                                'EDIT_OPEN': {
+                                    label: '{{ _("Edited (Open)") }}',
+                                    color: 'badge-info',
+                                    icon: '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'
+                                },
+                                'EDIT_CLOSED': {
+                                    label: '{{ _("Edited (Closed)") }}',
+                                    color: 'badge-warning',
+                                    icon: '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'
+                                },
+                                'CLOSE': {
+                                    label: '{{ _("Closed") }}',
+                                    color: 'badge-success',
+                                    icon: '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>'
+                                },
+                                'FLAG_SESSION': {
+                                    label: '{{ _("Flagged") }}',
+                                    color: 'badge-error',
+                                    icon: '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>'
+                                }
                             };
+
+                            // Format datetime to local timezone
+                            function formatDateTime(isoString) {
+                                const date = new Date(isoString);
+                                return date.toLocaleString('es-PY', {
+                                    year: 'numeric',
+                                    month: 'numeric',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: false
+                                });
+                            }
+
+                            // Format field name for display
+                            function formatFieldName(field) {
+                                const fieldMap = {
+                                    'final_cash': '{{ _("Final Cash") }}',
+                                    'envelope_amount': '{{ _("Envelope") }}',
+                                    'credit_card_total': '{{ _("Credit Card") }}',
+                                    'debit_card_total': '{{ _("Debit Card") }}',
+                                    'bank_transfer_total': '{{ _("Bank Transfer") }}',
+                                    'expenses': '{{ _("Expenses") }}',
+                                    'credit_sales_total': '{{ _("Credit Sales") }}',
+                                    'credit_payments_collected': '{{ _("Debt Collected") }}',
+                                    'notes': '{{ _("Notes") }}',
+                                    'closing_ticket': '{{ _("Closing Ticket") }}',
+                                    'initial_cash': '{{ _("Initial Cash") }}',
+                                    'opened_time': '{{ _("Opened Time") }}'
+                                };
+                                return fieldMap[field] || field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                            }
 
                             tbody.innerHTML = logs.map(log => {
                                 const config = actionConfig[log.action] || {
                                     label: log.action,
                                     color: 'badge-ghost',
-                                    icon: '•'
+                                    icon: '<span class="w-3 h-3 inline-block">•</span>'
                                 };
-                                const reasonText = log.reason ? `<br><span class="text-xs text-base-content/50 flex items-center gap-1"><svg class="w-3 h-3 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg> ${log.reason}</span>` : '';
+                                
+                                const hasReason = log.reason && log.reason.trim();
+                                const reasonTooltip = hasReason ? `data-tip="${log.reason.replace(/"/g, '&quot;')}"` : '';
+                                
+                                const fieldsDisplay = log.changed_fields && log.changed_fields.length > 0
+                                    ? log.changed_fields.map(f => 
+                                        `<span class="badge badge-sm badge-outline badge-primary mr-1 mb-1" title="${formatFieldName(f)}">${formatFieldName(f)}</span>`
+                                      ).join('')
+                                    : '<span class="text-xs text-base-content/40 italic">{{ _("No fields changed") }}</span>';
+                                
                                 return `
-                                    <tr class="hover:bg-base-50">
+                                    <tr class="hover:bg-base-50 transition-colors duration-150">
                                         <td class="px-4 py-3 text-sm text-base-content/70 whitespace-nowrap">
-                                            <time datetime="${log.changed_at}">
-                                                ${new Date(log.changed_at).toLocaleString()}
+                                            <time datetime="${log.changed_at}" class="font-mono tabular-nums">
+                                                ${formatDateTime(log.changed_at)}
                                             </time>
                                         </td>
-                                        <td class="px-4 py-3 text-sm font-mono text-base-content/70">${log.changed_by || 'system'}</td>
                                         <td class="px-4 py-3">
-                                            <span class="badge badge-sm ${config.color} flex items-center gap-1">
-                                                ${config.icon} ${config.label}
+                                            <span class="text-sm font-medium text-base-content">${log.changed_by || 'system'}</span>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <span class="badge badge-sm ${config.color} gap-1.5">
+                                                ${config.icon}
+                                                <span>${config.label}</span>
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-base-content/70">
-                                            ${log.changed_fields.map(f => `<span class="badge badge-ghost badge-sm">${f}</span>`).join(' ')}
-                                            ${reasonText}
+                                        <td class="px-4 py-3">
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                ${fieldsDisplay}
+                                            </div>
+                                            ${hasReason ? `
+                                                <div class="mt-2 pt-2 border-t border-base-200">
+                                                    <div class="flex items-start gap-1.5 text-xs text-base-content/60">
+                                                        <svg class="w-3.5 h-3.5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                                        </svg>
+                                                        <span class="italic">${log.reason}</span>
+                                                    </div>
+                                                </div>
+                                            ` : ''}
                                         </td>
                                     </tr>
                                 `;
                             }).join('');
                         } catch (error) {
                             console.error('Error loading audit logs:', error);
-                            document.getElementById('audit-logs-table').innerHTML =
-                                '<tr><td colspan="4" class="px-4 py-6 text-center text-sm text-error flex items-center justify-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg> {{ _("Failed to load") }}</td></tr>';
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="4" class="px-4 py-8 text-center">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <svg class="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            <p class="text-sm text-error font-medium">{{ _("Failed to load") }}</p>
+                                            <p class="text-xs text-base-content/50">{{ _("Please refresh the page") }}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
                         }
                     }
 

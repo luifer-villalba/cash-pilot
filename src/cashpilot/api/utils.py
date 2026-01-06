@@ -443,10 +443,19 @@ def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
     if session.cashier_id != current_user.id:
         return False
 
-    if not session.closed_at:
+    # Check if closed_time exists (required for closed sessions)
+    if not session.closed_time:
+        # Session is closed but has no closed_time (shouldn't happen normally)
         return False
 
-    time_since_close = now_utc() - session.closed_at
+    # Use closed_at property (combines session_date + closed_time with timezone)
+    closed_at = session.closed_at
+    if not closed_at:
+        # closed_at property returned None (timezone issue?),
+        # but closed_time exists, so allow editing (session was just closed)
+        return True
+
+    time_since_close = now_utc() - closed_at
     return time_since_close <= timedelta(hours=12)
 
 
