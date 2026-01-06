@@ -6,9 +6,11 @@ CashPilot maintains compatibility with Windows 7 browsers to support businesses 
 
 **Target Browsers:**
 - Internet Explorer 11 (IE11)
-- Chrome 50+ (last version supporting Windows 7)
-- Firefox 45+ (last version supporting Windows 7)
+- Chrome 50+ (minimum supported; last version was Chrome 109, Feb 2023)
+- Firefox 45+ (minimum supported; last version was Firefox 115 ESR, Sept 2024)
 - Edge Legacy (Windows 7 compatible)
+
+**Note:** We target minimum versions (Chrome 50+, Firefox 45+) for broader compatibility, but test on the last available versions (Chrome 109, Firefox 115) to ensure compatibility with the most recent Windows 7 browsers.
 
 **Last Verified:** 2025-01-29  
 **Status:** Active maintenance
@@ -318,8 +320,10 @@ autoprefixer: {
 
 - [ ] **Test on actual Windows 7 machine or VM**
   - IE11: Full functionality test
-  - Chrome 109 (last Windows 7 version): Full functionality test
-  - Firefox 115 (last Windows 7 version): Full functionality test
+  - Chrome 109 (last version supporting Windows 7, released Jan 2023): Full functionality test
+  - Firefox 115 ESR (last version supporting Windows 7, support ended Sept 2024): Full functionality test
+  
+  **Note:** While we target minimum versions (Chrome 50+, Firefox 45+) for compatibility, we test on the last available versions to ensure compatibility with the most recent Windows 7 browsers.
 
 - [ ] **BrowserStack/CrossBrowserTesting verification**
   - Test key user flows:
