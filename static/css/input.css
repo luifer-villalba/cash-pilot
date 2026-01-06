@@ -31,42 +31,44 @@
     }
   }
   
-  /* Fallback for CSS variables - only apply if variables aren't supported */
-  @supports not (color: var(--fake-var)) {
-    /* Fallback for input borders - ensure purple border on focus */
+  /* Fallback for CSS variables - only apply if variables aren't supported
+   * Using a more reliable detection: test if var() function works with a fallback
+   */
+  @supports not (color: var(--test-var, red)) {
+    /* Fallback for input borders - ensure primary border on focus */
     .input-bordered:focus,
     .input.input-bordered:focus,
     input.input-bordered:focus {
-      border-color: #9333ea !important; /* Purple-600 fallback for primary */
-      outline-color: #9333ea !important;
+      border-color: #3b82f6 !important; /* Blue-500 fallback for primary */
+      outline-color: #3b82f6 !important;
       outline-width: 2px !important;
       outline-offset: 2px !important;
     }
     
-    /* Fallback for primary button - ensure purple background */
+    /* Fallback for primary button - ensure blue background (DaisyUI default) */
     .btn-primary,
     button.btn-primary,
     button[type="submit"].btn-primary {
-      background-color: #9333ea !important; /* Purple-600 fallback */
-      border-color: #9333ea !important;
+      background-color: #3b82f6 !important; /* Blue-500 fallback */
+      border-color: #3b82f6 !important;
       color: #ffffff !important;
     }
     
     .btn-primary:hover,
     button.btn-primary:hover,
     button[type="submit"].btn-primary:hover {
-      background-color: #7e22ce !important; /* Purple-700 fallback */
-      border-color: #7e22ce !important;
+      background-color: #2563eb !important; /* Blue-600 fallback */
+      border-color: #2563eb !important;
     }
     
     /* Fallback for primary text color */
     .text-primary {
-      color: #9333ea !important;
+      color: #3b82f6 !important;
     }
     
     /* Fallback for primary borders */
     .border-primary {
-      border-color: #9333ea !important;
+      border-color: #3b82f6 !important;
     }
     
     /* Ensure base colors work even if CSS variables fail */
@@ -107,8 +109,8 @@ textarea::-moz-placeholder {
 }
 
 /* IE11 and older browsers fallback */
+/* IE11 does not support opacity on :-ms-input-placeholder; use rgba() instead */
 input:-ms-input-placeholder,
 textarea:-ms-input-placeholder {
-  color: #1f2937; /* Direct color for IE11 (doesn't support CSS variables well) */
-  opacity: 0.5;
+  color: rgba(31, 41, 55, 0.5); /* Direct rgba color for IE11 (doesn't support CSS variables or opacity on placeholder) */
 }

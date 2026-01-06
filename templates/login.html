@@ -12,45 +12,48 @@
     <script>
         (function() {
             // String.padStart polyfill for IE11 and older browsers
+            // Note: Does not use String.repeat() which is not supported in IE11
             if (!String.prototype.padStart) {
                 String.prototype.padStart = function(targetLength, padString) {
                     targetLength = targetLength >> 0;
-                    padString = String(typeof padString !== 'undefined' ? padString : ' ');
-                    if (this.length > targetLength) {
-                        return String(this);
-                    } else {
-                        targetLength = targetLength - this.length;
-                        if (targetLength > padString.length) {
-                            padString += padString.repeat(targetLength / padString.length);
-                        }
-                        return padString.slice(0, targetLength) + String(this);
+                    var str = String(this);
+                    padString = typeof padString !== 'undefined' ? String(padString) : ' ';
+                    if (str.length >= targetLength) {
+                        return str;
                     }
+                    var padLength = targetLength - str.length;
+                    // Ensure padString is non-empty to avoid infinite loops
+                    if (padString === '') {
+                        padString = ' ';
+                    }
+                    var padding = '';
+                    while (padding.length < padLength) {
+                        padding += padString;
+                    }
+                    if (padding.length > padLength) {
+                        padding = padding.slice(0, padLength);
+                    }
+                    return padding + str;
                 };
             }
             // Array.includes polyfill for IE11
             if (!Array.prototype.includes) {
                 Array.prototype.includes = function(searchElement, fromIndex) {
-                    if (this == null) {
+                    if (this === null || this === undefined) {
                         throw new TypeError('"this" is null or not defined');
                     }
                     var o = Object(this);
-                    var len = parseInt(o.length) || 0;
+                    var len = o.length >>> 0;
                     if (len === 0) {
                         return false;
                     }
-                    var n = parseInt(fromIndex) || 0;
-                    var k;
-                    if (n >= 0) {
-                        k = n;
-                    } else {
-                        k = len + n;
-                        if (k < 0) { k = 0; }
-                    }
+                    var n = fromIndex | 0;
+                    var k = n >= 0 ? n : Math.max(len + n, 0);
                     function sameValueZero(x, y) {
                         return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
                     }
                     for (; k < len; k++) {
-                        if (sameValueZero(o[k], searchElement)) {
+                        if (k in o && sameValueZero(o[k], searchElement)) {
                             return true;
                         }
                     }
@@ -59,16 +62,18 @@
             }
             
             // Detect if CSS variables are supported and inject fallback styles if needed
-            var supportsCSSVars = window.CSS && CSS.supports && CSS.supports('color', 'var(--fake-var)');
+            // Test with a real variable that has a fallback to ensure var() function works
+            var supportsCSSVars = window.CSS && CSS.supports && CSS.supports('color', 'var(--test-var, red)');
             if (!supportsCSSVars) {
                 // Add inline styles for critical elements if CSS variables don't work
+                // Using blue (#3b82f6) to match DaisyUI default primary color
                 var style = document.createElement('style');
                 style.textContent = [
-                    '.input-bordered:focus { border-color: #9333ea !important; outline-color: #9333ea !important; }',
-                    '.btn-primary { background-color: #9333ea !important; border-color: #9333ea !important; color: #ffffff !important; }',
-                    '.btn-primary:hover { background-color: #7e22ce !important; border-color: #7e22ce !important; }',
-                    '.text-primary { color: #9333ea !important; }',
-                    '.border-primary { border-color: #9333ea !important; }',
+                    '.input-bordered:focus { border-color: #3b82f6 !important; outline-color: #3b82f6 !important; }',
+                    '.btn-primary { background-color: #3b82f6 !important; border-color: #3b82f6 !important; color: #ffffff !important; }',
+                    '.btn-primary:hover { background-color: #2563eb !important; border-color: #2563eb !important; }',
+                    '.text-primary { color: #3b82f6 !important; }',
+                    '.border-primary { border-color: #3b82f6 !important; }',
                     '.backdrop-blur-sm { background-color: rgba(255, 255, 255, 0.95) !important; }'
                 ].join('\n');
                 document.head.appendChild(style);

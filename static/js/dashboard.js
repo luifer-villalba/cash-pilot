@@ -14,9 +14,12 @@ function updateFilterBadge() {
         business_id: (businessIdEl && businessIdEl.value) ? businessIdEl.value : '',
     };
 
-    var activeCount = Object.values(filters).filter(function(v) {
-        return v.trim() !== '';
-    }).length;
+    var activeCount = 0;
+    for (var key in filters) {
+        if (filters.hasOwnProperty(key) && filters[key].trim() !== '') {
+            activeCount++;
+        }
+    }
     var badge = document.getElementById('filter-badge');
     var count = document.getElementById('filter-count');
 

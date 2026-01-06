@@ -32,61 +32,73 @@
     <script>
         (function() {
             // String.padStart polyfill for IE11 and older browsers
+            // Note: Does not use String.repeat() which is not supported in IE11
             if (!String.prototype.padStart) {
                 String.prototype.padStart = function(targetLength, padString) {
                     targetLength = targetLength >> 0;
-                    padString = String(typeof padString !== 'undefined' ? padString : ' ');
-                    if (this.length > targetLength) {
-                        return String(this);
-                    } else {
-                        targetLength = targetLength - this.length;
-                        if (targetLength > padString.length) {
-                            padString += padString.repeat(targetLength / padString.length);
-                        }
-                        return padString.slice(0, targetLength) + String(this);
+                    var str = String(this);
+                    padString = typeof padString !== 'undefined' ? String(padString) : ' ';
+                    if (str.length >= targetLength) {
+                        return str;
                     }
+                    var padLength = targetLength - str.length;
+                    // Ensure padString is non-empty to avoid infinite loops
+                    if (padString === '') {
+                        padString = ' ';
+                    }
+                    var padding = '';
+                    while (padding.length < padLength) {
+                        padding += padString;
+                    }
+                    if (padding.length > padLength) {
+                        padding = padding.slice(0, padLength);
+                    }
+                    return padding + str;
                 };
             }
             // String.padEnd polyfill
+            // Note: Does not use String.repeat() which is not supported in IE11
             if (!String.prototype.padEnd) {
                 String.prototype.padEnd = function(targetLength, padString) {
                     targetLength = targetLength >> 0;
-                    padString = String(typeof padString !== 'undefined' ? padString : ' ');
-                    if (this.length > targetLength) {
-                        return String(this);
-                    } else {
-                        targetLength = targetLength - this.length;
-                        if (targetLength > padString.length) {
-                            padString += padString.repeat(targetLength / padString.length);
-                        }
-                        return String(this) + padString.slice(0, targetLength);
+                    var str = String(this);
+                    padString = typeof padString !== 'undefined' ? String(padString) : ' ';
+                    if (str.length >= targetLength) {
+                        return str;
                     }
+                    var padLength = targetLength - str.length;
+                    // Ensure padString is non-empty to avoid infinite loops
+                    if (padString === '') {
+                        padString = ' ';
+                    }
+                    var padding = '';
+                    while (padding.length < padLength) {
+                        padding += padString;
+                    }
+                    if (padding.length > padLength) {
+                        padding = padding.slice(0, padLength);
+                    }
+                    return str + padding;
                 };
             }
             // Array.includes polyfill for IE11
             if (!Array.prototype.includes) {
                 Array.prototype.includes = function(searchElement, fromIndex) {
-                    if (this == null) {
+                    if (this === null || this === undefined) {
                         throw new TypeError('"this" is null or not defined');
                     }
                     var o = Object(this);
-                    var len = parseInt(o.length) || 0;
+                    var len = o.length >>> 0;
                     if (len === 0) {
                         return false;
                     }
-                    var n = parseInt(fromIndex) || 0;
-                    var k;
-                    if (n >= 0) {
-                        k = n;
-                    } else {
-                        k = len + n;
-                        if (k < 0) { k = 0; }
-                    }
+                    var n = fromIndex | 0;
+                    var k = n >= 0 ? n : Math.max(len + n, 0);
                     function sameValueZero(x, y) {
                         return x === y || (typeof x === 'number' && typeof y === 'number' && isNaN(x) && isNaN(y));
                     }
                     for (; k < len; k++) {
-                        if (sameValueZero(o[k], searchElement)) {
+                        if (k in o && sameValueZero(o[k], searchElement)) {
                             return true;
                         }
                     }
@@ -112,7 +124,7 @@
                             T = thisArg;
                         }
                     }
-                    var len = parseInt(items.length) || 0;
+                    var len = parseInt(items.length, 10) || 0;
                     var A = typeof C === 'function' ? Object(new C(len)) : new Array(len);
                     var k = 0;
                     var kValue;
@@ -251,6 +263,90 @@
                 };
             }
             
+            // Promise polyfill for IE11 (basic implementation)
+            if (typeof Promise === 'undefined') {
+                window.Promise = function(executor) {
+                    var self = this;
+                    self.state = 'pending';
+                    self.value = undefined;
+                    self.handlers = [];
+                    
+                    function resolve(result) {
+                        if (self.state === 'pending') {
+                            self.state = 'fulfilled';
+                            self.value = result;
+                            self.handlers.forEach(handle);
+                            self.handlers = null;
+                        }
+                    }
+                    
+                    function reject(error) {
+                        if (self.state === 'pending') {
+                            self.state = 'rejected';
+                            self.value = error;
+                            self.handlers.forEach(handle);
+                            self.handlers = null;
+                        }
+                    }
+                    
+                    function handle(handler) {
+                        if (self.state === 'pending') {
+                            self.handlers.push(handler);
+                        } else {
+                            if (self.state === 'fulfilled' && typeof handler.onFulfilled === 'function') {
+                                handler.onFulfilled(self.value);
+                            }
+                            if (self.state === 'rejected' && typeof handler.onRejected === 'function') {
+                                handler.onRejected(self.value);
+                            }
+                        }
+                    }
+                    
+                    self.then = function(onFulfilled, onRejected) {
+                        return new Promise(function(resolve, reject) {
+                            handle({
+                                onFulfilled: function(result) {
+                                    try {
+                                        resolve(onFulfilled ? onFulfilled(result) : result);
+                                    } catch (ex) {
+                                        reject(ex);
+                                    }
+                                },
+                                onRejected: function(error) {
+                                    try {
+                                        resolve(onRejected ? onRejected(error) : reject(error));
+                                    } catch (ex) {
+                                        reject(ex);
+                                    }
+                                }
+                            });
+                        });
+                    };
+                    
+                    self.catch = function(onRejected) {
+                        return self.then(null, onRejected);
+                    };
+                    
+                    try {
+                        executor(resolve, reject);
+                    } catch (ex) {
+                        reject(ex);
+                    }
+                };
+                
+                window.Promise.resolve = function(value) {
+                    return new Promise(function(resolve) {
+                        resolve(value);
+                    });
+                };
+                
+                window.Promise.reject = function(reason) {
+                    return new Promise(function(resolve, reject) {
+                        reject(reason);
+                    });
+                };
+            }
+            
             // fetch polyfill for IE11 (basic implementation using XMLHttpRequest)
             if (typeof fetch === 'undefined') {
                 window.fetch = function(url, options) {
@@ -304,11 +400,8 @@
                                 }
                             }
                             
-                            if (response.ok) {
-                                resolve(response);
-                            } else {
-                                reject(response);
-                            }
+                            // Fetch resolves for all HTTP status codes; consumers should check response.ok
+                            resolve(response);
                         };
                         
                         xhr.onerror = function() {
@@ -342,7 +435,11 @@
                     var decimalPart = parts[1] || '';
                     
                     if (decimalPart.length < minimumFractionDigits) {
-                        decimalPart = decimalPart + '0'.repeat(minimumFractionDigits - decimalPart.length);
+                        var zerosToAdd = minimumFractionDigits - decimalPart.length;
+                        while (zerosToAdd > 0) {
+                            decimalPart += '0';
+                            zerosToAdd--;
+                        }
                     } else if (decimalPart.length > maximumFractionDigits) {
                         decimalPart = decimalPart.substring(0, maximumFractionDigits);
                     }
@@ -358,16 +455,18 @@
             }
             
             // Detect if CSS variables are supported and inject fallback styles if needed
-            var supportsCSSVars = window.CSS && CSS.supports && CSS.supports('color', 'var(--fake-var)');
+            // Test with a real variable that has a fallback to ensure var() function works
+            var supportsCSSVars = window.CSS && CSS.supports && CSS.supports('color', 'var(--test-var, red)');
             if (!supportsCSSVars) {
                 // Add inline styles for critical elements if CSS variables don't work
+                // Using blue (#3b82f6) to match DaisyUI default primary color
                 var style = document.createElement('style');
                 style.textContent = [
-                    '.input-bordered:focus { border-color: #9333ea !important; outline-color: #9333ea !important; }',
-                    '.btn-primary { background-color: #9333ea !important; border-color: #9333ea !important; color: #ffffff !important; }',
-                    '.btn-primary:hover { background-color: #7e22ce !important; border-color: #7e22ce !important; }',
-                    '.text-primary { color: #9333ea !important; }',
-                    '.border-primary { border-color: #9333ea !important; }',
+                    '.input-bordered:focus { border-color: #3b82f6 !important; outline-color: #3b82f6 !important; }',
+                    '.btn-primary { background-color: #3b82f6 !important; border-color: #3b82f6 !important; color: #ffffff !important; }',
+                    '.btn-primary:hover { background-color: #2563eb !important; border-color: #2563eb !important; }',
+                    '.text-primary { color: #3b82f6 !important; }',
+                    '.border-primary { border-color: #3b82f6 !important; }',
                     '.backdrop-blur-sm { background-color: rgba(255, 255, 255, 0.95) !important; }'
                 ].join('\n');
                 document.head.appendChild(style);
@@ -478,7 +577,7 @@
             <div class="dropdown dropdown-end">
                 <button tabindex="0" class="btn btn-ghost btn-circle btn-sm transition-all duration-200 hover:scale-110 active:scale-95" aria-label="{{ _('User menu') }}">
                     <div class="avatar">
-                        <div class="w-10 h-10 rounded-full text-white font-bold text-sm shadow-lg flex items-center justify-center" style="background-color: #9333ea !important; min-width: 2.5rem; min-height: 2.5rem; line-height: 1;">
+                        <div class="w-10 h-10 rounded-full text-white font-bold text-sm shadow-lg flex items-center justify-center bg-primary" style="min-width: 2.5rem; min-height: 2.5rem; line-height: 1;">
                             {{ current_user.email[0].upper() }}
                         </div>
                     </div>
