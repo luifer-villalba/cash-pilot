@@ -307,6 +307,19 @@ async def daily_reconciliation_post(
                     "is_closed": existing.is_closed,
                 }
 
+                # When is_closed=True, preserve existing sales data if not provided
+                # This prevents data loss when marking a business as closed
+                if is_closed and cash_sales is None:
+                    cash_sales = existing.cash_sales
+                if is_closed and credit_sales is None:
+                    credit_sales = existing.credit_sales
+                if is_closed and card_sales is None:
+                    card_sales = existing.card_sales
+                if is_closed and refunds is None:
+                    refunds = existing.refunds
+                if is_closed and total_sales is None:
+                    total_sales = existing.total_sales
+
                 existing.cash_sales = cash_sales
                 existing.credit_sales = credit_sales
                 existing.card_sales = card_sales

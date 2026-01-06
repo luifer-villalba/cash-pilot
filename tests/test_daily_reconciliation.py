@@ -361,6 +361,49 @@ class TestDailyReconciliationIsClosed:
         await db_session.refresh(reconciliation)
         assert reconciliation.is_closed is True
 
+    @pytest.mark.asyncio
+    async def test_update_is_closed_preserves_sales_data(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test that updating is_closed=True via POST preserves existing sales data."""
+        from cashpilot.utils.datetime import today_local
+
+        business = await BusinessFactory.create(db_session)
+        business_id = business.id
+        today = today_local()
+        today_str = today.isoformat()
+
+        # Create reconciliation with sales data
+        reconciliation = await DailyReconciliationFactory.create(
+            db_session,
+            business_id=business_id,
+            is_closed=False,
+            cash_sales=Decimal("1000000.00"),
+            credit_sales=Decimal("500000.00"),
+            card_sales=Decimal("200000.00"),
+            total_sales=Decimal("1700000.00"),
+        )
+
+        # Update via POST with is_closed=True (no sales fields in form)
+        response = await admin_client.post(
+            "/reconciliation/daily",
+            data={
+                "date": today_str,
+                f"is_closed_{business_id}": "on",  # Checkbox checked
+                # No sales fields provided
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code == 302  # Should succeed
+
+        # Verify sales data is preserved
+        await db_session.refresh(reconciliation)
+        assert reconciliation.is_closed is True
+        assert reconciliation.cash_sales == Decimal("1000000.00")
+        assert reconciliation.credit_sales == Decimal("500000.00")
+        assert reconciliation.card_sales == Decimal("200000.00")
+        assert reconciliation.total_sales == Decimal("1700000.00")
+
 
 class TestDailyReconciliationEditAuditTrail:
     """Test audit trail for edits."""
