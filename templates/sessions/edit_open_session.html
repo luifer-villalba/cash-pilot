@@ -206,7 +206,7 @@
                     <div class="form-control">
                         <label class="label pb-2">
                             <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">
-                                {{ _('Reason for Edit') }} <span class="text-error">*</span>
+                                {{ _('Reason for Edit') }}
                             </span>
                         </label>
                         <textarea
@@ -215,11 +215,10 @@
                             class="textarea textarea-bordered w-full h-24 focus:ring-2 focus:ring-warning/20 transition-all resize-y"
                             placeholder="{{ _('e.g., Corrected initial count...') }}"
                             rows="4"
-                            required
                             aria-describedby="reason-help"
                         ></textarea>
                         <label class="label pt-1" id="reason-help">
-                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Required for audit trail') }}</span>
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Optional: provide a reason for this edit') }}</span>
                         </label>
                     </div>
                 </div>

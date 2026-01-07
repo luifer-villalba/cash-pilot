@@ -247,18 +247,18 @@ async def session_detail(
             # Admins can always edit closed sessions
             can_edit = True
         elif current_user.id == session.cashier_id:
-            # Cashiers can edit their own closed sessions within 12 hours
+            # Cashiers can edit their own closed sessions within 32 hours
             # Check if closed_time is set (required for closed sessions)
             if session.closed_time:
                 # Use closed_at property (combines session_date + closed_time with timezone)
                 closed_at = session.closed_at
                 if closed_at:
                     time_since_close = now_utc() - closed_at
-                    if time_since_close <= timedelta(hours=12):
+                    if time_since_close <= timedelta(hours=32):
                         can_edit = True
                     else:
                         can_edit = False
-                        edit_expired_msg = _("Edit window expired (12 hours passed)")
+                        edit_expired_msg = _("Edit window expired (32 hours passed)")
                 else:
                     # closed_at property returned None (timezone issue?),
                     # but closed_time exists, so allow editing (session was just closed)

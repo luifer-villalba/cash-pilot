@@ -40,7 +40,7 @@ async def require_own_session(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CashSession:
-    """Check if user owns the session OR is admin. Cashiers have 12-hour window."""
+    """Check if user owns the session OR is admin. Cashiers have 32-hour window."""
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
@@ -59,7 +59,7 @@ async def require_own_session(
     if current_user.role == UserRole.ADMIN:
         return session
 
-    # Cashier: can edit only their own, within 12 hours of closing
+    # Cashier: can edit only their own, within 32 hours of closing
     if session.cashier_id != current_user.id:
         raise HTTPException(
             status_code=403,
@@ -82,10 +82,10 @@ async def require_own_session(
                 current_time=str(current_time),
                 time_diff_seconds=time_diff.total_seconds(),
                 time_diff_hours=time_diff.total_seconds() / 3600,
-                expired=time_diff > timedelta(hours=12),
+                expired=time_diff > timedelta(hours=32),
             )
 
-            if time_diff > timedelta(hours=12):
-                raise HTTPException(status_code=403, detail="Edit window expired (12 hours)")
+            if time_diff > timedelta(hours=32):
+                raise HTTPException(status_code=403, detail="Edit window expired (32 hours)")
 
     return session

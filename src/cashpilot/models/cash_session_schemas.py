@@ -88,7 +88,12 @@ class CashSessionPatchClosed(BaseModel):
     credit_sales_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     credit_payments_collected: Decimal | None = Field(None, ge=0, decimal_places=2)
     notes: str | None = Field(None, max_length=1000)
-    reason: str | None = Field(None, max_length=500, description="Reason for edit")
+    reason: str = Field(
+        ...,
+        min_length=1,
+        max_length=500,
+        description="Reason for edit (required for audit compliance)",
+    )
 
     @field_validator(
         "final_cash",
