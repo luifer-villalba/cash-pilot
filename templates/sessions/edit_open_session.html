@@ -312,21 +312,15 @@
             openedTimeInput.value = hours + ':' + minutes;
         }
 
-        // Calculator-enabled fields are handled by currency-formatter.js
-        var calculatorFields = ['credit_card_total', 'debit_card_total', 'credit_sales_total', 'credit_payments_collected', 'envelope_amount'];
-        
-        // Create a Set for faster lookup (ES5 compatible)
-        var calculatorFieldsSet = {};
-        calculatorFields.forEach(function(field) {
-            calculatorFieldsSet[field] = true;
-        });
+        // Calculator-enabled fields are identified by the data-calculator-field attribute
+        // set by currency-formatter.js. This script only auto-formats non-calculator fields.
         
         // Auto-format currency inputs on blur (only for non-calculator fields)
         document.querySelectorAll('[data-currency-input]').forEach(function(input) {
-            // Check if field is marked as calculator field by currency-formatter.js
-            var isCalculatorField = calculatorFieldsSet[input.name] === true || 
-                                    input.dataset.calculatorField === 'true' ||
-                                    input.getAttribute('data-calculator-field') === 'true';
+            // Check if field is marked as calculator field (attribute set by currency-formatter.js)
+            // Use getAttribute for IE11 compatibility (dataset may not work in all cases)
+            var isCalculatorField = input.getAttribute('data-calculator-field') === 'true' ||
+                                    (input.dataset && input.dataset.calculatorField === 'true');
             
             if (!isCalculatorField) {
                 // Regular fields: only digits

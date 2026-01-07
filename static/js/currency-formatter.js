@@ -77,7 +77,39 @@ function parseCalculator(value) {
         // Tokenize: split into numbers and operators
         // Use regex to match numbers (including decimals) and operators
         var tokens = expr.match(/(\d+\.?\d*|[\+\-\*\/])/g);
-        if (!tokens || tokens.length < 3) {
+        if (!tokens) {
+            return parseInt(value.replace(/\D/g, '')) || 0;
+        }
+        
+        // Handle unary minus: merge "-" with following number when it denotes a negative value
+        // This handles cases like "5+-3" or "-10+5" correctly
+        var processedTokens = [];
+        var j = 0;
+        while (j < tokens.length) {
+            var current = tokens[j];
+            // Check if this is a unary minus (at start or after an operator)
+            if (current === '-' && (j === 0 || /[+\-*/]/.test(tokens[j - 1]))) {
+                // Unary minus at start or after another operator
+                var next = tokens[j + 1];
+                if (next && /^\d+\.?\d*$/.test(next)) {
+                    // Merge minus with next number
+                    processedTokens.push('-' + next);
+                    j += 2; // Skip both tokens
+                    continue;
+                }
+            }
+            processedTokens.push(current);
+            j++;
+        }
+        tokens = processedTokens;
+        
+        // If expression reduces to a single numeric token, return it directly
+        if (tokens.length === 1 && /^-?\d+(\.\d+)?$/.test(tokens[0])) {
+            var singleResult = parseFloat(tokens[0]) || 0;
+            return Math.floor(Math.abs(singleResult));
+        }
+        
+        if (tokens.length < 3) {
             // Need at least: number, operator, number
             return parseInt(value.replace(/\D/g, '')) || 0;
         }
@@ -102,9 +134,12 @@ function parseCalculator(value) {
                     result = right !== 0 ? left / right : 0;
                 }
                 
-                // Replace the three tokens with the result
+                // Replace the three tokens (left, operator, right) with the result
+                // After splice, the result is now at position i-1, and we want to check
+                // if there are more operators at the same position (since we replaced 3 with 1)
                 tokens.splice(i - 1, 3, result.toString());
-                i = i - 1; // Stay at same position to check next
+                // Don't increment i - we need to check the result position again
+                // in case there are consecutive operators (e.g., 2*3*4)
             } else {
                 i++;
             }
@@ -130,9 +165,9 @@ function parseCalculator(value) {
                     result = left - right;
                 }
                 
-                // Replace the three tokens with the result
+                // Replace the three tokens (left, operator, right) with the result
                 tokens.splice(i - 1, 3, result.toString());
-                i = i - 1; // Stay at same position to check next
+                // Don't increment i - check the result position again
             } else {
                 i++;
             }
@@ -144,8 +179,20 @@ function parseCalculator(value) {
         }
         
         var finalResult = parseFloat(tokens[0]) || 0;
-        // Return positive integer (no decimals for currency)
-        return Math.floor(Math.abs(finalResult));
+        // Currency amounts are treated as non-negative for this application.
+        // If expression evaluates to negative, coerce to positive and log warning.
+        var coercedResult = Math.floor(Math.abs(finalResult));
+        if (finalResult < 0) {
+            // Log warning in development (IE11 compatible console.warn)
+            if (typeof console !== 'undefined' && console.warn) {
+                console.warn('parseCalculator: negative result coerced to positive', {
+                    expression: value,
+                    evaluatedResult: finalResult,
+                    returnedValue: coercedResult
+                });
+            }
+        }
+        return coercedResult;
     } catch (e) {
         // If anything goes wrong, fall back to simple number parsing
         return parseInt(value.replace(/\D/g, '')) || 0;
@@ -191,23 +238,24 @@ function initializeCurrencyInputs() {
                 input.dataset.calculatorInitialized = 'true';
                 
                 // Calculator-enabled fields: allow operators +, -, *, /
-                // Use capture phase to ensure this runs before other handlers
-                input.addEventListener('input', function (e) {
+                input.addEventListener('input', function () {
                     // Allow digits, operators, and decimal point
                     var newValue = this.value.replace(/[^\d+\-*/. ]/g, '');
                     if (newValue !== this.value) {
                         this.value = newValue;
                     }
-                }, true); // Capture phase runs first
+                });
 
                 // On blur: evaluate expression and format result
-                input.addEventListener('blur', function (e) {
+                input.addEventListener('blur', function () {
                     if (this.value) {
                         var result = parseCalculator(this.value);
                         this.value = currencyFormatter.formatForLocale(result);
                     }
-                }, true); // Capture phase runs first
+                });
             } else {
+                // Mark regular fields as initialized to prevent duplicate handlers
+                input.dataset.calculatorInitialized = 'true';
                 // Regular fields: only digits + single decimal point
                 input.addEventListener('input', function () {
                     var value = this.value;

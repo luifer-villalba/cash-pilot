@@ -67,18 +67,17 @@ function updatePreview() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Calculator-enabled fields
-    var calculatorFields = [
-        'credit_card_total',
-        'debit_card_total',
-        'credit_sales_total',
-        'credit_payments_collected',
-        'envelope_amount'
-        // Removed: 'bank_transfer_total', 'expenses'
+    // Calculator-enabled fields are identified by data-calculator-field attribute
+    // set by currency-formatter.js. We just need to update preview on changes.
+    var calculatorFieldSelectors = [
+        '[name="credit_card_total"]',
+        '[name="debit_card_total"]',
+        '[name="credit_sales_total"]',
+        '[name="credit_payments_collected"]',
+        '[name="envelope_amount"]'
     ];
 
-    calculatorFields.forEach(function(fieldName) {
-        var selector = '[name="' + fieldName + '"]';
+    calculatorFieldSelectors.forEach(function(selector) {
         var input = document.querySelector(selector);
         if (input) {
             // Calculator fields are handled by currency-formatter.js
