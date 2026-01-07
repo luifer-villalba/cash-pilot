@@ -35,12 +35,53 @@ async def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
+async def require_view_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> CashSession:
+    """Check if user can VIEW the session (no edit window restriction).
+
+    Admins can view any session (including deleted).
+    Cashiers can view their own sessions (but not deleted ones).
+    """
+    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    result = await db.execute(stmt)
+    session = result.scalar_one_or_none()
+
+    if not session:
+        raise NotFoundError("CashSession", session_id)
+
+    # Block cashiers from accessing deleted sessions
+    if session.is_deleted and current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=404,
+            detail="Session not found or has been deleted",
+        )
+
+    # Admin: can view any session anytime (including deleted ones)
+    if current_user.role == UserRole.ADMIN:
+        return session
+
+    # Cashier: can view only their own sessions (no time restriction)
+    if session.cashier_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "You don't have permission to access this session. "
+                "You can only access sessions you created or own."
+            ),
+        )
+
+    return session
+
+
 async def require_own_session(
     session_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> CashSession:
-    """Check if user owns the session OR is admin. Cashiers have 32-hour window."""
+    """Check if user owns the session OR is admin. Cashiers have 32-hour EDIT window."""
     stmt = select(CashSession).where(CashSession.id == UUID(session_id))
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()

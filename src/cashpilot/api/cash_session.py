@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_admin, require_own_session
+from cashpilot.api.auth_helpers import require_admin, require_own_session, require_view_session
 from cashpilot.api.cash_session_helpers import (
     _determine_cashier_for_session,
     _validate_restore_session_inputs,
@@ -154,9 +154,9 @@ async def open_shift(
 @router.get("/{session_id}", response_model=CashSessionRead)
 async def get_session(
     session_id: str,
-    session: CashSession = Depends(require_own_session),
+    session: CashSession = Depends(require_view_session),
 ):
-    """Get cash session details."""
+    """Get cash session details (read-only, no edit window restriction)."""
     return session
 
 
