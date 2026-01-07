@@ -402,11 +402,11 @@
     </div>
 </div>
 <script>
-    // Currency formatter helper
+    // Currency formatter helper (ES5 compatible for Windows 7)
     function formatCurrency(value) {
         if (!value && value !== 0) return 'Gs 0';
-        const num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
-        return `Gs ${num.toLocaleString('es-PY').replace(/,/g, '.')}`;
+        var num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
     }
 
     function parseCurrency(value) {
@@ -414,21 +414,45 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        // Auto-format currency inputs on blur
-        document.querySelectorAll('[data-currency-input]').forEach(input => {
-            input.addEventListener('blur', function() {
-                if (this.value) {
-                    const digits = this.value.replace(/\D/g, '');
-                    if (digits) {
-                        const num = parseInt(digits);
-                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+        // Calculator-enabled fields are identified by the data-calculator-field attribute
+        // set by currency-formatter.js, or by field name as fallback.
+        // This script only auto-formats non-calculator fields.
+        
+        // Known calculator field names (fallback if attribute not set yet)
+        var calculatorFieldNames = {
+            'credit_card_total': true,
+            'debit_card_total': true,
+            'credit_sales_total': true,
+            'credit_payments_collected': true,
+            'envelope_amount': true
+        };
+        
+        // Auto-format currency inputs on blur (only for non-calculator fields)
+        document.querySelectorAll('[data-currency-input]').forEach(function(input) {
+            // Check if field is marked as calculator field (attribute set by currency-formatter.js)
+            // or by field name as fallback (for race condition protection)
+            // Use getAttribute for IE11 compatibility (dataset may not work in all cases)
+            var isCalculatorField = input.getAttribute('data-calculator-field') === 'true' ||
+                                    (input.dataset && input.dataset.calculatorField === 'true') ||
+                                    (input.name && calculatorFieldNames[input.name] === true);
+            
+            if (!isCalculatorField) {
+                // Regular fields: only digits
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        var digits = this.value.replace(/\D/g, '');
+                        if (digits) {
+                            var num = parseInt(digits);
+                            this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                        }
                     }
-                }
-            });
+                });
 
-            input.addEventListener('input', function() {
-                this.value = this.value.replace(/[^\d.,]/g, '');
-            });
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^\d.,]/g, '');
+                });
+            }
+            // Calculator fields are handled by currency-formatter.js
         });
     });
 </script>

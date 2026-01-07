@@ -6,7 +6,7 @@ Business cash register reconciliation system built for multi-location operations
 
 [![Documentation](https://img.shields.io/badge/docs-available-blue)](docs/README.md)
 [![Security](https://img.shields.io/badge/security-policy-green)](SECURITY.md)
-[![Tests](https://img.shields.io/badge/tests-167+-success)](tests/)
+[![Tests](https://img.shields.io/badge/tests-262+-success)](tests/)
 
 ---
 
@@ -28,7 +28,7 @@ Business cash register reconciliation system built for multi-location operations
 **Backend:** FastAPI 0.128.0+ • SQLAlchemy 2.0.35 • PostgreSQL • asyncpg 0.29.0  
 **Frontend:** Jinja2 3.1.0+ • Tailwind CSS 4.1.18 • DaisyUI 5.5.14 • HTMX 1.9.10  
 **DevOps:** Docker • Alembic 1.13.3 • Railway deployment • GitHub auto-deploy  
-**Testing:** pytest 8.3.2 • 167+ async tests • RBAC coverage  
+**Testing:** pytest 8.3.2 • 262+ async tests • RBAC coverage  
 **i18n:** Spanish/English (Babel 2.14.0)
 
 **Compatibility:** Windows 7+ (IE11, Chrome 50+, Firefox 45+) - See [Windows 7 Compatibility Guide](docs/w7-compatibility.md)
@@ -48,7 +48,7 @@ make build              # Build containers
 make up                 # Start services
 make migrate            # Run migrations
 make seed               # Create demo data (3 businesses, 87 sessions)
-make test               # Run 167+ tests
+make test               # Run 262+ tests
 make logs               # View live logs
 
 # Visit http://localhost:8000
@@ -112,7 +112,7 @@ This isn't a toy app. It's solving a real business problem for real businesses. 
 
 ## Code Quality
 
-- **167+ Tests** — Every RBAC rule tested, async patterns verified, edge cases covered
+- **262+ Tests** — Every RBAC rule tested, async patterns verified, edge cases covered
 - **Type Hints** — Full coverage with Pydantic v2, SQLAlchemy Mapped types
 - **Input Validation** — Comprehensive validation for null, undefined, and unexpected types across all endpoints
 - **Linting** — ruff, black, isort with pre-commit hooks
@@ -155,7 +155,7 @@ src/cashpilot/
 ├── utils/                  # Timezone helpers (Paraguay-specific)
 └── scripts/                # seed.py, createuser.py, assign_cashiers.py
 
-tests/                      # 167+ async pytest tests
+tests/                      # 262+ async pytest tests
 ├── test_rbac.py           # 40+ permission tests
 ├── test_session_form_rbac.py
 ├── test_user_business_assignment.py

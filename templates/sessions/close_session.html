@@ -408,159 +408,195 @@
     </div>
 </div>
 <script>
-    // Currency formatter helper
+    // Currency formatter helper (ES5 compatible for Windows 7)
     function formatCurrency(value) {
         if (!value && value !== 0) return 'Gs 0';
-        const num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
-        return `Gs ${num.toLocaleString('es-PY').replace(/,/g, '.')}`;
+        var num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
     }
 
     function parseCurrency(value) {
-        return parseInt(value?.toString().replace(/\D/g, '') || '0') || 0;
+        var val = value && value.toString ? value.toString() : '';
+        return parseInt(val.replace(/\D/g, '') || '0') || 0;
     }
 
-    // Live reconciliation calculator
+    // Live reconciliation calculator (ES5 compatible for Windows 7)
     function updateReconciliationPreview() {
-        const initialCash = {{ session.initial_cash }};
-        const finalCash = parseCurrency(document.querySelector('[name="final_cash"]')?.value);
-        const envelope = parseCurrency(document.querySelector('[name="envelope_amount"]')?.value);
-        const creditCard = parseCurrency(document.querySelector('[name="credit_card_total"]')?.value);
-        const debitCard = parseCurrency(document.querySelector('[name="debit_card_total"]')?.value);
+        var initialCash = {{ session.initial_cash }};
+        var finalCashEl = document.querySelector('[name="final_cash"]');
+        var finalCash = parseCurrency(finalCashEl ? finalCashEl.value : null);
+        
+        // Use parseCalculator for calculator-enabled fields (supports math expressions)
+        var envelopeEl = document.querySelector('[name="envelope_amount"]');
+        var envelope = typeof parseCalculator !== 'undefined' && envelopeEl
+            ? parseCalculator(envelopeEl.value || '')
+            : parseCurrency(envelopeEl ? envelopeEl.value : null);
+            
+        var creditCardEl = document.querySelector('[name="credit_card_total"]');
+        var creditCard = typeof parseCalculator !== 'undefined' && creditCardEl
+            ? parseCalculator(creditCardEl.value || '')
+            : parseCurrency(creditCardEl ? creditCardEl.value : null);
+            
+        var debitCardEl = document.querySelector('[name="debit_card_total"]');
+        var debitCard = typeof parseCalculator !== 'undefined' && debitCardEl
+            ? parseCalculator(debitCardEl.value || '')
+            : parseCurrency(debitCardEl ? debitCardEl.value : null);
         
         // Get totals from data attributes
-        const bankTransferEl = document.querySelector('[data-bank-transfer-total]');
-        const expensesEl = document.querySelector('[data-expenses-total]');
-        const bankTransfer = bankTransferEl ? parseInt(bankTransferEl.dataset.bankTransferTotal || '0') : 0;
-        const expenses = expensesEl ? parseInt(expensesEl.dataset.expensesTotal || '0') : 0;
+        var bankTransferEl = document.querySelector('[data-bank-transfer-total]');
+        var expensesEl = document.querySelector('[data-expenses-total]');
+        var bankTransfer = bankTransferEl ? parseInt(bankTransferEl.dataset.bankTransferTotal || '0') : 0;
+        var expenses = expensesEl ? parseInt(expensesEl.dataset.expensesTotal || '0') : 0;
 
         // Calculations
-        const cashSales = (finalCash - initialCash) + envelope;
-        const cardPayments = creditCard + debitCard;
-        const totalSales = cashSales + cardPayments + bankTransfer;
-        const netEarnings = totalSales - expenses;
-        const cashProfit = cashSales - expenses;
+        var cashSales = (finalCash - initialCash) + envelope;
+        var cardPayments = creditCard + debitCard;
+        var totalSales = cashSales + cardPayments + bankTransfer;
+        var netEarnings = totalSales - expenses;
+        var cashProfit = cashSales - expenses;
 
-        const preview = document.getElementById('preview');
+        var preview = document.getElementById('preview');
         if (!preview) return;
 
         // Only show if at least one field has been filled
         if (finalCash === 0 && envelope === 0 && creditCard === 0 && debitCard === 0 && bankTransfer === 0 && expenses === 0) {
-            preview.innerHTML = `
-                <div class="text-center py-4">
-                    <svg class="w-12 h-12 mx-auto text-base-content/20 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                    <p class="text-xs text-base-content/60">{{ _('Fill form fields to see live calculations...') }}</p>
-                </div>
-            `;
+            preview.innerHTML = '<div class="text-center py-4">' +
+                '<svg class="w-12 h-12 mx-auto text-base-content/20 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>' +
+                '</svg>' +
+                '<p class="text-xs text-base-content/60">{{ _('Fill form fields to see live calculations...') }}</p>' +
+                '</div>';
             return;
         }
 
-        preview.innerHTML = `
-            <!-- Cash Sales -->
-            <div class="bg-base-100 rounded-lg p-3 border border-primary/20">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        {{ _('Cash Sales') }}
-                    </span>
-                    <span class="text-base font-bold font-mono text-primary">${formatCurrency(cashSales)}</span>
-                </div>
-                <p class="text-xs text-base-content/50 font-mono">(${formatCurrency(finalCash)} − ${formatCurrency(initialCash)}) + ${formatCurrency(envelope)}</p>
-            </div>
-
-            <!-- Card Payments -->
-            <div class="bg-base-100 rounded-lg p-3 border border-info/20">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                        </svg>
-                        {{ _('Card Payments') }}
-                    </span>
-                    <span class="text-base font-bold font-mono text-info">${formatCurrency(cardPayments)}</span>
-                </div>
-                <p class="text-xs text-base-content/50 font-mono">${formatCurrency(creditCard)} + ${formatCurrency(debitCard)}</p>
-            </div>
-
-            <!-- Bank Transfers -->
-            ${bankTransfer > 0 ? `
-            <div class="bg-base-100 rounded-lg p-3 border border-info/20">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
-                        </svg>
-                        {{ _('Bank Transfers') }}
-                    </span>
-                    <span class="text-base font-bold font-mono text-info">${formatCurrency(bankTransfer)}</span>
-                </div>
-            </div>
-            ` : ''}
-
-            <!-- Total Sales -->
-            <div class="bg-gradient-to-r from-success/20 to-success/10 rounded-lg p-3 border border-success/30">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-xs font-bold uppercase tracking-wider text-success">{{ _('Total Sales') }}</span>
-                    <span class="text-lg font-bold font-mono text-success">${formatCurrency(totalSales)}</span>
-                </div>
-            </div>
-
-            <!-- Expenses -->
-            ${expenses > 0 ? `
-            <div class="bg-base-100 rounded-lg p-3 border border-error/20">
-                <div class="flex justify-between items-center">
-                    <span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
-                        </svg>
-                        {{ _('Expenses') }}
-                    </span>
-                    <span class="text-base font-bold font-mono text-error">−${formatCurrency(expenses)}</span>
-                </div>
-            </div>
-            ` : ''}
-
-            <!-- Net Earnings (Hero) -->
-            <div class="bg-gradient-to-r ${netEarnings >= 0 ? 'from-success/30 to-success/20' : 'from-error/30 to-error/20'} rounded-lg p-4 border-2 ${netEarnings >= 0 ? 'border-success' : 'border-error'}">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-bold uppercase tracking-wider ${netEarnings >= 0 ? 'text-success' : 'text-error'}">{{ _('Net Earnings') }}</span>
-                    <span class="text-2xl font-black font-mono ${netEarnings >= 0 ? 'text-success' : 'text-error'}">${formatCurrency(netEarnings)}</span>
-                </div>
-            </div>
-        `;
+        var bankTransferHtml = bankTransfer > 0 ? 
+            '<div class="bg-base-100 rounded-lg p-3 border border-info/20">' +
+            '<div class="flex justify-between items-center">' +
+            '<span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">' +
+            '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>' +
+            '</svg>' +
+            '{{ _('Bank Transfers') }}' +
+            '</span>' +
+            '<span class="text-base font-bold font-mono text-info">' + formatCurrency(bankTransfer) + '</span>' +
+            '</div>' +
+            '</div>' : '';
+            
+        var expensesHtml = expenses > 0 ?
+            '<div class="bg-base-100 rounded-lg p-3 border border-error/20">' +
+            '<div class="flex justify-between items-center">' +
+            '<span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">' +
+            '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>' +
+            '</svg>' +
+            '{{ _('Expenses') }}' +
+            '</span>' +
+            '<span class="text-base font-bold font-mono text-error">−' + formatCurrency(expenses) + '</span>' +
+            '</div>' +
+            '</div>' : '';
+            
+        var netEarningsClass = netEarnings >= 0 ? 'from-success/30 to-success/20' : 'from-error/30 to-error/20';
+        var netEarningsBorder = netEarnings >= 0 ? 'border-success' : 'border-error';
+        var netEarningsText = netEarnings >= 0 ? 'text-success' : 'text-error';
+        
+        preview.innerHTML = 
+            '<!-- Cash Sales -->' +
+            '<div class="bg-base-100 rounded-lg p-3 border border-primary/20">' +
+            '<div class="flex justify-between items-center mb-1">' +
+            '<span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">' +
+            '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>' +
+            '</svg>' +
+            '{{ _('Cash Sales') }}' +
+            '</span>' +
+            '<span class="text-base font-bold font-mono text-primary">' + formatCurrency(cashSales) + '</span>' +
+            '</div>' +
+            '<p class="text-xs text-base-content/50 font-mono">(' + formatCurrency(finalCash) + ' − ' + formatCurrency(initialCash) + ') + ' + formatCurrency(envelope) + '</p>' +
+            '</div>' +
+            '<!-- Card Payments -->' +
+            '<div class="bg-base-100 rounded-lg p-3 border border-info/20">' +
+            '<div class="flex justify-between items-center mb-1">' +
+            '<span class="text-xs font-semibold text-base-content/70 flex items-center gap-1">' +
+            '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>' +
+            '</svg>' +
+            '{{ _('Card Payments') }}' +
+            '</span>' +
+            '<span class="text-base font-bold font-mono text-info">' + formatCurrency(cardPayments) + '</span>' +
+            '</div>' +
+            '<p class="text-xs text-base-content/50 font-mono">' + formatCurrency(creditCard) + ' + ' + formatCurrency(debitCard) + '</p>' +
+            '</div>' +
+            '<!-- Bank Transfers -->' + bankTransferHtml +
+            '<!-- Total Sales -->' +
+            '<div class="bg-gradient-to-r from-success/20 to-success/10 rounded-lg p-3 border border-success/30">' +
+            '<div class="flex justify-between items-center mb-1">' +
+            '<span class="text-xs font-bold uppercase tracking-wider text-success">{{ _('Total Sales') }}</span>' +
+            '<span class="text-lg font-bold font-mono text-success">' + formatCurrency(totalSales) + '</span>' +
+            '</div>' +
+            '</div>' +
+            '<!-- Expenses -->' + expensesHtml +
+            '<!-- Net Earnings (Hero) -->' +
+            '<div class="bg-gradient-to-r ' + netEarningsClass + ' rounded-lg p-4 border-2 ' + netEarningsBorder + '">' +
+            '<div class="flex justify-between items-center">' +
+            '<span class="text-sm font-bold uppercase tracking-wider ' + netEarningsText + '">{{ _('Net Earnings') }}</span>' +
+            '<span class="text-2xl font-black font-mono ' + netEarningsText + '">' + formatCurrency(netEarnings) + '</span>' +
+            '</div>' +
+            '</div>';
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        const closedTimeInput = document.getElementById('closed-time');
+        var closedTimeInput = document.getElementById('closed-time');
 
         // Prefill with current time if empty
-        if (!closedTimeInput.value) {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            closedTimeInput.value = `${hours}:${minutes}`;
+        if (closedTimeInput && !closedTimeInput.value) {
+            var now = new Date();
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            closedTimeInput.value = hours + ':' + minutes;
         }
 
         // Auto-format currency inputs on blur
-        document.querySelectorAll('[data-currency-input]').forEach(input => {
-            input.addEventListener('blur', function() {
-                if (this.value) {
-                    const digits = this.value.replace(/\D/g, '');
-                    if (digits) {
-                        const num = parseInt(digits);
-                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+        // Calculator-enabled fields are identified by the data-calculator-field attribute
+        // set by currency-formatter.js, or by field name as fallback.
+        // This script only auto-formats non-calculator fields.
+        
+        // Known calculator field names (fallback if attribute not set yet)
+        var calculatorFieldNames = {
+            'credit_card_total': true,
+            'debit_card_total': true,
+            'credit_sales_total': true,
+            'credit_payments_collected': true,
+            'envelope_amount': true
+        };
+        
+        document.querySelectorAll('[data-currency-input]').forEach(function(input) {
+            // Check if field is marked as calculator field (attribute set by currency-formatter.js)
+            // or by field name as fallback (for race condition protection)
+            // Use getAttribute for IE11 compatibility (dataset may not work in all cases)
+            var isCalculatorField = input.getAttribute('data-calculator-field') === 'true' ||
+                                    (input.dataset && input.dataset.calculatorField === 'true') ||
+                                    (input.name && calculatorFieldNames[input.name] === true);
+            
+            if (!isCalculatorField) {
+                // Regular fields: only digits
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        var digits = this.value.replace(/\D/g, '');
+                        if (digits) {
+                            var num = parseInt(digits, 10);
+                            this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                        }
                     }
-                }
-                updateReconciliationPreview();
-            });
+                    updateReconciliationPreview();
+                });
 
-            input.addEventListener('input', function() {
-                this.value = this.value.replace(/[^\d.,]/g, '');
-                updateReconciliationPreview();
-            });
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^\d.,]/g, '');
+                    updateReconciliationPreview();
+                });
+            }
+            // Calculator fields are handled by currency-formatter.js and the main form watchers below
+            // No need to add additional listeners here to avoid duplication
         });
 
         // Watch for changes in main form fields
