@@ -415,14 +415,26 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         // Calculator-enabled fields are identified by the data-calculator-field attribute
-        // set by currency-formatter.js. This script only auto-formats non-calculator fields.
+        // set by currency-formatter.js, or by field name as fallback.
+        // This script only auto-formats non-calculator fields.
+        
+        // Known calculator field names (fallback if attribute not set yet)
+        var calculatorFieldNames = {
+            'credit_card_total': true,
+            'debit_card_total': true,
+            'credit_sales_total': true,
+            'credit_payments_collected': true,
+            'envelope_amount': true
+        };
         
         // Auto-format currency inputs on blur (only for non-calculator fields)
         document.querySelectorAll('[data-currency-input]').forEach(function(input) {
             // Check if field is marked as calculator field (attribute set by currency-formatter.js)
+            // or by field name as fallback (for race condition protection)
             // Use getAttribute for IE11 compatibility (dataset may not work in all cases)
             var isCalculatorField = input.getAttribute('data-calculator-field') === 'true' ||
-                                    (input.dataset && input.dataset.calculatorField === 'true');
+                                    (input.dataset && input.dataset.calculatorField === 'true') ||
+                                    (input.name && calculatorFieldNames[input.name] === true);
             
             if (!isCalculatorField) {
                 // Regular fields: only digits
