@@ -98,7 +98,7 @@
                 </thead>
                 <tbody>
                     {% for session in sessions %}
-                    <tr class="session-row transition-all duration-200 cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.is_deleted %} border-l-4 border-base-content/30 bg-base-200/50 hover:bg-base-200/70 opacity-75{% elif session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" {% if not session.is_deleted %}onclick="window.location.href='/sessions/{{ session.id|string }}?include_deleted={{ 'true' if include_deleted else 'false' }}'" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}?include_deleted={{ 'true' if include_deleted else 'false' }}';}"{% endif %} role="button" tabindex="0" aria-label="{{ _('View session') }}">
+                    <tr class="session-row transition-all duration-200 cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.is_deleted %} border-l-4 border-base-content/30 bg-base-200/50 hover:bg-base-200/70 opacity-75{% elif session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" {% if not session.is_deleted %}onclick="window.location.href='/sessions/{{ session.id|string }}'" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}';}"{%endif%} role="button" tabindex="0" aria-label="{{ _('View session') }}">
                         <!-- Status -->
                         <td onclick="event.stopPropagation()">
                             {% if session.is_deleted %}
@@ -275,7 +275,7 @@
         <!-- Mobile Card Layout (visible on mobile only) -->
         <div class="lg:hidden grid grid-cols-1 gap-4">
             {% for session in sessions %}
-            <div class="border border-base-300 rounded-lg p-4 space-y-3 bg-base-100{% if session.is_deleted %} bg-base-200/50 border-l-4 border-base-content/30 opacity-75{% elif session.status == 'CLOSED' and session.flagged %} bg-error/10 border-l-4 border-error{% else %} cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.01]{% endif %}" {% if not session.is_deleted %}onclick="window.location.href='/sessions/{{ session.id|string }}?include_deleted={{ 'true' if include_deleted else 'false' }}'" onkeydown="if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();window.location.href='/sessions/{{ session.id|string }}?include_deleted={{ 'true' if include_deleted else 'false' }}';}"{% endif %} role="button" tabindex="0">
+            <div class="border border-base-300 rounded-lg p-4 space-y-3 bg-base-100{% if session.is_deleted %} bg-base-200/50 border-l-4 border-base-content/30 opacity-75{% elif session.status == 'CLOSED' and session.flagged %} bg-error/10 border-l-4 border-error{% else %} cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.01]{% endif %}" {% if not session.is_deleted %}onclick="window.location.href='/sessions/{{ session.id|string }}'" onkeydown="if(event.key==='Enter'||event.key===' '||event.key==='Spacebar'){event.preventDefault();window.location.href='/sessions/{{ session.id|string }}';}"{%endif%} role="button" tabindex="0">
                 <!-- Status Badge -->
                 <div class="flex justify-between items-start">
                     <div>

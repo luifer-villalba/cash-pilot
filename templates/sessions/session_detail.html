@@ -264,7 +264,7 @@
                         </svg>
                         {{ _('Cash Flow') }}
                     </h2>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <!-- Efectivo Inicial -->
                         <div class="bg-gradient-to-br from-primary/10 to-base-100 border border-primary/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
                             <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2">
@@ -347,7 +347,7 @@
                         </svg>
                         {{ _('Payment Methods') }}
                     </h2>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="bg-gradient-to-br from-info/10 to-base-100 border border-info/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
                             <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2 flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -542,7 +542,7 @@
 
                 <!-- Edit History (for closed sessions) -->
                 {% if session.status == 'CLOSED' and session.last_modified_at %}
-                <section>
+                <section class="hidden lg:block">
                     <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -739,26 +739,25 @@
 
             <!-- Sidebar (1/3) -->
             <aside class="lg:col-span-1 space-y-4">
-                <!-- Status Card -->
-                <div class="bg-gradient-to-br {% if session.status == 'OPEN' %}from-success/10{% else %}from-base-100{% endif %} to-base-100 border {% if session.status == 'OPEN' %}border-success/30{% else %}border-base-300{% endif %} rounded-xl shadow-lg p-5 transition-all duration-200">
-                    <div class="flex items-center gap-2 pb-2 border-b {% if session.status == 'OPEN' %}border-success/20{% else %}border-base-300{% endif %} mb-3">
-                        <svg class="w-5 h-5 {% if session.status == 'OPEN' %}text-success{% else %}text-base-content/60{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                {% set transfer_items = session.transfer_items | selectattr('is_deleted', 'equalto', False) | list %}
+                {% set expense_items = session.expense_items | selectattr('is_deleted', 'equalto', False) | list %}
+                {% set transfer_count = transfer_items | length %}
+                {% set expense_count = expense_items | length %}
+
+                <!-- Business Card -->
+                <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/30 rounded-xl shadow-lg p-5 transition-all duration-200">
+                    <div class="flex items-center gap-2 pb-2 border-b border-primary/20 mb-3">
+                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
-                        <p class="text-xs font-bold uppercase tracking-widest {% if session.status == 'OPEN' %}text-success{% else %}text-base-content/70{% endif %}">{{ _('Status') }}</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-primary">{{ _('Business') }}</p>
                     </div>
-                    {% if session.status == 'OPEN' %}
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="w-3 h-3 rounded-full bg-success animate-pulse" aria-hidden="true"></span>
-                        <p class="text-base font-bold text-success">{{ _('Active Shift') }}</p>
-                    </div>
-                    <p class="text-xs text-base-content/60 mt-2">{{ _('Still running') }}</p>
-                    {% else %}
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="w-3 h-3 rounded-full bg-base-content/70" aria-hidden="true"></span>
-                        <p class="text-base font-bold text-base-content">{{ _('Closed') }}</p>
-                    </div>
-                    <p class="text-xs text-base-content/60 mt-2">{{ _('Session complete') }}</p>
+                    <p class="text-base font-bold mt-2">{{ session.business.name }}</p>
+                    {% if session.business.address %}
+                    <p class="text-xs text-base-content/60 mt-2">{{ session.business.address }}</p>
+                    {% endif %}
+                    {% if session.business.phone %}
+                    <p class="text-xs text-base-content/60 mt-1">{{ session.business.phone }}</p>
                     {% endif %}
                 </div>
 
@@ -808,63 +807,55 @@
                 {% endif %}
                 {% endif %}
 
-                <!-- Business Card -->
-                <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/30 rounded-xl shadow-lg p-5 transition-all duration-200">
-                    <div class="flex items-center gap-2 pb-2 border-b border-primary/20 mb-3">
-                        <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
-                        <p class="text-xs font-bold uppercase tracking-widest text-primary">{{ _('Business') }}</p>
-                    </div>
-                    <p class="text-base font-bold mt-2">{{ session.business.name }}</p>
-                    {% if session.business.address %}
-                    <p class="text-xs text-base-content/60 mt-2">{{ session.business.address }}</p>
-                    {% endif %}
-                    {% if session.business.phone %}
-                    <p class="text-xs text-base-content/60 mt-1">{{ session.business.phone }}</p>
-                    {% endif %}
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="bg-base-100 border border-base-300 rounded-xl shadow-lg p-5 space-y-3 transition-all duration-200">
-                    <div class="flex items-center gap-2 pb-2 border-b border-base-300 mb-3">
-                        <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                        <p class="text-xs font-bold uppercase tracking-widest text-base-content/70">{{ _('Quick Stats') }}</p>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-base-content/60">{{ _('Shift Duration') }}</span>
-                        <span class="font-mono font-bold tabular-nums">
-                            {% if session.closed_time %}
-                                {{ (session.closed_time.hour - session.opened_time.hour) % 24 }}h
-                            {% else %}
-                                —
-                            {% endif %}
+                <!-- Transfer & Expense Insights -->
+                <div class="bg-base-100 border border-base-300 rounded-xl shadow-lg p-5 transition-all duration-200 space-y-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-widest text-base-content/60">{{ _('Transfers') }}</p>
+                            <p class="text-2xl font-bold font-mono tabular-nums mt-1 text-base-content">
+                                {% if session.bank_transfer_total %}
+                                Gs {{ session.bank_transfer_total | format_currency_py }}
+                                {% else %}—{% endif %}
+                            </p>
+                            <p class="text-xs text-base-content/50">{{ _('Direct account transfers this shift') }}</p>
+                        </div>
+                        <span class="badge badge-info badge-sm self-start flex items-center gap-1 px-2 py-0.5 text-[0.65rem] whitespace-nowrap">
+                            <span class="font-bold">{{ transfer_count }}</span>
+                            <span>{{ _('entries') }}</span>
                         </span>
                     </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-base-content/60">{{ _('Payment Methods') }}</span>
-                        <span class="font-mono font-bold tabular-nums">
-                            {% set methods = (session.credit_card_total > 0) + (session.debit_card_total > 0) + (session.bank_transfer_total > 0) + (session.cash_sales > 0) %}
-                            {{ methods }}
-                        </span>
+                    <div class="max-h-48 overflow-y-auto pb-2">
+                        {% with items=transfer_items %}
+                            {% include 'partials/transfer_items_sidebar.html' %}
+                        {% endwith %}
                     </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-base-content/60">{{ _('Margin') }}</span>
-                        <span class="font-mono font-bold tabular-nums">
-                            {% if session.total_sales > 0 %}
-                                {{ ((session.net_earnings / session.total_sales) * 100) | round(1) }}%
-                            {% else %}
-                                —
-                            {% endif %}
-                        </span>
+                    <div class="border-t border-base-200 pt-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-widest text-base-content/60">{{ _('Expenses') }}</p>
+                                <p class="text-2xl font-bold font-mono tabular-nums mt-1 text-error">
+                                    {% if session.expenses %}
+                                    −Gs {{ session.expenses | format_currency_py }}
+                                    {% else %}—{% endif %}
+                                </p>
+                                <p class="text-xs text-base-content/50">{{ _('Business costs during shift') }}</p>
+                            </div>
+                            <span class="badge badge-error badge-sm self-start flex items-center gap-1 px-2 py-0.5 text-[0.65rem] whitespace-nowrap">
+                                <span class="font-bold">{{ expense_count }}</span>
+                                <span>{{ _('entries') }}</span>
+                            </span>
+                        </div>
+                        <div class="max-h-48 overflow-y-auto mt-3">
+                            {% with items=expense_items %}
+                                {% include 'partials/expense_items_sidebar.html' %}
+                            {% endwith %}
+                        </div>
                     </div>
                 </div>
 
                 <!-- Action Buttons Info -->
                 {% if session.status == 'OPEN' or session.status == 'CLOSED' %}
-                <div class="bg-base-100 border border-base-300 rounded-xl shadow-lg p-5 transition-all duration-200">
+                <div class="hidden lg:block bg-base-100 border border-base-300 rounded-xl shadow-lg p-5 transition-all duration-200">
                     <div class="flex items-center gap-2 pb-2 border-b border-base-300 mb-3">
                         <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
