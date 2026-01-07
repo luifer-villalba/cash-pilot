@@ -83,6 +83,7 @@ async def test_edit_closed_session_payment_totals(
         json={
             "credit_card_total": "1200.00",
             "debit_card_total": "600.00",
+            "reason": "Payment totals correction",
         },
     )
 
@@ -104,7 +105,7 @@ async def test_edit_closed_session_cannot_edit_open(
 
     response = await client.patch(
         f"/cash-sessions/{session.id}/edit-closed",
-        json={"final_cash": "5000.00"},
+        json={"final_cash": "5000.00", "reason": "Test edit"},
     )
 
     assert response.status_code == 400
@@ -126,7 +127,7 @@ async def test_audit_log_serializes_decimals(client: AsyncClient, db_session: As
 
     response = await client.patch(
         f"/cash-sessions/{session.id}/edit-closed",
-        json={"final_cash": "1999.99"},
+        json={"final_cash": "1999.99", "reason": "Decimal serialization test"},
     )
 
     assert response.status_code == 200

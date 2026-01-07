@@ -167,6 +167,14 @@ async def edit_closed_session(
             f"(current: {session.status or 'unknown'})"
         )
 
+    # Validate: reason is required when editing closed sessions
+    if not patch.reason or not patch.reason.strip():
+        from cashpilot.core.errors import ValidationError
+
+        raise ValidationError(
+            "Reason for edit is required when editing closed sessions for audit compliance"
+        )
+
     # Capture old values
     old_values = _capture_session_values(session)
 

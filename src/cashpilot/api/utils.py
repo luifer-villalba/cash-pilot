@@ -433,7 +433,7 @@ async def update_open_session_fields(
 
 
 def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
-    """Check if current user can edit a closed session (12-hour window for cashiers)."""
+    """Check if current user can edit a closed session (32-hour window for cashiers)."""
     if current_user.role == UserRole.ADMIN:
         return True
 
@@ -456,7 +456,7 @@ def _can_edit_closed_session(session: CashSession, current_user: User) -> bool:
         return True
 
     time_since_close = now_utc() - closed_at
-    return time_since_close <= timedelta(hours=12)
+    return time_since_close <= timedelta(hours=32)
 
 
 def _update_field(

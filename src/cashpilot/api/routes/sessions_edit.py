@@ -160,9 +160,9 @@ async def edit_closed_session_form(
 
     if current_user.role == UserRole.CASHIER and session.status == "CLOSED":
         time_since_close = now_utc() - session.closed_at if session.closed_at else timedelta(0)
-        if time_since_close > timedelta(hours=12):
+        if time_since_close > timedelta(hours=32):
             can_edit = False
-            edit_expired_msg = _("Edit window expired (12 hours passed)")
+            edit_expired_msg = _("Edit window expired (32 hours passed)")
 
     return templates.TemplateResponse(
         request,
@@ -203,6 +203,24 @@ async def edit_closed_session_post(
     try:
         if session.status != "CLOSED":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+
+        # Validate: reason is required when editing closed sessions
+        if not reason or not reason.strip():
+            return templates.TemplateResponse(
+                request,
+                "sessions/edit_closed_session.html",
+                {
+                    "current_user": current_user,
+                    "session": session,
+                    "error": _(
+                        "Reason for edit is required when editing closed "
+                        "sessions for audit compliance"
+                    ),
+                    "locale": locale,
+                    "_": _,
+                },
+                status_code=400,
+            )
 
         changed_fields, old_values, new_values = await update_closed_session_fields(
             session,
