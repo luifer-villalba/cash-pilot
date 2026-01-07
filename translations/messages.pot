@@ -2500,6 +2500,10 @@ msgstr ""
 msgid "Session Info"
 msgstr ""
 
+#: /app/templates/sessions/session_detail.html:741
+msgid "Side Panel"
+msgstr ""
+
 #: /app/templates/sessions/session_detail.html:241
 msgid "Opened"
 msgstr ""
