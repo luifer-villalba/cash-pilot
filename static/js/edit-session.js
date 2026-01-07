@@ -1,20 +1,7 @@
 // File: static/js/edit-session.js
 
-function parseCalculator(value) {
-    if (!value) return 0;
-
-    if (value.includes('+')) {
-        return value.split('+')
-            .map(function(v) {
-                return parseInt(v.trim().replace(/\D/g, '')) || 0;
-            })
-            .reduce(function(sum, num) {
-                return sum + num;
-            }, 0);
-    }
-
-    return parseInt(value.replace(/\D/g, '')) || 0;
-}
+// parseCalculator is now defined in currency-formatter.js (global)
+// This file uses the global function
 
 function updatePreview() {
     var finalCashEl = document.querySelector('[name="final_cash"]');
@@ -32,19 +19,25 @@ function updatePreview() {
     var envelopeEl = document.querySelector('[name="envelope_amount"]');
     var envelope = 0;
     if (envelopeEl && envelopeEl.value) {
-        envelope = parseInt(envelopeEl.value.replace(/\D/g, '')) || 0;
+        envelope = typeof parseCalculator !== 'undefined'
+            ? parseCalculator(envelopeEl.value)
+            : parseInt(envelopeEl.value.replace(/\D/g, '')) || 0;
     }
     
     var creditCardEl = document.querySelector('[name="credit_card_total"]');
     var creditCard = 0;
     if (creditCardEl && creditCardEl.value) {
-        creditCard = parseCalculator(creditCardEl.value);
+        creditCard = typeof parseCalculator !== 'undefined' 
+            ? parseCalculator(creditCardEl.value) 
+            : parseInt(creditCardEl.value.replace(/\D/g, '')) || 0;
     }
     
     var debitCardEl = document.querySelector('[name="debit_card_total"]');
     var debitCard = 0;
     if (debitCardEl && debitCardEl.value) {
-        debitCard = parseCalculator(debitCardEl.value);
+        debitCard = typeof parseCalculator !== 'undefined'
+            ? parseCalculator(debitCardEl.value)
+            : parseInt(debitCardEl.value.replace(/\D/g, '')) || 0;
     }
 
     // Get bank_transfer and expenses from session totals (read-only display)
@@ -74,12 +67,13 @@ function updatePreview() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Calculator-enabled fields (credit only now)
+    // Calculator-enabled fields
     var calculatorFields = [
         'credit_card_total',
         'debit_card_total',
         'credit_sales_total',
-        'credit_payments_collected'
+        'credit_payments_collected',
+        'envelope_amount'
         // Removed: 'bank_transfer_total', 'expenses'
     ];
 
@@ -87,17 +81,17 @@ document.addEventListener('DOMContentLoaded', function() {
         var selector = '[name="' + fieldName + '"]';
         var input = document.querySelector(selector);
         if (input) {
+            // Calculator fields are handled by currency-formatter.js
+            // Just update preview on input/blur
             input.addEventListener('blur', function() {
-                var result = parseCalculator(this.value);
-                this.value = currencyFormatter.formatForLocale(result);
                 updatePreview();
             });
             input.addEventListener('input', updatePreview);
         }
     });
 
-    // Regular fields (no calculator)
-    document.querySelectorAll('input[name="final_cash"], input[name="envelope_amount"]').forEach(function(input) {
+    // Regular fields (no calculator) - envelope_amount is now a calculator field
+    document.querySelectorAll('input[name="final_cash"]').forEach(function(input) {
         input.addEventListener('input', updatePreview);
     });
 

@@ -289,43 +289,62 @@
     </div>
 </div>
 <script>
-    // Currency formatter helper
+    // Currency formatter helper (ES5 compatible for Windows 7)
     function formatCurrency(value) {
         if (!value && value !== 0) return 'Gs 0';
-        const num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
-        return `Gs ${num.toLocaleString('es-PY').replace(/,/g, '.')}`;
+        var num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
     }
 
     function parseCurrency(value) {
-        return parseInt(value?.toString().replace(/\D/g, '') || '0') || 0;
+        var val = value && value.toString ? value.toString() : '';
+        return parseInt(val.replace(/\D/g, '') || '0') || 0;
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        const openedTimeInput = document.getElementById('opened_time');
+        var openedTimeInput = document.getElementById('opened_time');
 
         // Prefill with current time if empty
-        if (!openedTimeInput.value) {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            openedTimeInput.value = `${hours}:${minutes}`;
+        if (openedTimeInput && !openedTimeInput.value) {
+            var now = new Date();
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            openedTimeInput.value = hours + ':' + minutes;
         }
 
-        // Auto-format currency inputs on blur
-        document.querySelectorAll('[data-currency-input]').forEach(input => {
-            input.addEventListener('blur', function() {
-                if (this.value) {
-                    const digits = this.value.replace(/\D/g, '');
-                    if (digits) {
-                        const num = parseInt(digits);
-                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+        // Calculator-enabled fields are handled by currency-formatter.js
+        var calculatorFields = ['credit_card_total', 'debit_card_total', 'credit_sales_total', 'credit_payments_collected', 'envelope_amount'];
+        
+        // Create a Set for faster lookup (ES5 compatible)
+        var calculatorFieldsSet = {};
+        calculatorFields.forEach(function(field) {
+            calculatorFieldsSet[field] = true;
+        });
+        
+        // Auto-format currency inputs on blur (only for non-calculator fields)
+        document.querySelectorAll('[data-currency-input]').forEach(function(input) {
+            // Check if field is marked as calculator field by currency-formatter.js
+            var isCalculatorField = calculatorFieldsSet[input.name] === true || 
+                                    input.dataset.calculatorField === 'true' ||
+                                    input.getAttribute('data-calculator-field') === 'true';
+            
+            if (!isCalculatorField) {
+                // Regular fields: only digits
+                input.addEventListener('blur', function() {
+                    if (this.value) {
+                        var digits = this.value.replace(/\D/g, '');
+                        if (digits) {
+                            var num = parseInt(digits);
+                            this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                        }
                     }
-                }
-            });
+                });
 
-            input.addEventListener('input', function() {
-                this.value = this.value.replace(/[^\d.,]/g, '');
-            });
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^\d.,]/g, '');
+                });
+            }
+            // Calculator fields are handled by currency-formatter.js
         });
     });
 </script>
