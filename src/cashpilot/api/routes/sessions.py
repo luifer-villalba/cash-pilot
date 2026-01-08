@@ -21,6 +21,7 @@ from cashpilot.api.utils import (
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
+from cashpilot.core.validators import validate_currency
 from cashpilot.models import CashSession
 from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import current_time_local, now_utc, today_local
@@ -80,6 +81,8 @@ async def create_session_post(
         initial_cash_val = parse_currency(initial_cash)
         if initial_cash_val is None:
             raise ValueError("Initial cash required")
+        # Validate that the value doesn't exceed NUMERIC(12, 2) limit
+        validate_currency(initial_cash_val)
 
         # Business logic: parse date/time formats
         if session_date:
@@ -124,6 +127,31 @@ async def create_session_post(
 
         return RedirectResponse(url=f"/sessions/{session.id}", status_code=302)
 
+    except ValueError as e:
+        # Handle validation errors (like currency format or max value exceeded)
+        error_message = str(e)
+        # Make the error message more user-friendly
+        if "exceeds maximum" in error_message:
+            error_message = _("Currency value too large. Maximum allowed: 9,999,999,999.99")
+        elif "Invalid" in error_message and "format" in error_message:
+            error_message = _("Invalid number format. Please enter a valid amount.")
+
+        logger.warning(
+            "session.create_validation_failed", error=str(e), user_id=str(current_user.id)
+        )
+        businesses = await get_active_businesses(db)
+        return templates.TemplateResponse(
+            request,
+            "sessions/create_session.html",
+            {
+                "current_user": current_user,
+                "businesses": businesses,
+                "error": error_message,
+                "locale": locale,
+                "_": _,
+            },
+            status_code=400,
+        )
     except Exception as e:
         logger.error("session.create_failed", error=str(e), user_id=str(current_user.id))
         businesses = await get_active_businesses(db)
@@ -339,23 +367,31 @@ async def close_session_post(
         final_cash_val = parse_currency(final_cash)
         if final_cash_val is None:
             raise ValueError("Invalid final_cash format")
+        # Validate that the value doesn't exceed NUMERIC(12, 2) limit
+        validate_currency(final_cash_val)
         session.final_cash = final_cash_val
 
         envelope_val = parse_currency(envelope_amount)
-        session.envelope_amount = envelope_val if envelope_val is not None else Decimal("0")
+        envelope_val = envelope_val if envelope_val is not None else Decimal("0")
+        validate_currency(envelope_val)
+        session.envelope_amount = envelope_val
 
         card_val = parse_currency(card_total)
-        session.card_total = card_val if card_val is not None else Decimal("0")
+        card_val = card_val if card_val is not None else Decimal("0")
+        validate_currency(card_val)
+        session.card_total = card_val
 
         credit_sales_val = parse_currency(credit_sales_total)
-        session.credit_sales_total = (
-            credit_sales_val if credit_sales_val is not None else Decimal("0")
-        )
+        credit_sales_val = credit_sales_val if credit_sales_val is not None else Decimal("0")
+        validate_currency(credit_sales_val)
+        session.credit_sales_total = credit_sales_val
 
         credit_payments_val = parse_currency(credit_payments_collected)
-        session.credit_payments_collected = (
+        credit_payments_val = (
             credit_payments_val if credit_payments_val is not None else Decimal("0")
         )
+        validate_currency(credit_payments_val)
+        session.credit_payments_collected = credit_payments_val
 
         # Business logic: parse time format
         try:
@@ -378,6 +414,30 @@ async def close_session_post(
         )
 
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+    except ValueError as e:
+        # Handle validation errors (like currency format or max value exceeded)
+        error_message = str(e)
+        # Make the error message more user-friendly
+        if "exceeds maximum" in error_message:
+            error_message = _("Currency value too large. Maximum allowed: 9,999,999,999.99")
+        elif "Invalid" in error_message and "format" in error_message:
+            error_message = _("Invalid number format. Please enter a valid amount.")
+
+        logger.warning(
+            "session.close_validation_failed",
+            session_id=session_id,
+            error=str(e),
+            user_id=str(current_user.id),
+        )
+        return templates.TemplateResponse(
+            request,
+            "sessions/close_session.html",
+            {
+                "current_user": current_user,
+                "session": session,
+                "error": error_message,
+            },
+        )
     except Exception as e:
         logger.error(
             "session.close_failed",

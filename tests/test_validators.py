@@ -27,7 +27,7 @@ class TestValidateCurrency:
     def test_exceeds_max_fails(self):
         """Test values exceeding max are rejected."""
         with pytest.raises(ValueError, match="exceeds maximum"):
-            validate_currency(Decimal("1000000000.00"))
+            validate_currency(Decimal("10000000000.00"))
 
     def test_invalid_format_fails(self):
         """Test invalid format is rejected."""

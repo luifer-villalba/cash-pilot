@@ -9,14 +9,14 @@ from cashpilot.utils.datetime import today_local
 
 
 def validate_currency(
-    value: Decimal | float | str, max_value: Decimal = Decimal("999999999")
+    value: Decimal | float | str, max_value: Decimal = Decimal("9999999999.99")
 ) -> Decimal:
     """
     Validate currency input.
 
     Args:
         value: Currency value to validate
-        max_value: Maximum allowed value (default: 999,999,999)
+        max_value: Maximum allowed value (default: 9,999,999,999.99 to match NUMERIC(12, 2))
 
     Returns:
         Validated Decimal with max 2 decimal places

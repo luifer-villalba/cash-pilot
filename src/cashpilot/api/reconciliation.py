@@ -21,6 +21,7 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import NotFoundError, ValidationError
 from cashpilot.core.logging import get_logger
+from cashpilot.core.validators import validate_currency
 from cashpilot.models import DailyReconciliation, User
 from cashpilot.models.daily_reconciliation_audit_log import DailyReconciliationAuditLog
 from cashpilot.utils.datetime import now_utc, today_local
@@ -280,6 +281,18 @@ async def daily_reconciliation_post(
                 refunds = parse_currency(refunds_str) if refunds_str else None
                 total_sales = parse_currency(total_sales_str) if total_sales_str else None
 
+                # Validate currency values don't exceed database limits
+                if cash_sales is not None:
+                    validate_currency(cash_sales)
+                if credit_sales is not None:
+                    validate_currency(credit_sales)
+                if card_sales is not None:
+                    validate_currency(card_sales)
+                if refunds is not None:
+                    validate_currency(refunds)
+                if total_sales is not None:
+                    validate_currency(total_sales)
+
             if existing:
                 # Update existing reconciliation
                 old_values = {
@@ -381,6 +394,14 @@ async def daily_reconciliation_post(
             status_code=status.HTTP_302_FOUND,
         )
 
+    except ValueError as e:
+        await db.rollback()
+        # Handle validation errors (like currency format or max value exceeded)
+        error_message = str(e)
+        if "exceeds maximum" in error_message:
+            error_message = "Currency value too large. Maximum allowed: 9,999,999,999.99"
+        logger.warning("reconciliation.validation_error", error=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=error_message)
     except ValidationError as e:
         await db.rollback()
         logger.error("reconciliation.validation_error", error=str(e))
