@@ -21,7 +21,7 @@
                     {% for item in sessions %}
                     <tr class="hover:bg-info/10 transition-all duration-200 border-b border-base-content/5 group">
                         <td class="font-mono text-xs font-semibold border-r border-info/10">
-                            <a href="/sessions/{{ item.session.id }}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-info/10 hover:bg-info/20 text-info hover:text-info-focus font-semibold transition-all duration-200 hover:scale-105 hover:shadow-md border border-info/30 hover:border-info/50 focus:outline-none focus:ring-2 focus:ring-info/50 cursor-pointer">
+                            <a href="/sessions/{{ item.session.id }}" aria-label="{{ _('View details for session') }} {{ item.session.session_number }}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-info/10 hover:bg-info/20 text-info hover:text-info-focus font-semibold transition-all duration-200 hover:scale-105 hover:shadow-md border border-info/30 hover:border-info/50 focus:outline-none focus:ring-2 focus:ring-info/50 cursor-pointer">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>

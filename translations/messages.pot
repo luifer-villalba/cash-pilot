@@ -630,7 +630,7 @@ msgid "Difference Colors:"
 msgstr ""
 
 #: /app/templates/admin/reconciliation_compare.html:487
-msgid "Yellow/Amber"
+msgid "Green (Surplus)"
 msgstr ""
 
 #: /app/templates/admin/reconciliation_compare.html:487
