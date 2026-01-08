@@ -245,11 +245,31 @@ function initializeCurrencyInputs() {
                 });
 
                 // On blur: evaluate expression and format result
+                // Use setTimeout to ensure this runs after other blur handlers
                 input.addEventListener('blur', function () {
-                    if (this.value) {
-                        var result = parseCalculator(this.value);
-                        this.value = currencyFormatter.formatForLocale(result);
-                    }
+                    var self = this;
+                    setTimeout(function() {
+                        if (self.value) {
+                            var originalValue = self.value;
+                            var result = parseCalculator(originalValue);
+                            // Format with thousand separators
+                            var formatted = currencyFormatter.formatForLocale(result);
+                            self.value = formatted;
+                            
+                            // Trigger change event if value was modified
+                            if (originalValue !== formatted) {
+                                // Dispatch input event for other listeners (IE11 compatible)
+                                var event;
+                                if (typeof Event === 'function') {
+                                    event = new Event('input', { bubbles: true });
+                                } else {
+                                    event = document.createEvent('Event');
+                                    event.initEvent('input', true, true);
+                                }
+                                self.dispatchEvent(event);
+                            }
+                        }
+                    }, 0);
                 });
             } else {
                 // Mark regular fields as initialized to prevent duplicate handlers
