@@ -150,15 +150,15 @@ async def session_detail(
 ):
     """Display single session details (with permission check)."""
 
-    from cashpilot.api.auth_helpers import require_own_session
+    from cashpilot.api.auth_helpers import require_view_session
     from cashpilot.core.errors import NotFoundError
 
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
-        # Try to get session with permission check
-        session = await require_own_session(session_id, current_user, db)
+        # Try to get session with VIEW permission (no edit window restriction)
+        session = await require_view_session(session_id, current_user, db)
     except NotFoundError:
         # Session doesn't exist
         return templates.TemplateResponse(
