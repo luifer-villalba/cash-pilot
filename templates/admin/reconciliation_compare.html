@@ -178,114 +178,197 @@
             .table thead th:not(:last-child) {
                 border-right: 1px solid hsl(var(--bc) / 0.1);
             }
+
+            /* Fade in animation for session details */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
         </style>
         <table class="table table-sm w-full">
             <thead>
                 <tr class="bg-base-200">
                     <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Status') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Cash Sales') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Card Sales') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Credit Sales') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Total Sales') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Difference') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider">{{ _('Cashiers') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Entry Status') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Cash Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('Manual vs System') }}</span></th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Card Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('Manual vs System') }}</span></th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Credit Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('Manual vs System') }}</span></th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Total Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('Manual vs System') }}</span></th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Total Difference') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('(System - Manual)') }}</span></th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Sessions') }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in comparison_data %}
-                <tr class="session-row transition-all duration-200 cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50 hover:bg-base-200/70{% endif %}">
+                <tr class="session-row transition-all duration-200 border-l-2 border-transparent{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50{% endif %}" data-business-id="{{ item.business.id }}">
                     <td class="font-medium">{{ item.business.name }}</td>
+                    <td class="text-xs text-base-content/70">{{ item.cashiers }}</td>
                     <td class="text-right">
                         {% if item.is_closed %}
                         <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 15.636 5.636m12.728 12.728L5.636 5.636"/>
                             </svg>
                             {{ _('Closed') }}
                         </span>
                         {% elif item.status == 'Needs Review' %}
-                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950/50 text-xs font-medium text-amber-700 dark:text-amber-300">
+                        <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}{% if item.business %}&business_id={{ item.business.id }}{% endif %}" 
+                           class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-amber-50 dark:bg-amber-950/50 text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/70 hover:scale-105 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 cursor-pointer group"
+                           title="{{ _('Click to review and edit') }}"
+                           aria-label="{{ _('Review differences for') }} {{ item.business.name }}">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                             </svg>
-                            {{ _('Needs Review') }}
-                        </span>
+                            {{ _('Review') }}
+                            <svg class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
                         {% elif item.manual_entry %}
                         <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                             </svg>
-                            {{ _('Entered') }}
+                            {{ _('Completed') }}
                         </span>
                         {% else %}
-                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-200 dark:bg-base-800 text-xs font-medium text-base-content/60">
+                        <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}{% if item.business %}&business_id={{ item.business.id }}{% endif %}" 
+                           class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-200 dark:bg-base-800 text-xs font-medium text-base-content/60 hover:bg-base-300 dark:hover:bg-base-700 hover:text-base-content hover:scale-105 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-base-content/30 cursor-pointer group"
+                           title="{{ _('Click to add manual entry') }}"
+                           aria-label="{{ _('Add manual entry for') }} {{ item.business.name }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            {{ _('Not Entered') }}
-                        </span>
+                            {{ _('Pending') }}
+                            <svg class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
                         {% endif %}
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="space-y-0.5">
+                        <div class="space-y-1">
                             {% if item.manual.cash_sales is not none %}
-                            <div class="text-sm font-semibold text-base-content">{{ "{:,.0f}".format(item.manual.cash_sales) }}</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.cash_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.cash_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.cash_sales) }}</span>
+                            </div>
                             {% if item.differences.cash_sales is not none and item.differences.cash_sales != 0 %}
                             {% set cash_diff = item.differences.cash_sales %}
-                            <div class="text-xs font-medium {% if cash_diff > 0 %}text-warning{% else %}text-error{% endif %}">
-                                {% if cash_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(cash_diff) }}
+                            <div class="flex items-center justify-end gap-1.5 pt-0.5 border-t border-base-content/10">
+                                <span class="text-[10px] font-sans {% if cash_diff > 0 %}text-success{% else %}text-error{% endif %}">{{ _('Diff:') }}</span>
+                                <span class="text-xs font-bold {% if cash_diff > 0 %}text-success{% else %}text-error{% endif %}">
+                                    {% if cash_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(cash_diff) }}
+                                </span>
                             </div>
                             {% endif %}
                             {% else %}
-                            <div class="text-sm text-base-content/40">-</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.cash_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm text-base-content/40">-</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.cash_sales) }}</span>
+                            </div>
                             {% endif %}
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="space-y-0.5">
+                        <div class="space-y-1">
                             {% if item.manual.card_sales is not none %}
-                            <div class="text-sm font-semibold text-base-content">{{ "{:,.0f}".format(item.manual.card_sales) }}</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.card_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.card_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.card_sales) }}</span>
+                            </div>
                             {% if item.differences.card_sales is not none and item.differences.card_sales != 0 %}
                             {% set card_diff = item.differences.card_sales %}
-                            <div class="text-xs font-medium {% if card_diff > 0 %}text-warning{% else %}text-error{% endif %}">
-                                {% if card_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(card_diff) }}
+                            <div class="flex items-center justify-end gap-1.5 pt-0.5 border-t border-base-content/10">
+                                <span class="text-[10px] font-sans {% if card_diff > 0 %}text-success{% else %}text-error{% endif %}">{{ _('Diff:') }}</span>
+                                <span class="text-xs font-bold {% if card_diff > 0 %}text-success{% else %}text-error{% endif %}">
+                                    {% if card_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(card_diff) }}
+                                </span>
                             </div>
                             {% endif %}
                             {% else %}
-                            <div class="text-sm text-base-content/40">-</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.card_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm text-base-content/40">-</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.card_sales) }}</span>
+                            </div>
                             {% endif %}
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="space-y-0.5">
+                        <div class="space-y-1">
                             {% if item.manual.credit_sales is not none %}
-                            <div class="text-sm font-semibold text-base-content">{{ "{:,.0f}".format(item.manual.credit_sales) }}</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.credit_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.credit_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.credit_sales) }}</span>
+                            </div>
                             {% if item.differences.credit_sales is not none and item.differences.credit_sales != 0 %}
                             {% set credit_diff = item.differences.credit_sales %}
-                            <div class="text-xs font-medium {% if credit_diff > 0 %}text-warning{% else %}text-error{% endif %}">
-                                {% if credit_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(credit_diff) }}
+                            <div class="flex items-center justify-end gap-1.5 pt-0.5 border-t border-base-content/10">
+                                <span class="text-[10px] font-sans {% if credit_diff > 0 %}text-success{% else %}text-error{% endif %}">{{ _('Diff:') }}</span>
+                                <span class="text-xs font-bold {% if credit_diff > 0 %}text-success{% else %}text-error{% endif %}">
+                                    {% if credit_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(credit_diff) }}
+                                </span>
                             </div>
                             {% endif %}
                             {% else %}
-                            <div class="text-sm text-base-content/40">-</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.credit_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm text-base-content/40">-</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.credit_sales) }}</span>
+                            </div>
                             {% endif %}
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        <div class="space-y-0.5">
+                        <div class="space-y-1">
                             {% if item.manual.total_sales is not none %}
-                            <div class="text-sm font-bold text-base-content">{{ "{:,.0f}".format(item.manual.total_sales) }}</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.total_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-base font-bold text-primary">{{ "{:,.0f}".format(item.manual.total_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-sm text-base-content/60">{{ "{:,.0f}".format(item.system.total_sales) }}</span>
+                            </div>
                             {% else %}
-                            <div class="text-sm text-base-content/40">-</div>
-                            <div class="text-xs text-base-content/50">({{ _('Sessions') }}: {{ "{:,.0f}".format(item.system.total_sales) }})</div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm text-base-content/40">-</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-sm text-base-content/60">{{ "{:,.0f}".format(item.system.total_sales) }}</span>
+                            </div>
                             {% endif %}
                         </div>
                     </td>
@@ -297,10 +380,10 @@
                             {% if variance_pct is not none and (variance_pct > 2.0 or variance_pct < -2.0) %}
                             <div class="space-y-0.5">
                                 {% if diff > 0 %}
-                                <div class="text-sm font-bold text-warning">
+                                <div class="text-sm font-bold text-success">
                                     +{{ "{:,.0f}".format(diff) }}
                                 </div>
-                                <div class="text-xs text-warning/70">{{ "{:+.2f}".format(variance_pct) }}%</div>
+                                <div class="text-xs text-success/70">{{ "{:+.2f}".format(variance_pct) }}%</div>
                                 {% else %}
                                 <div class="text-sm font-bold text-error">
                                     {{ "{:,.0f}".format(diff) }}
@@ -311,10 +394,10 @@
                             {% elif variance_pct is not none and variance_pct != 0 %}
                             <div class="space-y-0.5">
                                 {% if diff > 0 %}
-                                <div class="text-sm font-semibold text-warning/80">
+                                <div class="text-sm font-semibold text-success/80">
                                     +{{ "{:,.0f}".format(diff) }}
                                 </div>
-                                <div class="text-xs text-warning/60">{{ "{:+.2f}".format(variance_pct) }}%</div>
+                                <div class="text-xs text-success/60">{{ "{:+.2f}".format(variance_pct) }}%</div>
                                 {% else %}
                                 <div class="text-sm font-semibold text-error/80">
                                     {{ "{:,.0f}".format(diff) }}
@@ -324,7 +407,7 @@
                             </div>
                             {% else %}
                             {% if diff > 0 %}
-                            <div class="text-sm font-medium text-warning/60">
+                            <div class="text-sm font-medium text-success/60">
                                 +{{ "{:,.0f}".format(diff) }}
                             </div>
                             {% else %}
@@ -340,29 +423,50 @@
                         <div class="text-sm text-base-content/40">-</div>
                         {% endif %}
                     </td>
-                    <td class="text-right" onclick="event.stopPropagation()">
+                    <td class="text-right">
                         <div class="flex justify-end">
                             {% if item.system.session_count > 0 %}
-                            <a 
-                                href="/?business_id={{ item.business.id }}&from_date={{ comparison_date.isoformat() }}&to_date={{ comparison_date.isoformat() }}&from_report={{ comparison_date.isoformat() }}" 
-                                class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md bg-info/10 hover:bg-info/20 text-info hover:text-info-focus font-medium text-sm transition-all duration-200 hover:scale-105 active:scale-95 border border-info/20 hover:border-info/40 min-w-[2.5rem]"
-                                title="{{ _('View sessions for this business and date') }}"
+                            <button 
+                                hx-get="/admin/reconciliation/sessions?business_id={{ item.business.id }}&date={{ comparison_date.isoformat() }}"
+                                hx-target="#sessions-detail-{{ item.business.id }}"
+                                hx-swap="innerHTML"
+                                hx-indicator="#sessions-loading-{{ item.business.id }}"
+                                class="expand-sessions-btn inline-flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-info/10 hover:bg-info/20 text-info hover:text-info-focus font-medium text-sm transition-all duration-200 hover:scale-105 active:scale-95 border border-info/30 hover:border-info/50 hover:shadow-md min-w-[3rem] focus:outline-none focus:ring-2 focus:ring-info/50"
+                                title="{{ _('Click to view sessions detail') }}"
+                                data-business-id="{{ item.business.id }}"
+                                aria-label="{{ _('View sessions for') }} {{ item.business.name }}"
                             >
-                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                <span class="loading loading-spinner loading-xs hidden" id="sessions-loading-{{ item.business.id }}"></span>
+                                <svg class="w-4 h-4 flex-shrink-0 chevron-icon transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
-                                <span class="font-mono tabular-nums">{{ item.system.session_count }}</span>
-                            </a>
+                                <span class="font-mono tabular-nums font-semibold">{{ item.system.session_count }}</span>
+                            </button>
                             {% else %}
-                            <span class="text-sm text-base-content/40 font-mono tabular-nums">{{ item.system.session_count }}</span>
+                            <span class="inline-flex items-center gap-1.5 text-sm text-base-content/40 font-mono tabular-nums">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                {{ item.system.session_count }}
+                            </span>
                             {% endif %}
                         </div>
                     </td>
                 </tr>
+                <!-- Expandable row for session details -->
+                {% if item.system.session_count > 0 %}
+                <tr class="sessions-detail-row hidden transition-all duration-300" id="sessions-row-{{ item.business.id }}">
+                    <td colspan="9" class="!p-0 bg-gradient-to-br from-base-200/30 to-base-100 border-t border-b-2 border-info/20">
+                        <div id="sessions-detail-{{ item.business.id }}" class="p-4 animate-[fadeIn_0.3s_ease-in-out]">
+                            <!-- Sessions will be loaded here via HTMX -->
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
                 {% endfor %}
                 {% if not comparison_data %}
                 <tr>
-                    <td colspan="8" class="text-center py-8">
+                    <td colspan="9" class="text-center py-8">
                         <div class="bg-base-200/50 border border-dashed border-base-300 rounded-lg p-6 text-center transition-all duration-200">
                             <svg class="w-8 h-8 mx-auto text-base-content/30 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -374,6 +478,19 @@
                 {% endif %}
             </tbody>
         </table>
+        <!-- Color Legend -->
+        <div class="bg-base-200/50 border-t border-base-300 px-4 py-3">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-base-content/70">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="font-medium text-base-content">{{ _('Difference Colors:') }}</span>
+                </div>
+                <span><span class="text-success font-semibold">{{ _('Green (Surplus)') }}</span> = {{ _('System has MORE than Manual (positive difference)') }}</span>
+                <span><span class="text-error font-semibold">{{ _('Red (Deficit)') }}</span> = {{ _('System has LESS than Manual (negative difference)') }}</span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -484,6 +601,28 @@
                 activeBtn.classList.add('btn-primary');
             }
         }
+
+        // Handle session expansion/collapse
+        document.addEventListener('click', function(e) {
+            const expandBtn = e.target.closest('.expand-sessions-btn');
+            if (expandBtn) {
+                const businessId = expandBtn.getAttribute('data-business-id');
+                const detailRow = document.getElementById(`sessions-row-${businessId}`);
+                const chevron = expandBtn.querySelector('.chevron-icon');
+                
+                if (detailRow) {
+                    if (detailRow.classList.contains('hidden')) {
+                        // Expand
+                        detailRow.classList.remove('hidden');
+                        chevron.style.transform = 'rotate(180deg)';
+                    } else {
+                        // Collapse
+                        detailRow.classList.add('hidden');
+                        chevron.style.transform = 'rotate(0deg)';
+                    }
+                }
+            }
+        });
     });
 </script>
 {% endblock %}

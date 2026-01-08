@@ -464,6 +464,30 @@ async def reconciliation_compare_dashboard(
         system_total_sales = system_data.total_sales or Decimal("0.00")
         session_count = system_data.session_count or 0
 
+        # Get unique cashiers for this business on this date
+        stmt_cashiers = (
+            select(User.first_name, User.last_name)
+            .join(CashSession, CashSession.cashier_id == User.id)
+            .where(
+                and_(
+                    CashSession.business_id == business.id,
+                    CashSession.session_date == comparison_date,
+                    ~CashSession.is_deleted,
+                    User.first_name.is_not(None),
+                )
+            )
+            .distinct()
+            .order_by(User.first_name, User.last_name)
+        )
+        result_cashiers = await db.execute(stmt_cashiers)
+        # Format as "FirstName L." (first name + last name initial)
+        cashiers = []
+        for first_name, last_name in result_cashiers.all():
+            if first_name:
+                last_initial = f"{last_name[0]}." if last_name else ""
+                cashiers.append(f"{first_name} {last_initial}".strip())
+        cashiers_str = ", ".join(cashiers) if cashiers else ""
+
         # Manual entry values
         manual_cash_sales = (
             manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
@@ -488,7 +512,7 @@ async def reconciliation_compare_dashboard(
                     "difference": None,
                     "variance_percent": None,
                 }
-            diff = manual - calculated
+            diff = calculated - manual
             # When both are 0, difference is 0.0 (not None)
             calculated_float = float(calculated)
             manual_float = float(manual)
@@ -534,6 +558,7 @@ async def reconciliation_compare_dashboard(
         comparison_data.append(
             {
                 "business": business,
+                "cashiers": cashiers_str,
                 "manual_entry": manual_entry,
                 "is_closed": is_closed,
                 "manual": {
@@ -578,6 +603,89 @@ async def reconciliation_compare_dashboard(
             "selected_business_id": str(selected_business_id) if selected_business_id else None,
             "businesses": all_businesses,
             "comparison_data": comparison_data,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.get("/reconciliation/sessions", response_class=HTMLResponse)
+async def get_business_sessions_detail(
+    request: Request,
+    business_id: str = Query(..., description="Business ID"),
+    date: str = Query(..., description="Date in YYYY-MM-DD format"),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get detailed session information for a business on a specific date."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    try:
+        business_uuid = UUID(business_id)
+        session_date = datetime.fromisoformat(date).date()
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid business_id or date format")
+
+    # Get all sessions for this business and date
+    stmt = (
+        select(CashSession)
+        .where(
+            and_(
+                CashSession.business_id == business_uuid,
+                CashSession.session_date == session_date,
+                ~CashSession.is_deleted,
+            )
+        )
+        .order_by(CashSession.session_number)
+        .options(selectinload(CashSession.cashier))
+    )
+    result = await db.execute(stmt)
+    sessions = result.scalars().all()
+
+    # Calculate totals for each session
+    session_details = []
+    for session in sessions:
+        # Calculate cash sales (same formula as in comparison)
+        if session.status == "CLOSED" and session.final_cash is not None:
+            cash_sales = (
+                (session.final_cash - session.initial_cash)
+                + (session.envelope_amount or Decimal("0"))
+                + (session.expenses or Decimal("0"))
+                - (session.credit_payments_collected or Decimal("0"))
+                + (session.bank_transfer_total or Decimal("0"))
+            )
+        else:
+            cash_sales = Decimal("0")
+
+        # Card sales
+        card_sales = (
+            (session.credit_card_total or Decimal("0")) + (session.debit_card_total or Decimal("0"))
+            if session.status == "CLOSED"
+            else Decimal("0")
+        )
+
+        # Credit sales
+        credit_sales = session.credit_sales_total or Decimal("0") if session.status == "CLOSED" else Decimal("0")
+
+        # Total
+        total_sales = cash_sales + card_sales + credit_sales
+
+        session_details.append(
+            {
+                "session": session,
+                "cash_sales": cash_sales,
+                "card_sales": card_sales,
+                "credit_sales": credit_sales,
+                "total_sales": total_sales,
+            }
+        )
+
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/session_details.html",
+        {
+            "sessions": session_details,
             "locale": locale,
             "_": _,
         },
