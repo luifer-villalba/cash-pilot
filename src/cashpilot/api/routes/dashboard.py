@@ -85,8 +85,7 @@ async def dashboard(
                     + func.coalesce(CashSession.envelope_amount, 0)
                     + func.coalesce(CashSession.expenses, 0)
                     - func.coalesce(CashSession.credit_payments_collected, 0)
-                    + func.coalesce(CashSession.credit_card_total, 0)
-                    + func.coalesce(CashSession.debit_card_total, 0)
+                    + func.coalesce(CashSession.card_total, 0)
                     + func.coalesce(CashSession.bank_transfer_total, 0)
                     + func.coalesce(CashSession.credit_sales_total, 0),
                 ),
@@ -322,12 +321,9 @@ async def get_dashboard_stats(
                 else_=0,
             )
         ).label("cash_sales"),
-        func.sum(
-            case((CashSession.status == "CLOSED", CashSession.credit_card_total), else_=0)
-        ).label("credit_card_total"),
-        func.sum(
-            case((CashSession.status == "CLOSED", CashSession.debit_card_total), else_=0)
-        ).label("debit_card_total"),
+        func.sum(case((CashSession.status == "CLOSED", CashSession.card_total), else_=0)).label(
+            "card_total"
+        ),
         func.sum(
             case((CashSession.status == "CLOSED", CashSession.bank_transfer_total), else_=0)
         ).label("bank_transfer_total"),
@@ -347,8 +343,7 @@ async def get_dashboard_stats(
 
     # Convert to Decimal, handling None from aggregations
     cash_sales_val = Decimal(aggs_row.cash_sales or 0)
-    credit_card_val = Decimal(aggs_row.credit_card_total or 0)
-    debit_card_val = Decimal(aggs_row.debit_card_total or 0)
+    card_total_val = Decimal(aggs_row.card_total or 0)
     bank_val = Decimal(aggs_row.bank_transfer_total or 0)
     expenses_val = Decimal(aggs_row.expenses or 0)
     credit_sales_val = Decimal(aggs_row.credit_sales_total or 0)
@@ -370,10 +365,10 @@ async def get_dashboard_stats(
 
     # Card #5: Total Sales = Cash Sales (which includes bank transfers) + Card Sales + Credit Sales
     # Note: bank_val is NOT added again because it's already included in cash_sales_val
-    total_sales = cash_sales_val + credit_card_val + debit_card_val + credit_sales_val
+    total_sales = cash_sales_val + card_total_val + credit_sales_val
 
     # Card #6: Card Payments (for collapsible section)
-    card_payments_total = credit_card_val + debit_card_val
+    card_payments_total = card_total_val
 
     # Card #7: Credit Sales (for collapsible section)
     # Already calculated as credit_sales_val
@@ -382,9 +377,9 @@ async def get_dashboard_stats(
     # Already calculated as credit_payments_val
 
     # Card #9: Payment Mix % (for collapsible section)
-    total_income = cash_sales_val + credit_card_val + debit_card_val + bank_val + credit_sales_val
+    total_income = cash_sales_val + card_total_val + bank_val + credit_sales_val
     cash_pct = (cash_sales_val / total_income * 100) if total_income > 0 else 0
-    card_pct = (card_payments_total / total_income * 100) if total_income > 0 else 0
+    card_pct = (card_total_val / total_income * 100) if total_income > 0 else 0
     bank_pct = (bank_val / total_income * 100) if total_income > 0 else 0
 
     # Card #10: Sessions Status (for collapsible section)
@@ -402,8 +397,7 @@ async def get_dashboard_stats(
             "total_sales": total_sales,
             # Card 6-10 (collapsible)
             "card_payments_total": card_payments_total,
-            "credit_card_total": credit_card_val,
-            "debit_card_total": debit_card_val,
+            "card_total": card_total_val,
             "credit_sales_total": credit_sales_val,
             "credit_payments_collected": credit_payments_val,
             "cash_pct": cash_pct,

@@ -123,10 +123,10 @@
 
         <!-- Card 2: Card Payments -->
         <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Card Payments') }}</h3>
-            <p class="text-xl font-bold font-mono tabular-nums mb-1">Gs {{ totals_current.card_payments_total | format_currency_py }}</p>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Cards') }}</h3>
+            <p class="text-xl font-bold font-mono tabular-nums mb-1">Gs {{ totals_current.card_total | format_currency_py }}</p>
             <div class="mt-1">
-                {{ delta_display(totals_deltas.card_payments_total, totals_current.card_payments_total, totals_previous.card_payments_total) }}
+                {{ delta_display(totals_deltas.card_total, totals_current.card_total, totals_previous.card_total) }}
             </div>
         </div>
 
@@ -177,7 +177,7 @@
                             {{ _('Credit Sales') }}
                         </th>
                         <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
-                            {{ _('Card Payments') }}
+                            {{ _('Cards') }}
                         </th>
                         <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
                             {{ _('Collections') }}
@@ -216,7 +216,7 @@
                             {% if no_current_sessions %}
                                 <span class="text-base-content/30 text-sm">—</span>
                             {% else %}
-                                <span class="font-mono tabular-nums text-base">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
+                                <span class="font-mono tabular-nums text-base">Gs {{ item.current.card_total | format_currency_py }}</span>
                             {% endif %}
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
@@ -270,9 +270,9 @@
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
                             <div class="flex flex-col items-end gap-1">
-                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.card_payments_total | format_currency_py }}</span>
+                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.card_total | format_currency_py }}</span>
                                 <div class="text-xs">
-                                    {{ delta_display(totals_deltas.card_payments_total, totals_current.card_payments_total, totals_previous.card_payments_total) }}
+                                    {{ delta_display(totals_deltas.card_total, totals_current.card_total, totals_previous.card_total) }}
                                 </div>
                             </div>
                         </td>
@@ -331,11 +331,11 @@
                         {% endif %}
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Card Payments') }}</span>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cards') }}</span>
                         {% if no_current_sessions %}
                             <span class="text-sm text-base-content/40">—</span>
                         {% else %}
-                            <span class="text-sm font-mono tabular-nums">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
+                            <span class="text-sm font-mono tabular-nums">Gs {{ item.current.card_total | format_currency_py }}</span>
                         {% endif %}
                     </div>
                     <div class="flex justify-between items-center">
@@ -388,14 +388,6 @@
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Total Expenses') }}</p>
                                 <p class="text-sm font-bold font-mono tabular-nums text-error">−Gs {{ item.current.total_expenses | format_currency_py }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Credit Card') }}</p>
-                                <p class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.credit_card_total | format_currency_py }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Debit Card') }}</p>
-                                <p class="text-sm font-bold font-mono tabular-nums">Gs {{ item.current.debit_card_total | format_currency_py }}</p>
                             </div>
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-wider text-base-content/70 mb-1">{{ _('Sessions Open') }}</p>

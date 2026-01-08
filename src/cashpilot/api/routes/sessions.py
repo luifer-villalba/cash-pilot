@@ -319,8 +319,7 @@ async def close_session_post(
     session: CashSession = Depends(require_own_session),
     final_cash: str = Form(...),
     envelope_amount: str = Form("0"),
-    credit_card_total: str = Form("0"),
-    debit_card_total: str = Form("0"),
+    card_total: str = Form("0"),
     credit_sales_total: str = Form("0"),
     credit_payments_collected: str = Form("0"),
     closed_time: str = Form(...),
@@ -334,7 +333,7 @@ async def close_session_post(
 
     try:
         # Business logic: parse currency formats (es-PY specific)
-        # Note: envelope_amount, credit_card_total, and debit_card_total have Form("0") defaults,
+        # Note: envelope_amount and card_total have Form("0") defaults,
         # so parse_currency will receive "0" if not provided. parse_currency handles "0" correctly
         # and returns Decimal("0"), with fallback to Decimal("0") if parsing fails.
         final_cash_val = parse_currency(final_cash)
@@ -345,11 +344,8 @@ async def close_session_post(
         envelope_val = parse_currency(envelope_amount)
         session.envelope_amount = envelope_val if envelope_val is not None else Decimal("0")
 
-        credit_card_val = parse_currency(credit_card_total)
-        session.credit_card_total = credit_card_val if credit_card_val is not None else Decimal("0")
-
-        debit_card_val = parse_currency(debit_card_total)
-        session.debit_card_total = debit_card_val if debit_card_val is not None else Decimal("0")
+        card_val = parse_currency(card_total)
+        session.card_total = card_val if card_val is not None else Decimal("0")
 
         credit_sales_val = parse_currency(credit_sales_total)
         session.credit_sales_total = (

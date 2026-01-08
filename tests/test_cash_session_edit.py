@@ -74,23 +74,20 @@ async def test_edit_closed_session_payment_totals(
         db_session,
         business_id=business.id,
         status="CLOSED",
-        credit_card_total=Decimal("1000.00"),
-        debit_card_total=Decimal("500.00"),
+        card_total=Decimal("1500.00"),
     )
 
     response = await client.patch(
         f"/cash-sessions/{session.id}/edit-closed",
         json={
-            "credit_card_total": "1200.00",
-            "debit_card_total": "600.00",
+            "card_total": "1800.00",
             "reason": "Payment totals correction",
         },
     )
 
     assert response.status_code == 200
     data = response.json()
-    assert data["credit_card_total"] == "1200.00"
-    assert data["debit_card_total"] == "600.00"
+    assert data["card_total"] == "1800.00"
 
 
 @pytest.mark.asyncio

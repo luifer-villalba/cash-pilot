@@ -129,15 +129,8 @@ async def aggregate_business_metrics(
                     else_=0,
                 )
             ).label("cash_sales"),
-            # Card Payments Total = credit_card + debit_card
-            func.sum(
-                func.coalesce(CashSession.credit_card_total, 0)
-                + func.coalesce(CashSession.debit_card_total, 0)
-            ).label("card_payments_total"),
-            # Credit Card Total (breakdown)
-            func.sum(func.coalesce(CashSession.credit_card_total, 0)).label("credit_card_total"),
-            # Debit Card Total (breakdown)
-            func.sum(func.coalesce(CashSession.debit_card_total, 0)).label("debit_card_total"),
+            # Card Payments Total
+            func.sum(func.coalesce(CashSession.card_total, 0)).label("card_payments_total"),
             # Credit Sales Total (pending credit sales)
             func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales_total"),
             # Credit Payments Collected
@@ -193,8 +186,6 @@ async def aggregate_business_metrics(
         business_id = str(row.business_id)
         cash_sales = Decimal(row.cash_sales or 0)
         card_payments_total = Decimal(row.card_payments_total or 0)
-        credit_card_total = Decimal(row.credit_card_total or 0)
-        debit_card_total = Decimal(row.debit_card_total or 0)
         credit_sales_total = Decimal(row.credit_sales_total or 0)
         credit_payments_collected = Decimal(row.credit_payments_collected or 0)
         bank_transfer_total = Decimal(row.bank_transfer_total or 0)
@@ -229,8 +220,6 @@ async def aggregate_business_metrics(
             "bank_transfer_total": bank_transfer_total,
             # Secondary metrics
             "cash_profit": cash_profit,
-            "credit_card_total": credit_card_total,
-            "debit_card_total": debit_card_total,
             "total_expenses": total_expenses,
             "payment_method_mix": payment_method_mix,
         }
@@ -268,8 +257,6 @@ async def aggregate_business_metrics(
             "credit_payments_collected": Decimal("0"),
             "bank_transfer_total": Decimal("0"),
             "cash_profit": Decimal("0"),
-            "credit_card_total": Decimal("0"),
-            "debit_card_total": Decimal("0"),
             "total_expenses": Decimal("0"),
             "payment_method_mix": {
                 "cash_percent": Decimal("0"),
@@ -396,8 +383,6 @@ async def business_stats(
         "credit_payments_collected",
         "bank_transfer_total",
         "cash_profit",
-        "credit_card_total",
-        "debit_card_total",
         "total_expenses",
         "sessions_count_open",
         "sessions_count_closed",

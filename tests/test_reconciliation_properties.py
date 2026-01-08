@@ -19,8 +19,7 @@ class TestCashSessionProperties:
             final_cash=Decimal("1200000.00"),
             envelope_amount=Decimal("300000.00"),
             expenses=Decimal("125000.00"),
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
             bank_transfer_total=Decimal("0.00"),
         )
 
@@ -36,8 +35,7 @@ class TestCashSessionProperties:
             final_cash=Decimal("1500000.00"),
             envelope_amount=Decimal("0.00"),
             expenses=Decimal("100000.00"),
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
             bank_transfer_total=Decimal("0.00"),
         )
 
@@ -53,8 +51,7 @@ class TestCashSessionProperties:
             final_cash=Decimal("1200000.00"),
             envelope_amount=Decimal("300000.00"),
             expenses=Decimal("0.00"),
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
             bank_transfer_total=Decimal("0.00"),
         )
 
@@ -70,8 +67,7 @@ class TestCashSessionProperties:
             final_cash=None,
             envelope_amount=Decimal("0.00"),
             expenses=Decimal("50000.00"),
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
             bank_transfer_total=Decimal("0.00"),
         )
 
@@ -87,8 +83,7 @@ class TestCashSessionProperties:
             envelope_amount=Decimal("300000.00"),
             expenses=Decimal("125000.00"),
             credit_payments_collected=Decimal("200000.00"),
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
             bank_transfer_total=Decimal("0.00"),
         )
 
@@ -104,13 +99,12 @@ class TestCashSessionProperties:
             final_cash=Decimal("1200000.00"),
             envelope_amount=Decimal("300000.00"),
             expenses=Decimal("125000.00"),
-            credit_card_total=Decimal("800000.00"),
-            debit_card_total=Decimal("450000.00"),
+            card_total=Decimal("1250000.00"),
             bank_transfer_total=Decimal("150000.00"),
         )
 
         # cash_sales = 1,125,000
-        # total_sales = 1,125,000 + 800,000 + 450,000 + 150,000 + 0 = 2,525,000
+        # total_sales = 1,125,000 + 1,250,000 + 150,000 + 0 = 2,525,000
         assert session.total_sales == Decimal("2525000.00")
 
     async def test_total_sales_cash_only(self):
@@ -122,13 +116,12 @@ class TestCashSessionProperties:
             final_cash=Decimal("1500000.00"),
             envelope_amount=Decimal("0.00"),
             expenses=Decimal("100000.00"),
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
             bank_transfer_total=Decimal("0.00"),
         )
 
         # cash_sales = 1,100,000
-        # total_sales = 1,100,000 + 0 + 0 + 0 + 0 = 1,100,000
+        # total_sales = 1,100,000 + 0 + 0 + 0 = 1,100,000
         assert session.total_sales == Decimal("1100000.00")
 
     async def test_total_sales_with_credit_sales(self):
@@ -140,14 +133,13 @@ class TestCashSessionProperties:
             final_cash=Decimal("1200000.00"),
             envelope_amount=Decimal("300000.00"),
             expenses=Decimal("125000.00"),
-            credit_card_total=Decimal("800000.00"),
-            debit_card_total=Decimal("450000.00"),
+            card_total=Decimal("1250000.00"),
             bank_transfer_total=Decimal("150000.00"),
             credit_sales_total=Decimal("500000.00"),
         )
 
         # cash_sales = 1,125,000
-        # total_sales = 1,125,000 + 800,000 + 450,000 + 150,000 + 500,000 = 3,025,000
+        # total_sales = 1,125,000 + 1,250,000 + 150,000 + 500,000 = 3,025,000
         assert session.total_sales == Decimal("3025000.00")
 
     async def test_net_earnings_with_expenses(self):
@@ -159,8 +151,7 @@ class TestCashSessionProperties:
             final_cash=Decimal("1200000.00"),
             envelope_amount=Decimal("300000.00"),
             expenses=Decimal("125000.00"),
-            credit_card_total=Decimal("800000.00"),
-            debit_card_total=Decimal("450000.00"),
+            card_total=Decimal("1250000.00"),
             bank_transfer_total=Decimal("150000.00"),
         )
 

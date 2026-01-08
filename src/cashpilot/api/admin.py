@@ -404,13 +404,12 @@ async def reconciliation_compare_dashboard(
                     else_=0,
                 )
             ).label("cash_sales"),
-            # Card Sales = credit_card + debit_card (only closed sessions)
+            # Card Sales (only closed sessions)
             func.sum(
                 case(
                     (
                         CashSession.status == "CLOSED",
-                        func.coalesce(CashSession.credit_card_total, 0)
-                        + func.coalesce(CashSession.debit_card_total, 0),
+                        func.coalesce(CashSession.card_total, 0),
                     ),
                     else_=0,
                 )
@@ -438,8 +437,7 @@ async def reconciliation_compare_dashboard(
                         + func.coalesce(CashSession.expenses, 0)
                         - func.coalesce(CashSession.credit_payments_collected, 0)
                         + func.coalesce(CashSession.bank_transfer_total, 0)
-                        + func.coalesce(CashSession.credit_card_total, 0)
-                        + func.coalesce(CashSession.debit_card_total, 0)
+                        + func.coalesce(CashSession.card_total, 0)
                         + func.coalesce(CashSession.credit_sales_total, 0),
                     ),
                     else_=0,
@@ -660,9 +658,7 @@ async def get_business_sessions_detail(
 
         # Card sales
         card_sales = (
-            (session.credit_card_total or Decimal("0")) + (session.debit_card_total or Decimal("0"))
-            if session.status == "CLOSED"
-            else Decimal("0")
+            session.card_total or Decimal("0") if session.status == "CLOSED" else Decimal("0")
         )
 
         # Credit sales

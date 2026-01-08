@@ -206,8 +206,7 @@ function parseCalculator(value) {
 function initializeCurrencyInputs() {
     // Fields that support calculator (allow math expressions)
     var calculatorFields = new Set([
-        'credit_card_total',
-        'debit_card_total',
+        'card_total',
         'credit_sales_total',
         'credit_payments_collected',
         'envelope_amount'
@@ -217,8 +216,7 @@ function initializeCurrencyInputs() {
         'initial_cash',
         'final_cash',
         'envelope_amount',
-        'credit_card_total',
-        'debit_card_total',
+        'card_total',
         'credit_sales_total',
         'credit_payments_collected'
     ];

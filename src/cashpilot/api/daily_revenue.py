@@ -95,14 +95,8 @@ async def get_daily_revenue(
                 else_=0,
             )
         ).label("cash_sales"),
-        # Credit Card + Debit Card
-        func.sum(
-            func.coalesce(CashSession.credit_card_total, 0)
-            + func.coalesce(CashSession.debit_card_total, 0)
-        ).label("card_sales"),
-        # Break down card sales
-        func.sum(func.coalesce(CashSession.credit_card_total, 0)).label("credit_card_sales"),
-        func.sum(func.coalesce(CashSession.debit_card_total, 0)).label("debit_card_sales"),
+        # Card sales
+        func.sum(func.coalesce(CashSession.card_total, 0)).label("card_sales"),
         # Bank transfers
         func.sum(func.coalesce(CashSession.bank_transfer_total, 0)).label("bank_transfer_sales"),
         # Credit sales (on-account)
@@ -119,12 +113,10 @@ async def get_daily_revenue(
     # Extract financial metrics (handle None values)
     cash_sales = financial_data[0] or Decimal("0.00")
     card_sales = financial_data[1] or Decimal("0.00")
-    credit_card_sales = financial_data[2] or Decimal("0.00")
-    debit_card_sales = financial_data[3] or Decimal("0.00")
-    bank_transfer_sales = financial_data[4] or Decimal("0.00")
-    credit_sales = financial_data[5] or Decimal("0.00")
-    total_expenses = financial_data[6] or Decimal("0.00")
-    total_sessions = financial_data[7] or 0
+    bank_transfer_sales = financial_data[2] or Decimal("0.00")
+    credit_sales = financial_data[3] or Decimal("0.00")
+    total_expenses = financial_data[4] or Decimal("0.00")
+    total_sessions = financial_data[5] or 0
 
     # Calculate total sales
     total_sales = cash_sales + card_sales + bank_transfer_sales + credit_sales
@@ -161,8 +153,7 @@ async def get_daily_revenue(
                 "sessions": 0,
                 "revenue": Decimal("0.00"),
                 "cash_sales": Decimal("0.00"),
-                "debit_sales": Decimal("0.00"),
-                "credit_sales": Decimal("0.00"),
+                "card_sales": Decimal("0.00"),
                 "bank_sales": Decimal("0.00"),
                 "total_duration_seconds": 0,
                 "total_expenses": Decimal("0.00"),
@@ -174,8 +165,7 @@ async def get_daily_revenue(
         cashier_stats[cashier_id]["sessions"] += 1
         cashier_stats[cashier_id]["revenue"] += session.total_sales
         cashier_stats[cashier_id]["cash_sales"] += session.cash_sales
-        cashier_stats[cashier_id]["debit_sales"] += session.debit_card_total or Decimal("0.00")
-        cashier_stats[cashier_id]["credit_sales"] += session.credit_card_total or Decimal("0.00")
+        cashier_stats[cashier_id]["card_sales"] += session.card_total or Decimal("0.00")
         cashier_stats[cashier_id]["bank_sales"] += session.bank_transfer_total or Decimal("0.00")
         cashier_stats[cashier_id]["total_expenses"] += session.expenses or Decimal("0.00")
 
@@ -223,13 +213,8 @@ async def get_daily_revenue(
             if revenue > 0
             else Decimal("0.00")
         )
-        debit_pct = (
-            (stats["debit_sales"] / revenue * 100).quantize(Decimal("0.1"))
-            if revenue > 0
-            else Decimal("0.00")
-        )
-        credit_pct = (
-            (stats["credit_sales"] / revenue * 100).quantize(Decimal("0.1"))
+        card_pct = (
+            (stats["card_sales"] / revenue * 100).quantize(Decimal("0.1"))
             if revenue > 0
             else Decimal("0.00")
         )
@@ -268,8 +253,7 @@ async def get_daily_revenue(
                 avg_revenue_per_session=avg_revenue,
                 percentage_of_total=percentage,
                 cash_percentage=cash_pct,
-                debit_percentage=debit_pct,
-                credit_percentage=credit_pct,
+                card_percentage=card_pct,
                 bank_percentage=bank_pct,
                 avg_session_duration_hours=avg_duration_hours,
                 total_expenses=stats["total_expenses"],
@@ -288,8 +272,7 @@ async def get_daily_revenue(
         business_id=business_uuid,
         total_sales=total_sales,
         cash_sales=cash_sales,
-        credit_card_sales=credit_card_sales,
-        debit_card_sales=debit_card_sales,
+        card_sales=card_sales,
         bank_transfer_sales=bank_transfer_sales,
         credit_sales=credit_sales,
         net_earnings=net_earnings,

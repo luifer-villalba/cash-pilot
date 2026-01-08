@@ -462,8 +462,7 @@ async def get_reconciliation_compare(
                 case(
                     (
                         CashSession.status == "CLOSED",
-                        func.coalesce(CashSession.credit_card_total, 0)
-                        + func.coalesce(CashSession.debit_card_total, 0),
+                        func.coalesce(CashSession.card_total, 0),
                     ),
                     else_=0,
                 )
@@ -489,8 +488,7 @@ async def get_reconciliation_compare(
                         + func.coalesce(CashSession.expenses, 0)
                         - func.coalesce(CashSession.credit_payments_collected, 0)
                         + func.coalesce(CashSession.bank_transfer_total, 0)
-                        + func.coalesce(CashSession.credit_card_total, 0)
-                        + func.coalesce(CashSession.debit_card_total, 0)
+                        + func.coalesce(CashSession.card_total, 0)
                         + func.coalesce(CashSession.credit_sales_total, 0),
                     ),
                     else_=0,

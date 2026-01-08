@@ -486,8 +486,7 @@ async def update_closed_session_fields(
     session: CashSession,
     final_cash: str | None = None,
     envelope_amount: str | None = None,
-    credit_card_total: str | None = None,
-    debit_card_total: str | None = None,
+    card_total: str | None = None,
     credit_sales_total: str | None = None,
     credit_payments_collected: str | None = None,
     closing_ticket: str | None = None,
@@ -518,18 +517,9 @@ async def update_closed_session_fields(
     )
     _update_field(
         session,
-        "credit_card_total",
-        parse_currency(credit_card_total) or Decimal("0"),
-        session.credit_card_total,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "debit_card_total",
-        parse_currency(debit_card_total) or Decimal("0"),
-        session.debit_card_total,
+        "card_total",
+        parse_currency(card_total) or Decimal("0"),
+        session.card_total,
         changed_fields,
         old_values,
         new_values,

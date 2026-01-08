@@ -210,9 +210,8 @@ async def get_weekly_trend(
                 + func.coalesce(CashSession.envelope_amount, 0)
                 + func.coalesce(CashSession.expenses, 0)
                 - func.coalesce(CashSession.credit_payments_collected, 0)
-                # 2. Card Sales (credit + debit cards)
-                + func.coalesce(CashSession.credit_card_total, 0)
-                + func.coalesce(CashSession.debit_card_total, 0)
+                # 2. Card Sales
+                + func.coalesce(CashSession.card_total, 0)
                 # 3. Bank Transfers
                 + func.coalesce(CashSession.bank_transfer_total, 0)
                 # 4. Credit Sales (sales on account)

@@ -91,66 +91,34 @@
                         <h2 class="text-lg font-bold text-base-content">{{ _('Payment Methods') }}</h2>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Credit Card -->
-                        <div class="form-control">
-                            <label class="label pb-2">
-                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                                    </svg>
-                                    {{ _('Credit Card Total') }}
-                                </span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-base font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
-                                <input
-                                    type="text"
-                                    name="credit_card_total"
-                                    id="credit_card_total"
-                                    class="input input-bordered w-full font-mono pl-10 focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                                    value="{% if session.credit_card_total and session.credit_card_total > 0 %}{{ '{:,.0f}'.format(session.credit_card_total) }}{% endif %}"
-                                    placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
-                                    autocomplete="off"
-                                    aria-describedby="credit-card-help"
-                                />
-                            </div>
-                            <label class="label pt-2" id="credit-card-help">
-                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Total credit card sales') }}</span>
-                            </label>
+                    <!-- Card Total -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                </svg>
+                                {{ _('Card Total') }}
+                            </span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-base font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                            <input
+                                type="text"
+                                name="card_total"
+                                id="card_total"
+                                class="input input-bordered w-full font-mono pl-10 focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                value="{% if session.card_total and session.card_total > 0 %}{{ '{:,.0f}'.format(session.card_total) }}{% endif %}"
+                                placeholder="0"
+                                inputmode="decimal"
+                                data-currency-input
+                                autocomplete="off"
+                                aria-describedby="card-help"
+                            />
                         </div>
-
-                        <!-- Debit Card -->
-                        <div class="form-control">
-                            <label class="label pb-2">
-                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70 flex items-center gap-1">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                    </svg>
-                                    {{ _('Debit Card Total') }}
-                                </span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-base font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
-                                <input
-                                    type="text"
-                                    name="debit_card_total"
-                                    id="debit_card_total"
-                                    class="input input-bordered w-full font-mono pl-10 focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                                    value="{% if session.debit_card_total and session.debit_card_total > 0 %}{{ '{:,.0f}'.format(session.debit_card_total) }}{% endif %}"
-                                    placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
-                                    autocomplete="off"
-                                    aria-describedby="debit-card-help"
-                                />
-                            </div>
-                            <label class="label pt-2" id="debit-card-help">
-                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Total debit card sales') }}</span>
-                            </label>
-                        </div>
+                        <label class="label pt-2" id="card-help">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Total sales by credit and debit cards') }}</span>
+                        </label>
                     </div>
 
                     <!-- Bank Transfers (Line Items) -->
@@ -390,7 +358,7 @@
                         </svg>
                         <div>
                             <p class="font-semibold text-base-content/80">{{ _('Card Payments') }}</p>
-                            <p class="text-base-content/60 font-mono">{{ _('credit') }} + {{ _('debit') }}</p>
+                            <p class="text-base-content/60 font-mono">{{ _('credit + debit cards') }}</p>
                         </div>
                     </div>
                     <div class="flex items-start gap-2">
@@ -432,15 +400,10 @@
             ? parseCalculator(envelopeEl.value || '')
             : parseCurrency(envelopeEl ? envelopeEl.value : null);
             
-        var creditCardEl = document.querySelector('[name="credit_card_total"]');
-        var creditCard = typeof parseCalculator !== 'undefined' && creditCardEl
-            ? parseCalculator(creditCardEl.value || '')
-            : parseCurrency(creditCardEl ? creditCardEl.value : null);
-            
-        var debitCardEl = document.querySelector('[name="debit_card_total"]');
-        var debitCard = typeof parseCalculator !== 'undefined' && debitCardEl
-            ? parseCalculator(debitCardEl.value || '')
-            : parseCurrency(debitCardEl ? debitCardEl.value : null);
+        var cardTotalEl = document.querySelector('[name="card_total"]');
+        var cardTotal = typeof parseCalculator !== 'undefined' && cardTotalEl
+            ? parseCalculator(cardTotalEl.value || '')
+            : parseCurrency(cardTotalEl ? cardTotalEl.value : null);
         
         // Get totals from data attributes
         var bankTransferEl = document.querySelector('[data-bank-transfer-total]');
@@ -450,7 +413,7 @@
 
         // Calculations
         var cashSales = (finalCash - initialCash) + envelope;
-        var cardPayments = creditCard + debitCard;
+        var cardPayments = cardTotal;
         var totalSales = cashSales + cardPayments + bankTransfer;
         var netEarnings = totalSales - expenses;
         var cashProfit = cashSales - expenses;
@@ -524,7 +487,7 @@
             '</span>' +
             '<span class="text-base font-bold font-mono text-info">' + formatCurrency(cardPayments) + '</span>' +
             '</div>' +
-            '<p class="text-xs text-base-content/50 font-mono">' + formatCurrency(creditCard) + ' + ' + formatCurrency(debitCard) + '</p>' +
+            '<p class="text-xs text-base-content/50 font-mono">' + formatCurrency(cardTotal) + '</p>' +
             '</div>' +
             '<!-- Bank Transfers -->' + bankTransferHtml +
             '<!-- Total Sales -->' +
@@ -562,8 +525,7 @@
         
         // Known calculator field names (fallback if attribute not set yet)
         var calculatorFieldNames = {
-            'credit_card_total': true,
-            'debit_card_total': true,
+            'card_total': true,
             'credit_sales_total': true,
             'credit_payments_collected': true,
             'envelope_amount': true
@@ -600,7 +562,7 @@
         });
 
         // Watch for changes in main form fields
-        document.querySelectorAll('[name="final_cash"], [name="envelope_amount"], [name="credit_card_total"], [name="debit_card_total"]').forEach(input => {
+        document.querySelectorAll('[name="final_cash"], [name="envelope_amount"], [name="card_total"]').forEach(input => {
             input.addEventListener('input', updateReconciliationPreview);
             input.addEventListener('blur', updateReconciliationPreview);
         });

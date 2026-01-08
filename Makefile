@@ -1,6 +1,6 @@
 # File: Makefile
 
-.PHONY: fmt lint audit audit-full sh hook-install run dev up down logs watch dev-watch test \
+.PHONY: fmt lint audit audit-full sh hook-install run dev up down restart logs watch dev-watch test \
         migrate migration migrate-up migrate-down migrate-current migrate-history \
         check-db rebuild rebuild-quick fix-perms fix-line-endings clean-branches seed seed-reset \
         createuser list-users i18n-extract i18n-init-es i18n-compile i18n-update \
@@ -63,6 +63,11 @@ up:
 
 down:
 	docker compose down
+
+restart:
+	@echo "♻️  Restarting application container..."
+	docker compose restart app
+	@echo "✅ Application restarted"
 
 logs:
 	docker compose logs -f app
@@ -165,7 +170,7 @@ seed-reset:
 # ---------- i18n / Translations ----------
 i18n-extract:
 	@echo "🌍 Extracting translatable strings..."
-	docker compose exec app pybabel extract -F babel.cfg -o translations/messages.pot /app/
+	docker compose exec app pybabel extract -F babel.cfg --no-location -o translations/messages.pot /app/
 
 i18n-init-es:
 	@echo "🌍 Initializing Spanish translations..."
