@@ -666,7 +666,11 @@ async def get_business_sessions_detail(
         )
 
         # Credit sales
-        credit_sales = session.credit_sales_total or Decimal("0") if session.status == "CLOSED" else Decimal("0")
+        credit_sales = (
+            session.credit_sales_total or Decimal("0")
+            if session.status == "CLOSED"
+            else Decimal("0")
+        )
 
         # Total
         total_sales = cash_sales + card_sales + credit_sales
