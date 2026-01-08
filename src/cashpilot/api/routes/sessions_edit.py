@@ -117,8 +117,16 @@ async def edit_open_session_post(
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
     except ValueError as e:
-        logger.error(
-            "session.edit_open_failed",
+        # Handle validation errors (like currency format or max value exceeded)
+        error_message = str(e)
+        # Make the error message more user-friendly
+        if "exceeds maximum" in error_message:
+            error_message = _("Currency value too large. Maximum allowed: 9,999,999,999.99")
+        elif "Invalid" in error_message and "format" in error_message:
+            error_message = _("Invalid number format. Please enter a valid amount.")
+
+        logger.warning(
+            "session.edit_open_validation_failed",
             session_id=session_id,
             error=str(e),
             user_id=str(current_user.id),
@@ -129,7 +137,7 @@ async def edit_open_session_post(
             {
                 "current_user": current_user,
                 "session": session,
-                "error": f"Invalid input: {str(e)}",
+                "error": error_message,
                 "locale": locale,
                 "_": _,
             },
@@ -187,8 +195,7 @@ async def edit_closed_session_post(
     session: CashSession = Depends(require_own_session),
     final_cash: str | None = Form(None),
     envelope_amount: str | None = Form(None),
-    credit_card_total: str | None = Form(None),
-    debit_card_total: str | None = Form(None),
+    card_total: str | None = Form(None),
     credit_sales_total: str | None = Form(None),
     credit_payments_collected: str | None = Form(None),
     closing_ticket: str | None = Form(None),
@@ -226,8 +233,7 @@ async def edit_closed_session_post(
             session,
             final_cash,
             envelope_amount,
-            credit_card_total,
-            debit_card_total,
+            card_total,
             credit_sales_total,
             credit_payments_collected,
             closing_ticket,
@@ -262,8 +268,16 @@ async def edit_closed_session_post(
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
     except ValueError as e:
-        logger.error(
-            "session.edit_closed_failed",
+        # Handle validation errors (like currency format or max value exceeded)
+        error_message = str(e)
+        # Make the error message more user-friendly
+        if "exceeds maximum" in error_message:
+            error_message = _("Currency value too large. Maximum allowed: 9,999,999,999.99")
+        elif "Invalid" in error_message and "format" in error_message:
+            error_message = _("Invalid number format. Please enter a valid amount.")
+
+        logger.warning(
+            "session.edit_closed_validation_failed",
             session_id=session_id,
             error=str(e),
             user_id=str(current_user.id),
@@ -274,7 +288,7 @@ async def edit_closed_session_post(
             {
                 "current_user": current_user,
                 "session": session,
-                "error": f"Invalid input: {str(e)}",
+                "error": error_message,
                 "locale": locale,
                 "_": _,
             },

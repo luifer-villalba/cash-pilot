@@ -206,8 +206,7 @@ function parseCalculator(value) {
 function initializeCurrencyInputs() {
     // Fields that support calculator (allow math expressions)
     var calculatorFields = new Set([
-        'credit_card_total',
-        'debit_card_total',
+        'card_total',
         'credit_sales_total',
         'credit_payments_collected',
         'envelope_amount'
@@ -217,8 +216,7 @@ function initializeCurrencyInputs() {
         'initial_cash',
         'final_cash',
         'envelope_amount',
-        'credit_card_total',
-        'debit_card_total',
+        'card_total',
         'credit_sales_total',
         'credit_payments_collected'
     ];
@@ -247,11 +245,31 @@ function initializeCurrencyInputs() {
                 });
 
                 // On blur: evaluate expression and format result
+                // Use setTimeout to ensure this runs after other blur handlers
                 input.addEventListener('blur', function () {
-                    if (this.value) {
-                        var result = parseCalculator(this.value);
-                        this.value = currencyFormatter.formatForLocale(result);
-                    }
+                    var self = this;
+                    setTimeout(function() {
+                        if (self.value) {
+                            var originalValue = self.value;
+                            var result = parseCalculator(originalValue);
+                            // Format with thousand separators
+                            var formatted = currencyFormatter.formatForLocale(result);
+                            self.value = formatted;
+                            
+                            // Trigger change event if value was modified
+                            if (originalValue !== formatted) {
+                                // Dispatch input event for other listeners (IE11 compatible)
+                                var event;
+                                if (typeof Event === 'function') {
+                                    event = new Event('input', { bubbles: true });
+                                } else {
+                                    event = document.createEvent('Event');
+                                    event.initEvent('input', true, true);
+                                }
+                                self.dispatchEvent(event);
+                            }
+                        }
+                    }, 0);
                 });
             } else {
                 // Mark regular fields as initialized to prevent duplicate handlers

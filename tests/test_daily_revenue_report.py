@@ -80,14 +80,13 @@ async def setup_test_data(db_session: AsyncSession):
         final_cash=Decimal("1500.00"),  # Net +500
         envelope_amount=Decimal("0.00"),
         expenses=Decimal("0.00"),
-        credit_card_total=Decimal("1000.00"),
-        debit_card_total=Decimal("200.00"),
+        card_total=Decimal("1200.00"),
         bank_transfer_total=Decimal("0.00"),
         credit_sales_total=Decimal("0.00"),
         credit_payments_collected=Decimal("0.00"),
         # Cash sales = (final - initial) + envelope + expenses - credit_payments
         # = (1500 - 1000) + 0 + 0 - 0 = 500
-        # Expected: 500 cash + 1000 card + 200 debit = 1700 total
+        # Expected: 500 cash + 1200 card = 1700 total
         # Discrepancy: final_cash - initial_cash - cash_sales = 1500 - 1000 - 500 = 0 ✓
     )
     db_session.add(session1)
@@ -106,13 +105,12 @@ async def setup_test_data(db_session: AsyncSession):
         final_cash=Decimal("900.00"),  # Net +400, expected +500 = shortage of 100
         envelope_amount=Decimal("0.00"),
         expenses=Decimal("0.00"),
-        credit_card_total=Decimal("300.00"),
-        debit_card_total=Decimal("100.00"),
+        card_total=Decimal("400.00"),
         bank_transfer_total=Decimal("0.00"),
         credit_sales_total=Decimal("0.00"),
         credit_payments_collected=Decimal("0.00"),
         # Cash sales = (900 - 500) + 0 + 0 - 0 = 400
-        # Expected: 400 cash + 300 card + 100 debit = 800 total
+        # Expected: 400 cash + 400 card = 800 total
         # Discrepancy: 900 - 500 - 400 = 0 (actually perfect)
         # Need to adjust initial_cash to create shortage
     )
@@ -134,8 +132,7 @@ async def setup_test_data(db_session: AsyncSession):
         final_cash=Decimal("800.00"),  # Net +600, expected 500 = surplus of 100
         envelope_amount=Decimal("0.00"),
         expenses=Decimal("0.00"),
-        credit_card_total=Decimal("200.00"),
-        debit_card_total=Decimal("100.00"),
+        card_total=Decimal("300.00"),
         bank_transfer_total=Decimal("0.00"),
         credit_sales_total=Decimal("0.00"),
         credit_payments_collected=Decimal("0.00"),
@@ -143,10 +140,10 @@ async def setup_test_data(db_session: AsyncSession):
     session3.initial_cash = Decimal("200.00")
     session3.final_cash = Decimal("800.00")
     # Cash sales = (800 - 200) + 0 + 0 - 0 = 600
-    # Expected: 600 cash + 200 card + 100 debit = 900 total
+    # Expected: 600 cash + 300 card = 900 total
     # Discrepancy: 800 - 200 - 600 = 0 (perfect)
     # Adjust for surplus
-    session3.credit_card_total = Decimal("150.00")  # Reduce to create surplus
+    session3.card_total = Decimal("150.00")  # Reduce to create surplus
     db_session.add(session3)
     
     await db_session.commit()

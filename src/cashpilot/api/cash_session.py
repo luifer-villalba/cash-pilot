@@ -179,11 +179,11 @@ async def close_shift(
     if (
         session_update.final_cash is None
         or session_update.envelope_amount is None
-        or session_update.credit_card_total is None
+        or session_update.card_total is None
         or session_update.closed_time is None
     ):
         raise InvalidStateError(
-            "Cannot close session: final_cash, envelope_amount, credit_card_total, "
+            "Cannot close session: final_cash, envelope_amount, card_total, "
             "and closed_time required"
         )
 

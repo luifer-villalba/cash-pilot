@@ -614,8 +614,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("200.00"),
             final_cash=Decimal("1200.00"),
-            credit_card_total=Decimal("50.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("50.00"),
         )
 
         response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
@@ -658,8 +657,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("500.00"),
             final_cash=Decimal("1500.00"),  # Cash sales = 1000
-            credit_card_total=Decimal("500.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("500.00"),
         )
 
         # Session 2: Cash 800, Card 700 = 1500 total
@@ -670,8 +668,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("200.00"),
             final_cash=Decimal("1000.00"),  # Cash sales = 800
-            credit_card_total=Decimal("700.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("700.00"),
         )
 
         response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
@@ -713,8 +710,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("500.00"),
             final_cash=Decimal("500.00"),  # No cash sales
-            credit_card_total=Decimal("0.00"),
-            debit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
         )
 
         response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
@@ -747,7 +743,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("500.00"),
             final_cash=Decimal("1500.00"),
-            credit_card_total=Decimal("200.00"),
+            card_total=Decimal("200.00"),
         )
 
         response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
@@ -789,7 +785,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("200.00"),
             final_cash=Decimal("1215.00"),  # Cash sales = 1015
-            credit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
         )
 
         response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
@@ -830,7 +826,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("0.00"),
             final_cash=Decimal("1025000.00"),  # Cash sales = 1,025,000
-            credit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
         )
 
         response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")
@@ -872,7 +868,7 @@ class TestReconciliationCompare:
             status="CLOSED",
             initial_cash=Decimal("0.00"),
             final_cash=Decimal("1015000.00"),  # Cash sales = 1,015,000
-            credit_card_total=Decimal("0.00"),
+            card_total=Decimal("0.00"),
         )
 
         response = await admin_client.get(f"/reconciliation/compare/?date={today.isoformat()}")

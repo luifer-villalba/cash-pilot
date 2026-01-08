@@ -148,8 +148,7 @@ class TestCloseCashSession:
             f"/cash-sessions/{session.id}",
             json={
                 "final_cash": "550000.00",
-                "credit_card_total": "100000.00",
-                "debit_card_total": "50000.00",
+                "card_total": "150000.00",
                 "envelope_amount": "0.00",
                 "bank_transfer_total": "0.00",
                 "closed_time": "18:00:00",
@@ -174,8 +173,7 @@ class TestCloseCashSession:
             f"/cash-sessions/{session.id}",
             json={
                 "final_cash": "500000.00",
-                "credit_card_total": "0.00",
-                "debit_card_total": "0.00",
+                "card_total": "0.00",
                 "envelope_amount": "0.00",
                 "bank_transfer_total": "0.00",
                 "closed_time": "18:00:00",
@@ -201,8 +199,7 @@ class TestCloseCashSession:
             f"/cash-sessions/{session.id}",
             json={
                 "final_cash": "600000.00",
-                "credit_card_total": "0.00",
-                "debit_card_total": "0.00",
+                "card_total": "0.00",
                 "envelope_amount": "0.00",
                 "bank_transfer_total": "0.00",
                 "closed_time": "18:00:00",

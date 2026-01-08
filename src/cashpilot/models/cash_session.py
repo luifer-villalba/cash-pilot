@@ -129,11 +129,7 @@ class CashSession(Base):
     )
 
     # Payment method totals
-    credit_card_total: Mapped[Decimal] = mapped_column(
-        Numeric(12, 2), nullable=False, default=Decimal("0.00")
-    )
-
-    debit_card_total: Mapped[Decimal] = mapped_column(
+    card_total: Mapped[Decimal] = mapped_column(
         Numeric(12, 2), nullable=False, default=Decimal("0.00")
     )
 
@@ -245,12 +241,10 @@ class CashSession(Base):
     def total_sales(self) -> Decimal:
         """All revenue across all payment methods: Cash Sales + Card Sales
         + Bank Transfers + Credit Sales on account (sales made on credit terms,
-        not credit card transactions, which are tracked via credit_card_total
-        and debit_card_total)."""
+        not credit card transactions, which are tracked via card_total)."""
         return (
             self.cash_sales
-            + (self.credit_card_total or Decimal("0.00"))
-            + (self.debit_card_total or Decimal("0.00"))
+            + (self.card_total or Decimal("0.00"))
             + (self.bank_transfer_total or Decimal("0.00"))
             + (self.credit_sales_total or Decimal("0.00"))
         )

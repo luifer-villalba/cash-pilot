@@ -24,20 +24,12 @@ function updatePreview() {
             : parseInt(envelopeEl.value.replace(/\D/g, '')) || 0;
     }
     
-    var creditCardEl = document.querySelector('[name="credit_card_total"]');
-    var creditCard = 0;
-    if (creditCardEl && creditCardEl.value) {
-        creditCard = typeof parseCalculator !== 'undefined' 
-            ? parseCalculator(creditCardEl.value) 
-            : parseInt(creditCardEl.value.replace(/\D/g, '')) || 0;
-    }
-    
-    var debitCardEl = document.querySelector('[name="debit_card_total"]');
-    var debitCard = 0;
-    if (debitCardEl && debitCardEl.value) {
-        debitCard = typeof parseCalculator !== 'undefined'
-            ? parseCalculator(debitCardEl.value)
-            : parseInt(debitCardEl.value.replace(/\D/g, '')) || 0;
+    var cardTotalEl = document.querySelector('[name="card_total"]');
+    var cardTotal = 0;
+    if (cardTotalEl && cardTotalEl.value) {
+        cardTotal = typeof parseCalculator !== 'undefined' 
+            ? parseCalculator(cardTotalEl.value) 
+            : parseInt(cardTotalEl.value.replace(/\D/g, '')) || 0;
     }
 
     // Get bank_transfer and expenses from session totals (read-only display)
@@ -54,7 +46,7 @@ function updatePreview() {
     }
 
     var cashSales = (finalCash - initialCash) + envelope;
-    var totalSales = cashSales + creditCard + debitCard + bankTransfer;
+    var totalSales = cashSales + cardTotal + bankTransfer;
     var netEarnings = totalSales - expenses;
 
     var preview = document.getElementById('preview');
@@ -70,8 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Calculator-enabled fields are identified by data-calculator-field attribute
     // set by currency-formatter.js. We just need to update preview on changes.
     var calculatorFieldSelectors = [
-        '[name="credit_card_total"]',
-        '[name="debit_card_total"]',
+        '[name="card_total"]',
         '[name="credit_sales_total"]',
         '[name="credit_payments_collected"]',
         '[name="envelope_amount"]'

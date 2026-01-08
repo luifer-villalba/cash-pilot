@@ -14,6 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
+from cashpilot.core.validators import validate_currency
 from cashpilot.models import Business, CashSession, User, UserRole
 from cashpilot.utils.datetime import now_utc, utc_to_business
 
@@ -400,6 +401,8 @@ async def update_open_session_fields(
     for field_name, form_value in currency_fields.items():
         if form_value:
             parsed_value = parse_currency(form_value) or Decimal("0")
+            # Validate that the value doesn't exceed NUMERIC(12, 2) limit
+            validate_currency(parsed_value)
             current_value = getattr(session, field_name)
             if parsed_value != current_value:
                 old_values[field_name] = str(current_value)
@@ -486,8 +489,7 @@ async def update_closed_session_fields(
     session: CashSession,
     final_cash: str | None = None,
     envelope_amount: str | None = None,
-    credit_card_total: str | None = None,
-    debit_card_total: str | None = None,
+    card_total: str | None = None,
     credit_sales_total: str | None = None,
     credit_payments_collected: str | None = None,
     closing_ticket: str | None = None,
@@ -498,10 +500,27 @@ async def update_closed_session_fields(
     old_values = {}
     new_values = {}
 
+    # Parse and validate currency fields
+    final_cash_val = parse_currency(final_cash) if final_cash else None
+    if final_cash_val is not None:
+        validate_currency(final_cash_val)
+
+    envelope_amount_val = parse_currency(envelope_amount) or Decimal("0")
+    validate_currency(envelope_amount_val)
+
+    card_total_val = parse_currency(card_total) or Decimal("0")
+    validate_currency(card_total_val)
+
+    credit_sales_total_val = parse_currency(credit_sales_total) or Decimal("0")
+    validate_currency(credit_sales_total_val)
+
+    credit_payments_collected_val = parse_currency(credit_payments_collected) or Decimal("0")
+    validate_currency(credit_payments_collected_val)
+
     _update_field(
         session,
         "final_cash",
-        parse_currency(final_cash),
+        final_cash_val,
         session.final_cash,
         changed_fields,
         old_values,
@@ -510,7 +529,7 @@ async def update_closed_session_fields(
     _update_field(
         session,
         "envelope_amount",
-        parse_currency(envelope_amount) or Decimal("0"),
+        envelope_amount_val,
         session.envelope_amount,
         changed_fields,
         old_values,
@@ -518,18 +537,9 @@ async def update_closed_session_fields(
     )
     _update_field(
         session,
-        "credit_card_total",
-        parse_currency(credit_card_total) or Decimal("0"),
-        session.credit_card_total,
-        changed_fields,
-        old_values,
-        new_values,
-    )
-    _update_field(
-        session,
-        "debit_card_total",
-        parse_currency(debit_card_total) or Decimal("0"),
-        session.debit_card_total,
+        "card_total",
+        card_total_val,
+        session.card_total,
         changed_fields,
         old_values,
         new_values,
@@ -537,7 +547,7 @@ async def update_closed_session_fields(
     _update_field(
         session,
         "credit_sales_total",
-        parse_currency(credit_sales_total) or Decimal("0"),
+        credit_sales_total_val,
         session.credit_sales_total,
         changed_fields,
         old_values,
@@ -546,7 +556,7 @@ async def update_closed_session_fields(
     _update_field(
         session,
         "credit_payments_collected",
-        parse_currency(credit_payments_collected) or Decimal("0"),
+        credit_payments_collected_val,
         session.credit_payments_collected,
         changed_fields,
         old_values,

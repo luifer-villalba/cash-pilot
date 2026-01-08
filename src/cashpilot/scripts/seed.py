@@ -120,14 +120,12 @@ async def seed_cash_sessions(
                     cash_sales = Decimal(random.randint(300000, 1500000))
                     final_cash = initial_cash + cash_sales
                     envelope_amount = Decimal(random.randint(50000, 300000))
-                    credit_card_total = Decimal(random.randint(200000, 800000))
-                    debit_card_total = Decimal(random.randint(100000, 500000))
+                    card_total = Decimal(random.randint(300000, 1300000))
                     bank_transfer_total = Decimal(random.randint(50000, 300000))
                 else:
                     final_cash = None
                     envelope_amount = Decimal(0)
-                    credit_card_total = Decimal(0)
-                    debit_card_total = Decimal(0)
+                    card_total = Decimal(0)
                     bank_transfer_total = Decimal(0)
 
                 session = CashSession(
@@ -137,8 +135,7 @@ async def seed_cash_sessions(
                     initial_cash=initial_cash,
                     final_cash=final_cash,
                     envelope_amount=envelope_amount,
-                    credit_card_total=credit_card_total,
-                    debit_card_total=debit_card_total,
+                    card_total=card_total,
                     bank_transfer_total=bank_transfer_total,
                     expenses=Decimal(random.randint(0, 50000)) if is_closed else Decimal(0),
                     credit_sales_total=(

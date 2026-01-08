@@ -81,8 +81,7 @@ class CashSessionPatchClosed(BaseModel):
 
     final_cash: Decimal | None = Field(None, ge=0, decimal_places=2)
     envelope_amount: Decimal | None = Field(None, ge=0, decimal_places=2)
-    credit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
-    debit_card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
+    card_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     bank_transfer_total: Decimal | None = Field(None, ge=0, decimal_places=2)
     expenses: Decimal | None = Field(None, ge=0, decimal_places=2)
     credit_sales_total: Decimal | None = Field(None, ge=0, decimal_places=2)
@@ -98,8 +97,7 @@ class CashSessionPatchClosed(BaseModel):
     @field_validator(
         "final_cash",
         "envelope_amount",
-        "credit_card_total",
-        "debit_card_total",
+        "card_total",
         "bank_transfer_total",
         "expenses",
         "credit_sales_total",
@@ -124,8 +122,7 @@ class CashSessionUpdate(BaseModel):
 
     final_cash: Decimal = Field(..., ge=0, decimal_places=2)
     envelope_amount: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
-    credit_card_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
-    debit_card_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
+    card_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
     bank_transfer_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
     expenses: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
     credit_sales_total: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
@@ -137,8 +134,7 @@ class CashSessionUpdate(BaseModel):
     @field_validator(
         "final_cash",
         "envelope_amount",
-        "credit_card_total",
-        "debit_card_total",
+        "card_total",
         "bank_transfer_total",
         "expenses",
         "credit_sales_total",
@@ -191,8 +187,7 @@ class CashSessionRead(BaseModel):
     initial_cash: Decimal
     final_cash: Decimal | None
     envelope_amount: Decimal
-    credit_card_total: Decimal
-    debit_card_total: Decimal
+    card_total: Decimal
     bank_transfer_total: Decimal
     expenses: Decimal
     credit_sales_total: Decimal

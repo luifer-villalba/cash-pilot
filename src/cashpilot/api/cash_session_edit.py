@@ -109,8 +109,7 @@ def _capture_session_values(session: CashSession) -> dict:
     return {
         "final_cash": session.final_cash,
         "envelope_amount": session.envelope_amount,
-        "credit_card_total": session.credit_card_total,
-        "debit_card_total": session.debit_card_total,
+        "card_total": session.card_total,
         "bank_transfer_total": session.bank_transfer_total,
         "expenses": session.expenses,
         "credit_sales_total": session.credit_sales_total,
@@ -125,10 +124,8 @@ def _apply_patch_updates(session: CashSession, patch: CashSessionPatchClosed) ->
         session.final_cash = patch.final_cash
     if patch.envelope_amount is not None:
         session.envelope_amount = patch.envelope_amount
-    if patch.credit_card_total is not None:
-        session.credit_card_total = patch.credit_card_total
-    if patch.debit_card_total is not None:
-        session.debit_card_total = patch.debit_card_total
+    if patch.card_total is not None:
+        session.card_total = patch.card_total
     if patch.bank_transfer_total is not None:
         session.bank_transfer_total = patch.bank_transfer_total
     if patch.expenses is not None:
