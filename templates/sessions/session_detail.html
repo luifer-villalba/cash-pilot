@@ -165,7 +165,7 @@
                             {% endif %}
                         {% endif %}
                         
-                        {% if current_user.role == 'ADMIN' or (session.created_by == current_user.id and can_edit) %}
+                        {% if current_user.role == 'ADMIN' or (session.cashier_id == current_user.id and can_edit) %}
                             <button hx-delete="/cash-sessions/{{ session.id }}"
                                 hx-confirm="{{ _('Delete this session? This can be undone by admins.') }}"
                                 hx-on="htmx:afterRequest: if(event.detail.successful) window.location.href = '/'"
@@ -177,8 +177,8 @@
                                 </svg>
                                 <span class="hidden lg:inline">{{ _('Delete') }}</span>
                             </button>
-                        {% elif session.created_by == current_user.id and not can_edit %}
-                            <div class="tooltip tooltip-left hidden sm:inline-flex" data-tip="{{ edit_expired_msg }}">
+                        {% elif session.cashier_id == current_user.id and not can_edit %}
+                            <div class="tooltip tooltip-left hidden sm:inline-flex" data-tip="{{ _('Cannot modify session after 32 hours') }}">
                                 <button disabled class="btn btn-error btn-sm gap-1 bg-base-200 dark:bg-base-700 text-base-content/70 dark:text-base-content/60 border-base-300 dark:border-base-600 cursor-not-allowed opacity-60">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

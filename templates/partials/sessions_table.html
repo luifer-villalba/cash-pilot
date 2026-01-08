@@ -255,7 +255,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                             </svg>
                                         </button>
-                                    {% elif session.created_by == current_user.id %}
+                                    {% elif session.cashier_id == current_user.id %}
                                         {% if session.status == 'CLOSED' %}
                                             {% if session.can_edit_closed is defined and session.can_edit_closed %}
                                                 <button
@@ -269,9 +269,9 @@
                                                     </svg>
                                                 </button>
                                             {% else %}
-                                                <div class="tooltip tooltip-left" data-tip="{{ _('Edit window expired (32 hours passed)') }}">
+                                                <div class="tooltip tooltip-left" data-tip="{{ _('Cannot modify session after 32 hours') }}">
                                                     <button disabled class="btn btn-ghost btn-xs btn-circle opacity-40 cursor-not-allowed" 
-                                                            title="{{ _('Edit window expired (32 hours passed)') }}">
+                                                            title="{{ _('Cannot modify session after 32 hours') }}">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                         </svg>
@@ -427,7 +427,7 @@
                                 title="{{ _('Delete session') }}">
                                 {{ _('Delete') }}
                             </button>
-                        {% elif session.created_by == current_user.id %}
+                        {% elif session.cashier_id == current_user.id %}
                             {% if session.status == 'CLOSED' %}
                                 {% if session.can_edit_closed is defined and session.can_edit_closed %}
                                     <button
@@ -439,7 +439,7 @@
                                         {{ _('Delete') }}
                                     </button>
                                 {% else %}
-                                    <button disabled class="btn btn-ghost btn-xs flex-1 opacity-40 cursor-not-allowed" title="{{ _('Edit window expired (32 hours passed)') }}">
+                                    <button disabled class="btn btn-ghost btn-xs flex-1 opacity-40 cursor-not-allowed" title="{{ _('Cannot modify session after 32 hours') }}">
                                         {{ _('Delete') }}
                                     </button>
                                 {% endif %}
