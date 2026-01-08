@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-08 03:16+0000\n"
+"POT-Creation-Date: 2026-01-08 11:40+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -246,6 +246,7 @@ msgid "Open"
 msgstr "Abierto"
 
 #: /app/templates/admin/partials/session_details.html:96
+#: /app/templates/admin/reconciliation_compare.html:219
 #: /app/templates/index.html:205
 #: /app/templates/partials/sessions_table.html:130
 #: /app/templates/partials/sessions_table.html:346
@@ -414,10 +415,6 @@ msgstr "Editar Entradas"
 msgid "Business"
 msgstr "Negocio"
 
-#: /app/templates/admin/reconciliation_compare.html:196
-msgid "Cashiers"
-msgstr "Cajeros"
-
 #: /app/templates/admin/reconciliation_compare.html:51
 #: /app/templates/reports/daily-revenue.html:38
 #: /app/templates/reports/weekly-trend.html:38
@@ -495,10 +492,15 @@ msgid "Select a date to compare reconciliation data"
 msgstr "Seleccioná una fecha para comparar datos de reconciliación"
 
 #: /app/templates/admin/reconciliation_compare.html:198
+#: /app/templates/businesses/create.html:114
+msgid "Cashiers"
+msgstr "Cajeros"
+
+#: /app/templates/admin/reconciliation_compare.html:199
 msgid "Entry Status"
 msgstr "Estado de Entrada"
 
-#: /app/templates/admin/reconciliation_compare.html:199
+#: /app/templates/admin/reconciliation_compare.html:200
 #: /app/templates/partials/sessions_table.html:92
 #: /app/templates/partials/stats_row.html:14
 #: /app/templates/partials/stats_row.html:72
@@ -513,19 +515,19 @@ msgstr "Estado de Entrada"
 msgid "Cash Sales"
 msgstr "Ventas al Contado"
 
-#: /app/templates/admin/reconciliation_compare.html:199
 #: /app/templates/admin/reconciliation_compare.html:200
 #: /app/templates/admin/reconciliation_compare.html:201
 #: /app/templates/admin/reconciliation_compare.html:202
+#: /app/templates/admin/reconciliation_compare.html:203
 msgid "Manual vs System"
 msgstr "Farmagic vs Agenda"
 
-#: /app/templates/admin/reconciliation_compare.html:200
+#: /app/templates/admin/reconciliation_compare.html:201
 #: /app/templates/reconciliation/daily_form.html:190
 msgid "Card Sales"
 msgstr "Ventas con Tarjeta"
 
-#: /app/templates/admin/reconciliation_compare.html:201
+#: /app/templates/admin/reconciliation_compare.html:202
 #: /app/templates/partials/stats_row.html:7
 #: /app/templates/partials/stats_row.html:28
 #: /app/templates/reconciliation/daily_form.html:168
@@ -542,7 +544,7 @@ msgstr "Ventas con Tarjeta"
 msgid "Credit Sales"
 msgstr "Ventas a Crédito"
 
-#: /app/templates/admin/reconciliation_compare.html:202
+#: /app/templates/admin/reconciliation_compare.html:203
 #: /app/templates/reconciliation/daily_form.html:234
 #: /app/templates/reports/business-stats.html:25
 #: /app/templates/reports/business-stats.html:189
@@ -553,110 +555,110 @@ msgstr "Ventas a Crédito"
 msgid "Total Sales"
 msgstr "Ventas Totales"
 
-#: /app/templates/admin/reconciliation_compare.html:203
+#: /app/templates/admin/reconciliation_compare.html:204
 msgid "Total Difference"
 msgstr "Diferencia Total"
 
-#: /app/templates/admin/reconciliation_compare.html:203
+#: /app/templates/admin/reconciliation_compare.html:204
 msgid "(System - Manual)"
 msgstr "(Agenda - Farmagic)"
 
-#: /app/templates/admin/reconciliation_compare.html:204
+#: /app/templates/admin/reconciliation_compare.html:205
 #: /app/templates/businesses/list.html:162
 msgid "Sessions"
 msgstr "Sesiones"
 
-#: /app/templates/admin/reconciliation_compare.html:217
-msgid "Closed"
-msgstr "Cerrado"
-
-#: /app/templates/admin/reconciliation_compare.html:222
+#: /app/templates/admin/reconciliation_compare.html:224
 msgid "Click to review and edit"
 msgstr "Clic para revisar y editar"
 
-#: /app/templates/admin/reconciliation_compare.html:223
+#: /app/templates/admin/reconciliation_compare.html:225
 msgid "Review differences for"
 msgstr "Revisar diferencias para"
 
-#: /app/templates/admin/reconciliation_compare.html:227
+#: /app/templates/admin/reconciliation_compare.html:229
+#: /app/templates/partials/sessions_table.html:123
+#: /app/templates/partials/sessions_table.html:339
+#: /app/templates/sessions/session_detail.html:41
 msgid "Review"
 msgstr "Revisar"
 
-#: /app/templates/admin/reconciliation_compare.html:237
+#: /app/templates/admin/reconciliation_compare.html:239
+#: /app/templates/partials/stats_row.html:86
 msgid "Completed"
 msgstr "Completado"
 
-#: /app/templates/admin/reconciliation_compare.html:242
+#: /app/templates/admin/reconciliation_compare.html:244
 msgid "Click to add manual entry"
 msgstr "Clic para agregar entrada manual"
 
-#: /app/templates/admin/reconciliation_compare.html:243
+#: /app/templates/admin/reconciliation_compare.html:245
 msgid "Add manual entry for"
 msgstr "Agregar entrada manual para"
 
-#: /app/templates/admin/reconciliation_compare.html:247
+#: /app/templates/admin/reconciliation_compare.html:249
 msgid "Pending"
 msgstr "Pendiente"
 
 # Custom translations for reconciliation comparison
-#: /app/templates/admin/reconciliation_compare.html:258
-#: /app/templates/admin/reconciliation_compare.html:276
-#: /app/templates/admin/reconciliation_compare.html:290
-#: /app/templates/admin/reconciliation_compare.html:308
-#: /app/templates/admin/reconciliation_compare.html:322
-#: /app/templates/admin/reconciliation_compare.html:340
-#: /app/templates/admin/reconciliation_compare.html:354
-#: /app/templates/admin/reconciliation_compare.html:363
+#: /app/templates/admin/reconciliation_compare.html:260
+#: /app/templates/admin/reconciliation_compare.html:278
+#: /app/templates/admin/reconciliation_compare.html:292
+#: /app/templates/admin/reconciliation_compare.html:310
+#: /app/templates/admin/reconciliation_compare.html:324
+#: /app/templates/admin/reconciliation_compare.html:342
+#: /app/templates/admin/reconciliation_compare.html:356
+#: /app/templates/admin/reconciliation_compare.html:365
 msgid "Manual:"
 msgstr "Farmagic:"
 
-#: /app/templates/admin/reconciliation_compare.html:262
-#: /app/templates/admin/reconciliation_compare.html:280
-#: /app/templates/admin/reconciliation_compare.html:294
-#: /app/templates/admin/reconciliation_compare.html:312
-#: /app/templates/admin/reconciliation_compare.html:326
-#: /app/templates/admin/reconciliation_compare.html:344
-#: /app/templates/admin/reconciliation_compare.html:358
-#: /app/templates/admin/reconciliation_compare.html:367
+#: /app/templates/admin/reconciliation_compare.html:264
+#: /app/templates/admin/reconciliation_compare.html:282
+#: /app/templates/admin/reconciliation_compare.html:296
+#: /app/templates/admin/reconciliation_compare.html:314
+#: /app/templates/admin/reconciliation_compare.html:328
+#: /app/templates/admin/reconciliation_compare.html:346
+#: /app/templates/admin/reconciliation_compare.html:360
+#: /app/templates/admin/reconciliation_compare.html:369
 msgid "System:"
 msgstr "Agenda:"
 
-#: /app/templates/admin/reconciliation_compare.html:268
-#: /app/templates/admin/reconciliation_compare.html:300
-#: /app/templates/admin/reconciliation_compare.html:332
+#: /app/templates/admin/reconciliation_compare.html:270
+#: /app/templates/admin/reconciliation_compare.html:302
+#: /app/templates/admin/reconciliation_compare.html:334
 msgid "Diff:"
 msgstr "Dif:"
 
-#: /app/templates/admin/reconciliation_compare.html:433
+#: /app/templates/admin/reconciliation_compare.html:435
 msgid "Click to view sessions detail"
 msgstr "Clic para ver detalle de sesiones"
 
-#: /app/templates/admin/reconciliation_compare.html:435
+#: /app/templates/admin/reconciliation_compare.html:437
 msgid "View sessions for"
 msgstr "Ver sesiones para"
 
-#: /app/templates/admin/reconciliation_compare.html:472
+#: /app/templates/admin/reconciliation_compare.html:474
 #: /app/templates/businesses/list.html:210
 msgid "No businesses found"
 msgstr "No se encontraron negocios."
 
-#: /app/templates/admin/reconciliation_compare.html:486
+#: /app/templates/admin/reconciliation_compare.html:487
 msgid "Difference Colors:"
 msgstr "Colores de Diferencias:"
 
-#: /app/templates/admin/reconciliation_compare.html:487
+#: /app/templates/admin/reconciliation_compare.html:488
 msgid "Green (Surplus)"
 msgstr "Verde (Excedente)"
 
-#: /app/templates/admin/reconciliation_compare.html:487
+#: /app/templates/admin/reconciliation_compare.html:490
 msgid "System has MORE than Manual (positive difference)"
 msgstr "Agenda tiene MÁS que Farmagic (diferencia positiva)"
 
-#: /app/templates/admin/reconciliation_compare.html:488
+#: /app/templates/admin/reconciliation_compare.html:491
 msgid "Red (Deficit)"
 msgstr "Rojo (Faltante)"
 
-#: /app/templates/admin/reconciliation_compare.html:488
+#: /app/templates/admin/reconciliation_compare.html:493
 msgid "System has LESS than Manual (negative difference)"
 msgstr "Agenda tiene MENOS que Farmagic (diferencia negativa)"
 
@@ -946,6 +948,10 @@ msgstr "Crédito"
 msgid "Total"
 msgstr "Total"
 
+#: /app/templates/admin/partials/session_details.html:24
+msgid "View details for session"
+msgstr "Ver detalles de la sesión"
+
 #: /app/templates/admin/partials/session_details.html:36
 msgid "Unknown"
 msgstr "Desconocido"
@@ -1055,10 +1061,6 @@ msgstr "Dirección"
 #: /app/templates/businesses/create.html:111
 msgid "Optional: for reference only"
 msgstr "Opcional: solo para referencia"
-
-#: /app/templates/businesses/create.html:114
-msgid "Cashiers"
-msgstr "Cajeros"
 
 #: /app/templates/businesses/create.html:115
 msgid "Add cashier names after creation"
@@ -1353,12 +1355,6 @@ msgstr "Ver Caja"
 msgid "Deleted"
 msgstr "Eliminado"
 
-#: /app/templates/partials/sessions_table.html:123
-#: /app/templates/partials/sessions_table.html:339
-#: /app/templates/sessions/session_detail.html:41
-msgid "Review"
-msgstr "Revisar"
-
 #: /app/templates/partials/sessions_table.html:180
 #: /app/templates/partials/sessions_table.html:391
 #: /app/templates/sessions/session_detail.html:58
@@ -1588,10 +1584,6 @@ msgstr "Sesiones Abiertas"
 #: /app/templates/reports/daily-revenue.html:167
 msgid "Closed Sessions"
 msgstr "Sesiones Cerradas"
-
-#: /app/templates/partials/stats_row.html:86
-msgid "Completed"
-msgstr "Completadas"
 
 #: /app/templates/partials/stats_row.html:91
 msgid "Flagged Sessions"
