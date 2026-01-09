@@ -201,7 +201,7 @@
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Card Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('System vs Manual') }}</span></th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Credit Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('System vs Manual') }}</span></th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Total Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('System vs Manual') }}</span></th>
-                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Total Difference') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('(Manual - System)') }}</span></th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Total Difference') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('(System - Manual)') }}</span></th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Sessions') }}</th>
                 </tr>
             </thead>
@@ -257,12 +257,12 @@
                         <div class="space-y-1">
                             {% if item.manual.cash_sales is not none %}
                             <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
-                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.cash_sales) }}</span>
-                            </div>
-                            <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
                                 <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.cash_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.cash_sales) }}</span>
                             </div>
                             {% if item.differences.cash_sales is not none and item.differences.cash_sales != 0 %}
                             {% set cash_diff = item.differences.cash_sales %}
@@ -275,12 +275,12 @@
                             {% endif %}
                             {% else %}
                             <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
-                                <span class="text-sm text-base-content/40">-</span>
-                            </div>
-                            <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
                                 <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.cash_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm text-base-content/40">-</span>
                             </div>
                             {% endif %}
                         </div>
@@ -289,12 +289,12 @@
                         <div class="space-y-1">
                             {% if item.manual.card_sales is not none %}
                             <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
-                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.card_sales) }}</span>
-                            </div>
-                            <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
                                 <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.card_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.card_sales) }}</span>
                             </div>
                             {% if item.differences.card_sales is not none and item.differences.card_sales != 0 %}
                             {% set card_diff = item.differences.card_sales %}
@@ -307,12 +307,12 @@
                             {% endif %}
                             {% else %}
                             <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
-                                <span class="text-sm text-base-content/40">-</span>
-                            </div>
-                            <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
                                 <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.card_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm text-base-content/40">-</span>
                             </div>
                             {% endif %}
                         </div>
@@ -321,12 +321,12 @@
                         <div class="space-y-1">
                             {% if item.manual.credit_sales is not none %}
                             <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
-                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.credit_sales) }}</span>
-                            </div>
-                            <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
                                 <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.credit_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.credit_sales) }}</span>
                             </div>
                             {% if item.differences.credit_sales is not none and item.differences.credit_sales != 0 %}
                             {% set credit_diff = item.differences.credit_sales %}
@@ -339,12 +339,12 @@
                             {% endif %}
                             {% else %}
                             <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
-                                <span class="text-sm text-base-content/40">-</span>
-                            </div>
-                            <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
                                 <span class="text-xs text-base-content/60">{{ "{:,.0f}".format(item.system.credit_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
+                                <span class="text-sm text-base-content/40">-</span>
                             </div>
                             {% endif %}
                         </div>
@@ -353,21 +353,21 @@
                         <div class="space-y-1">
                             {% if item.manual.total_sales is not none %}
                             <div class="flex items-center justify-end gap-1.5">
+                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
+                                <span class="text-sm text-base-content/60">{{ "{:,.0f}".format(item.system.total_sales) }}</span>
+                            </div>
+                            <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
                                 <span class="text-sm font-bold text-primary">{{ "{:,.0f}".format(item.manual.total_sales) }}</span>
                             </div>
+                            {% else %}
                             <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
                                 <span class="text-sm text-base-content/60">{{ "{:,.0f}".format(item.system.total_sales) }}</span>
                             </div>
-                            {% else %}
                             <div class="flex items-center justify-end gap-1.5">
                                 <span class="text-[10px] text-base-content/50 font-sans">{{ _('Manual:') }}</span>
                                 <span class="text-sm text-base-content/40">-</span>
-                            </div>
-                            <div class="flex items-center justify-end gap-1.5">
-                                <span class="text-[10px] text-base-content/50 font-sans">{{ _('System:') }}</span>
-                                <span class="text-sm text-base-content/60">{{ "{:,.0f}".format(item.system.total_sales) }}</span>
                             </div>
                             {% endif %}
                         </div>
