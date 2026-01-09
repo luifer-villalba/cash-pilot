@@ -63,10 +63,10 @@ msgid "Compare performance across multiple business locations"
 msgstr "Comparar rendimiento entre múltiples sucursales"
 
 msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
-msgstr ""
+msgstr "Valor de moneda demasiado grande. Máximo permitido: 9.999.999.999,99"
 
 msgid "Invalid number format. Please enter a valid amount."
-msgstr ""
+msgstr "Formato de número inválido. Por favor ingresá un monto válido."
 
 msgid "Edit window expired (32 hours passed)"
 msgstr "No podes editar (pasaron más de 32 horas)"
@@ -1576,6 +1576,8 @@ msgid ""
 "days of data available. Monthly trends are more reliable after at least 7"
 " days."
 msgstr ""
+"días de datos disponibles. Las tendencias mensuales son más confiables "
+"después de al menos 7 días."
 
 msgid "day"
 msgstr "día"

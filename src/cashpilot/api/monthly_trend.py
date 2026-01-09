@@ -171,9 +171,6 @@ async def get_monthly_trend(
     # Calculate date ranges for 6 months (current month + previous 5 months)
     months_data = []
 
-    # Get the start date of the target month
-    current_month_start, current_month_end = get_month_dates(year, month)
-
     # Go back 5 months from the current month
     for month_offset in range(-5, 1):  # -5, -4, -3, -2, -1, 0 (0 is current month)
         # Calculate the first day of each month
