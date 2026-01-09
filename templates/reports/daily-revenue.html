@@ -169,6 +169,106 @@
             </div>
         </div>
 
+        <!-- Visualizations Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Top Cashier Highlight Card -->
+            <div id="topCashierCard" class="hidden card bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-2 border-yellow-500/30 shadow-sm">
+                <div class="card-body">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="text-4xl">🏆</div>
+                        <div>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-yellow-700">{{ _('Top Performer Today') }}</h3>
+                            <p class="text-2xl font-bold text-base-content" id="topCashierName"></p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <p class="text-xs text-base-content/60">{{ _('Revenue') }}</p>
+                            <p class="text-lg font-bold font-mono text-yellow-600" id="topCashierRevenue"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-base-content/60">{{ _('Sessions') }}</p>
+                            <p class="text-lg font-bold font-mono text-yellow-600" id="topCashierSessions"></p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-base-content/60">{{ _('Contribution') }}</p>
+                            <p class="text-lg font-bold font-mono text-yellow-600" id="topCashierPercent"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods Donut Chart -->
+            <div class="card bg-base-100 border border-base-300 shadow-sm">
+                <div class="card-body">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4">{{ _('Payment Methods') }}</h2>
+                    <div class="h-64">
+                        <canvas id="paymentMethodsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical Revenue Chart -->
+            <div class="card bg-base-100 border border-base-300 shadow-sm">
+                <div class="card-body">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4">{{ _('Last 7 Days') }}</h2>
+                    <div class="h-64">
+                        <canvas id="historicalRevenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Transfers & Expenses Section -->
+        <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4">{{ _('Transfers & Expenses Details') }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Bank Transfers List -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="p-2 bg-purple-500/10 rounded-lg">
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                    </svg>
+                                </div>
+                                <h3 class="font-bold text-base-content">{{ _('Bank Transfers') }}</h3>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-purple-600/60" id="transferCountText">0 {{ _('items') }}</p>
+                                <p class="text-lg font-bold font-mono text-purple-600" id="transfersTotalText">Gs 0</p>
+                            </div>
+                        </div>
+                        <div id="transferItemsList" class="space-y-2 max-h-64 overflow-y-auto">
+                            <p class="text-center text-base-content/40 text-sm py-4">{{ _('No transfers recorded') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Expenses List -->
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="p-2 bg-error/10 rounded-lg">
+                                    <svg class="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="font-bold text-base-content">{{ _('Expenses') }}</h3>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-error/60" id="expenseCountText">0 {{ _('items') }}</p>
+                                <p class="text-lg font-bold font-mono text-error" id="expensesTotalText">Gs 0</p>
+                            </div>
+                        </div>
+                        <div id="expenseItemsList" class="space-y-2 max-h-64 overflow-y-auto">
+                            <p class="text-center text-base-content/40 text-sm py-4">{{ _('No expenses recorded') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Sales by Payment Method -->
         <div class="card bg-base-100 border border-base-300 shadow-sm">
             <div class="card-body">
@@ -222,59 +322,42 @@
             </div>
         </div>
 
-        <!-- Financial Performance Insights -->
-        <div class="card bg-base-100 border border-base-300 shadow-sm">
-            <div class="card-body">
-                <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 mb-4">{{ _('Financial Performance Insights') }}</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Profit Margin -->
-                    <div class="bg-gradient-to-br from-success/10 to-success/5 border border-success/30 p-4 rounded-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs text-success/80 uppercase font-bold tracking-wide">{{ _('Profit Margin') }}</span>
-                            <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                            </svg>
-                        </div>
-                        <div class="text-3xl font-bold text-success" id="profitMarginDisplay">0%</div>
-                        <div class="text-xs text-success/70 mt-2">{{ _('Net / Total Sales') }}</div>
-                    </div>
-
-                    <!-- Revenue per Session -->
-                    <div class="bg-gradient-to-br from-info/10 to-info/5 border border-info/30 p-4 rounded-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs text-info/80 uppercase font-bold tracking-wide">{{ _('Avg per Session') }}</span>
-                            <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                        </div>
-                        <div class="text-2xl font-bold font-mono tabular-nums text-info" id="avgRevenueDisplay">Gs 0</div>
-                        <div class="text-xs text-info/70 mt-2">{{ _('Revenue / Session') }}</div>
-                    </div>
-
-                    <!-- Cash Concentration -->
-                    <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/30 p-4 rounded-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs text-purple-600/80 uppercase font-bold tracking-wide">{{ _('Cash Sales %') }}</span>
-                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <div class="text-3xl font-bold text-purple-600" id="cashConcentrationDisplay">0%</div>
-                        <div class="text-xs text-purple-600/70 mt-2">{{ _('Cash vs Total Sales') }}</div>
-                    </div>
-
-                    <!-- Digital Payments -->
-                    <div class="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 p-4 rounded-lg">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs text-primary/80 uppercase font-bold tracking-wide">{{ _('Digital Sales') }}</span>
-                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                            </svg>
-                        </div>
-                        <div class="text-2xl font-bold font-mono tabular-nums text-primary" id="digitalSalesDisplay">Gs 0</div>
-                        <div class="text-xs text-primary/70 mt-2">{{ _('Cards + Transfers') }}</div>
-                    </div>
+        <!-- Key Performance Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Revenue per Session -->
+            <div class="bg-gradient-to-br from-info/10 to-info/5 border border-info/30 p-4 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-info/80 uppercase font-bold tracking-wide">{{ _('Avg per Session') }}</span>
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
                 </div>
+                <div class="text-2xl font-bold font-mono tabular-nums text-info" id="avgRevenueDisplay">Gs 0</div>
+                <div class="text-xs text-info/70 mt-2">{{ _('Revenue / Session') }}</div>
+            </div>
+
+            <!-- Cash Concentration -->
+            <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/30 p-4 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-purple-600/80 uppercase font-bold tracking-wide">{{ _('Cash Sales %') }}</span>
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="text-3xl font-bold text-purple-600" id="cashConcentrationDisplay">0%</div>
+                <div class="text-xs text-purple-600/70 mt-2">{{ _('Cash vs Total Sales') }}</div>
+            </div>
+
+            <!-- Digital Payments -->
+            <div class="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 p-4 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-primary/80 uppercase font-bold tracking-wide">{{ _('Digital Sales') }}</span>
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold font-mono tabular-nums text-primary" id="digitalSalesDisplay">Gs 0</div>
+                <div class="text-xs text-primary/70 mt-2">{{ _('Cards + Transfers') }}</div>
             </div>
         </div>
 
@@ -480,25 +563,106 @@ function displayReport(data) {
     document.getElementById('bankTransferPercent').textContent = bankPercent + '%';
     document.getElementById('creditSalesPercent').textContent = creditPercent + '%';
 
-    // Calculate financial insights
-    // 1. Profit Margin = (Net Earnings / Total Sales) * 100
-    var profitMargin = total > 0 ? ((parseFloat(data.net_earnings) / total) * 100).toFixed(1) : 0;
-    document.getElementById('profitMarginDisplay').textContent = profitMargin + '%';
-    
-    // 2. Average Revenue per Session
+    // Calculate key metrics
+    // 1. Average Revenue per Session
     var avgRevenue = data.total_sessions > 0 ? (total / data.total_sessions) : 0;
     document.getElementById('avgRevenueDisplay').textContent = formatCurrency(avgRevenue);
     
-    // 3. Cash Concentration = (Cash Sales / Total Sales) * 100
+    // 2. Cash Concentration = (Cash Sales / Total Sales) * 100
     var cashConcentration = total > 0 ? ((parseFloat(data.cash_sales) / total) * 100).toFixed(1) : 0;
     document.getElementById('cashConcentrationDisplay').textContent = cashConcentration + '%';
     
-    // 4. Digital Sales = Credit Card + Debit Card + Bank Transfer
+    // 3. Digital Sales = Credit Card + Debit Card + Bank Transfer
     var digitalSales = parseFloat(data.credit_card_sales) + parseFloat(data.debit_card_sales) + parseFloat(data.bank_transfer_sales);
     document.getElementById('digitalSalesDisplay').textContent = formatCurrency(digitalSales);
 
+    // Create payment methods chart
+    var cardSales = parseFloat(data.credit_card_sales) + parseFloat(data.debit_card_sales);
+    createPaymentMethodsChart(
+        data.cash_sales,
+        cardSales,
+        data.bank_transfer_sales,
+        data.credit_sales
+    );
+
+    // Create historical revenue chart
+    if (data.historical_revenue && data.historical_revenue.length > 0) {
+        createHistoricalRevenueChart(data.historical_revenue);
+    }
+
+    // Display transfer items
+    var transferItems = data.transfer_items || [];
+    var transferItemsList = document.getElementById('transferItemsList');
+    var transfersTotalValue = transferItems.reduce(function(sum, item) { 
+        return sum + parseFloat(item.amount); 
+    }, 0);
+    
+    document.getElementById('transferCountText').textContent = transferItems.length + ' ' + '{{ _("items") }}';
+    document.getElementById('transfersTotalText').textContent = formatCurrency(transfersTotalValue);
+    
+    if (transferItems.length > 0) {
+        transferItemsList.innerHTML = '';
+        transferItems.forEach(function(item) {
+            var itemDiv = document.createElement('div');
+            itemDiv.className = 'bg-purple-500/5 border border-purple-500/20 rounded-lg p-3 hover:bg-purple-500/10 transition-colors';
+            itemDiv.innerHTML = 
+                '<div class="flex items-center justify-between">' +
+                    '<div class="flex-1">' +
+                        '<p class="font-semibold text-base-content text-sm">' + item.cashier_name + '</p>' +
+                        '<p class="text-xs text-base-content/60">' + item.time.substring(0, 5) + '</p>' +
+                    '</div>' +
+                    '<p class="text-base font-bold font-mono text-purple-600">' + formatCurrency(item.amount) + '</p>' +
+                '</div>';
+            transferItemsList.appendChild(itemDiv);
+        });
+    } else {
+        transferItemsList.innerHTML = '<p class="text-center text-base-content/40 text-sm py-4">{{ _("No transfers recorded") }}</p>';
+    }
+
+    // Display expense items
+    var expenseItems = data.expense_items || [];
+    var expenseItemsList = document.getElementById('expenseItemsList');
+    var expensesTotalValue = expenseItems.reduce(function(sum, item) { 
+        return sum + parseFloat(item.amount); 
+    }, 0);
+    
+    document.getElementById('expenseCountText').textContent = expenseItems.length + ' ' + '{{ _("items") }}';
+    document.getElementById('expensesTotalText').textContent = formatCurrency(expensesTotalValue);
+    
+    if (expenseItems.length > 0) {
+        expenseItemsList.innerHTML = '';
+        expenseItems.forEach(function(item) {
+            var itemDiv = document.createElement('div');
+            itemDiv.className = 'bg-error/5 border border-error/20 rounded-lg p-3 hover:bg-error/10 transition-colors';
+            itemDiv.innerHTML = 
+                '<div class="flex items-center justify-between">' +
+                    '<div class="flex-1">' +
+                        '<p class="font-semibold text-base-content text-sm">' + item.cashier_name + '</p>' +
+                        '<p class="text-xs text-base-content/60">' + item.time.substring(0, 5) + '</p>' +
+                    '</div>' +
+                    '<p class="text-base font-bold font-mono text-error">' + formatCurrency(item.amount) + '</p>' +
+                '</div>';
+            expenseItemsList.appendChild(itemDiv);
+        });
+    } else {
+        expenseItemsList.innerHTML = '<p class="text-center text-base-content/40 text-sm py-4">{{ _("No expenses recorded") }}</p>';
+    }
+
+    // Display Top Cashier Card
+    var cashiers = data.cashier_performance || [];
+    if (cashiers.length > 0) {
+        var topCashier = cashiers[0];
+        document.getElementById('topCashierCard').classList.remove('hidden');
+        document.getElementById('topCashierName').textContent = topCashier.cashier_name;
+        document.getElementById('topCashierRevenue').textContent = formatCurrency(topCashier.total_revenue);
+        document.getElementById('topCashierSessions').textContent = topCashier.total_sessions;
+        document.getElementById('topCashierPercent').textContent = parseFloat(topCashier.percentage_of_total).toFixed(1) + '%';
+    } else {
+        document.getElementById('topCashierCard').classList.add('hidden');
+    }
+
     // Display Cashier Performance
-    displayCashierPerformance(data.cashier_performance || []);
+    displayCashierPerformance(cashiers);
 
     // Show report content
     document.getElementById('reportContent').classList.remove('hidden');
@@ -530,6 +694,8 @@ function displayCashierPerformance(cashiers) {
         'bg-orange-600 text-orange-50'
     ];
     
+    var medals = ['🥇', '🥈', '🥉'];
+    
     cashiers.forEach(function(cashier, index) {
         var isTopThree = index < 3;
         var gradient = isTopThree ? gradients[index] : 'from-base-200/50 to-base-300/30 border-base-300';
@@ -555,7 +721,7 @@ function displayCashierPerformance(cashiers) {
         card.innerHTML = 
             '<div class="flex items-center gap-4">' +
                 '<div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full ' + rankColor + ' font-bold text-lg shadow-sm">' +
-                    (index + 1) +
+                    (isTopThree ? medals[index] : (index + 1)) +
                 '</div>' +
                 '<div class="flex-1 min-w-0">' +
                     '<div class="flex items-center gap-2 mb-2">' +
@@ -633,4 +799,137 @@ function showLoading(show) {
                return translations[label] || label;
            }
        </script>
+
+<!-- Chart.js for visualizations -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+
+<script>
+var paymentMethodsChartInstance = null;
+var historicalRevenueChartInstance = null;
+
+function createPaymentMethodsChart(cashSales, cardSales, bankSales, creditSales) {
+    var ctx = document.getElementById('paymentMethodsChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (paymentMethodsChartInstance) {
+        paymentMethodsChartInstance.destroy();
+    }
+    
+    var formatCurrency = function(value) {
+        var num = Math.round(parseFloat(value));
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+    };
+    
+    var total = parseFloat(cashSales) + parseFloat(cardSales) + parseFloat(bankSales) + parseFloat(creditSales);
+    
+    paymentMethodsChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['{{ _("Cash") }}', '{{ _("Cards") }}', '{{ _("Bank Transfer") }}', '{{ _("Credit") }}'],
+            datasets: [{
+                data: [cashSales, cardSales, bankSales, creditSales],
+                backgroundColor: [
+                    'rgb(34, 197, 94)',
+                    'rgb(59, 130, 246)',
+                    'rgb(168, 85, 247)',
+                    'rgb(249, 115, 22)'
+                ],
+                borderWidth: 2,
+                borderColor: 'rgb(255, 255, 255)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: { size: 12 }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.label || '';
+                            var value = context.parsed || 0;
+                            var percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return label + ': ' + formatCurrency(value) + ' (' + percent + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createHistoricalRevenueChart(historicalData) {
+    var ctx = document.getElementById('historicalRevenueChart');
+    if (!ctx || !historicalData || historicalData.length === 0) return;
+    
+    // Destroy existing chart
+    if (historicalRevenueChartInstance) {
+        historicalRevenueChartInstance.destroy();
+    }
+    
+    var formatCurrency = function(value) {
+        var num = Math.round(parseFloat(value));
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+    };
+    
+    var labels = historicalData.map(function(d) { return d.day_name; });
+    var values = historicalData.map(function(d) { return parseFloat(d.total_sales); });
+    
+    historicalRevenueChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '{{ _("Daily Revenue") }}',
+                data: values,
+                borderColor: 'rgb(99, 102, 241)',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: 'rgb(99, 102, 241)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return formatCurrency(context.parsed.y);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000) {
+                                return 'Gs ' + (value / 1000000).toFixed(1) + 'M';
+                            }
+                            return formatCurrency(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+
 {% endblock %}

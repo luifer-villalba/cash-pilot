@@ -1,7 +1,7 @@
-<!-- File: templates/reports/weekly-trend.html -->
+<!-- File: templates/reports/monthly-trend.html -->
 {% extends "base.html" %}
 
-{% block title %}{{ _('Weekly Revenue Trend') }} - CashPilot{% endblock %}
+{% block title %}{{ _('Monthly Revenue Trend') }} - CashPilot{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
@@ -15,8 +15,8 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Weekly Revenue Trend') }}</h1>
-                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Compare daily revenue across 7-day spans to identify peak/low days and week-over-week growth patterns') }}</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Monthly Revenue Trend') }}</h1>
+                    <p class="text-xs md:text-sm text-base-content/60 mt-0.5">{{ _('Compare daily revenue across months to identify peak/low days and month-over-month growth patterns') }}</p>
                 </div>
             </div>
         </div>
@@ -56,48 +56,43 @@
             </div>
         </div>
 
-        <!-- Quick Week Buttons -->
+        <!-- Quick Month Buttons -->
         <div class="flex flex-wrap gap-2 mb-4">
-            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="0" aria-label="{{ _('Show current week') }}">
+            <button class="btn btn-sm btn-outline quick-month-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="0" aria-label="{{ _('Show current month') }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                {{ _('This Week') }}
+                {{ _('This Month') }}
             </button>
-            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="1" aria-label="{{ _('Show last week') }}">
-                {{ _('Last Week') }}
-            </button>
-            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="2" aria-label="{{ _('Show 2 weeks ago') }}">
-                {{ _('2 Weeks Ago') }}
-            </button>
-            <button class="btn btn-sm btn-outline quick-week-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="4" aria-label="{{ _('Show 4 weeks ago') }}">
+            <button class="btn btn-sm btn-outline quick-month-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="1" aria-label="{{ _('Show last month') }}">
                 {{ _('Last Month') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-month-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="2" aria-label="{{ _('Show 2 months ago') }}">
+                {{ _('2 Months Ago') }}
+            </button>
+            <button class="btn btn-sm btn-outline quick-month-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-offset="3" aria-label="{{ _('Show 3 months ago') }}">
+                {{ _('3 Months Ago') }}
             </button>
         </div>
 
-        <!-- Custom Date Selector -->
+        <!-- Custom Month Selector -->
         <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
             <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    <span>{{ _('Pick Custom Date') }}</span>
+                    <span>{{ _('Pick Custom Month') }}</span>
                 </div>
             </summary>
             <div class="collapse-content pt-3">
                 <div class="form-control">
-                    <label for="reportDate" class="label py-1">
-                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Any date in the week') }}</span>
+                    <label for="reportMonth" class="label py-1">
+                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Select Month') }}</span>
                     </label>
-                    <input type="date" id="reportDate" class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-describedby="weekDisplay" />
-                    <label class="label pt-2" id="week-display-container">
-                        <span class="label-text-alt text-info font-medium flex items-center gap-1" id="weekDisplay">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            {{ _('Select a date to see its week') }}
-                        </span>
+                    <input type="month" id="reportMonth" class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-describedby="monthDisplay" />
+                    <label class="label pt-2" id="month-display-container">
+                        <span class="label-text-alt text-base-content/60" id="monthDisplay">{{ _('Select a month to view') }}</span>
                     </label>
                 </div>
             </div>
@@ -131,13 +126,44 @@
 
     <!-- Report Content -->
     <div id="reportContent" class="hidden space-y-6">
+        <!-- Early Month Warning -->
+        <div id="earlyMonthWarning" class="hidden alert alert-warning shadow-lg">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div>
+                    <h3 class="font-bold text-sm">{{ _("Limited Data Available") }}</h3>
+                    <div class="text-sm" id="earlyMonthWarningText"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Summary Cards -->
         <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/20 rounded-lg p-4 mb-6">
             <div class="flex items-center gap-2 text-sm text-base-content/70">
                 <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span>{{ _('Line chart: current vs previous week (day-by-day). Bar chart: 5-week revenue trend.') }}</span>
+                <span>{{ _('Line chart: current vs previous month (day-by-day). Bar chart: 6-month revenue trend.') }}</span>
+            </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="flex flex-wrap gap-4 mb-4 p-3 bg-base-200/50 rounded-lg border border-base-300">
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-sm font-medium text-base-content/70">{{ _("Days with data") }}:</span>
+                <span class="text-sm font-bold" id="daysWithData">-</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                </svg>
+                <span class="text-sm font-medium text-base-content/70">{{ _("Average daily") }}:</span>
+                <span class="text-sm font-bold font-mono" id="avgDailyRevenue">-</span>
             </div>
         </div>
 
@@ -150,52 +176,51 @@
                     </svg>
                     <h3 class="font-semibold text-sm text-base-content/70">{{ _('Highest Revenue Day') }}</h3>
                 </div>
-                <p class="text-2xl font-bold text-base-content" id="highestDay">-</p>
-                <p class="text-sm text-base-content/60 mt-1" id="highestDayRevenue">-</p>
-                <p class="text-xs text-base-content/50 mt-1" id="highestDayDate">-</p>
+                <p class="text-xl font-bold text-base-content" id="highestDay">-</p>
+                <p class="text-lg font-bold font-mono tabular-nums text-success mt-1" id="highestDayRevenue">-</p>
             </div>
 
             <!-- Lowest Revenue Day -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17L8 12m0 0l5-5m-5 5h12"/>
                     </svg>
                     <h3 class="font-semibold text-sm text-base-content/70">{{ _('Lowest Revenue Day') }}</h3>
                 </div>
-                <p class="text-2xl font-bold text-base-content" id="lowestDay">-</p>
-                <p class="text-sm text-base-content/60 mt-1" id="lowestDayRevenue">-</p>
-                <p class="text-xs text-base-content/50 mt-1" id="lowestDayDate">-</p>
+                <p class="text-xl font-bold text-base-content" id="lowestDay">-</p>
+                <p class="text-lg font-bold font-mono tabular-nums text-error mt-1" id="lowestDayRevenue">-</p>
             </div>
 
-            <!-- Week Total Sales -->
+            <!-- Best Day of Week -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Week Total') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Top Performing Day') }}</h3>
                 </div>
-                <p class="text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekTotal">-</p>
-                <p class="text-sm text-base-content/60 mt-1">{{ _('Total sales this week') }}</p>
+                <p class="text-xl font-bold text-primary" id="bestDayOfWeek">-</p>
+                <p class="text-sm text-base-content/60 mt-1" id="bestDayOfWeekCount">-</p>
             </div>
 
-            <!-- Week-over-Week Growth -->
+            <!-- Month Total Sales -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Growth vs Previous') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Month Total') }}</h3>
                 </div>
-                <p class="text-2xl font-bold font-mono tabular-nums" id="weekGrowthPercent">-</p>
-                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1" id="weekGrowthDifference">-</p>
+                <p class="text-2xl font-bold font-mono tabular-nums text-base-content" id="currentMonthTotal">-</p>
+                <p class="text-sm text-base-content/60 mt-1">{{ _('Total sales this month') }}</p>
             </div>
+
             <!-- Revenue Stability -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                     <h3 class="font-semibold text-sm text-base-content/70">{{ _('Stability Score') }}</h3>
                 </div>
@@ -239,32 +264,32 @@
             </div>
         </div>
 
-        <!-- Week-over-Week Growth Card -->
+        <!-- Month-over-Month Growth Card -->
         <div class="bg-gradient-to-br from-primary/10 to-base-100 border border-primary/30 rounded-lg p-4 shadow-sm">
             <div class="flex items-center gap-2 mb-3">
                 <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
                 </svg>
-                <h3 class="font-semibold text-sm">{{ _('Week-over-Week Growth') }}</h3>
+                <h3 class="font-semibold text-sm">{{ _('Month-over-Month Growth') }}</h3>
             </div>
             
             <div class="grid grid-cols-2 gap-3 mb-2">
                 <!-- Main Growth -->
                 <div>
                     <p class="text-xs text-base-content/60">{{ _('Total Growth') }}</p>
-                    <p class="text-xl font-bold font-mono tabular-nums" id="enhancedGrowthPercent">-</p>
-                    <p class="text-xs font-mono tabular-nums text-base-content/60" id="enhancedGrowthDifference">-</p>
+                    <p class="text-xl font-bold font-mono tabular-nums" id="monthGrowthPercent">-</p>
+                    <p class="text-xs font-mono tabular-nums text-base-content/60" id="monthGrowthDifference">-</p>
                 </div>
                 
-                <!-- Previous Week Total -->
+                <!-- Previous Month Total -->
                 <div class="text-right">
-                    <p class="text-xs text-base-content/60">{{ _('Last Week') }}</p>
-                    <p class="text-xl font-bold font-mono tabular-nums text-base-content/60" id="enhancedPreviousWeekTotal">-</p>
+                    <p class="text-xs text-base-content/60">{{ _('Last Month') }}</p>
+                    <p class="text-xl font-bold font-mono tabular-nums text-base-content/60" id="previousMonthTotal">-</p>
                     <p class="text-xs text-base-content/60" id="avgDailyPrev">-</p>
                 </div>
             </div>
             
-            <!-- Projection (only shown if early in week) -->
+            <!-- Projection (only shown if early in month) -->
             <div id="projectionSection" class="flex justify-between text-xs border-t border-base-300 pt-2 mb-2">
                 <div>
                     <span class="text-base-content/60">{{ _('Avg/day:') }}</span>
@@ -312,9 +337,9 @@
 
         <!-- Second Row: 3 Equal Charts -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- 5-Week Trend (Bar Chart) -->
+            <!-- 6-Month Trend (Bar Chart) -->
             <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
-                <h2 class="text-lg font-semibold mb-4">{{ _('5-Week Trend') }}</h2>
+                <h2 class="text-lg font-semibold mb-4">{{ _('6-Month Trend') }}</h2>
                 <div class="relative" style="height: 280px;">
                     <canvas id="trendChart"></canvas>
                 </div>
@@ -337,22 +362,25 @@
             </div>
         </div>
 
-        <!-- Selected Week Details -->
+        <!-- Selected Month Details (Weekly View) -->
         <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
-            <h2 class="text-lg font-semibold mb-4">{{ _('Selected Week Details') }}</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold">{{ _('Weekly Breakdown') }}</h2>
+                <div class="text-sm" id="weekComparisonBadge"></div>
+            </div>
             <div class="overflow-x-auto">
                 <table class="table table-sm table-zebra w-full">
                     <thead>
                         <tr>
-                            <th>{{ _('Day') }}</th>
-                            <th>{{ _('Date') }}</th>
+                            <th>{{ _('Week') }}</th>
+                            <th>{{ _('Date Range') }}</th>
                             <th class="text-right">{{ _('Revenue') }}</th>
-                            <th class="text-right">{{ _('WoW Growth') }}</th>
+                            <th class="text-right">{{ _('Growth') }}</th>
                             <th class="text-center">{{ _('Trend') }}</th>
                         </tr>
                     </thead>
-                    <tbody id="currentWeekTable">
-                        <!-- Dynamic rows -->
+                    <tbody id="currentMonthTable">
+                        <!-- Populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -375,90 +403,43 @@
     // Format currency values (Gs 2.500.000 - dot separator, no decimals)
     const formatCurrency = (value) => {
         const num = Math.round(parseFloat(value));
-        // es-PY uses comma, but we need dots per design system
         return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
     };
 
-    // Translate day names from English to Spanish
-    const translateDayName = (dayName) => {
-        const translations = {
-            'Monday': '{{ _("Monday") }}',
-            'Tuesday': '{{ _("Tuesday") }}',
-            'Wednesday': '{{ _("Wednesday") }}',
-            'Thursday': '{{ _("Thursday") }}',
-            'Friday': '{{ _("Friday") }}',
-            'Saturday': '{{ _("Saturday") }}',
-            'Sunday': '{{ _("Sunday") }}'
-        };
-        return translations[dayName] || dayName;
-    };
+    // Month names for display
+    const monthNames = [
+        '{{ _("January") }}', '{{ _("February") }}', '{{ _("March") }}', '{{ _("April") }}',
+        '{{ _("May") }}', '{{ _("June") }}', '{{ _("July") }}', '{{ _("August") }}',
+        '{{ _("September") }}', '{{ _("October") }}', '{{ _("November") }}', '{{ _("December") }}'
+    ];
 
-    // Calculate ISO week from date (parse date string to avoid timezone issues)
-    function getISOWeek(dateStr) {
-        // Parse YYYY-MM-DD string to avoid timezone issues
-        const parts = dateStr.split('-');
-        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-        d.setHours(0, 0, 0, 0);
-        // Set to nearest Thursday (current date + 4 - current day number, making Sunday's day number 7)
-        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-        // Get first day of year
-        const yearStart = new Date(d.getFullYear(), 0, 1);
-        // Calculate full weeks to nearest Thursday
-        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        return { year: d.getFullYear(), week: weekNo };
-    }
-
-    // Format date range for week (parse date string to avoid timezone issues)
-    function formatWeekRange(dateStr) {
-        // Parse YYYY-MM-DD string to avoid timezone issues
-        const parts = dateStr.split('-');
-        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-        
-        // Get Monday of the week
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        const monday = new Date(d.getFullYear(), d.getMonth(), diff);
-        
-        // Get Sunday
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        
-        const formatDate = (date) => {
-            const months = ['{{ _("Jan") }}', '{{ _("Feb") }}', '{{ _("Mar") }}', '{{ _("Apr") }}', '{{ _("May") }}', '{{ _("Jun") }}', 
-                          '{{ _("Jul") }}', '{{ _("Aug") }}', '{{ _("Sep") }}', '{{ _("Oct") }}', '{{ _("Nov") }}', '{{ _("Dec") }}'];
-            return `${date.getDate()} ${months[date.getMonth()]}`;
-        };
-        
-        return `${formatDate(monday)} - ${formatDate(sunday)}`;
-    }
-
-    // Update week display when date changes
-    function updateWeekDisplay() {
-        const dateInput = document.getElementById('reportDate');
-        const weekDisplay = document.getElementById('weekDisplay');
-        
-        if (dateInput.value) {
-            const weekRange = formatWeekRange(dateInput.value);
-            weekDisplay.textContent = `{{ _("Week of") }} ${weekRange}`;
-        } else {
-            weekDisplay.textContent = '{{ _("Select a date to see its week") }}';
-        }
-    }
-
-    // Initialize date picker with today (use local date to avoid timezone issues)
-    function initializeDatePickers() {
+    // Initialize month picker with current month
+    function initializeMonthPickers() {
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
-        document.getElementById('reportDate').value = dateStr;
-        updateWeekDisplay();
+        const monthStr = `${year}-${month}`;
+        document.getElementById('reportMonth').value = monthStr;
+        updateMonthDisplay();
     }
 
-    // Date change handler
-    document.getElementById('reportDate').addEventListener('change', () => {
-        updateWeekDisplay();
+    // Update month display
+    function updateMonthDisplay() {
+        const monthInput = document.getElementById('reportMonth');
+        const monthDisplay = document.getElementById('monthDisplay');
+        
+        if (monthInput.value) {
+            const [year, month] = monthInput.value.split('-');
+            const monthName = monthNames[parseInt(month) - 1];
+            monthDisplay.textContent = `${monthName} ${year}`;
+        } else {
+            monthDisplay.textContent = '{{ _("Select a month to view") }}';
+        }
+    }
+
+    // Month change handler
+    document.getElementById('reportMonth').addEventListener('change', () => {
+        updateMonthDisplay();
         if (document.getElementById('businessId').value) {
             generateReport();
         }
@@ -471,11 +452,11 @@
         }
     });
 
-    // Quick week button handlers
-    document.querySelectorAll('.quick-week-btn').forEach(btn => {
+    // Quick month button handlers
+    document.querySelectorAll('.quick-month-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             // Remove active class from all buttons
-            document.querySelectorAll('.quick-week-btn').forEach(b => {
+            document.querySelectorAll('.quick-month-btn').forEach(b => {
                 b.classList.remove('btn-primary');
                 b.classList.add('btn-outline');
             });
@@ -485,19 +466,13 @@
             btn.classList.add('btn-primary');
             
             const offset = parseInt(btn.dataset.offset);
-            // Use local date to avoid timezone issues
             const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth();
-            const day = today.getDate();
-            const targetDate = new Date(year, month, day - (offset * 7));
-            // Format as YYYY-MM-DD for input[type="date"]
-            const yearStr = targetDate.getFullYear();
-            const monthStr = String(targetDate.getMonth() + 1).padStart(2, '0');
-            const dayStr = String(targetDate.getDate()).padStart(2, '0');
-            const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
-            document.getElementById('reportDate').value = dateStr;
-            updateWeekDisplay();
+            const targetDate = new Date(today.getFullYear(), today.getMonth() - offset, 1);
+            const year = targetDate.getFullYear();
+            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const monthStr = `${year}-${month}`;
+            document.getElementById('reportMonth').value = monthStr;
+            updateMonthDisplay();
             
             // Auto-generate if business is selected
             if (document.getElementById('businessId').value) {
@@ -508,24 +483,24 @@
 
     async function generateReport() {
         const businessId = document.getElementById('businessId').value;
-        const dateStr = document.getElementById('reportDate').value;
+        const monthStr = document.getElementById('reportMonth').value;
 
         if (!businessId) {
             showError('{{ _("Please select a business") }}');
             return;
         }
 
-        if (!dateStr) {
-            showError('{{ _("Please select a date") }}');
+        if (!monthStr) {
+            showError('{{ _("Please select a month") }}');
             return;
         }
 
-        // Calculate ISO week from date
-        const { year, week } = getISOWeek(dateStr);
+        // Parse year and month from input
+        const [year, month] = monthStr.split('-').map(num => parseInt(num, 10));
 
         // Update URL with parameters
-        const newUrl = `${window.location.pathname}?year=${year}&week=${week}&business_id=${businessId}`;
-        window.history.pushState({year, week, businessId}, '', newUrl);
+        const newUrl = `${window.location.pathname}?year=${year}&month=${month}&business_id=${businessId}`;
+        window.history.pushState({year, month, businessId}, '', newUrl);
 
         // Show loading state
         document.getElementById('loadingState').classList.remove('hidden');
@@ -534,7 +509,7 @@
 
         try {
             const response = await fetch(
-                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}`,
+                `/reports/monthly-trend/data?year=${year}&month=${month}&business_id=${businessId}`,
                 {
                     headers: {
                         'Accept': 'application/json',
@@ -549,7 +524,7 @@
             }
 
             const data = await response.json();
-            displayReport(data);
+            displayReport(data, year, month);
         } catch (error) {
             console.error('Error loading report:', error);
             showError(error.message);
@@ -558,76 +533,22 @@
         }
     }
 
-    function displayReport(data) {
+    function displayReport(data, year, month) {
         // Update selected period banner
-        const dateInput = document.getElementById('reportDate');
-        if (dateInput.value) {
-            const weekRange = formatWeekRange(dateInput.value);
-            document.getElementById('selectedPeriodText').textContent = weekRange;
-            document.getElementById('selectedPeriodBanner').classList.remove('hidden');
-        }
+        const monthName = monthNames[month - 1];
+        document.getElementById('selectedPeriodText').textContent = `${monthName} ${year}`;
+        document.getElementById('selectedPeriodBanner').classList.remove('hidden');
 
-        // Display summary cards
-        const highestDayEl = document.getElementById('highestDay');
-        const lowestDayEl = document.getElementById('lowestDay');
+        // Calculate quick stats
+        const daysWithData = data.current_month.filter(d => d.has_data).length;
+        const totalDaysInMonth = data.current_month.length;
+        const avgDaily = daysWithData > 0 ? parseFloat(data.current_month_total) / daysWithData : 0;
         
-        // Update highest day
-        if (data.highest_day && data.highest_day.day_name) {
-            highestDayEl.textContent = translateDayName(data.highest_day.day_name);
-            document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
-            document.getElementById('highestDayDate').textContent = data.highest_day.date;
-        } else {
-            highestDayEl.textContent = '-';
-            document.getElementById('highestDayRevenue').textContent = '-';
-            document.getElementById('highestDayDate').textContent = '-';
-        }
-
-        // Update lowest day
-        if (data.lowest_day && data.lowest_day.day_name) {
-            lowestDayEl.textContent = translateDayName(data.lowest_day.day_name);
-            document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
-            document.getElementById('lowestDayDate').textContent = data.lowest_day.date;
-        } else {
-            lowestDayEl.textContent = '-';
-            document.getElementById('lowestDayRevenue').textContent = '-';
-            document.getElementById('lowestDayDate').textContent = '-';
-        }
-
-        // Update week-over-week growth
-        const currentWeekTotalEl = document.getElementById('currentWeekTotal');
-        const growthPercentEl = document.getElementById('weekGrowthPercent');
-        const growthDiffEl = document.getElementById('weekGrowthDifference');
+        document.getElementById('daysWithData').textContent = `${daysWithData}/${totalDaysInMonth}`;
+        document.getElementById('avgDailyRevenue').textContent = formatCurrency(avgDaily);
         
-        // Show current week total
-        currentWeekTotalEl.textContent = formatCurrency(data.current_week_total);
-        
-        if (data.week_over_week_growth !== null && data.week_over_week_growth !== undefined) {
-            const growth = parseFloat(data.week_over_week_growth);
-            const isPositive = growth > 0;
-            const isNegative = growth < 0;
-            
-            // Color and arrow based on growth
-            const colorClass = isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-base-content/60';
-            const arrow = isPositive ? '↑' : isNegative ? '↓' : '→';
-            
-            growthPercentEl.className = `text-2xl font-bold font-mono tabular-nums ${colorClass}`;
-            growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
-            
-            // Show difference
-            const diff = parseFloat(data.week_over_week_difference);
-            const diffText = diff > 0 ? `+${formatCurrency(Math.abs(diff))}` : 
-                            diff < 0 ? `-${formatCurrency(Math.abs(diff))}` : 
-                            formatCurrency(0);
-            growthDiffEl.className = `text-sm font-mono tabular-nums mt-1 ${colorClass}`;
-            growthDiffEl.textContent = diffText;
-        } else {
-            growthPercentEl.className = 'text-2xl font-bold text-base-content/60';
-            growthPercentEl.textContent = '-';
-            growthDiffEl.textContent = '{{ _("No previous data") }}';
-        }
-
-        // Calculate revenue stability (coefficient of variation)
-        const revenues = data.current_week.filter(d => d.has_data).map(d => parseFloat(d.revenue));
+        // Calculate revenue volatility (coefficient of variation)
+        const revenues = data.current_month.filter(d => d.has_data).map(d => parseFloat(d.revenue));
         if (revenues.length > 1) {
             // Overall Stability (all days)
             const mean = revenues.reduce((a, b) => a + b, 0) / revenues.length;
@@ -689,25 +610,89 @@
             document.getElementById('coreStabilityScore').textContent = '';
             document.getElementById('outlierWarning').innerHTML = '';
         }
-
+        
+        // Calculate day-of-week performance (best day)
+        const dayOfWeekStats = {};
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        
+        // Group by week and find highest revenue day in each week
+        const weeksForAnalysis = [];
+        let weekDays = [];
+        data.current_month.forEach((day) => {
+            if (!day.has_data) return;
+            const dayDate = new Date(day.date + 'T00:00:00');
+            let dayOfWeek = dayDate.getDay();
+            if (dayOfWeek === 0) dayOfWeek = 7; // Convert Sunday to 7
+            
+            weekDays.push(day);
+            
+            // End of week or end of data
+            if (dayOfWeek === 6 || day === data.current_month[data.current_month.length - 1]) {
+                if (weekDays.length > 0) {
+                    weeksForAnalysis.push(weekDays);
+                    weekDays = [];
+                }
+            }
+        });
+        
+        // Find best day in each week
+        weeksForAnalysis.forEach(week => {
+            if (week.length === 0) return;
+            const bestDayInWeek = week.reduce((max, day) => 
+                parseFloat(day.revenue) > parseFloat(max.revenue) ? day : max
+            );
+            const dayDate = new Date(bestDayInWeek.date + 'T00:00:00');
+            const dayName = dayNames[dayDate.getDay()];
+            dayOfWeekStats[dayName] = (dayOfWeekStats[dayName] || 0) + 1;
+        });
+        
+        // Find most frequent best day
+        let bestDay = null;
+        let bestCount = 0;
+        for (const [day, count] of Object.entries(dayOfWeekStats)) {
+            if (count > bestCount) {
+                bestCount = count;
+                bestDay = day;
+            }
+        }
+        
+        if (bestDay) {
+            const translatedDay = {
+                'Monday': '{{ _("Monday") }}',
+                'Tuesday': '{{ _("Tuesday") }}',
+                'Wednesday': '{{ _("Wednesday") }}',
+                'Thursday': '{{ _("Thursday") }}',
+                'Friday': '{{ _("Friday") }}',
+                'Saturday': '{{ _("Saturday") }}',
+                'Sunday': '{{ _("Sunday") }}'
+            }[bestDay] || bestDay;
+            
+            document.getElementById('bestDayOfWeek').textContent = translatedDay;
+            document.getElementById('bestDayOfWeekCount').textContent = `{{ _("Top day in") }} ${bestCount}/${weeksForAnalysis.length} {{ _("weeks") }}`;
+        } else {
+            document.getElementById('bestDayOfWeek').textContent = '-';
+            document.getElementById('bestDayOfWeekCount').textContent = '-';
+        }
+        
         // Calculate day-type revenue breakdown
         let regularDaysRev = 0; // Mon, Tue, Wed
         let discountDaysRev = 0; // Thu, Fri (25% discount)
         let saturdayRev = 0; // Sat
         
-        data.current_week.forEach(day => {
+        data.current_month.forEach(day => {
             if (!day.has_data) return;
-            const dayNum = day.day_number; // 1=Mon, 2=Tue, ..., 7=Sun
+            const dayDate = new Date(day.date + 'T00:00:00');
+            const dayOfWeek = dayDate.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
             const revenue = parseFloat(day.revenue);
             
-            if (dayNum >= 1 && dayNum <= 3) { // Mon, Tue, Wed
+            if (dayOfWeek >= 1 && dayOfWeek <= 3) { // Mon, Tue, Wed
                 regularDaysRev += revenue;
-            } else if (dayNum === 4 || dayNum === 5) { // Thu, Fri
+            } else if (dayOfWeek === 4 || dayOfWeek === 5) { // Thu, Fri
                 discountDaysRev += revenue;
-            } else if (dayNum === 6) { // Sat
+            } else if (dayOfWeek === 6) { // Sat
                 saturdayRev += revenue;
             }
-            // Sunday (7) is excluded - closed
+            // Sunday (0) is excluded - closed
         });
         
         const totalRev = regularDaysRev + discountDaysRev + saturdayRev;
@@ -720,22 +705,66 @@
         
         document.getElementById('saturdayRevenue').textContent = formatCurrency(saturdayRev);
         document.getElementById('saturdayPercent').textContent = totalRev > 0 ? `${((saturdayRev / totalRev) * 100).toFixed(1)}% {{ _("of total") }}` : '-';
-
-        // Enhanced week-over-week card with projections and sparkline
-        const enhancedGrowthPercentEl = document.getElementById('enhancedGrowthPercent');
-        const enhancedGrowthDiffEl = document.getElementById('enhancedGrowthDifference');
-        const enhancedPreviousWeekTotalEl = document.getElementById('enhancedPreviousWeekTotal');
         
-        enhancedPreviousWeekTotalEl.textContent = formatCurrency(data.previous_week_total);
+        // Show early month warning if less than 7 days of data
+        const earlyMonthWarning = document.getElementById('earlyMonthWarning');
+        if (daysWithData < 7) {
+            const warningText = document.getElementById('earlyMonthWarningText');
+            warningText.textContent = `{{ _("Only") }} ${daysWithData} {{ _("days of data available. Monthly trends are more reliable after at least 7 days.") }}`;
+            earlyMonthWarning.classList.remove('hidden');
+        } else {
+            earlyMonthWarning.classList.add('hidden');
+        }
+        
+        // Display summary cards
+        const highestDayEl = document.getElementById('highestDay');
+        const lowestDayEl = document.getElementById('lowestDay');
+        
+        // Update highest day - show full date
+        if (data.highest_day && data.highest_day.day_number) {
+            const date = new Date(data.highest_day.date);
+            const dayNames = ['{{ _("Sunday") }}', '{{ _("Monday") }}', '{{ _("Tuesday") }}', '{{ _("Wednesday") }}', '{{ _("Thursday") }}', '{{ _("Friday") }}', '{{ _("Saturday") }}'];
+            const dayName = dayNames[date.getDay()];
+            highestDayEl.textContent = `${dayName}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+            document.getElementById('highestDayRevenue').textContent = formatCurrency(data.highest_day.revenue);
+        } else {
+            highestDayEl.textContent = '-';
+            document.getElementById('highestDayRevenue').textContent = '-';
+        }
+
+        // Update lowest day - show full date
+        if (data.lowest_day && data.lowest_day.day_number) {
+            const date = new Date(data.lowest_day.date);
+            const dayNames = ['{{ _("Sunday") }}', '{{ _("Monday") }}', '{{ _("Tuesday") }}', '{{ _("Wednesday") }}', '{{ _("Thursday") }}', '{{ _("Friday") }}', '{{ _("Saturday") }}'];
+            const dayName = dayNames[date.getDay()];
+            lowestDayEl.textContent = `${dayName}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+            document.getElementById('lowestDayRevenue').textContent = formatCurrency(data.lowest_day.revenue);
+        } else {
+            lowestDayEl.textContent = '-';
+            document.getElementById('lowestDayRevenue').textContent = '-';
+        }
+
+        // Update month-over-month growth
+        const currentMonthTotalEl = document.getElementById('currentMonthTotal');
+        const growthPercentEl = document.getElementById('monthGrowthPercent');
+        const growthDiffEl = document.getElementById('monthGrowthDifference');
+        const previousMonthTotalEl = document.getElementById('previousMonthTotal');
+        
+        // Show current month total
+        currentMonthTotalEl.textContent = formatCurrency(data.current_month_total);
+        
+        // Show previous month total
+        previousMonthTotalEl.textContent = formatCurrency(data.previous_month_total);
         
         // Calculate daily averages
-        const daysThisWeek = data.current_week.filter(d => d.has_data).length;
-        const avgDailyThis = daysThisWeek > 0 ? parseFloat(data.current_week_total) / daysThisWeek : 0;
+        const daysThisMonth = data.current_month.filter(d => d.has_data).length;
+        const avgDailyThis = daysThisMonth > 0 ? parseFloat(data.current_month_total) / daysThisMonth : 0;
         
-        const daysPrevWeek = data.previous_weeks && data.previous_weeks.length > 0 
-            ? data.previous_weeks[data.previous_weeks.length - 1].filter(d => d.has_data).length 
-            : 7;
-        const avgDailyPrev = daysPrevWeek > 0 ? parseFloat(data.previous_week_total) / daysPrevWeek : 0;
+        // Get previous month days (assuming 30 days average or actual days)
+        const daysPrevMonth = data.previous_months && data.previous_months.length > 0 
+            ? data.previous_months[data.previous_months.length - 1].filter(d => d.has_data).length 
+            : 30;
+        const avgDailyPrev = daysPrevMonth > 0 ? parseFloat(data.previous_month_total) / daysPrevMonth : 0;
         
         const avgDailyGrowth = avgDailyPrev > 0 ? ((avgDailyThis - avgDailyPrev) / avgDailyPrev * 100) : 0;
         
@@ -747,75 +776,143 @@
         avgDailyGrowthEl.className = `text-xs font-mono tabular-nums ${avgGrowthColor}`;
         avgDailyGrowthEl.textContent = avgDailyGrowth !== 0 ? `${avgDailyGrowth > 0 ? '+' : ''}${avgDailyGrowth.toFixed(1)}%` : '-';
         
-        // Show projection if we're early in the week (Mon-Wed)
+        // Show projection if we're early in the month (before day 15)
         const today = new Date();
-        const currentDayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+        const currentDay = today.getDate();
+        const projectionSection = document.getElementById('projectionSection');
         
-        if ((currentDayOfWeek >= 1 && currentDayOfWeek <= 3) && daysThisWeek > 0) {
-            const projectedTotal = avgDailyThis * 7; // Project for full 7-day week
+        // Always show the section, just update projection visibility
+        if (currentDay <= 15 && daysThisMonth > 0) {
+            const totalDaysInMonth = data.current_month.length;
+            const projectedTotal = avgDailyThis * totalDaysInMonth;
+            
             document.getElementById('projectedTotal').textContent = formatCurrency(projectedTotal);
         } else {
+            // Hide projection, just show avg daily
             document.getElementById('projectedTotal').textContent = '-';
         }
         
-        if (data.week_over_week_growth !== null && data.week_over_week_growth !== undefined) {
-            const growth = parseFloat(data.week_over_week_growth);
+        if (data.month_over_month_growth !== null && data.month_over_month_growth !== undefined) {
+            const growth = parseFloat(data.month_over_month_growth);
             const isPositive = growth > 0;
             const isNegative = growth < 0;
             
+            // Color and arrow based on growth
             const colorClass = isPositive ? 'text-success' : isNegative ? 'text-error' : 'text-base-content/60';
             const arrow = isPositive ? '↑' : isNegative ? '↓' : '→';
             
-            enhancedGrowthPercentEl.className = `text-xl font-bold font-mono tabular-nums ${colorClass}`;
-            enhancedGrowthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
+            growthPercentEl.className = `text-2xl font-bold font-mono tabular-nums ${colorClass}`;
+            growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
             
-            const diff = parseFloat(data.week_over_week_difference);
+            // Show difference
+            const diff = parseFloat(data.month_over_month_difference);
             const diffText = diff > 0 ? `+${formatCurrency(Math.abs(diff))}` : 
                             diff < 0 ? `-${formatCurrency(Math.abs(diff))}` : 
                             formatCurrency(0);
-            enhancedGrowthDiffEl.className = `text-xs font-mono tabular-nums ${colorClass}`;
-            enhancedGrowthDiffEl.textContent = diffText;
+            growthDiffEl.className = `text-xs font-mono tabular-nums mt-0.5 ${colorClass}`;
+            growthDiffEl.textContent = diffText;
         } else {
-            enhancedGrowthPercentEl.className = 'text-xl font-bold text-base-content/60';
-            enhancedGrowthPercentEl.textContent = '-';
-            enhancedGrowthDiffEl.textContent = '{{ _("No previous data") }}';
+            growthPercentEl.className = 'text-2xl font-bold text-base-content/60';
+            growthPercentEl.textContent = '-';
+            growthDiffEl.textContent = '{{ _("No previous data") }}';
         }
 
-
-        // Display current week table
-        const tableBody = document.getElementById('currentWeekTable');
+        // Display current month table - grouped by calendar weeks (Mon-Sun)
+        const tableBody = document.getElementById('currentMonthTable');
         tableBody.innerHTML = '';
         
-        data.current_week.forEach(day => {
+        // Group days into proper calendar weeks (Monday = start)
+        const weeks = [];
+        let currentWeek = [];
+        
+        data.current_month.forEach((day) => {
+            const dayDate = new Date(day.date + 'T00:00:00');
+            let dayOfWeek = dayDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            
+            // Convert Sunday (0) to 7 so Monday becomes 1
+            if (dayOfWeek === 0) dayOfWeek = 7;
+            
+            // If this is Monday and we have data in current week, start new week
+            if (dayOfWeek === 1 && currentWeek.length > 0) {
+                weeks.push(currentWeek);
+                currentWeek = [];
+            }
+            
+            currentWeek.push(day);
+        });
+        
+        // Push the last week
+        if (currentWeek.length > 0) {
+            weeks.push(currentWeek);
+        }
+        
+        // Get previous month weeks for comparison
+        const previousMonthWeeks = [];
+        if (data.previous_months && data.previous_months.length > 0) {
+            const prevMonth = data.previous_months[data.previous_months.length - 1];
+            let prevWeek = [];
+            prevMonth.forEach((day) => {
+                const dayDate = new Date(day.date + 'T00:00:00');
+                let dayOfWeek = dayDate.getDay();
+                if (dayOfWeek === 0) dayOfWeek = 7;
+                
+                if (dayOfWeek === 1 && prevWeek.length > 0) {
+                    previousMonthWeeks.push(prevWeek);
+                    prevWeek = [];
+                }
+                prevWeek.push(day);
+            });
+            if (prevWeek.length > 0) {
+                previousMonthWeeks.push(prevWeek);
+            }
+        }
+        
+        // Display each week
+        weeks.forEach((week, weekIndex) => {
             const row = document.createElement('tr');
             
-            const growthClass = day.growth_percent > 0 ? 'text-success' : 
-                               day.growth_percent < 0 ? 'text-error' : 
+            // Calculate week totals
+            const weekRevenue = week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+            
+            // Calculate week-over-week growth (compare to same week in previous month)
+            let weekGrowth = null;
+            let hasGrowthData = false;
+            
+            if (previousMonthWeeks[weekIndex]) {
+                const prevWeekRevenue = previousMonthWeeks[weekIndex].reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+                if (prevWeekRevenue > 0) {
+                    weekGrowth = ((weekRevenue - prevWeekRevenue) / prevWeekRevenue * 100);
+                    hasGrowthData = true;
+                }
+            }
+            
+            const growthClass = hasGrowthData && weekGrowth > 0 ? 'text-success' : 
+                               hasGrowthData && weekGrowth < 0 ? 'text-error' : 
                                'text-base-content/60';
             
-            const growthText = day.growth_percent !== null ? 
-                `${day.growth_percent > 0 ? '+' : ''}${day.growth_percent}%` : 
+            const growthText = hasGrowthData ? 
+                `${weekGrowth > 0 ? '+' : ''}${weekGrowth.toFixed(1)}%` : 
                 '-';
             
-            // Show dash if no data, currency if we have data
-            const revenueDisplay = day.has_data ? formatCurrency(day.revenue) : '-';
-            const revenueClass = day.has_data ? 'font-mono' : 'text-base-content/40';
+            const trendArrow = hasGrowthData ? (weekGrowth > 0 ? '↑' : weekGrowth < 0 ? '↓' : '→') : '→';
             
-            // Day name cell
-            const dayCell = document.createElement('td');
-            dayCell.className = 'font-medium';
-            dayCell.textContent = translateDayName(day.day_name);
-            row.appendChild(dayCell);
+            // Week number cell
+            const weekCell = document.createElement('td');
+            weekCell.className = 'font-medium';
+            weekCell.textContent = `{{ _("Week") }} ${weekIndex + 1}`;
+            row.appendChild(weekCell);
             
-            // Date cell
-            const dateCell = document.createElement('td');
-            dateCell.textContent = day.date;
-            row.appendChild(dateCell);
+            // Date range cell
+            const startDate = week[0].date;
+            const endDate = week[week.length - 1].date;
+            const dateRangeCell = document.createElement('td');
+            dateRangeCell.textContent = `${startDate} - ${endDate}`;
+            row.appendChild(dateRangeCell);
             
             // Revenue cell
             const revenueCell = document.createElement('td');
-            revenueCell.className = `text-right ${revenueClass}`;
-            revenueCell.textContent = revenueDisplay;
+            revenueCell.className = 'text-right font-mono';
+            revenueCell.textContent = formatCurrency(weekRevenue);
             row.appendChild(revenueCell);
             
             // Growth percent cell
@@ -827,14 +924,33 @@
             // Trend arrow cell
             const trendCell = document.createElement('td');
             trendCell.className = 'text-center text-lg';
-            trendCell.textContent = day.trend_arrow || '';
+            trendCell.textContent = trendArrow;
             row.appendChild(trendCell);
             
             tableBody.appendChild(row);
         });
+        
+        // Add first week vs last week comparison
+        if (weeks.length >= 2) {
+            const firstWeekRev = weeks[0].reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+            const lastWeekRev = weeks[weeks.length - 1].reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+            
+            if (firstWeekRev > 0) {
+                const weekDiff = ((lastWeekRev - firstWeekRev) / firstWeekRev * 100).toFixed(1);
+                const badge = document.getElementById('weekComparisonBadge');
+                
+                if (weekDiff > 5) {
+                    badge.innerHTML = `<span class="badge badge-success gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>{{ _("Strong finish") }} +${weekDiff}%</span>`;
+                } else if (weekDiff < -5) {
+                    badge.innerHTML = `<span class="badge badge-error gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17L8 12m0 0l5-5m-5 5h12"/></svg>{{ _("Fade detected") }} ${weekDiff}%</span>`;
+                } else {
+                    badge.innerHTML = `<span class="badge badge-ghost gap-1">{{ _("Consistent") }} ${weekDiff > 0 ? '+' : ''}${weekDiff}%</span>`;
+                }
+            }
+        }
 
         // Create chart
-        createChart(data);
+        createChart(data, year, month);
 
         // Show report content
         document.getElementById('reportContent').classList.remove('hidden');
@@ -846,7 +962,7 @@
     let dayTypeChart = null;
     let miniTrendChart = null;
 
-    function createChart(data) {
+    function createChart(data, year, month) {
         // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
             console.error('Chart.js is not loaded. Cannot create charts.');
@@ -862,26 +978,27 @@
         }
 
         // Generate labels and cumulative data
-        const labels = ['{{ _("Mon") }}', '{{ _("Tue") }}', '{{ _("Wed") }}', '{{ _("Thu") }}', '{{ _("Fri") }}', '{{ _("Sat") }}', '{{ _("Sun") }}'];
+        const labels = [];
         const currentCumulative = [];
         const previousCumulative = [];
         
         let currentSum = 0;
-        data.current_week.forEach((day) => {
+        data.current_month.forEach((day, index) => {
+            labels.push(day.day_number);
             if (day.has_data) {
                 currentSum += parseFloat(day.revenue);
             }
             currentCumulative.push(currentSum);
         });
         
-        // Get previous week cumulative
+        // Get previous month cumulative
         let prevSum = 0;
-        const previousWeek = data.previous_weeks && data.previous_weeks.length > 0 
-            ? data.previous_weeks[data.previous_weeks.length - 1] 
+        const previousMonth = data.previous_months && data.previous_months.length > 0 
+            ? data.previous_months[data.previous_months.length - 1] 
             : null;
         
-        if (previousWeek) {
-            previousWeek.forEach((day) => {
+        if (previousMonth) {
+            previousMonth.forEach((day) => {
                 if (day.has_data) {
                     prevSum += parseFloat(day.revenue);
                 }
@@ -890,11 +1007,11 @@
         }
         
         // Build datasets
-        const datasetsRunning = [];
+        const datasets = [];
         
-        if (previousWeek && previousCumulative.length > 0) {
-            datasetsRunning.push({
-                label: '{{ _("Last Week") }}',
+        if (previousMonth && previousCumulative.length > 0) {
+            datasets.push({
+                label: '{{ _("Last Month") }}',
                 data: previousCumulative,
                 borderColor: 'rgb(156, 163, 175)',
                 backgroundColor: 'rgba(156, 163, 175, 0.05)',
@@ -907,8 +1024,8 @@
             });
         }
         
-        datasetsRunning.push({
-            label: '{{ _("This Week") }}',
+        datasets.push({
+            label: '{{ _("This Month") }}',
             data: currentCumulative,
             borderColor: 'rgb(99, 102, 241)',
             backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -923,7 +1040,7 @@
             type: 'line',
             data: {
                 labels: labels,
-                datasets: datasetsRunning
+                datasets: datasets
             },
             options: {
                 responsive: true,
@@ -943,8 +1060,13 @@
                                 if (label) {
                                     label += ': ';
                                 }
-                                label += formatCurrency(context.parsed.y);
+                                if (context.parsed.y !== null) {
+                                    label += formatCurrency(context.parsed.y);
+                                }
                                 return label;
+                            },
+                            title: function(context) {
+                                return `{{ _("Through day") }} ${context[0].label}`;
                             }
                         }
                     }
@@ -957,45 +1079,59 @@
                                 return formatCurrency(value);
                             }
                         }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '{{ _("Day of Month") }}'
+                        }
                     }
                 }
             }
         });
         
-        // Chart 2: Week-over-Week Comparison (Current vs Previous week only)
+        // Chart 2: Day-by-Day Comparison (Current vs Previous month)
         const comparisonCtx = document.getElementById('comparisonChart');
         
         if (comparisonChart) {
             comparisonChart.destroy();
         }
+
+        // Generate labels (day numbers 1-31)
+        const dailyLabels = data.current_month.map(day => day.day_number);
         
-        // Build datasets array - only include previous week if data exists
-        const datasets = [];
+        // Get last month data (may be undefined if no previous months exist)
+        const previousMonthDaily = data.previous_months && data.previous_months.length > 0 
+            ? data.previous_months[data.previous_months.length - 1] 
+            : null;
         
-        if (previousWeek) {
-            datasets.push({
-                label: '{{ _("Last Week") }}',
-                data: previousWeek.map(day => day.has_data ? parseFloat(day.revenue) : null),
+        // Build datasets array for daily comparison
+        const dailyDatasets = [];
+        
+        if (previousMonthDaily) {
+            dailyDatasets.push({
+                label: '{{ _("Last Month") }}',
+                data: previousMonthDaily.map(day => day.has_data ? parseFloat(day.revenue) : null),
                 borderColor: 'rgb(156, 163, 175)', // Gray
                 backgroundColor: 'rgba(156, 163, 175, 0.1)',
                 borderWidth: 2,
                 tension: 0.4,
-                pointRadius: 4,
-                pointHoverRadius: 6,
+                pointRadius: 3,
+                pointHoverRadius: 5,
                 spanGaps: false,
                 borderDash: [5, 5], // Dashed line
             });
         }
         
-        datasets.push({
-            label: '{{ _("This Week") }}',
-            data: data.current_week.map(day => day.has_data ? parseFloat(day.revenue) : null),
+        dailyDatasets.push({
+            label: '{{ _("This Month") }}',
+            data: data.current_month.map(day => day.has_data ? parseFloat(day.revenue) : null),
             borderColor: 'rgb(99, 102, 241)', // Primary blue
             backgroundColor: 'rgba(99, 102, 241, 0.1)',
             borderWidth: 3,
             tension: 0.4,
-            pointRadius: 5,
-            pointHoverRadius: 7,
+            pointRadius: 4,
+            pointHoverRadius: 6,
             spanGaps: false,
             fill: true,
         });
@@ -1003,8 +1139,8 @@
         comparisonChart = new Chart(comparisonCtx, {
             type: 'line',
             data: {
-                labels: labels,
-                datasets: datasets
+                labels: dailyLabels,
+                datasets: dailyDatasets
             },
             options: {
                 responsive: true,
@@ -1015,15 +1151,7 @@
                 },
                 plugins: {
                     legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 15,
-                            font: {
-                                size: 12,
-                                weight: 'bold'
-                            }
-                        }
+                        display: true,
                     },
                     tooltip: {
                         callbacks: {
@@ -1032,9 +1160,7 @@
                                 if (label) {
                                     label += ': ';
                                 }
-                                if (context.parsed.y === null) {
-                                    label += '{{ _("No data") }}';
-                                } else {
+                                if (context.parsed.y !== null) {
                                     label += formatCurrency(context.parsed.y);
                                 }
                                 return label;
@@ -1055,81 +1181,6 @@
             }
         });
 
-        // Chart 2: 5-Week Trend (Bar chart showing weekly totals)
-        const trendCtx = document.getElementById('trendChart');
-        
-        if (trendChart) {
-            trendChart.destroy();
-        }
-
-        const weekLabels = [];
-        const weekTotals = [];
-        const weekColors = [];
-        
-        // Previous 4 weeks
-        data.previous_weeks.forEach((week, index) => {
-            const weekTotal = week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
-            weekLabels.push(`{{ _("Wk") }} ${index + 1}`);
-            weekTotals.push(weekTotal);
-            weekColors.push('rgba(156, 163, 175, 0.6)'); // Gray
-        });
-        
-        // Current week
-        const currentTotal = data.current_week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
-        weekLabels.push('{{ _("Current") }}');
-        weekTotals.push(currentTotal);
-        weekColors.push('rgb(99, 102, 241)'); // Primary blue
-
-        trendChart = new Chart(trendCtx, {
-            type: 'bar',
-            data: {
-                labels: weekLabels,
-                datasets: [{
-                    label: '{{ _("Weekly Total") }}',
-                    data: weekTotals,
-                    backgroundColor: weekColors,
-                    borderColor: weekColors.map(c => c.replace('0.6', '1').replace('rgb', 'rgb')),
-                    borderWidth: 2,
-                    borderRadius: 6,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return formatCurrency(context.parsed.y);
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                // Shorten to millions if needed
-                                if (value >= 1000000) {
-                                    return 'Gs ' + (value / 1000000).toFixed(1) + 'M';
-                                }
-                                return formatCurrency(value);
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
-
         // Chart 3: Payment Methods Donut
         const paymentMethodsCtx = document.getElementById('paymentMethodsChart');
         
@@ -1138,10 +1189,10 @@
         }
         
         // Use payment method totals from API
-        const cashTotal = parseFloat(data.current_week_cash_total || 0);
-        const cardTotal = parseFloat(data.current_week_card_total || 0);
-        const bankTransferTotal = parseFloat(data.current_week_bank_transfer_total || 0);
-        const creditTotal = parseFloat(data.current_week_credit_total || 0);
+        const cashTotal = parseFloat(data.current_month_cash_total || 0);
+        const cardTotal = parseFloat(data.current_month_card_total || 0);
+        const bankTransferTotal = parseFloat(data.current_month_bank_transfer_total || 0);
+        const creditTotal = parseFloat(data.current_month_credit_total || 0);
         
         paymentMethodsChart = new Chart(paymentMethodsCtx, {
             type: 'doughnut',
@@ -1172,8 +1223,8 @@
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                return `${label}: ${formatCurrency(value)} (${percent}%)`;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${label}: ${formatCurrency(value)} (${percentage}%)`;
                             }
                         }
                     }
@@ -1193,16 +1244,17 @@
         let discountDaysRev = 0;
         let saturdayRev = 0;
         
-        data.current_week.forEach(day => {
+        data.current_month.forEach(day => {
             if (!day.has_data) return;
-            const dayNum = day.day_number;
+            const dayDate = new Date(day.date + 'T00:00:00');
+            const dayOfWeek = dayDate.getDay();
             const revenue = parseFloat(day.revenue);
             
-            if (dayNum >= 1 && dayNum <= 3) {
+            if (dayOfWeek >= 1 && dayOfWeek <= 3) {
                 regularDaysRev += revenue;
-            } else if (dayNum === 4 || dayNum === 5) {
+            } else if (dayOfWeek === 4 || dayOfWeek === 5) {
                 discountDaysRev += revenue;
-            } else if (dayNum === 6) {
+            } else if (dayOfWeek === 6) {
                 saturdayRev += revenue;
             }
         });
@@ -1214,8 +1266,8 @@
                 datasets: [{
                     data: [regularDaysRev, discountDaysRev, saturdayRev],
                     backgroundColor: [
-                        'rgb(99, 102, 241)',  // Primary/blue for regular
-                        'rgb(251, 191, 36)',  // Warning/yellow for discount
+                        'rgb(99, 102, 241)',  // Primary for regular
+                        'rgb(245, 158, 11)',  // Warning/yellow for discount
                         'rgb(34, 197, 94)'    // Success/green for Saturday
                     ],
                     borderWidth: 2,
@@ -1235,8 +1287,8 @@
                                 const label = context.label || '';
                                 const value = context.parsed || 0;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                return `${label}: ${formatCurrency(value)} (${percent}%)`;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${label}: ${formatCurrency(value)} (${percentage}%)`;
                             }
                         }
                     }
@@ -1244,30 +1296,37 @@
             }
         });
         
-        // Chart 5: Mini Trend Sparkline (for week-over-week card)
+        // Chart 6: Mini Trend Sparkline (for month-over-month card)
         const miniTrendCtx = document.getElementById('miniTrendChart');
         
         if (miniTrendChart) {
             miniTrendChart.destroy();
         }
         
-        // Build 5-week data for sparkline
+        // Build 6-month data for sparkline
         const sparklineLabels = [];
         const sparklineData = [];
         
-        // Previous weeks
-        if (data.previous_weeks && data.previous_weeks.length > 0) {
-            data.previous_weeks.forEach((weekData, index) => {
-                const weekTotal = weekData.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
-                sparklineLabels.push(`W${index + 1}`);
-                sparklineData.push(weekTotal);
+        // Previous months
+        if (data.previous_months && data.previous_months.length > 0) {
+            data.previous_months.forEach((monthData, index) => {
+                const monthTotal = monthData.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+                const monthOffset = data.previous_months.length - index;
+                let targetMonth = month - monthOffset;
+                let targetYear = year;
+                while (targetMonth < 1) {
+                    targetMonth += 12;
+                    targetYear -= 1;
+                }
+                sparklineLabels.push(monthNames[targetMonth - 1].substring(0, 3));
+                sparklineData.push(monthTotal);
             });
         }
         
-        // Current week for sparkline
-        const currentWeekTotal = data.current_week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
-        sparklineLabels.push('{{ _("Now") }}');
-        sparklineData.push(currentWeekTotal);
+        // Current month for sparkline
+        const currentMonthTotal = data.current_month.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+        sparklineLabels.push(monthNames[month - 1].substring(0, 3));
+        sparklineData.push(currentMonthTotal);
         
         miniTrendChart = new Chart(miniTrendCtx, {
             type: 'line',
@@ -1292,6 +1351,7 @@
                         display: false
                     },
                     tooltip: {
+                        enabled: true,
                         callbacks: {
                             label: function(context) {
                                 return formatCurrency(context.parsed.y);
@@ -1301,15 +1361,103 @@
                 },
                 scales: {
                     x: {
-                        display: false
+                        display: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 9
+                            }
+                        }
                     },
                     y: {
-                        display: false
+                        display: false,
+                        beginAtZero: false
                     }
                 },
                 interaction: {
                     intersect: false,
                     mode: 'index'
+                }
+            }
+        });
+
+        // Chart 7: 6-Month Trend (Bar chart showing monthly totals)
+        const trendCtx = document.getElementById('trendChart');
+        
+        if (trendChart) {
+            trendChart.destroy();
+        }
+
+        const monthLabels = [];
+        const monthTotals = [];
+        const monthColors = [];
+        
+        // Previous 5 months
+        data.previous_months.forEach((monthData, index) => {
+            const monthTotal = monthData.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+            // Calculate month from current - need to figure out which month this is
+            const monthOffset = data.previous_months.length - index;
+            let targetMonth = month - monthOffset;
+            let targetYear = year;
+            while (targetMonth < 1) {
+                targetMonth += 12;
+                targetYear -= 1;
+            }
+            monthLabels.push(monthNames[targetMonth - 1].substring(0, 3));
+            monthTotals.push(monthTotal);
+            monthColors.push('rgba(156, 163, 175, 0.6)'); // Gray
+        });
+        
+        // Current month
+        const currentTotal = data.current_month.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0);
+        monthLabels.push('{{ _("Current") }}');
+        monthTotals.push(currentTotal);
+        monthColors.push('rgb(99, 102, 241)'); // Primary blue
+
+        trendChart = new Chart(trendCtx, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: '{{ _("Monthly Total") }}',
+                    data: monthTotals,
+                    backgroundColor: monthColors,
+                    borderColor: monthColors.map(c => c.replace('0.6', '1').replace('rgb', 'rgb')),
+                    borderWidth: 2,
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return formatCurrency(context.parsed.y);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
                 }
             }
         });
@@ -1323,14 +1471,14 @@
     }
 
     // Initialize on load
-    initializeDatePickers();
+    initializeMonthPickers();
     
-    // Auto-click "This Week" button on page load
+    // Auto-click "This Month" button on page load
     document.addEventListener('DOMContentLoaded', () => {
-        const thisWeekBtn = document.querySelector('.quick-week-btn[data-offset="0"]');
-        if (thisWeekBtn) {
-            thisWeekBtn.classList.remove('btn-outline');
-            thisWeekBtn.classList.add('btn-primary');
+        const thisMonthBtn = document.querySelector('.quick-month-btn[data-offset="0"]');
+        if (thisMonthBtn) {
+            thisMonthBtn.classList.remove('btn-outline');
+            thisMonthBtn.classList.add('btn-primary');
         }
     });
 </script>
