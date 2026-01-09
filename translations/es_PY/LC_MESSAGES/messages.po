@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-08 14:44+0000\n"
+"POT-Creation-Date: 2026-01-09 03:24+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -61,6 +61,12 @@ msgstr "Comparación de Negocios"
 
 msgid "Compare performance across multiple business locations"
 msgstr "Comparar rendimiento entre múltiples sucursales"
+
+msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
+msgstr ""
+
+msgid "Invalid number format. Please enter a valid amount."
+msgstr ""
 
 msgid "Edit window expired (32 hours passed)"
 msgstr "No podes editar (pasaron más de 32 horas)"
@@ -1103,6 +1109,24 @@ msgstr "arriba"
 msgid "down"
 msgstr "abajo"
 
+msgid "Best Performer"
+msgstr "Mejor Rendimiento"
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "Most Improved"
+msgstr "Más Mejorado"
+
+msgid "Needs Attention"
+msgstr "Necesita Atención"
+
+msgid "Revenue Breakdown by Business"
+msgstr "Desglose de Ingresos por Negocio"
+
+msgid "Business Contribution to Total"
+msgstr "Contribución al Total por Negocio"
+
 msgid "By Business"
 msgstr "Por Negocio"
 
@@ -1126,6 +1150,39 @@ msgstr "Distribución de Pagos"
 
 msgid "Bank"
 msgstr "Transferencias"
+
+msgid "Strong Growth"
+msgstr "Crecimiento Fuerte"
+
+msgid "Growing"
+msgstr "Creciendo"
+
+msgid "Slight Growth"
+msgstr "Crecimiento Leve"
+
+msgid "Stable"
+msgstr "Estable"
+
+msgid "Slight Decline"
+msgstr "Disminución Leve"
+
+msgid "Declining"
+msgstr "Disminuyendo"
+
+msgid "Sharp Decline"
+msgstr "Caída Pronunciada"
+
+msgid "of total"
+msgstr "del total"
+
+msgid "No comparison data"
+msgstr "Sin datos de comparación"
+
+msgid "All businesses stable"
+msgstr "Todos los negocios estables"
+
+msgid "Bank Transfer"
+msgstr "Transferencia Bancaria"
 
 msgid ""
 "Daily reconciliation view with sales by payment method and discrepancy "
@@ -1164,6 +1221,28 @@ msgstr "Reporte"
 msgid "Net Earnings"
 msgstr "Ganancias Netas"
 
+msgid "Top Performer Today"
+msgstr "Mejor Rendimiento Hoy"
+
+msgid "Revenue"
+msgstr "Ingresos"
+
+msgid "Contribution"
+msgstr "Contribución"
+
+msgid "Payment Methods"
+msgstr "Métodos de Pago"
+
+msgid "Transfers & Expenses Details"
+msgstr "Detalles de Transferencias y Gastos"
+
+msgid "items"
+msgstr "elementos"
+
+#, fuzzy
+msgid "No transfers recorded"
+msgstr "No hay transferencias bancarias registradas"
+
 msgid "Sales by Payment Method"
 msgstr "Ventas por Métodos de Pago"
 
@@ -1172,18 +1251,6 @@ msgstr "Tarjeta de Crédito"
 
 msgid "Debit Card"
 msgstr "Tarjeta de Débito"
-
-msgid "Bank Transfer"
-msgstr "Transferencia Bancaria"
-
-msgid "Financial Performance Insights"
-msgstr "Información de Rendimiento Financiero"
-
-msgid "Profit Margin"
-msgstr "Margen"
-
-msgid "Net / Total Sales"
-msgstr "Neto / Ventas Totales"
 
 msgid "Avg per Session"
 msgstr "Promedio por Sesión"
@@ -1245,14 +1312,296 @@ msgstr "Noche"
 msgid "Night"
 msgstr "Madrugada"
 
+msgid "Daily Revenue"
+msgstr "Ingresos Diarios"
+
+msgid "Reports & Analytics"
+msgstr "Reportes y Análisis"
+
+msgid "Business insights and performance metrics"
+msgstr "Información y métricas de rendimiento del negocio"
+
+msgid "Trend Analysis"
+msgstr "Análisis de Tendencias"
+
+msgid "Time Series"
+msgstr "Series de Tiempo"
+
 msgid "Coming Soon"
 msgstr "Próximamente"
 
-msgid "View Report"
-msgstr "Ver Reporte"
+msgid "Daily Operations"
+msgstr "Operaciones Diarias"
+
+msgid "Real-Time"
+msgstr "Tiempo Real"
+
+msgid "Business Intelligence"
+msgstr "Inteligencia de Negocios"
+
+msgid "Multi-Business"
+msgstr "Multi-Negocio"
+
+msgid ""
+"Compare daily revenue across months to identify peak/low days and month-"
+"over-month growth patterns"
+msgstr ""
+"Comparar ingresos diarios entre meses para identificar días pico/bajos y "
+"patrones de crecimiento mes a mes"
 
 msgid "Select time period"
 msgstr "Seleccione el período de tiempo"
+
+msgid "Show current month"
+msgstr "Mostrar mes actual"
+
+msgid "This Month"
+msgstr "Este Mes"
+
+msgid "Show last month"
+msgstr "Mostrar mes pasado"
+
+msgid "Last Month"
+msgstr "Mes Pasado"
+
+msgid "Show 2 months ago"
+msgstr "Mostrar hace 2 meses"
+
+msgid "2 Months Ago"
+msgstr "Hace 2 Meses"
+
+msgid "Show 3 months ago"
+msgstr "Mostrar hace 3 meses"
+
+msgid "3 Months Ago"
+msgstr "Hace 3 Meses"
+
+msgid "Pick Custom Month"
+msgstr "Elegir Mes Personalizado"
+
+msgid "Select Month"
+msgstr "Seleccionar Mes"
+
+msgid "Select a month to view"
+msgstr "Seleccioná un mes para ver"
+
+msgid "Error Loading Report"
+msgstr "Error al Cargar el Reporte"
+
+msgid "Limited Data Available"
+msgstr "Datos Limitados Disponibles"
+
+msgid ""
+"Line chart: current vs previous month (day-by-day). Bar chart: 6-month "
+"revenue trend."
+msgstr ""
+"Gráfico de líneas: mes actual vs anterior (día a día). Gráfico de "
+"barras: tendencia de 6 meses."
+
+msgid "Days with data"
+msgstr "Días con datos"
+
+msgid "Average daily"
+msgstr "Promedio diario"
+
+msgid "Highest Revenue Day"
+msgstr "Día de Mayor Ingreso"
+
+msgid "Lowest Revenue Day"
+msgstr "Día de Menor Ingreso"
+
+msgid "Top Performing Day"
+msgstr "Día de Mejor Rendimiento"
+
+msgid "Month Total"
+msgstr "Total del Mes"
+
+#, fuzzy
+msgid "Total sales this month"
+msgstr "Ventas totales de esta semana"
+
+msgid "Stability Score"
+msgstr "Puntuación de Estabilidad"
+
+msgid "Revenue by Day Type"
+msgstr "Ingresos por Tipo de Día"
+
+#, python-format
+msgid "Thu/Fri = 25% discount days | Closed Sundays"
+msgstr "Jue/Vie = 25% días de descuento | Cerrado domingos"
+
+msgid "Regular Days"
+msgstr "Días Regulares"
+
+msgid "Mon, Tue, Wed"
+msgstr "Lun, Mar, Mié"
+
+msgid "Discount Days"
+msgstr "Días de Descuento"
+
+msgid "Thu, Fri (-25%)"
+msgstr "Jue, Vie (-25%)"
+
+msgid "Saturday"
+msgstr "Sábado"
+
+msgid "Weekend (full price)"
+msgstr "Fin de semana (precio completo)"
+
+msgid "Month-over-Month Growth"
+msgstr "Crecimiento Mes a Mes"
+
+msgid "Total Growth"
+msgstr "Crecimiento Total"
+
+msgid "Avg/day:"
+msgstr "Prom/día:"
+
+msgid "Projected:"
+msgstr "Proyectado:"
+
+msgid "Revenue Progress"
+msgstr "Progreso de Ingresos"
+
+msgid "Cumulative"
+msgstr "Acumulado"
+
+msgid "Day-by-Day Comparison"
+msgstr "Comparación Día a Día"
+
+msgid "Current vs Previous"
+msgstr "Actual vs Anterior"
+
+msgid "6-Month Trend"
+msgstr "Tendencia de 6 Meses"
+
+msgid "Weekly Breakdown"
+msgstr "Desglose Semanal"
+
+msgid "Week"
+msgstr "Semana"
+
+msgid "Date Range"
+msgstr "Rango de Fechas"
+
+msgid "Growth"
+msgstr "Crecimiento"
+
+msgid "Trend"
+msgstr "Tendencia"
+
+msgid "January"
+msgstr "Enero"
+
+msgid "February"
+msgstr "Febrero"
+
+msgid "March"
+msgstr "Marzo"
+
+msgid "April"
+msgstr "Abril"
+
+msgid "May"
+msgstr "May"
+
+msgid "June"
+msgstr "Junio"
+
+msgid "July"
+msgstr "Julio"
+
+msgid "August"
+msgstr "Agosto"
+
+msgid "September"
+msgstr "Septiembre"
+
+msgid "October"
+msgstr "Octubre"
+
+msgid "November"
+msgstr "Noviembre"
+
+msgid "December"
+msgstr "Diciembre"
+
+msgid "Please select a month"
+msgstr "Por favor seleccioná un mes"
+
+msgid "Very Stable"
+msgstr "Muy Estable"
+
+msgid "Moderate"
+msgstr "Moderado"
+
+msgid "Volatile"
+msgstr "Volátil"
+
+msgid "Core"
+msgstr "Principal"
+
+msgid "exceptional day"
+msgstr "día excepcional"
+
+msgid "Insufficient data"
+msgstr "Datos insuficientes"
+
+msgid "Monday"
+msgstr "Lunes"
+
+msgid "Tuesday"
+msgstr "Martes"
+
+msgid "Wednesday"
+msgstr "Miércoles"
+
+msgid "Thursday"
+msgstr "Jueves"
+
+msgid "Friday"
+msgstr "Viernes"
+
+msgid "Sunday"
+msgstr "Domingo"
+
+msgid "Top day in"
+msgstr "Mejor día en"
+
+msgid "weeks"
+msgstr "semanas"
+
+msgid "Only"
+msgstr "Solo"
+
+msgid ""
+"days of data available. Monthly trends are more reliable after at least 7"
+" days."
+msgstr ""
+
+msgid "day"
+msgstr "día"
+
+msgid "No previous data"
+msgstr "Sin datos previos"
+
+msgid "Strong finish"
+msgstr "Final fuerte"
+
+msgid "Fade detected"
+msgstr "Disminución detectada"
+
+msgid "Consistent"
+msgstr "Consistente"
+
+msgid "Through day"
+msgstr "Hasta el día"
+
+msgid "Day of Month"
+msgstr "Día del Mes"
+
+msgid "Monthly Total"
+msgstr "Total Mensual"
 
 msgid "Show current week"
 msgstr "Mostrar semana actual"
@@ -1275,17 +1624,11 @@ msgstr "Hace 2 semanas"
 msgid "Show 4 weeks ago"
 msgstr "Mostrar hace 4 semanas"
 
-msgid "Last Month"
-msgstr "Mes Pasado"
-
 msgid "Any date in the week"
 msgstr "Cualquier fecha de la semana"
 
 msgid "Select a date to see its week"
 msgstr "Seleccione una fecha para ver su semana"
-
-msgid "Error Loading Report"
-msgstr "Error al Cargar el Reporte"
 
 msgid ""
 "Line chart: current vs previous week (day-by-day). Bar chart: 5-week "
@@ -1293,12 +1636,6 @@ msgid ""
 msgstr ""
 "Gráfico de líneas: semana actual vs anterior (día a día). Gráfico de "
 "barras: tendencia de 5 semanas."
-
-msgid "Highest Revenue Day"
-msgstr "Día de Mayor Ingreso"
-
-msgid "Lowest Revenue Day"
-msgstr "Día de Menor Ingreso"
 
 msgid "Week Total"
 msgstr "Total de la Semana"
@@ -1309,11 +1646,9 @@ msgstr "Ventas totales de esta semana"
 msgid "Growth vs Previous"
 msgstr "Crecimiento vs Anterior"
 
-msgid "Day-by-Day Comparison"
-msgstr "Comparación Día a Día"
-
-msgid "Current vs Previous Week"
-msgstr "Semana Actual vs Anterior"
+#, fuzzy
+msgid "Week-over-Week Growth"
+msgstr "Crecimiento Semanal"
 
 msgid "5-Week Trend"
 msgstr "Tendencia de 5 Semanas"
@@ -1324,35 +1659,8 @@ msgstr "Detalles de la Semana Seleccionada"
 msgid "Day"
 msgstr "Día"
 
-msgid "Revenue"
-msgstr "Ingresos"
-
 msgid "WoW Growth"
 msgstr "Crecimiento Semanal"
-
-msgid "Trend"
-msgstr "Tendencia"
-
-msgid "Monday"
-msgstr "Lunes"
-
-msgid "Tuesday"
-msgstr "Martes"
-
-msgid "Wednesday"
-msgstr "Miércoles"
-
-msgid "Thursday"
-msgstr "Jueves"
-
-msgid "Friday"
-msgstr "Viernes"
-
-msgid "Saturday"
-msgstr "Sábado"
-
-msgid "Sunday"
-msgstr "Domingo"
 
 msgid "Jan"
 msgstr "Ene"
@@ -1365,9 +1673,6 @@ msgstr "Mar"
 
 msgid "Apr"
 msgstr "Abr"
-
-msgid "May"
-msgstr "May"
 
 msgid "Jun"
 msgstr "Jun"
@@ -1396,9 +1701,6 @@ msgstr "Semana del"
 msgid "Please select a date"
 msgstr "Por favor seleccione una fecha"
 
-msgid "No previous data"
-msgstr "Sin datos previos"
-
 msgid "Mon"
 msgstr "Lun"
 
@@ -1426,6 +1728,9 @@ msgstr "Sem"
 msgid "Weekly Total"
 msgstr "Total Semanal"
 
+msgid "Now"
+msgstr "Ahora"
+
 msgid "Close Cash Session"
 msgstr "Cerrar caja"
 
@@ -1443,9 +1748,6 @@ msgstr "Monto del Sobre"
 
 msgid "Cash removed from register (if any)"
 msgstr "Dinero retirado de la caja (si hubiese)"
-
-msgid "Payment Methods"
-msgstr "Métodos de Pago"
 
 msgid "Card Total"
 msgstr "Total de Tarjetas / Infonet"
@@ -1809,9 +2111,6 @@ msgstr "Acción"
 msgid "Changed Fields"
 msgstr "Campos Cambiados"
 
-msgid "Loading..."
-msgstr "Cargando..."
-
 msgid "No edits yet"
 msgstr "Sin ediciones aún"
 
@@ -1902,203 +2201,3 @@ msgstr "¿Remover marca de esta sesión?"
 
 msgid "Clear"
 msgstr "Limpiar"
-
-#~ msgid "Daily Summary"
-#~ msgstr ""
-
-#~ msgid "Overview of daily cash flow and transactions"
-#~ msgstr ""
-
-#~ msgid "Current Week"
-#~ msgstr "Semana Actual"
-
-#~ msgid "4 Weeks Ago"
-#~ msgstr "Hace 4 Semanas"
-
-#~ msgid "Year"
-#~ msgstr "Año"
-
-#~ msgid "Week"
-#~ msgstr "Semana"
-
-#~ msgid "Week-over-Week Comparison"
-#~ msgstr "Comparación Semanal"
-
-#~ msgid "Now"
-#~ msgstr "Ahora"
-
-#~ msgid "vs Previous Week"
-#~ msgstr "vs Semana Anterior"
-
-#~ msgid "Track cash inflows and outflows over time"
-#~ msgstr "Seguimiento de entradas y salidas de efectivo a lo largo del tiempo"
-
-#~ msgid "Revenue Analysis"
-#~ msgstr "Análisis de Ingresos"
-
-#~ msgid "Breakdown of revenue by payment method and category"
-#~ msgstr "Desglose de ingresos por método de pago y categoría"
-
-#~ msgid "Expense Tracking"
-#~ msgstr "Seguimiento de Gastos"
-
-#~ msgid "Monitor and categorize business expenses"
-#~ msgstr "Monitorear y categorizar gastos del negocio"
-
-#~ msgid "Session Performance"
-#~ msgstr "Rendimiento de Sesiones"
-
-#~ msgid "Analyze cashier and session performance metrics"
-#~ msgstr "Analizar métricas de rendimiento de cajeros y sesiones"
-
-#~ msgid "Distribution of payments by method (cash, card, transfer)"
-#~ msgstr "Distribución de pagos por método (efectivo, tarjeta, transferencia)"
-
-#~ msgid "Discrepancies"
-#~ msgstr "Discrepancias"
-
-#~ msgid "Report on cash discrepancies and flagged sessions"
-#~ msgstr "Reporte de discrepancias de efectivo y sesiones marcadas"
-
-#~ msgid "Track credit sales and payment collections"
-#~ msgstr "Seguimiento de ventas a crédito y cobros"
-
-#~ msgid "Complete history of session changes and edits"
-#~ msgstr "Historial completo de cambios y ediciones de sesiones"
-
-#~ msgid "Cash + Cards + Bank Transfer"
-#~ msgstr "Efectivo + Tarjetas + Transferencia Bancaria"
-
-#~ msgid "Generate Report"
-#~ msgstr "Generar reporte"
-
-#~ msgid "Open Cash Session"
-#~ msgstr "Abrir Sesión de Caja"
-
-#~ msgid "active"
-#~ msgstr "activo"
-
-#~ msgid "View"
-#~ msgstr "Ver"
-
-#~ msgid "No sessions found."
-#~ msgstr "No se encontraron sesiones de cajas."
-
-#~ msgid "Create one"
-#~ msgstr "Crear uno"
-
-#~ msgid "Required for audit trail"
-#~ msgstr "Requerido para el registro de auditoría"
-
-#~ msgid "Changed"
-#~ msgstr "Campos Cambiados"
-
-#~ msgid "Duration"
-#~ msgstr "Duración"
-
-#~ msgid "Quick Stats"
-#~ msgstr "Estadísticas Rápidas"
-
-#~ msgid "Shift Duration"
-#~ msgstr "Duración del Turno"
-
-#~ msgid "Margin"
-#~ msgstr "Margen"
-
-#~ msgid "Needs Review"
-#~ msgstr "Requiere revisión"
-
-#~ msgid "Entered"
-#~ msgstr "Ingresado"
-
-#~ msgid "Not Entered"
-#~ msgstr "No Ingresado"
-
-#~ msgid "View sessions for this business and date"
-#~ msgstr "Ver sesiones para este negocio y fecha"
-
-#~ msgid "Active Shift"
-#~ msgstr "Turno Activo"
-
-#~ msgid "Still running"
-#~ msgstr "Aún en ejecución"
-
-#~ msgid "Session complete"
-#~ msgstr "Sesión completada"
-
-#~ msgid "Mark for review"
-#~ msgstr "Marcar para revisión"
-
-#~ msgid "(Manual - System)"
-#~ msgstr "(Farmagic - Agenda)"
-
-#~ msgid "Compare manual entries vs system records"
-#~ msgstr ""
-
-#~ msgid "Manual vs System"
-#~ msgstr "Farmagic vs Agenda"
-
-#~ msgid "(System - Manual)"
-#~ msgstr "(Agenda - Farmagic)"
-
-# Custom translations for reconciliation comparison
-#~ msgid "Manual:"
-#~ msgstr "Farmagic:"
-
-#~ msgid "System:"
-#~ msgstr "Agenda:"
-
-#~ msgid "Difference Colors:"
-#~ msgstr "Colores de Diferencias:"
-
-#~ msgid "Green (Surplus)"
-#~ msgstr "Verde (Excedente)"
-
-#~ msgid "System has MORE than Manual (positive difference)"
-#~ msgstr "Agenda tiene MÁS que Farmagic (diferencia positiva)"
-
-#~ msgid "System has LESS than Manual (negative difference)"
-#~ msgstr "Agenda tiene MENOS que Farmagic (diferencia negativa)"
-
-#~ msgid "Credit Card Total"
-#~ msgstr "Total Tarjeta de Crédito"
-
-#~ msgid "Debit Card Total"
-#~ msgstr "Total Tarjeta de Débito"
-
-#~ msgid "Total debit card sales"
-#~ msgstr "Total Ventas Tárjeta de Débito"
-
-#~ msgid "Debit only"
-#~ msgstr "Solo débito"
-
-#~ msgid "Comparar Farmagic vs Agenda"
-#~ msgstr ""
-
-#~ msgid "Agenda:"
-#~ msgstr ""
-
-#~ msgid "Colores de Diferencia:"
-#~ msgstr ""
-
-#~ msgid "Verde (Superávit)"
-#~ msgstr ""
-
-#~ msgid "Farmagic tiene MÁS que Agenda (diferencia positiva)"
-#~ msgstr ""
-
-#~ msgid "Farmagic tiene MENOS que Agenda (diferencia negativa)"
-#~ msgstr ""
-
-#~ msgid "Compare Farmagic vs Agenda"
-#~ msgstr "Comparar Farmagic vs Agenda"
-
-#~ msgid "Farmagic vs Agenda"
-#~ msgstr ""
-
-#~ msgid "(Farmagic - Agenda)"
-#~ msgstr ""
-
-#~ msgid "Farmagic:"
-#~ msgstr ""
-
