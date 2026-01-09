@@ -333,7 +333,7 @@ msgid "Cash Sales"
 msgstr "Ventas al Contado"
 
 msgid "System vs Manual"
-msgstr "Farmagic vs Agenda"
+msgstr "Agenda vs Farmagic"
 
 msgid "Card Sales"
 msgstr "Ventas con Tarjeta"
@@ -347,7 +347,7 @@ msgstr "Ventas Totales"
 msgid "Total Difference"
 msgstr "Diferencia Total"
 
-msgid "(Manual - System)"
+msgid "(System - Manual)"
 msgstr "(Agenda - Farmagic)"
 
 msgid "Sessions"
@@ -375,10 +375,10 @@ msgid "Pending"
 msgstr "Pendiente"
 
 msgid "System:"
-msgstr "Farmagic:"
+msgstr "Agenda:"
 
 msgid "Manual:"
-msgstr "Agenda:"
+msgstr "Farmagic:"
 
 msgid "Diff:"
 msgstr "Dif:"
@@ -399,13 +399,13 @@ msgid "Green (Surplus)"
 msgstr "Verde (Superávit)"
 
 msgid "Manual has MORE than System (positive difference)"
-msgstr "Agenda tiene MÁS que Farmagic (diferencia positiva)"
+msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
 
 msgid "Red (Deficit)"
 msgstr "Rojo (Déficit)"
 
 msgid "Manual has LESS than System (negative difference)"
-msgstr "Agenda tiene MENOS que Farmagic (diferencia negativa)"
+msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
 
 msgid "User Management - CashPilot"
 msgstr "Gestión de Usuarios - CashPilot"
