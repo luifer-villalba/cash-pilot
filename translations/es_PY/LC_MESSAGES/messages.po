@@ -1239,7 +1239,6 @@ msgstr "Detalles de Transferencias y Gastos"
 msgid "items"
 msgstr "elementos"
 
-#, fuzzy
 msgid "No transfers recorded"
 msgstr "No hay transferencias bancarias registradas"
 
@@ -1416,9 +1415,8 @@ msgstr "Día de Mejor Rendimiento"
 msgid "Month Total"
 msgstr "Total del Mes"
 
-#, fuzzy
 msgid "Total sales this month"
-msgstr "Ventas totales de esta semana"
+msgstr "Ventas totales de este mes"
 
 msgid "Stability Score"
 msgstr "Puntuación de Estabilidad"
@@ -1646,7 +1644,6 @@ msgstr "Ventas totales de esta semana"
 msgid "Growth vs Previous"
 msgstr "Crecimiento vs Anterior"
 
-#, fuzzy
 msgid "Week-over-Week Growth"
 msgstr "Crecimiento Semanal"
 
