@@ -1049,8 +1049,8 @@ msgstr "Fecha para la entrada de reconciliación"
 msgid "Business Locations"
 msgstr "Ubicaciones del Negocio"
 
-msgid "Refunds"
-msgstr "Reembolsos"
+msgid "Number of Invoices"
+msgstr "Cantidad de Facturas"
 
 msgid "Edit Reason"
 msgstr "Razón de Edición"
