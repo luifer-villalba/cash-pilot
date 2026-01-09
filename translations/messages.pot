@@ -337,7 +337,7 @@ msgstr ""
 msgid "Total Difference"
 msgstr ""
 
-msgid "(Manual - System)"
+msgid "(System - Manual)"
 msgstr ""
 
 msgid "Sessions"
