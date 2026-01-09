@@ -22,11 +22,8 @@ class CashierPerformance(BaseModel):
     cash_percentage: Decimal = Field(
         default=Decimal("0.00"), description="Percentage of revenue from cash"
     )
-    debit_percentage: Decimal = Field(
-        default=Decimal("0.00"), description="Percentage of revenue from debit cards"
-    )
-    credit_percentage: Decimal = Field(
-        default=Decimal("0.00"), description="Percentage of revenue from credit cards"
+    card_percentage: Decimal = Field(
+        default=Decimal("0.00"), description="Percentage of revenue from cards (debit + credit)"
     )
     bank_percentage: Decimal = Field(
         default=Decimal("0.00"), description="Percentage of revenue from bank transfers"
@@ -85,8 +82,7 @@ class DailyRevenueSummary(BaseModel):
                 "business_id": "550e8400-e29b-41d4-a716-446655440000",
                 "total_sales": 5000.00,
                 "cash_sales": 2000.00,
-                "credit_card_sales": 2500.00,
-                "debit_card_sales": 500.00,
+                "card_total": 3000.00,
                 "bank_transfer_sales": 0.00,
                 "credit_sales": 0.00,
                 "net_earnings": 4800.00,
@@ -108,8 +104,7 @@ class DailyRevenueSummary(BaseModel):
         default=Decimal("0.00"), description="Total sales across all methods"
     )
     cash_sales: Decimal = Field(default=Decimal("0.00"), description="Cash sales")
-    credit_card_sales: Decimal = Field(default=Decimal("0.00"), description="Credit card sales")
-    debit_card_sales: Decimal = Field(default=Decimal("0.00"), description="Debit card sales")
+    card_total: Decimal = Field(default=Decimal("0.00"), description="Card sales (debit + credit)")
     bank_transfer_sales: Decimal = Field(default=Decimal("0.00"), description="Bank transfer sales")
     credit_sales: Decimal = Field(default=Decimal("0.00"), description="Credit/on-account sales")
 
