@@ -283,21 +283,12 @@
                         </div>
                     </div>
 
-                    <!-- Credit Card Sales -->
+                    <!-- Card Sales (merged credit + debit) -->
                     <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Credit Card') }}</h3>
-                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="creditCardSalesDisplay">Gs 0</p>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Cards') }}</h3>
+                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="cardSalesDisplay">Gs 0</p>
                         <div class="text-xs text-base-content/50 mt-1">
-                            <span id="creditCardPercent">0%</span>
-                        </div>
-                    </div>
-
-                    <!-- Debit Card Sales -->
-                    <div class="bg-base-100 border border-primary/30 rounded-lg p-3 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-200">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Debit Card') }}</h3>
-                        <p class="text-xl font-bold font-mono tabular-nums mb-1" id="debitCardSalesDisplay">Gs 0</p>
-                        <div class="text-xs text-base-content/50 mt-1">
-                            <span id="debitCardPercent">0%</span>
+                            <span id="cardSalesPercent">0%</span>
                         </div>
                     </div>
 
@@ -544,22 +535,19 @@ function displayReport(data) {
 
     // Update payment method breakdown
     document.getElementById('cashSalesDisplay').textContent = formatCurrency(data.cash_sales);
-    document.getElementById('creditCardSalesDisplay').textContent = formatCurrency(data.credit_card_sales);
-    document.getElementById('debitCardSalesDisplay').textContent = formatCurrency(data.debit_card_sales);
+    document.getElementById('cardSalesDisplay').textContent = formatCurrency(data.card_total);
     document.getElementById('bankTransferSalesDisplay').textContent = formatCurrency(data.bank_transfer_sales);
     document.getElementById('creditSalesDisplay').textContent = formatCurrency(data.credit_sales);
 
     // Calculate percentages
     var total = parseFloat(data.total_sales);
     var cashPercent = total > 0 ? ((parseFloat(data.cash_sales) / total) * 100).toFixed(1) : 0;
-    var creditCardPercent = total > 0 ? ((parseFloat(data.credit_card_sales) / total) * 100).toFixed(1) : 0;
-    var debitCardPercent = total > 0 ? ((parseFloat(data.debit_card_sales) / total) * 100).toFixed(1) : 0;
+    var cardPercent = total > 0 ? ((parseFloat(data.card_total) / total) * 100).toFixed(1) : 0;
     var bankPercent = total > 0 ? ((parseFloat(data.bank_transfer_sales) / total) * 100).toFixed(1) : 0;
     var creditPercent = total > 0 ? ((parseFloat(data.credit_sales) / total) * 100).toFixed(1) : 0;
 
     document.getElementById('cashSalesPercent').textContent = cashPercent + '%';
-    document.getElementById('creditCardPercent').textContent = creditCardPercent + '%';
-    document.getElementById('debitCardPercent').textContent = debitCardPercent + '%';
+    document.getElementById('cardSalesPercent').textContent = cardPercent + '%';
     document.getElementById('bankTransferPercent').textContent = bankPercent + '%';
     document.getElementById('creditSalesPercent').textContent = creditPercent + '%';
 
@@ -572,15 +560,14 @@ function displayReport(data) {
     var cashConcentration = total > 0 ? ((parseFloat(data.cash_sales) / total) * 100).toFixed(1) : 0;
     document.getElementById('cashConcentrationDisplay').textContent = cashConcentration + '%';
     
-    // 3. Digital Sales = Credit Card + Debit Card + Bank Transfer
-    var digitalSales = parseFloat(data.credit_card_sales) + parseFloat(data.debit_card_sales) + parseFloat(data.bank_transfer_sales);
+    // 3. Digital Sales = Cards + Bank Transfer
+    var digitalSales = parseFloat(data.card_total) + parseFloat(data.bank_transfer_sales);
     document.getElementById('digitalSalesDisplay').textContent = formatCurrency(digitalSales);
 
     // Create payment methods chart
-    var cardSales = parseFloat(data.credit_card_sales) + parseFloat(data.debit_card_sales);
     createPaymentMethodsChart(
         data.cash_sales,
-        cardSales,
+        data.card_total,
         data.bank_transfer_sales,
         data.credit_sales
     );
