@@ -370,7 +370,7 @@ async def get_daily_revenue(
         business_id=business_uuid,
         total_sales=total_sales,
         cash_sales=cash_sales,
-        card_sales=card_sales,
+        card_total=card_sales,
         bank_transfer_sales=bank_transfer_sales,
         credit_sales=credit_sales,
         net_earnings=net_earnings,
