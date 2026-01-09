@@ -54,7 +54,7 @@ async def reports_dashboard(
                 "Compare monthly revenue across 30-day spans to identify "
                 "peak/low days and month-over-month growth patterns"
             ),
-            "enabled": False,
+            "enabled": True,
             "icon": (
                 "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 "
                 "2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 "
@@ -147,6 +147,38 @@ async def weekly_trend_report(
 
     return templates.TemplateResponse(
         "reports/weekly-trend.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "businesses": businesses,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.get("/monthly-trend", response_class=HTMLResponse)
+async def monthly_trend_report(
+    request: Request,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Monthly revenue trend report page. Admin only."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    # Get all active businesses
+    stmt = select(Business).where(Business.is_active).order_by(Business.name)
+    result = await db.execute(stmt)
+    businesses = result.scalars().all()
+
+    logger.info(
+        f"Monthly trend report accessed by {current_user.display_name}, "
+        f"found {len(businesses)} businesses"
+    )
+
+    return templates.TemplateResponse(
+        "reports/monthly-trend.html",
         {
             "request": request,
             "current_user": current_user,

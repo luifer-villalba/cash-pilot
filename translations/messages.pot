@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-08 14:44+0000\n"
+"POT-Creation-Date: 2026-01-09 03:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,6 +52,12 @@ msgid "Business Comparison"
 msgstr ""
 
 msgid "Compare performance across multiple business locations"
+msgstr ""
+
+msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
+msgstr ""
+
+msgid "Invalid number format. Please enter a valid amount."
 msgstr ""
 
 msgid "Edit window expired (32 hours passed)"
@@ -1091,6 +1097,24 @@ msgstr ""
 msgid "down"
 msgstr ""
 
+msgid "Best Performer"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "Most Improved"
+msgstr ""
+
+msgid "Needs Attention"
+msgstr ""
+
+msgid "Revenue Breakdown by Business"
+msgstr ""
+
+msgid "Business Contribution to Total"
+msgstr ""
+
 msgid "By Business"
 msgstr ""
 
@@ -1113,6 +1137,39 @@ msgid "Payment Mix"
 msgstr ""
 
 msgid "Bank"
+msgstr ""
+
+msgid "Strong Growth"
+msgstr ""
+
+msgid "Growing"
+msgstr ""
+
+msgid "Slight Growth"
+msgstr ""
+
+msgid "Stable"
+msgstr ""
+
+msgid "Slight Decline"
+msgstr ""
+
+msgid "Declining"
+msgstr ""
+
+msgid "Sharp Decline"
+msgstr ""
+
+msgid "of total"
+msgstr ""
+
+msgid "No comparison data"
+msgstr ""
+
+msgid "All businesses stable"
+msgstr ""
+
+msgid "Bank Transfer"
 msgstr ""
 
 msgid ""
@@ -1150,6 +1207,27 @@ msgstr ""
 msgid "Net Earnings"
 msgstr ""
 
+msgid "Top Performer Today"
+msgstr ""
+
+msgid "Revenue"
+msgstr ""
+
+msgid "Contribution"
+msgstr ""
+
+msgid "Payment Methods"
+msgstr ""
+
+msgid "Transfers & Expenses Details"
+msgstr ""
+
+msgid "items"
+msgstr ""
+
+msgid "No transfers recorded"
+msgstr ""
+
 msgid "Sales by Payment Method"
 msgstr ""
 
@@ -1157,18 +1235,6 @@ msgid "Credit Card"
 msgstr ""
 
 msgid "Debit Card"
-msgstr ""
-
-msgid "Bank Transfer"
-msgstr ""
-
-msgid "Financial Performance Insights"
-msgstr ""
-
-msgid "Profit Margin"
-msgstr ""
-
-msgid "Net / Total Sales"
 msgstr ""
 
 msgid "Avg per Session"
@@ -1231,13 +1297,290 @@ msgstr ""
 msgid "Night"
 msgstr ""
 
+msgid "Daily Revenue"
+msgstr ""
+
+msgid "Reports & Analytics"
+msgstr ""
+
+msgid "Business insights and performance metrics"
+msgstr ""
+
+msgid "Trend Analysis"
+msgstr ""
+
+msgid "Time Series"
+msgstr ""
+
 msgid "Coming Soon"
 msgstr ""
 
-msgid "View Report"
+msgid "Daily Operations"
+msgstr ""
+
+msgid "Real-Time"
+msgstr ""
+
+msgid "Business Intelligence"
+msgstr ""
+
+msgid "Multi-Business"
+msgstr ""
+
+msgid ""
+"Compare daily revenue across months to identify peak/low days and month-"
+"over-month growth patterns"
 msgstr ""
 
 msgid "Select time period"
+msgstr ""
+
+msgid "Show current month"
+msgstr ""
+
+msgid "This Month"
+msgstr ""
+
+msgid "Show last month"
+msgstr ""
+
+msgid "Last Month"
+msgstr ""
+
+msgid "Show 2 months ago"
+msgstr ""
+
+msgid "2 Months Ago"
+msgstr ""
+
+msgid "Show 3 months ago"
+msgstr ""
+
+msgid "3 Months Ago"
+msgstr ""
+
+msgid "Pick Custom Month"
+msgstr ""
+
+msgid "Select Month"
+msgstr ""
+
+msgid "Select a month to view"
+msgstr ""
+
+msgid "Error Loading Report"
+msgstr ""
+
+msgid "Limited Data Available"
+msgstr ""
+
+msgid ""
+"Line chart: current vs previous month (day-by-day). Bar chart: 6-month "
+"revenue trend."
+msgstr ""
+
+msgid "Days with data"
+msgstr ""
+
+msgid "Average daily"
+msgstr ""
+
+msgid "Highest Revenue Day"
+msgstr ""
+
+msgid "Lowest Revenue Day"
+msgstr ""
+
+msgid "Top Performing Day"
+msgstr ""
+
+msgid "Month Total"
+msgstr ""
+
+msgid "Total sales this month"
+msgstr ""
+
+msgid "Stability Score"
+msgstr ""
+
+msgid "Revenue by Day Type"
+msgstr ""
+
+#, python-format
+msgid "Thu/Fri = 25% discount days | Closed Sundays"
+msgstr ""
+
+msgid "Regular Days"
+msgstr ""
+
+msgid "Mon, Tue, Wed"
+msgstr ""
+
+msgid "Discount Days"
+msgstr ""
+
+msgid "Thu, Fri (-25%)"
+msgstr ""
+
+msgid "Saturday"
+msgstr ""
+
+msgid "Weekend (full price)"
+msgstr ""
+
+msgid "Month-over-Month Growth"
+msgstr ""
+
+msgid "Total Growth"
+msgstr ""
+
+msgid "Avg/day:"
+msgstr ""
+
+msgid "Projected:"
+msgstr ""
+
+msgid "Revenue Progress"
+msgstr ""
+
+msgid "Cumulative"
+msgstr ""
+
+msgid "Day-by-Day Comparison"
+msgstr ""
+
+msgid "Current vs Previous"
+msgstr ""
+
+msgid "6-Month Trend"
+msgstr ""
+
+msgid "Weekly Breakdown"
+msgstr ""
+
+msgid "Week"
+msgstr ""
+
+msgid "Date Range"
+msgstr ""
+
+msgid "Growth"
+msgstr ""
+
+msgid "Trend"
+msgstr ""
+
+msgid "January"
+msgstr ""
+
+msgid "February"
+msgstr ""
+
+msgid "March"
+msgstr ""
+
+msgid "April"
+msgstr ""
+
+msgid "May"
+msgstr ""
+
+msgid "June"
+msgstr ""
+
+msgid "July"
+msgstr ""
+
+msgid "August"
+msgstr ""
+
+msgid "September"
+msgstr ""
+
+msgid "October"
+msgstr ""
+
+msgid "November"
+msgstr ""
+
+msgid "December"
+msgstr ""
+
+msgid "Please select a month"
+msgstr ""
+
+msgid "Very Stable"
+msgstr ""
+
+msgid "Moderate"
+msgstr ""
+
+msgid "Volatile"
+msgstr ""
+
+msgid "Core"
+msgstr ""
+
+msgid "exceptional day"
+msgstr ""
+
+msgid "Insufficient data"
+msgstr ""
+
+msgid "Monday"
+msgstr ""
+
+msgid "Tuesday"
+msgstr ""
+
+msgid "Wednesday"
+msgstr ""
+
+msgid "Thursday"
+msgstr ""
+
+msgid "Friday"
+msgstr ""
+
+msgid "Sunday"
+msgstr ""
+
+msgid "Top day in"
+msgstr ""
+
+msgid "weeks"
+msgstr ""
+
+msgid "Only"
+msgstr ""
+
+msgid ""
+"days of data available. Monthly trends are more reliable after at least 7"
+" days."
+msgstr ""
+
+msgid "day"
+msgstr ""
+
+msgid "No previous data"
+msgstr ""
+
+msgid "Strong finish"
+msgstr ""
+
+msgid "Fade detected"
+msgstr ""
+
+msgid "Consistent"
+msgstr ""
+
+msgid "Through day"
+msgstr ""
+
+msgid "Day of Month"
+msgstr ""
+
+msgid "Monthly Total"
 msgstr ""
 
 msgid "Show current week"
@@ -1261,27 +1604,15 @@ msgstr ""
 msgid "Show 4 weeks ago"
 msgstr ""
 
-msgid "Last Month"
-msgstr ""
-
 msgid "Any date in the week"
 msgstr ""
 
 msgid "Select a date to see its week"
 msgstr ""
 
-msgid "Error Loading Report"
-msgstr ""
-
 msgid ""
 "Line chart: current vs previous week (day-by-day). Bar chart: 5-week "
 "revenue trend."
-msgstr ""
-
-msgid "Highest Revenue Day"
-msgstr ""
-
-msgid "Lowest Revenue Day"
 msgstr ""
 
 msgid "Week Total"
@@ -1293,10 +1624,7 @@ msgstr ""
 msgid "Growth vs Previous"
 msgstr ""
 
-msgid "Day-by-Day Comparison"
-msgstr ""
-
-msgid "Current vs Previous Week"
+msgid "Week-over-Week Growth"
 msgstr ""
 
 msgid "5-Week Trend"
@@ -1308,34 +1636,7 @@ msgstr ""
 msgid "Day"
 msgstr ""
 
-msgid "Revenue"
-msgstr ""
-
 msgid "WoW Growth"
-msgstr ""
-
-msgid "Trend"
-msgstr ""
-
-msgid "Monday"
-msgstr ""
-
-msgid "Tuesday"
-msgstr ""
-
-msgid "Wednesday"
-msgstr ""
-
-msgid "Thursday"
-msgstr ""
-
-msgid "Friday"
-msgstr ""
-
-msgid "Saturday"
-msgstr ""
-
-msgid "Sunday"
 msgstr ""
 
 msgid "Jan"
@@ -1348,9 +1649,6 @@ msgid "Mar"
 msgstr ""
 
 msgid "Apr"
-msgstr ""
-
-msgid "May"
 msgstr ""
 
 msgid "Jun"
@@ -1380,9 +1678,6 @@ msgstr ""
 msgid "Please select a date"
 msgstr ""
 
-msgid "No previous data"
-msgstr ""
-
 msgid "Mon"
 msgstr ""
 
@@ -1410,6 +1705,9 @@ msgstr ""
 msgid "Weekly Total"
 msgstr ""
 
+msgid "Now"
+msgstr ""
+
 msgid "Close Cash Session"
 msgstr ""
 
@@ -1426,9 +1724,6 @@ msgid "Envelope Amount"
 msgstr ""
 
 msgid "Cash removed from register (if any)"
-msgstr ""
-
-msgid "Payment Methods"
 msgstr ""
 
 msgid "Card Total"
@@ -1779,9 +2074,6 @@ msgid "Action"
 msgstr ""
 
 msgid "Changed Fields"
-msgstr ""
-
-msgid "Loading..."
 msgstr ""
 
 msgid "No edits yet"

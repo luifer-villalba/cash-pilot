@@ -13,7 +13,13 @@ from cashpilot.core.cache import get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession, User
-from cashpilot.models.report_schemas import CashierPerformance, DailyRevenueSummary
+from cashpilot.models.report_schemas import (
+    CashierPerformance,
+    DailyHistoricalRevenue,
+    DailyRevenueSummary,
+    ExpenseItem,
+    TransferItem,
+)
 from cashpilot.utils.datetime import today_local
 
 logger = get_logger(__name__)
@@ -267,12 +273,104 @@ async def get_daily_revenue(
     # Sort by revenue (highest first)
     cashier_performance.sort(key=lambda x: x.total_revenue, reverse=True)
 
+    # Build transfer items list
+    transfer_items = []
+    expense_items = []
+
+    for session in sessions:
+        # Add bank transfers
+        if session.bank_transfer_total and session.bank_transfer_total > 0:
+            transfer_items.append(
+                TransferItem(
+                    cashier_name=session.cashier.display_name,
+                    amount=session.bank_transfer_total,
+                    time=(
+                        session.closed_at.time() if session.closed_at else session.opened_at.time()
+                    ),
+                    session_id=session.id,
+                )
+            )
+
+        # Add expenses
+        if session.expenses and session.expenses > 0:
+            expense_items.append(
+                ExpenseItem(
+                    cashier_name=session.cashier.display_name,
+                    amount=session.expenses,
+                    time=(
+                        session.closed_at.time() if session.closed_at else session.opened_at.time()
+                    ),
+                    session_id=session.id,
+                )
+            )
+
+    # Sort by time
+    transfer_items.sort(key=lambda x: x.time)
+    expense_items.sort(key=lambda x: x.time)
+
+    # Get historical revenue (last 7 days before target date)
+    historical_revenue = []
+    from datetime import timedelta
+
+    for i in range(7, 0, -1):
+        hist_date = target_date - timedelta(days=i)
+
+        # Query revenue for that day
+        hist_filters = and_(
+            CashSession.business_id == business_uuid,
+            CashSession.session_date == hist_date,
+            CashSession.status == "CLOSED",
+            CashSession.final_cash.is_not(None),
+            ~CashSession.is_deleted,
+        )
+
+        hist_stmt = select(
+            func.sum(
+                case(
+                    (
+                        CashSession.final_cash.is_not(None),
+                        (CashSession.final_cash - CashSession.initial_cash)
+                        + func.coalesce(CashSession.envelope_amount, 0)
+                        + func.coalesce(CashSession.expenses, 0)
+                        - func.coalesce(CashSession.credit_payments_collected, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("cash_sales"),
+            func.sum(func.coalesce(CashSession.card_total, 0)).label("card_sales"),
+            func.sum(func.coalesce(CashSession.bank_transfer_total, 0)).label("bank_sales"),
+            func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
+        ).where(hist_filters)
+
+        hist_result = await db.execute(hist_stmt)
+        hist_data = hist_result.one_or_none()
+
+        if hist_data:
+            hist_total = (
+                (hist_data[0] or Decimal("0.00"))
+                + (hist_data[1] or Decimal("0.00"))
+                + (hist_data[2] or Decimal("0.00"))
+                + (hist_data[3] or Decimal("0.00"))
+            )
+
+            # Get day name abbreviation
+            day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+            day_name = day_names[hist_date.weekday()]
+
+            historical_revenue.append(
+                DailyHistoricalRevenue(
+                    date=hist_date,
+                    total_sales=hist_total,
+                    day_name=day_name,
+                )
+            )
+
     result = DailyRevenueSummary(
         date=target_date,
         business_id=business_uuid,
         total_sales=total_sales,
         cash_sales=cash_sales,
-        card_sales=card_sales,
+        card_total=card_sales,
         bank_transfer_sales=bank_transfer_sales,
         credit_sales=credit_sales,
         net_earnings=net_earnings,
@@ -282,6 +380,9 @@ async def get_daily_revenue(
         surplus_count=surplus_count,
         total_sessions=total_sessions,
         cashier_performance=cashier_performance,
+        transfer_items=transfer_items,
+        expense_items=expense_items,
+        historical_revenue=historical_revenue,
     )
 
     # Cache the result

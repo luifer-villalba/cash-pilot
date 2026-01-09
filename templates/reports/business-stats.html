@@ -158,6 +158,67 @@
         </div>
     </div>
 
+    <!-- Top Performers Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <!-- Best Performer Card -->
+        <div class="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border-2 border-yellow-500/30 rounded-xl shadow-lg p-4">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-yellow-700">{{ _('Best Performer') }}</h3>
+            </div>
+            <div id="bestPerformer">
+                <p class="text-base-content/60 text-sm italic">{{ _('Loading...') }}</p>
+            </div>
+        </div>
+
+        <!-- Most Improved Card -->
+        <div class="bg-gradient-to-br from-green-500/10 to-green-600/5 border-2 border-green-500/30 rounded-xl shadow-lg p-4">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-green-700">{{ _('Most Improved') }}</h3>
+            </div>
+            <div id="mostImproved">
+                <p class="text-base-content/60 text-sm italic">{{ _('Loading...') }}</p>
+            </div>
+        </div>
+
+        <!-- Needs Attention Card -->
+        <div class="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-2 border-orange-500/30 rounded-xl shadow-lg p-4">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-orange-700">{{ _('Needs Attention') }}</h3>
+            </div>
+            <div id="needsAttention">
+                <p class="text-base-content/60 text-sm italic">{{ _('Loading...') }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualizations Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+        <!-- Stacked Bar Chart -->
+        <div class="bg-base-100 border border-base-300 rounded-xl shadow-lg p-4">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70 mb-4">{{ _('Revenue Breakdown by Business') }}</h3>
+            <div style="height: 300px;">
+                <canvas id="stackedBarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Contribution Donut Chart -->
+        <div class="bg-base-100 border border-base-300 rounded-xl shadow-lg p-4">
+            <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/70 mb-4">{{ _('Business Contribution to Total') }}</h3>
+            <div style="height: 300px;">
+                <canvas id="contributionDonutChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Business Details Section -->
     <div class="space-y-3">
         <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70">{{ _('By Business') }}</h2>
@@ -185,7 +246,7 @@
                         <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
                             {{ _('Bank Transfers') }}
                         </th>
-                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70">
+                        <th class="text-right min-w-[180px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70">
                             {{ _('Total Sales') }}
                         </th>
                     </tr>
@@ -196,7 +257,16 @@
                     {% set no_current_sessions = item.current.total_sales == 0 %}
                     <tr class="hover:bg-primary/5 transition-all duration-200 border-b border-base-200/50 group">
                         <td class="sticky left-0 z-10 bg-base-100 group-hover:bg-primary/5 border-r border-base-300/50 px-4 py-3 font-semibold text-sm transition-colors duration-200 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
-                            {{ item.business.name }}
+                            <div class="flex items-center gap-2">
+                                {% if loop.index == 1 %}
+                                <span class="badge badge-sm bg-yellow-500 text-yellow-50 border-none">🥇</span>
+                                {% elif loop.index == 2 %}
+                                <span class="badge badge-sm bg-gray-400 text-gray-50 border-none">🥈</span>
+                                {% elif loop.index == 3 %}
+                                <span class="badge badge-sm bg-orange-600 text-orange-50 border-none">🥉</span>
+                                {% endif %}
+                                <span>{{ item.business.name }}</span>
+                            </div>
                         </td>
                         <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
                             {% if no_current_sessions %}
@@ -419,4 +489,224 @@
         </div>
     </div>
 </div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Business data from template
+    const businesses = [
+        {% for item in businesses %}
+        {
+            name: "{{ item.business.name|e }}",
+            currentTotal: {{ item.current.total_sales }},
+            previousTotal: {{ item.previous.total_sales }},
+            cashSales: {{ item.current.cash_sales }},
+            cardPayments: {{ item.current.card_payments_total }},
+            creditSales: {{ item.current.credit_sales_total }},
+            bankTransfer: {{ item.current.bank_transfer_total }},
+            delta: {{ item.deltas.total_sales.percent }},
+            direction: "{{ item.deltas.total_sales.direction }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const totalSales = {{ totals_current.total_sales }};
+
+    // Format currency
+    function formatCurrency(value) {
+        const num = Math.round(parseFloat(value));
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+    }
+
+    // Get growth context label
+    function getGrowthLabel(percent) {
+        if (percent > 20) return "{{ _('Strong Growth') }}";
+        if (percent > 10) return "{{ _('Growing') }}";
+        if (percent > 3) return "{{ _('Slight Growth') }}";
+        if (percent >= -3) return "{{ _('Stable') }}";
+        if (percent >= -10) return "{{ _('Slight Decline') }}";
+        if (percent >= -20) return "{{ _('Declining') }}";
+        return "{{ _('Sharp Decline') }}";
+    }
+
+    // Calculate top performers
+    const sorted = [...businesses].sort((a, b) => b.currentTotal - a.currentTotal);
+    const withGrowth = businesses.filter(b => b.currentTotal > 0 && b.previousTotal > 0);
+    const sortedByGrowth = [...withGrowth].sort((a, b) => b.delta - a.delta);
+    const declining = [...withGrowth].filter(b => b.delta < -10).sort((a, b) => a.delta - b.delta);
+
+    // Display Best Performer
+    if (sorted.length > 0 && sorted[0].currentTotal > 0) {
+        const best = sorted[0];
+        document.getElementById('bestPerformer').innerHTML = `
+            <p class="text-lg font-bold text-base-content">${best.name}</p>
+            <p class="text-xl font-bold font-mono text-yellow-600">${formatCurrency(best.currentTotal)}</p>
+            <p class="text-sm text-base-content/60 mt-1">${(best.currentTotal / totalSales * 100).toFixed(1)}% {{ _('of total') }}</p>
+        `;
+    } else {
+        document.getElementById('bestPerformer').innerHTML = '<p class="text-sm text-base-content/60">{{ _("No data") }}</p>';
+    }
+
+    // Display Most Improved
+    if (sortedByGrowth.length > 0) {
+        const improved = sortedByGrowth[0];
+        const arrow = improved.delta > 0 ? '↑' : improved.delta < 0 ? '↓' : '→';
+        document.getElementById('mostImproved').innerHTML = `
+            <p class="text-lg font-bold text-base-content">${improved.name}</p>
+            <p class="text-xl font-bold font-mono text-green-600">${arrow} ${improved.delta > 0 ? '+' : ''}${improved.delta}%</p>
+            <p class="text-sm text-base-content/60 mt-1">${getGrowthLabel(improved.delta)}</p>
+        `;
+    } else {
+        document.getElementById('mostImproved').innerHTML = '<p class="text-sm text-base-content/60">{{ _("No comparison data") }}</p>';
+    }
+
+    // Display Needs Attention
+    if (declining.length > 0) {
+        const needsAttention = declining[0];
+        document.getElementById('needsAttention').innerHTML = `
+            <p class="text-lg font-bold text-base-content">${needsAttention.name}</p>
+            <p class="text-xl font-bold font-mono text-orange-600">↓ ${needsAttention.delta}%</p>
+            <p class="text-sm text-base-content/60 mt-1">${getGrowthLabel(needsAttention.delta)}</p>
+        `;
+    } else {
+        document.getElementById('needsAttention').innerHTML = '<p class="text-sm text-base-content/60">{{ _("All businesses stable") }}</p>';
+    }
+
+    // Stacked Bar Chart
+    const stackedCtx = document.getElementById('stackedBarChart');
+    if (stackedCtx && typeof Chart !== 'undefined') {
+        const activeBusinesses = businesses.filter(b => b.currentTotal > 0);
+        new Chart(stackedCtx, {
+            type: 'bar',
+            data: {
+                labels: activeBusinesses.map(b => b.name),
+                datasets: [
+                    {
+                        label: '{{ _("Cash") }}',
+                        data: activeBusinesses.map(b => b.cashSales),
+                        backgroundColor: 'rgb(34, 197, 94)',
+                        borderColor: 'rgb(34, 197, 94)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '{{ _("Cards") }}',
+                        data: activeBusinesses.map(b => b.cardPayments),
+                        backgroundColor: 'rgb(59, 130, 246)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '{{ _("Bank Transfer") }}',
+                        data: activeBusinesses.map(b => b.bankTransfer),
+                        backgroundColor: 'rgb(168, 85, 247)',
+                        borderColor: 'rgb(168, 85, 247)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '{{ _("Credit Sales") }}',
+                        data: activeBusinesses.map(b => b.creditSales),
+                        backgroundColor: 'rgb(249, 115, 22)',
+                        borderColor: 'rgb(249, 115, 22)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) {
+                                    return 'Gs ' + (value / 1000000).toFixed(1) + 'M';
+                                }
+                                return formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Contribution Donut Chart
+    const donutCtx = document.getElementById('contributionDonutChart');
+    if (donutCtx && typeof Chart !== 'undefined') {
+        const activeBusinesses = businesses.filter(b => b.currentTotal > 0);
+        const colors = [
+            'rgb(99, 102, 241)',
+            'rgb(34, 197, 94)',
+            'rgb(249, 115, 22)',
+            'rgb(236, 72, 153)',
+            'rgb(168, 85, 247)',
+            'rgb(59, 130, 246)',
+            'rgb(251, 191, 36)',
+            'rgb(20, 184, 166)',
+            'rgb(239, 68, 68)',
+            'rgb(107, 114, 128)'
+        ];
+
+        new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: activeBusinesses.map(b => b.name),
+                datasets: [{
+                    data: activeBusinesses.map(b => b.currentTotal),
+                    backgroundColor: colors.slice(0, activeBusinesses.length),
+                    borderWidth: 2,
+                    borderColor: 'rgb(255, 255, 255)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return label + ': ' + formatCurrency(value) + ' (' + percent + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+
 {% endblock %}

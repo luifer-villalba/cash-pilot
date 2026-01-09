@@ -217,6 +217,18 @@ async def get_weekly_trend(
                 # 4. Credit Sales (sales on account)
                 + func.coalesce(CashSession.credit_sales_total, 0)
             ).label("total_revenue"),
+            # Separate payment method calculations
+            func.sum(
+                (CashSession.final_cash - CashSession.initial_cash)
+                + func.coalesce(CashSession.envelope_amount, 0)
+                + func.coalesce(CashSession.expenses, 0)
+                - func.coalesce(CashSession.credit_payments_collected, 0)
+            ).label("cash_revenue"),
+            func.sum(func.coalesce(CashSession.card_total, 0)).label("card_revenue"),
+            func.sum(func.coalesce(CashSession.bank_transfer_total, 0)).label(
+                "bank_transfer_revenue"
+            ),
+            func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_revenue"),
         )
         .where(
             and_(
@@ -232,7 +244,12 @@ async def get_weekly_trend(
     )
 
     result = await db.execute(stmt)
-    daily_revenues = {row[0]: row[1] for row in result.all()}
+    rows = result.all()
+    daily_revenues = {row[0]: row[1] for row in rows}
+    daily_cash = {row[0]: row[2] for row in rows}
+    daily_card = {row[0]: row[3] for row in rows}
+    daily_bank_transfer = {row[0]: row[4] for row in rows}
+    daily_credit = {row[0]: row[5] for row in rows}
 
     # Build day-by-day data for each week
     day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -291,6 +308,21 @@ async def get_weekly_trend(
             "date": str(min_day.date),
         }
 
+    # Calculate payment method totals for current week
+    current_week_cash_total = Decimal("0.00")
+    current_week_card_total = Decimal("0.00")
+    current_week_bank_transfer_total = Decimal("0.00")
+    current_week_credit_total = Decimal("0.00")
+
+    for day in weeks_data[-1]["days"]:
+        if day.has_data:
+            current_week_cash_total += Decimal(str(daily_cash.get(day.date, 0) or 0))
+            current_week_card_total += Decimal(str(daily_card.get(day.date, 0) or 0))
+            current_week_bank_transfer_total += Decimal(
+                str(daily_bank_transfer.get(day.date, 0) or 0)
+            )
+            current_week_credit_total += Decimal(str(daily_credit.get(day.date, 0) or 0))
+
     # Calculate week-over-week comparison
     current_week_total = sum(day.revenue for day in weeks_data[-1]["days"] if day.has_data)
     previous_week_total = Decimal("0.00")
@@ -318,6 +350,10 @@ async def get_weekly_trend(
         previous_week_total=previous_week_total,
         week_over_week_growth=week_over_week_growth,
         week_over_week_difference=week_over_week_difference,
+        current_week_cash_total=current_week_cash_total,
+        current_week_card_total=current_week_card_total,
+        current_week_bank_transfer_total=current_week_bank_transfer_total,
+        current_week_credit_total=current_week_credit_total,
     )
 
     # Cache the result
