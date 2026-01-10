@@ -163,8 +163,8 @@ class DailyReconciliationFactory:
         cash_sales: Optional[Decimal] = None,
         credit_sales: Optional[Decimal] = None,
         card_sales: Optional[Decimal] = None,
-        refunds: Optional[Decimal] = None,
         total_sales: Optional[Decimal] = None,
+        invoice_count: Optional[int] = None,
         is_closed: bool = False,
         **kwargs,
     ) -> DailyReconciliation:
@@ -194,8 +194,8 @@ class DailyReconciliationFactory:
             cash_sales=cash_sales,
             credit_sales=credit_sales,
             card_sales=card_sales,
-            refunds=refunds,
             total_sales=total_sales,
+            invoice_count=invoice_count,
             is_closed=is_closed,
         )
 

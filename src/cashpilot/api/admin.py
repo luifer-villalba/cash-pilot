@@ -499,7 +499,6 @@ async def reconciliation_compare_dashboard(
         manual_total_sales = (
             manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
         )
-        manual_refunds = manual_entry.refunds if manual_entry and manual_entry.refunds else None
         is_closed = manual_entry.is_closed if manual_entry else False
 
         # Calculate differences and variance
@@ -564,7 +563,6 @@ async def reconciliation_compare_dashboard(
                     "card_sales": manual_card_sales,
                     "credit_sales": manual_credit_sales,
                     "total_sales": manual_total_sales,
-                    "refunds": manual_refunds,
                 },
                 "system": {
                     "cash_sales": system_cash_sales,
