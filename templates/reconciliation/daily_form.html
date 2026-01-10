@@ -368,9 +368,11 @@
         });
         
         // Calculate initial totals on page load
-        document.querySelectorAll('[data-business-id]').forEach(element => {
+        const initialBusinessIds = new Set();
+        document.querySelectorAll('[data-sales-component]').forEach(element => {
             const businessId = element.getAttribute('data-business-id');
-            if (businessId) {
+            if (businessId && !initialBusinessIds.has(businessId)) {
+                initialBusinessIds.add(businessId);
                 calculateTotalSales(businessId);
             }
         });
