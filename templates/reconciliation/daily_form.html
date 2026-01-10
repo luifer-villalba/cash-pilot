@@ -155,6 +155,8 @@
                                     placeholder="0"
                                     inputmode="decimal"
                                     data-currency-input
+                                    data-business-id="{{ business.id }}"
+                                    data-sales-component
                                     autocomplete="off"
                                     {% if existing and existing.is_closed %}disabled{% endif %}
                                     {% if existing and existing.cash_sales %}value="{{ '{:,.0f}'.format(existing.cash_sales) }}"{% endif %}
@@ -177,6 +179,8 @@
                                     placeholder="0"
                                     inputmode="decimal"
                                     data-currency-input
+                                    data-business-id="{{ business.id }}"
+                                    data-sales-component
                                     autocomplete="off"
                                     {% if existing and existing.is_closed %}disabled{% endif %}
                                     {% if existing and existing.credit_sales %}value="{{ '{:,.0f}'.format(existing.credit_sales) }}"{% endif %}
@@ -199,6 +203,8 @@
                                     placeholder="0"
                                     inputmode="decimal"
                                     data-currency-input
+                                    data-business-id="{{ business.id }}"
+                                    data-sales-component
                                     autocomplete="off"
                                     {% if existing and existing.is_closed %}disabled{% endif %}
                                     {% if existing and existing.card_sales %}value="{{ '{:,.0f}'.format(existing.card_sales) }}"{% endif %}
@@ -206,24 +212,24 @@
                             </div>
                         </div>
 
-                        <!-- Refunds -->
+                        <!-- Number of Invoices -->
                         <div class="form-control">
                             <label class="label py-1">
-                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Refunds') }}</span>
+                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Number of Invoices') }}</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">#</span>
                                 <input
-                                    type="text"
-                                    name="refunds_{{ business.id }}"
-                                    id="refunds_{{ business.id }}"
+                                    type="number"
+                                    name="invoice_count_{{ business.id }}"
+                                    id="invoice_count_{{ business.id }}"
                                     class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
                                     placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
+                                    min="0"
+                                    step="1"
                                     autocomplete="off"
                                     {% if existing and existing.is_closed %}disabled{% endif %}
-                                    {% if existing and existing.refunds %}value="{{ '{:,.0f}'.format(existing.refunds) }}"{% endif %}
+                                    {% if existing and existing.invoice_count %}value="{{ existing.invoice_count }}"{% endif %}
                                 />
                             </div>
                         </div>
@@ -243,6 +249,7 @@
                                     placeholder="0"
                                     inputmode="decimal"
                                     data-currency-input
+                                    data-total-sales-input
                                     autocomplete="off"
                                     {% if existing and existing.is_closed %}disabled{% endif %}
                                     {% if existing and existing.total_sales %}value="{{ '{:,.0f}'.format(existing.total_sales) }}"{% endif %}
@@ -315,6 +322,24 @@
             toggleBusinessFields(businessId, checkbox.checked);
         });
 
+        // Auto-calculate total sales
+        function calculateTotalSales(businessId) {
+            const cashInput = document.getElementById(`cash_sales_${businessId}`);
+            const creditInput = document.getElementById(`credit_sales_${businessId}`);
+            const cardInput = document.getElementById(`card_sales_${businessId}`);
+            const totalInput = document.getElementById(`total_sales_${businessId}`);
+            
+            if (!cashInput || !creditInput || !cardInput || !totalInput || totalInput.disabled) return;
+            
+            // Parse values, removing dots and converting to numbers
+            const cash = parseInt(cashInput.value.replace(/\D/g, '') || '0');
+            const credit = parseInt(creditInput.value.replace(/\D/g, '') || '0');
+            const card = parseInt(cardInput.value.replace(/\D/g, '') || '0');
+            
+            const total = cash + credit + card;
+            totalInput.value = total.toLocaleString('es-PY').replace(/,/g, '.');
+        }
+        
         // Auto-format currency inputs on blur
         document.querySelectorAll('[data-currency-input]').forEach(input => {
             input.addEventListener('blur', function() {
@@ -330,8 +355,26 @@
             input.addEventListener('input', function() {
                 if (!this.disabled) {
                     this.value = this.value.replace(/[^\d.,]/g, '');
+                    
+                    // Auto-calculate if this is a sales component
+                    if (this.hasAttribute('data-sales-component')) {
+                        const businessId = this.getAttribute('data-business-id');
+                        if (businessId) {
+                            calculateTotalSales(businessId);
+                        }
+                    }
                 }
             });
+        });
+        
+        // Calculate initial totals on page load
+        const initialBusinessIds = new Set();
+        document.querySelectorAll('[data-sales-component]').forEach(element => {
+            const businessId = element.getAttribute('data-business-id');
+            if (businessId && !initialBusinessIds.has(businessId)) {
+                initialBusinessIds.add(businessId);
+                calculateTotalSales(businessId);
+            }
         });
 
         // Quick date buttons

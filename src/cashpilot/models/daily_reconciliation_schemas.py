@@ -19,11 +19,11 @@ class DailyReconciliationCreate(BaseModel):
     cash_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     credit_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     card_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
-    refunds: Decimal | None = Field(None, ge=0, decimal_places=2)
     total_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
+    invoice_count: int | None = Field(None, ge=0, description="Number of invoices/transactions")
     is_closed: bool = Field(False, description="Marks location closed that day")
 
-    @field_validator("cash_sales", "credit_sales", "card_sales", "refunds", "total_sales")
+    @field_validator("cash_sales", "credit_sales", "card_sales", "total_sales")
     @classmethod
     def validate_currency_fields(cls, v: Decimal | None) -> Decimal | None:
         """Validate currency values if provided."""
@@ -44,12 +44,12 @@ class DailyReconciliationUpdate(BaseModel):
     cash_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     credit_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     card_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
-    refunds: Decimal | None = Field(None, ge=0, decimal_places=2)
     total_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
+    invoice_count: int | None = Field(None, ge=0, description="Number of invoices/transactions")
     is_closed: bool | None = Field(None)
     reason: str = Field(..., min_length=5, description="Required reason for edit")
 
-    @field_validator("cash_sales", "credit_sales", "card_sales", "refunds", "total_sales")
+    @field_validator("cash_sales", "credit_sales", "card_sales", "total_sales")
     @classmethod
     def validate_currency_fields(cls, v: Decimal | None) -> Decimal | None:
         """Validate currency values if provided."""
@@ -67,8 +67,8 @@ class DailyReconciliationRead(BaseModel):
     cash_sales: Decimal | None
     credit_sales: Decimal | None
     card_sales: Decimal | None
-    refunds: Decimal | None
     total_sales: Decimal | None
+    invoice_count: int | None
     is_closed: bool
     admin_id: UUID
     created_at: datetime
@@ -86,7 +86,7 @@ class DailyReconciliationBulkCreate(BaseModel):
         ...,
         description=(
             "List of business data: {business_id, cash_sales, credit_sales, "
-            "card_sales, refunds, total_sales, is_closed}"
+            "card_sales, total_sales, invoice_count, is_closed}"
         ),
     )
 

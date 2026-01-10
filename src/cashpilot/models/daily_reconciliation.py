@@ -66,13 +66,13 @@ class DailyReconciliation(Base):
         nullable=True,
     )
 
-    refunds: Mapped[Decimal | None] = mapped_column(
+    total_sales: Mapped[Decimal | None] = mapped_column(
         Numeric(12, 2),
         nullable=True,
     )
 
-    total_sales: Mapped[Decimal | None] = mapped_column(
-        Numeric(12, 2),
+    # Number of invoices/transactions
+    invoice_count: Mapped[int | None] = mapped_column(
         nullable=True,
     )
 
