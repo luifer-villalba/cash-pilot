@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-09 03:24+0000\n"
+"POT-Creation-Date: 2026-01-11 02:01+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -832,17 +832,14 @@ msgstr "Ver Reconciliaciones"
 msgid "Date & Time"
 msgstr "Fecha y Hora"
 
-msgid "Received"
-msgstr "Recibido"
-
-msgid "Handed"
-msgstr "Entregado"
-
-msgid "Transfer"
-msgstr "Transferencia"
+msgid "Register"
+msgstr "Caja"
 
 msgid "Cards"
 msgstr "Tarjetas"
+
+msgid "Transfer"
+msgstr "Transferencia"
 
 msgid "Sales Total"
 msgstr "Venta Total"
@@ -852,6 +849,9 @@ msgstr "Ver Caja"
 
 msgid "Deleted"
 msgstr "Eliminado"
+
+msgid "Envelope"
+msgstr "Sobre"
 
 msgid "Restore this deleted session?"
 msgstr "¿Restaurar esta sesión eliminada?"
@@ -886,14 +886,8 @@ msgstr "No se puede modificar la sesión después de 32 horas"
 msgid "Only admins and session creator can delete"
 msgstr "Solo administradores y el creador de la sesión pueden eliminar"
 
-msgid "Period"
-msgstr "Período"
-
-msgid "Initial Cash"
-msgstr "Efectivo Inicial"
-
-msgid "Final Cash"
-msgstr "Efectivo Final"
+msgid "Session"
+msgstr "Sesión"
 
 msgid "Restore"
 msgstr "Restaurar"
@@ -934,12 +928,6 @@ msgstr "Crear Nueva Sesión"
 
 msgid "TOTAL SALES"
 msgstr "VENTAS TOTALES"
-
-msgid "Register"
-msgstr "Caja"
-
-msgid "Envelope"
-msgstr "Sobre"
 
 msgid "Card Payments"
 msgstr "Ventas con Tarjeta"
@@ -1245,12 +1233,6 @@ msgstr "No hay transferencias bancarias registradas"
 msgid "Sales by Payment Method"
 msgstr "Ventas por Métodos de Pago"
 
-msgid "Credit Card"
-msgstr "Tarjeta de Crédito"
-
-msgid "Debit Card"
-msgstr "Tarjeta de Débito"
-
 msgid "Avg per Session"
 msgstr "Promedio por Sesión"
 
@@ -1394,8 +1376,8 @@ msgid ""
 "Line chart: current vs previous month (day-by-day). Bar chart: 6-month "
 "revenue trend."
 msgstr ""
-"Gráfico de líneas: mes actual vs anterior (día a día). Gráfico de "
-"barras: tendencia de 6 meses."
+"Gráfico de líneas: mes actual vs anterior (día a día). Gráfico de barras:"
+" tendencia de 6 meses."
 
 msgid "Days with data"
 msgstr "Días con datos"
@@ -1808,6 +1790,9 @@ msgstr "Fecha de la Sesión"
 msgid "Opened At"
 msgstr "Abierto en"
 
+msgid "Initial Cash"
+msgstr "Efectivo Inicial"
+
 msgid "Live Reconciliation"
 msgstr "Reconciliación en Vivo"
 
@@ -1925,6 +1910,9 @@ msgstr "Guardar cambios en sesión cerrada"
 
 msgid "Current Values"
 msgstr "Valores Actuales"
+
+msgid "Final Cash"
+msgstr "Efectivo Final"
 
 msgid "Quick Tip"
 msgstr "Consejo Rápido"
@@ -2200,3 +2188,19 @@ msgstr "¿Remover marca de esta sesión?"
 
 msgid "Clear"
 msgstr "Limpiar"
+
+#~ msgid "Received"
+#~ msgstr "Recibido"
+
+#~ msgid "Handed"
+#~ msgstr "Entregado"
+
+#~ msgid "Period"
+#~ msgstr "Período"
+
+#~ msgid "Credit Card"
+#~ msgstr "Tarjeta de Crédito"
+
+#~ msgid "Debit Card"
+#~ msgstr "Tarjeta de Débito"
+

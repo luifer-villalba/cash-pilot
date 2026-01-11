@@ -287,11 +287,15 @@ async def _get_paginated_sessions(
     """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages)."""
     skip = (page - 1) * per_page
 
-    stmt = select(CashSession).options(
-        selectinload(CashSession.business),
-        selectinload(CashSession.cashier),
+    stmt = (
+        select(CashSession)
+        .join(CashSession.business)
+        .options(
+            selectinload(CashSession.business),
+            selectinload(CashSession.cashier),
+        )
     )
-    count_stmt = select(func.count(CashSession.id))
+    count_stmt = select(func.count(CashSession.id)).join(CashSession.business, isouter=True)
 
     # Add deleted filter only if not including deleted
     if not include_deleted:
@@ -317,7 +321,11 @@ async def _get_paginated_sessions(
     total_pages = (total + per_page - 1) // per_page
 
     stmt = (
-        stmt.order_by(CashSession.session_date.desc(), CashSession.opened_time.desc())
+        stmt.order_by(
+            Business.name.asc(),
+            CashSession.session_date.desc(),
+            CashSession.opened_time.desc(),
+        )
         .offset(skip)
         .limit(per_page)
     )
