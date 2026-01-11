@@ -272,6 +272,7 @@ def _register_routers(app: FastAPI) -> None:
     from cashpilot.api.cash_session import router as cash_session_router
     from cashpilot.api.cash_session_audit import router as cash_session_audit_router
     from cashpilot.api.cash_session_edit import router as cash_session_edit_router
+    from cashpilot.api.export_sessions import router as export_sessions_router
     from cashpilot.api.reconciliation import router as reconciliation_router
     from cashpilot.api.user import router as user_router
     from cashpilot.api.utils import router as utils_router
@@ -283,6 +284,7 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(cash_session_audit_router)
     app.include_router(reconciliation_router)
     app.include_router(user_router)
+    app.include_router(export_sessions_router)
 
 
 def create_app() -> FastAPI:

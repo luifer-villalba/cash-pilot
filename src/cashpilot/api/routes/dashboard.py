@@ -36,6 +36,8 @@ async def dashboard(
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
     status: str | None = Query(None),
+    sort_by: str = Query("date", regex="^(date|business|cashier|status|sales)$"),
+    sort_order: str = Query("desc", regex="^(asc|desc)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -57,7 +59,13 @@ async def dashboard(
         from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
-        db, filters, page=page, per_page=10, include_deleted=include_deleted_flag
+        db,
+        filters,
+        page=page,
+        per_page=10,
+        include_deleted=include_deleted_flag,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
 
     stmt_active = select(func.count(CashSession.id)).where(
@@ -177,6 +185,8 @@ async def dashboard(
                 "business_id": business_id,
                 "status": status,
             },
+            "sort_by": sort_by,
+            "sort_order": sort_order,
             "include_deleted": include_deleted,
             "from_report": from_report,
             "has_reconciliation": has_reconciliation,
@@ -196,6 +206,8 @@ async def sessions_table(
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
     status: str | None = Query(None),
+    sort_by: str = Query("date", regex="^(date|business|cashier|status|sales)$"),
+    sort_order: str = Query("desc", regex="^(asc|desc)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -212,7 +224,13 @@ async def sessions_table(
         from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
-        db, filters, page=page, per_page=10, include_deleted=include_deleted_flag
+        db,
+        filters,
+        page=page,
+        per_page=10,
+        include_deleted=include_deleted_flag,
+        sort_by=sort_by,
+        sort_order=sort_order,
     )
 
     query_params = []
@@ -224,6 +242,10 @@ async def sessions_table(
         query_params.append(f"cashier_name={cashier_name}")
     if business_id:
         query_params.append(f"business_id={business_id}")
+    if sort_by != "date":
+        query_params.append(f"sort_by={sort_by}")
+    if sort_order != "desc":
+        query_params.append(f"sort_order={sort_order}")
 
     query_string = "&".join(query_params)
     if query_string:
@@ -256,6 +278,8 @@ async def sessions_table(
                 "business_id": business_id,
                 "status": status,
             },
+            "sort_by": sort_by,
+            "sort_order": sort_order,
             "query_string": query_string,
             "include_deleted": include_deleted_flag,
             "locale": locale,
