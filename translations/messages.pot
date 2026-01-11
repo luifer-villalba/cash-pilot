@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-09 03:24+0000\n"
+"POT-Creation-Date: 2026-01-11 02:01+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -822,16 +822,13 @@ msgstr ""
 msgid "Date & Time"
 msgstr ""
 
-msgid "Received"
-msgstr ""
-
-msgid "Handed"
-msgstr ""
-
-msgid "Transfer"
+msgid "Register"
 msgstr ""
 
 msgid "Cards"
+msgstr ""
+
+msgid "Transfer"
 msgstr ""
 
 msgid "Sales Total"
@@ -841,6 +838,9 @@ msgid "View session"
 msgstr ""
 
 msgid "Deleted"
+msgstr ""
+
+msgid "Envelope"
 msgstr ""
 
 msgid "Restore this deleted session?"
@@ -876,13 +876,7 @@ msgstr ""
 msgid "Only admins and session creator can delete"
 msgstr ""
 
-msgid "Period"
-msgstr ""
-
-msgid "Initial Cash"
-msgstr ""
-
-msgid "Final Cash"
+msgid "Session"
 msgstr ""
 
 msgid "Restore"
@@ -921,12 +915,6 @@ msgid "Create New Session"
 msgstr ""
 
 msgid "TOTAL SALES"
-msgstr ""
-
-msgid "Register"
-msgstr ""
-
-msgid "Envelope"
 msgstr ""
 
 msgid "Card Payments"
@@ -1037,7 +1025,7 @@ msgstr ""
 msgid "Business Locations"
 msgstr ""
 
-msgid "Refunds"
+msgid "Number of Invoices"
 msgstr ""
 
 msgid "Edit Reason"
@@ -1229,12 +1217,6 @@ msgid "No transfers recorded"
 msgstr ""
 
 msgid "Sales by Payment Method"
-msgstr ""
-
-msgid "Credit Card"
-msgstr ""
-
-msgid "Debit Card"
 msgstr ""
 
 msgid "Avg per Session"
@@ -1786,6 +1768,9 @@ msgstr ""
 msgid "Opened At"
 msgstr ""
 
+msgid "Initial Cash"
+msgstr ""
+
 msgid "Live Reconciliation"
 msgstr ""
 
@@ -1896,6 +1881,9 @@ msgid "Save changes to closed session"
 msgstr ""
 
 msgid "Current Values"
+msgstr ""
+
+msgid "Final Cash"
 msgstr ""
 
 msgid "Quick Tip"
