@@ -1,62 +1,31 @@
-## 🎯 What
-<!-- Brief description of what this PR does -->
+## Description
 
-## 🤔 Why
-<!-- Explain the motivation/problem this solves -->
+Brief summary of what this PR does and why.
 
-## 🌿 Target Branch
-<!-- Which branch is this PR targeting? -->
-- [ ] `dev` (feature development)
-- [ ] `main` (production release from dev)
+Fixes #(issue)
 
-## 📝 Changes
-<!-- Detailed breakdown of changes by file/section -->
+## Type of Change
 
-### Backend / API
-<!-- Any changes to FastAPI, database, models, etc. -->
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Refactoring (no functional changes)
+- [ ] Documentation update
 
-### Frontend / Templates
-<!-- Any changes to HTML, forms, styling -->
+## How Has This Been Tested?
 
-### Tests
-<!-- Test coverage details -->
+Describe the tests you ran to verify your changes.
 
-### Database
-<!-- Any migrations or schema changes -->
+- [ ] Manual testing
+- [ ] Unit tests
+- [ ] Integration tests
 
-### Translations
-<!-- Any new i18n strings -->
+## Checklist
 
-## ✅ Testing
-<!-- How to test these changes -->
-```bash
-# Example test command
-make test tests/test_your_feature.py
-```
-
-### Manual Test Steps
-1. Step 1
-2. Step 2
-3. etc.
-
-## 📋 Checklist
-- [ ] Tests passing (`make test`)
-- [ ] Code formatted (`make fmt`)
-- [ ] Linting passes (`make lint`)
-- [ ] Commits are atomic & descriptive
-- [ ] No hardcoded values or TODOs
-- [ ] Translations added (if UI text)
-- [ ] Docstrings/comments added
-- [ ] Database migrations created (if schema changed)
-- [ ] Targeting correct branch (`dev` for features, `main` for releases)
-
-## 🔗 Related
-- Closes: MIZ-XXX (if applicable)
-- Depends on: MIZ-YYY (if applicable)
-- Part of: [Feature/Epic name] (if applicable)
-
-## 📸 Screenshots
-<!-- Add screenshots for UI changes -->
-
-## 🚀 Ready for Review
-- [ ] Yes, all checks pass
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my own code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] My changes generate no new warnings or errors
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing tests pass locally with my changes
+- [ ] I have added translations for any new UI strings
