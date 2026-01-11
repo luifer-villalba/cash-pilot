@@ -295,7 +295,7 @@ async def _get_paginated_sessions(
             selectinload(CashSession.cashier),
         )
     )
-    count_stmt = select(func.count(CashSession.id))
+    count_stmt = select(func.count(CashSession.id)).join(CashSession.business, isouter=True)
 
     # Add deleted filter only if not including deleted
     if not include_deleted:
