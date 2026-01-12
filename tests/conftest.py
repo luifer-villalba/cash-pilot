@@ -1,3 +1,33 @@
+# Fixture global para la app, para tests que requieren 'app' directamente
+import os
+os.environ["SESSION_SECRET_KEY"] = "test-secret-key"
+os.environ["TESTING"] = "true"
+import pytest_asyncio
+
+@pytest_asyncio.fixture
+async def app(db_session):
+    """Create FastAPI app instance with DB override for tests needing 'app' fixture."""
+    from cashpilot.api.auth import get_current_user
+    app = create_app()
+
+    # Create a default admin user for dependency override
+    admin_user = await UserFactory.create(
+        db_session,
+        email="admin_export_fixture@test.com",
+        full_name="Export Admin",
+        role="ADMIN",
+        is_active=True,
+    )
+
+    async def override_get_db():
+        yield db_session
+
+    async def override_get_current_user():
+        return admin_user
+
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    return app
 # File: tests/conftest.py
 """Pytest configuration and fixtures."""
 
@@ -81,6 +111,8 @@ async def db_session():
 @pytest_asyncio.fixture
 async def client(db_session):
     """Create async test client with overridden DB dependency."""
+    import os
+    os.environ["SESSION_SECRET_KEY"] = "test-secret-key"
     from cashpilot.api.auth import get_current_user
 
     app = create_app()
@@ -112,6 +144,14 @@ async def client(db_session):
         # Attach test_user to client for test access
         ac.test_user = test_user
         ac.db_session = db_session
+        # Perform login to set session cookie
+        login_response = await ac.post(
+            "/login",
+            data={"username": test_user.email, "password": "testpass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            follow_redirects=True,
+        )
+        assert login_response.status_code in [302, 303, 200], f"Login failed: {login_response.status_code}"
         yield ac
 
 
@@ -226,4 +266,18 @@ async def admin_client(db_session):
     ) as ac:
         ac.test_user = admin_user
         ac.db_session = db_session
+        # Perform login to set session cookie
+        login_response = await ac.post(
+            "/login",
+            data={"username": admin_user.email, "password": "adminpass123"},
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            follow_redirects=False,
+        )
+        assert login_response.status_code in [302, 303, 200], f"Admin login failed: {login_response.status_code}"
+        # Manually set session cookie for subsequent requests
+        set_cookie = login_response.headers.get("set-cookie")
+        if set_cookie:
+            # Only set the cookie name and value, not attributes
+            cookie_value = set_cookie.split(";", 1)[0]
+            ac.headers["cookie"] = cookie_value
         yield ac

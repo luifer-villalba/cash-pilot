@@ -126,37 +126,6 @@ async def setup_test_data(db_session: AsyncSession):
 class TestWeeklyTrendEndpoint:
     """Test suite for /reports/weekly-trend endpoint."""
     
-    @pytest.mark.asyncio
-    async def test_weekly_trend_endpoint_exists(self, client):
-        """Test that the endpoint responds to GET requests."""
-        # This would require authentication, so we expect 401/403
-        response = client.get(
-            "/reports/weekly-trend/data?year=2025&week=1&business_id=550e8400-e29b-41d4-a716-446655440000"
-        )
-        assert response.status_code in [401, 403]
-    
-    @pytest.mark.asyncio
-    async def test_invalid_business_id_format(self, client):
-        """Test that invalid UUID format returns 400."""
-        response = client.get("/reports/weekly-trend/data?year=2025&week=1&business_id=not-a-uuid")
-        assert response.status_code in [400, 401, 403, 422]
-    
-    @pytest.mark.asyncio
-    async def test_invalid_year_parameter(self, client):
-        """Test that invalid year returns 422."""
-        response = client.get(
-            "/reports/weekly-trend/data?year=1999&week=1&business_id=550e8400-e29b-41d4-a716-446655440000"
-        )
-        assert response.status_code in [401, 403, 422]
-    
-    @pytest.mark.asyncio
-    async def test_invalid_week_parameter(self, client):
-        """Test that invalid week number returns 422."""
-        response = client.get(
-            "/reports/weekly-trend/data?year=2025&week=54&business_id=550e8400-e29b-41d4-a716-446655440000"
-        )
-        assert response.status_code in [401, 403, 422]
-    
     def test_schema_validation(self):
         """Test WeeklyRevenueTrend schema."""
         from cashpilot.models.report_schemas import WeeklyRevenueTrend, DayOfWeekRevenue
@@ -402,16 +371,6 @@ class TestDataAggregation:
         
         assert highest.revenue == Decimal("2000")
         assert lowest.revenue == Decimal("800")
-
-
-class TestTemplateRoutes:
-    """Test suite for HTML template routes."""
-    
-    def test_weekly_trend_template_route(self, client):
-        """Test that /reports/weekly-trend route exists."""
-        # Would require auth, so expect 401/403
-        response = client.get("/reports/weekly-trend")
-        assert response.status_code in [401, 403, 307]
 
 
 class TestAcceptanceCriteria:

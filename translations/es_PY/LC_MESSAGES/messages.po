@@ -829,6 +829,15 @@ msgstr "Agregar Reconciliación"
 msgid "View Reconciliations"
 msgstr "Ver Reconciliaciones"
 
+msgid "Export"
+msgstr "Exportar"
+
+msgid "Export as CSV"
+msgstr "Exportar como CSV"
+
+msgid "Export as Excel"
+msgstr "Exportar como Excel"
+
 msgid "Date & Time"
 msgstr "Fecha y Hora"
 

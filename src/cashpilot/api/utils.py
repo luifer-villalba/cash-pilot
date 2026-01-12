@@ -283,8 +283,20 @@ async def _get_paginated_sessions(
     page: int = 1,
     per_page: int = 10,
     include_deleted: bool = False,
+    sort_by: str = "date",
+    sort_order: str = "desc",
 ) -> tuple[list, int, int]:
-    """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages)."""
+    """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages).
+
+    Args:
+        order_clauses.append(
+            User.first_name.desc() if sort_order == "desc" else User.first_name.asc()
+        )
+        order_clauses.append(
+            User.last_name.desc() if sort_order == "desc" else User.last_name.asc()
+        )
+        sort_order: Sort direction ('asc' or 'desc')
+    """
     skip = (page - 1) * per_page
 
     stmt = (
@@ -320,15 +332,54 @@ async def _get_paginated_sessions(
     total = count_result.scalar() or 0
     total_pages = (total + per_page - 1) // per_page
 
-    stmt = (
-        stmt.order_by(
-            Business.name.asc(),
-            CashSession.session_date.desc(),
-            CashSession.opened_time.desc(),
+    # Determine sort order
+    order_clauses = []
+    if sort_by == "business":
+        order_clauses.append(Business.name.desc() if sort_order == "desc" else Business.name.asc())
+        # Secondary sort by date
+        order_clauses.extend([CashSession.session_date.desc(), CashSession.opened_time.desc()])
+    elif sort_by == "cashier":
+        stmt = stmt.join(CashSession.cashier)
+        count_stmt = count_stmt.join(CashSession.cashier, isouter=True)
+        order_clauses.append(
+            User.first_name.desc() if sort_order == "desc" else User.first_name.asc()
         )
-        .offset(skip)
-        .limit(per_page)
-    )
+        order_clauses.append(
+            User.last_name.desc() if sort_order == "desc" else User.last_name.asc()
+        )
+        order_clauses.extend([CashSession.session_date.desc(), CashSession.opened_time.desc()])
+        # Salir aquí para evitar doble append
+        stmt = stmt.order_by(*order_clauses).offset(skip).limit(per_page)
+        result = await db.execute(stmt)
+        sessions = result.scalars().all()
+        return list(sessions), total, total_pages
+    elif sort_by == "status":
+        order_clauses.append(
+            CashSession.status.desc() if sort_order == "desc" else CashSession.status.asc()
+        )
+        order_clauses.extend([CashSession.session_date.desc(), CashSession.opened_time.desc()])
+    elif sort_by == "sales":
+        # Sort by total_sales calculation (requires case expression)
+        sales_expr = (
+            (CashSession.final_cash - CashSession.initial_cash)
+            + func.coalesce(CashSession.envelope_amount, 0)
+            + func.coalesce(CashSession.expenses, 0)
+            - func.coalesce(CashSession.credit_payments_collected, 0)
+            + func.coalesce(CashSession.card_total, 0)
+            + func.coalesce(CashSession.bank_transfer_total, 0)
+            + func.coalesce(CashSession.credit_sales_total, 0)
+        )
+        order_clauses.append(sales_expr.desc() if sort_order == "desc" else sales_expr.asc())
+    elif sort_by == "date":
+        if sort_order == "asc":
+            order_clauses.extend([CashSession.session_date.asc(), CashSession.opened_time.asc()])
+        else:
+            order_clauses.extend([CashSession.session_date.desc(), CashSession.opened_time.desc()])
+    else:
+        # fallback: sort by date desc
+        order_clauses.extend([CashSession.session_date.desc(), CashSession.opened_time.desc()])
+
+    stmt = stmt.order_by(*order_clauses).offset(skip).limit(per_page)
     result = await db.execute(stmt)
     sessions = result.scalars().all()
 

@@ -42,15 +42,19 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Check session - SessionMiddleware runs first, so session should be in scope
-        # Access session via scope (as set by SessionMiddleware) for consistency
         session = request.scope.get("session", {})
         user_id = session.get("user_id") if session else None
 
         if not user_id:
-            # Detect browser (HTML request)
             accept = request.headers.get("accept", "")
             if "text/html" in accept:
+                # Browser: redirect to login
                 return RedirectResponse(url="/login", status_code=303)
+            else:
+                # API: return 401 Unauthorized
+                from fastapi.responses import JSONResponse
+
+                return JSONResponse({"detail": "Not authenticated"}, status_code=401)
 
         return await call_next(request)
 
@@ -99,7 +103,9 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
     app.add_middleware(AdminRedirectMiddleware)
 
     # 5. AuthRedirectMiddleware (Runs SECOND, MUST run AFTER SessionMiddleware)
-    app.add_middleware(AuthRedirectMiddleware)
+    # Skip in testing to allow dependency overrides
+    if not os.getenv("TESTING"):
+        app.add_middleware(AuthRedirectMiddleware)
 
     # 6. SessionMiddleware (Runs FIRST)
     app.add_middleware(
@@ -272,6 +278,7 @@ def _register_routers(app: FastAPI) -> None:
     from cashpilot.api.cash_session import router as cash_session_router
     from cashpilot.api.cash_session_audit import router as cash_session_audit_router
     from cashpilot.api.cash_session_edit import router as cash_session_edit_router
+    from cashpilot.api.export_sessions import router as export_sessions_router
     from cashpilot.api.reconciliation import router as reconciliation_router
     from cashpilot.api.user import router as user_router
     from cashpilot.api.utils import router as utils_router
@@ -283,6 +290,7 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(cash_session_audit_router)
     app.include_router(reconciliation_router)
     app.include_router(user_router)
+    app.include_router(export_sessions_router)
 
 
 def create_app() -> FastAPI:

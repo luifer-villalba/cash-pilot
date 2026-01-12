@@ -28,6 +28,16 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 
 
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    # Handle 401 Unauthorized for HTMX and normal requests
+    if exc.status_code == status.HTTP_401_UNAUTHORIZED:
+        is_htmx = request.headers.get("HX-Request") == "true"
+        login_url = "/login?expired=true"
+        if is_htmx:
+            # HTMX expects 200 with HX-Redirect header
+            return Response(status_code=200, headers={"HX-Redirect": login_url})
+        else:
+            # Browser: normal redirect
+            return RedirectResponse(url=login_url, status_code=303)
     """Handle HTTP exceptions with redirect support for session expiration."""
 
     # CRITICAL: Skip JSON conversion for static file paths

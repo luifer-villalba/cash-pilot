@@ -19,26 +19,27 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    {{ _('New Session') }}
+                    {{ _('Abrir Caja') }}
                 </a>
                 {% if current_user.role == 'ADMIN' %}
                 <div class="dropdown dropdown-end">
-                    <button tabindex="0" class="btn btn-outline btn-sm gap-2 transition-all hover:scale-105 active:scale-95">
+                    <button tabindex="0" class="btn btn-success btn-sm gap-2 transition-all hover:scale-105 active:scale-95">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        {{ _('Reconciliation') }}
+                        {{ _('Acciones') }}
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
                     <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-56 border border-base-200 mt-2">
+                        <li class="menu-title">{{ _('Reconciliación') }}</li>
                         <li>
                             <a href="/reconciliation/daily" id="add-reconciliation-link" class="gap-2 transition-colors hover:bg-primary/10">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                {{ _('Add Reconciliation') }}
+                                {{ _('Agregar Reconciliación') }}
                             </a>
                         </li>
                         <li>
@@ -47,7 +48,24 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                 </svg>
-                                {{ _('View Reconciliations') }}
+                                {{ _('Ver Reconciliaciones') }}
+                            </a>
+                        </li>
+                        <li class="menu-title mt-2">{{ _('Exportar') }}</li>
+                        <li>
+                            <a href="#" onclick="exportSessions('csv'); return false;" class="gap-2 transition-colors hover:bg-success/10">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                {{ _('Exportar como CSV') }}
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" onclick="exportSessions('xlsx'); return false;" class="gap-2 transition-colors hover:bg-success/10">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                {{ _('Exportar como Excel') }}
                             </a>
                         </li>
                     </ul>
@@ -76,6 +94,30 @@
             .table thead th:not(:last-child) {
                 border-right: 1px solid hsl(var(--bc) / 0.1);
             }
+
+            /* Sortable column headers */
+            .sortable-header {
+                cursor: pointer;
+                user-select: none;
+                position: relative;
+                padding-right: 1.5rem;
+            }
+
+            .sortable-header:hover {
+                background-color: hsl(var(--b2));
+            }
+
+            .sort-icon {
+                position: absolute;
+                right: 0.25rem;
+                top: 50%;
+                transform: translateY(-50%);
+                opacity: 0.3;
+            }
+
+            .sortable-header.active .sort-icon {
+                opacity: 1;
+            }
         </style>
 
         {% if sessions %}
@@ -84,14 +126,37 @@
             <table class="table table-sm w-full">
                 <thead>
                     <tr class="border-b border-base-300">
-                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Status') }}</th>
-                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cashier') }} / {{ _('Business') }}</th>
-                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Date & Time') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50 sortable-header{% if sort_by == 'status' %} active{% endif %}"
+                            onclick="sortTable('status')" title="{{ _('Click to sort') }}">
+                            {{ _('Status') }}
+                            <span class="sort-icon">{% if sort_by == 'status' and sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+                        </th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50 p-0">
+                            <div class="flex">
+                                <div class="flex-1 sortable-header{% if sort_by == 'cashier' %} active{% endif %} text-center" onclick="sortTable('cashier')" title="{{ _('Click to sort by cashier') }}">
+                                    {{ _('Cashier') }}
+                                    <span class="sort-icon">{% if sort_by == 'cashier' and sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+                                </div>
+                                <div class="flex-1 sortable-header{% if sort_by == 'business' %} active{% endif %} text-center" onclick="sortTable('business')" title="{{ _('Click to sort by business') }}">
+                                    {{ _('Business') }}
+                                    <span class="sort-icon">{% if sort_by == 'business' and sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50 sortable-header{% if sort_by == 'date' %} active{% endif %}"
+                            onclick="sortTable('date')" title="{{ _('Click to sort') }}">
+                            {{ _('Date & Time') }}
+                            <span class="sort-icon">{% if sort_by == 'date' and sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+                        </th>
                         <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Register') }}</th>
                         <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cash Sales') }}</th>
                         <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Cards') }}</th>
                         <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Transfer') }}</th>
-                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Sales Total') }}</th>
+                        <th class="text-right text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50 sortable-header{% if sort_by == 'sales' %} active{% endif %}"
+                            onclick="sortTable('sales')" title="{{ _('Click to sort') }}">
+                            {{ _('Sales Total') }}
+                            <span class="sort-icon">{% if sort_by == 'sales' and sort_order == 'asc' %}↑{% else %}↓{% endif %}</span>
+                        </th>
                         <th class="text-center text-xs font-bold uppercase tracking-wider text-base-content/60 bg-base-50">{{ _('Actions') }}</th>
                     </tr>
                 </thead>
@@ -521,3 +586,65 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+/**
+ * Sort table by column
+ * @param {string} column - Column to sort by ('date', 'business', 'cashier', 'status', 'sales')
+ */
+function sortTable(column) {
+    var urlParams = new URLSearchParams(window.location.search);
+    var currentSort = urlParams.get('sort_by') || 'date';
+    var currentOrder = urlParams.get('sort_order') || 'desc';
+    var newOrder = 'desc';
+    if (currentSort === column) {
+        newOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+    }
+    urlParams.set('sort_by', column);
+    urlParams.set('sort_order', newOrder);
+    urlParams.set('page', '1');
+
+    var newUrl = window.location.pathname + '?' + urlParams.toString();
+    // Actualizar la URL del navegador para mantener el estado
+    if (window.history && window.history.pushState) {
+        window.history.pushState({}, '', newUrl);
+    }
+
+    // Usar HTMX para recargar solo la tabla
+    var target = document.getElementById('sessions-table');
+    if (target && window.htmx) {
+        var url = '/sessions/table?' + urlParams.toString();
+        window.htmx.ajax('GET', url, {target: '#sessions-table', swap: 'innerHTML'});
+    } else {
+        // Fallback: recargar toda la página si no hay HTMX
+        window.location.search = urlParams.toString();
+    }
+}
+
+/**
+ * Export sessions with current filters applied
+ * @param {string} format - Export format: 'csv' or 'xlsx'
+ */
+function exportSessions(format) {
+    // Get current URL parameters (filters)
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Build export URL with filters
+    const exportParams = new URLSearchParams();
+    exportParams.set('format', format);
+    
+    // Copy filter parameters to export URL
+    const filterParams = ['from_date', 'to_date', 'cashier_name', 'business_id', 'status'];
+    filterParams.forEach(param => {
+        if (urlParams.has(param)) {
+            exportParams.set(param, urlParams.get(param));
+        }
+    });
+    
+    // Construct export URL
+    const exportUrl = `/api/export/sessions?${exportParams.toString()}`;
+    
+    // Trigger download
+    window.location.href = exportUrl;
+}
+</script>

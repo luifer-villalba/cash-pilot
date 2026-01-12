@@ -27,11 +27,22 @@ class UserFactory:
         last_name: str = "User",
         role: str = "CASHIER",
         is_active: bool = True,
+        full_name: Optional[str] = None,
         **kwargs,
     ) -> User:
         """Create a test user."""
         if hashed_password is None:
             hashed_password = hash_password("testpass123")
+
+        # If full_name is provided, split into first and last name
+        if full_name:
+            parts = full_name.strip().split()
+            if len(parts) == 1:
+                first_name = parts[0]
+                last_name = ""
+            else:
+                first_name = parts[0]
+                last_name = " ".join(parts[1:])
 
         user = User(
             id=kwargs.get("id", uuid.uuid4()),
@@ -99,6 +110,8 @@ class CashSessionFactory:
         notes: Optional[str] = None,
         closed_time: Optional[time] = None,
         closing_ticket: Optional[str] = None,
+        flagged: bool = False,
+        flag_reason: Optional[str] = None,
         **kwargs,
     ) -> CashSession:
         """Create a test cash session."""
@@ -142,6 +155,8 @@ class CashSessionFactory:
             notes=notes,
             closed_time=closed_time,
             closing_ticket=closing_ticket,
+            flagged=flagged,
+            flag_reason=flag_reason,
         )
 
         session.add(cash_session)
