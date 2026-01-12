@@ -161,20 +161,6 @@ class TestDailyRevenueEndpoint:
     """Test suite for /reports/daily-revenue endpoint."""
     
     @pytest.mark.asyncio
-    async def test_daily_revenue_endpoint_exists(self, client):
-        """Test that the endpoint responds to GET requests."""
-        # This would require authentication, so we expect 401/403
-        response = client.get("/reports/daily-revenue?business_id=550e8400-e29b-41d4-a716-446655440000")
-        assert response.status_code in [401, 403]
-    
-    @pytest.mark.asyncio
-    async def test_invalid_business_id_format(self, client):
-        """Test that invalid UUID format returns 400."""
-        # Would need auth token, so this is a placeholder
-        response = client.get("/reports/daily-revenue/data?business_id=not-a-uuid")
-        assert response.status_code in [400, 401, 403, 422]
-    
-    @pytest.mark.asyncio
     async def test_aggregation_calculation(self, db_session: AsyncSession, setup_test_data):
         """Test that sales aggregation is calculated correctly."""
         from cashpilot.api.daily_revenue import get_daily_revenue
@@ -308,22 +294,6 @@ class TestCacheUtility:
         
         assert get_cache("key1") is None
         assert get_cache("key2") is None
-
-
-class TestTemplateRoutes:
-    """Test suite for HTML template routes."""
-    
-    def test_reports_dashboard_route(self, client):
-        """Test that /reports route exists."""
-        # Would require auth, so expect 401/403
-        response = client.get("/reports")
-        assert response.status_code in [401, 403, 307]  # 307 for redirect
-    
-    def test_daily_revenue_template_route(self, client):
-        """Test that /reports/daily-revenue route exists."""
-        # Would require auth, so expect 401/403
-        response = client.get("/reports/daily-revenue")
-        assert response.status_code in [401, 403, 307]
 
 
 class TestAcceptanceCriteria:

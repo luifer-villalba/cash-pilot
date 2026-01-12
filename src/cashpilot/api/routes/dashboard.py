@@ -36,8 +36,8 @@ async def dashboard(
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
     status: str | None = Query(None),
-    sort_by: str = Query("date", regex="^(date|business|cashier|status|sales)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("date", pattern="^(date|business|cashier|status|sales)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -206,8 +206,8 @@ async def sessions_table(
     cashier_name: str | None = Query(None),
     business_id: str | None = Query(None),
     status: str | None = Query(None),
-    sort_by: str = Query("date", regex="^(date|business|cashier|status|sales)$"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
+    sort_by: str = Query("date", pattern="^(date|business|cashier|status|sales)$"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

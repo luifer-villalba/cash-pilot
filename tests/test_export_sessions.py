@@ -32,9 +32,9 @@ async def admin_user(db_session: AsyncSession):
 @pytest.fixture
 async def admin_export_client(app, admin_user):
     """Create an authenticated admin client."""
-    from httpx import AsyncClient
+    from httpx import AsyncClient, ASGITransport
     
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         # Set up session to simulate logged-in admin
         client.cookies.set("session", "test-admin-session")
         client.test_user = admin_user
@@ -62,6 +62,11 @@ async def sample_sessions(db_session: AsyncSession, admin_user):
     # Create multiple sessions with different data
     sessions = []
     for i in range(5):
+        # Ensure the flagged session is CLOSED so it appears in export
+        is_flagged = i == 0
+        session_status = "CLOSED" if (i % 2 == 0 or is_flagged) else "OPEN"
+        session_closed_time = time(16, 0) if session_status == "CLOSED" else None
+        session_final_cash = Decimal("150000.00") if session_status == "CLOSED" else None
         session = await CashSessionFactory.create(
             db_session,
             business_id=business.id,
@@ -69,17 +74,18 @@ async def sample_sessions(db_session: AsyncSession, admin_user):
             created_by=admin_user.id,
             session_date=date(2026, 1, 10),
             opened_time=time(8, 0),
-            closed_time=time(16, 0) if i % 2 == 0 else None,
-            status="CLOSED" if i % 2 == 0 else "OPEN",
+            closed_time=session_closed_time,
+            status=session_status,
             initial_cash=Decimal("100000.00"),
-            final_cash=Decimal("150000.00") if i % 2 == 0 else None,
+            final_cash=session_final_cash,
             card_total=Decimal("50000.00"),
             bank_transfer_total=Decimal("25000.00"),
             expenses=Decimal("10000.00"),
-            flagged=i == 0,  # Flag first session
-            flag_reason="Test flag reason" if i == 0 else None,
+            flagged=is_flagged,
+            flag_reason="Test flag reason" if is_flagged else None,
             notes=f"Session {i} notes",
         )
+        await db_session.refresh(session)
         sessions.append(session)
     
     await db_session.commit()
@@ -222,6 +228,7 @@ class TestExportSessions:
         content = response.text
         csv_reader = csv.DictReader(io.StringIO(content))
         rows = list(csv_reader)
+        print("[DEBUG] Exported rows:", rows)
         
         # Find the flagged session
         flagged_sessions = [r for r in rows if r["Flagged"] == "Yes"]
