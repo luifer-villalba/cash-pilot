@@ -347,9 +347,6 @@ msgstr "Ventas Totales"
 msgid "Daily Purchases (Total)"
 msgstr "Compras Diarias (Total)"
 
-msgid "You can type sums like 10000+15000+20000 - total will be calculated automatically."
-msgstr "Podes escribir sumas como 10000+15000+20000 - el total se calcula automaticamente."
-
 msgid "Total Difference"
 msgstr "Diferencia Total"
 
