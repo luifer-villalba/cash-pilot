@@ -208,7 +208,17 @@
             <tbody>
                 {% for item in comparison_data %}
                 <tr class="session-row transition-all duration-200 border-l-2 border-transparent{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50{% endif %}" data-business-id="{{ item.business.id }}">
-                    <td class="font-medium">{{ item.business.name }}</td>
+                    <td class="font-medium">
+                        <div>{{ item.business.name }}</div>
+                        <div class="text-xs text-base-content/60">
+                            {{ _('Purchases') }}:
+                            {% if item.manual_entry and item.manual_entry.purchases_total is not none %}
+                            <span class="font-mono tabular-nums">{{ "{:,.0f}".format(item.manual_entry.purchases_total) }}</span>
+                            {% else %}
+                            <span class="text-base-content/40">-</span>
+                            {% endif %}
+                        </div>
+                    </td>
                     <td class="text-xs text-base-content/70">{{ item.cashiers }}</td>
                     <td class="text-right">
                         {% if item.is_closed %}
@@ -628,4 +638,3 @@
     });
 </script>
 {% endblock %}
-
