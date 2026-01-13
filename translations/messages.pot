@@ -334,6 +334,12 @@ msgstr ""
 msgid "Total Sales"
 msgstr ""
 
+msgid "Purchases"
+msgstr ""
+
+msgid "Daily Purchases (Total)"
+msgstr ""
+
 msgid "Total Difference"
 msgstr ""
 
@@ -1059,6 +1065,15 @@ msgid "Current"
 msgstr ""
 
 msgid "Previous"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Previous day"
+msgstr ""
+
+msgid "Next day"
 msgstr ""
 
 msgid "No data"
@@ -2144,4 +2159,3 @@ msgstr ""
 
 msgid "Clear"
 msgstr ""
-
