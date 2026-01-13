@@ -306,6 +306,11 @@
                                         {% if existing and existing.purchases_total is not none %}value="{{ '{:,.0f}'.format(existing.purchases_total) }}"{% endif %}
                                     />
                                 </div>
+                                <label class="label pt-2">
+                                    <span class="label-text-alt text-xs text-base-content/60">
+                                        {{ _('Total purchases = Purchases + Receipts - Shipments') }}
+                                    </span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -375,7 +380,9 @@
         });
 
         function formatGuarani(value) {
-            return value.toLocaleString('es-PY').replace(/,/g, '.');
+            const absValue = Math.abs(value);
+            const formatted = absValue.toLocaleString('es-PY').replace(/,/g, '.');
+            return value < 0 ? `-${formatted}` : formatted;
         }
 
         function parseSumExpression(rawValue) {
@@ -384,9 +391,15 @@
             let hasNumber = false;
 
             parts.forEach(part => {
-                const digits = part.replace(/\D/g, '');
+                const trimmed = part.trim();
+                if (!trimmed) {
+                    return;
+                }
+                const isNegative = trimmed.startsWith('-');
+                const digits = trimmed.replace(/\D/g, '');
                 if (digits) {
-                    total += parseInt(digits, 10);
+                    const value = parseInt(digits, 10);
+                    total += isNegative ? -value : value;
                     hasNumber = true;
                 }
             });
@@ -408,9 +421,12 @@
                     parsedValue = lastValid ? parseInt(lastValid, 10) : 0;
                 }
             } else {
-                const digits = rawValue.replace(/\D/g, '');
+                const trimmed = rawValue.trim();
+                const isNegative = trimmed.startsWith('-');
+                const digits = trimmed.replace(/\D/g, '');
                 if (digits) {
-                    parsedValue = parseInt(digits, 10);
+                    const value = parseInt(digits, 10);
+                    parsedValue = isNegative ? -value : value;
                 }
             }
 
@@ -449,7 +465,7 @@
             input.addEventListener('input', function() {
                 if (!this.disabled) {
                     if (this.hasAttribute('data-sum-input')) {
-                        this.value = this.value.replace(/[^\d+.,\s]/g, '');
+                        this.value = this.value.replace(/[^\d+\-.,\s]/g, '');
                     } else {
                         this.value = this.value.replace(/[^\d.,]/g, '');
                     }

@@ -39,18 +39,23 @@ def parse_purchases_total(value: str | None) -> int | None:
     if not value.strip():
         return None
 
-    if "-" in value:
-        raise ValueError("Purchases total cannot be negative")
-    if re.search(r"[^\d+.,\s]", value):
-        raise ValueError("Purchases total can only contain digits, +, commas, dots, and spaces")
+    if re.search(r"[^\d+\-.,\s]", value):
+        raise ValueError("Purchases total can only contain digits, +, -, commas, dots, and spaces")
 
     parts = value.split("+")
     total = 0
     has_number = False
     for part in parts:
-        digits = re.sub(r"\D", "", part)
+        cleaned = part.strip()
+        if not cleaned:
+            continue
+        is_negative = cleaned.startswith("-")
+        if "-" in cleaned[1:]:
+            raise ValueError("Purchases total has an invalid '-' placement")
+        digits = re.sub(r"\D", "", cleaned)
         if digits:
-            total += int(digits)
+            value_part = int(digits)
+            total += -value_part if is_negative else value_part
             has_number = True
 
     return total if has_number else None
@@ -330,7 +335,7 @@ async def daily_reconciliation_post(
                     validate_currency(total_sales)
 
             if purchases_total is not None:
-                validate_currency(Decimal(purchases_total))
+                validate_currency(Decimal(abs(purchases_total)))
 
             if existing:
                 # Update existing reconciliation
@@ -790,7 +795,7 @@ async def update_daily_reconciliation(
         try:
             parsed_purchases_total = parse_purchases_total(purchases_total)
             if parsed_purchases_total is not None:
-                validate_currency(Decimal(parsed_purchases_total))
+                validate_currency(Decimal(abs(parsed_purchases_total)))
             reconciliation.purchases_total = parsed_purchases_total
         except ValueError as e:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e

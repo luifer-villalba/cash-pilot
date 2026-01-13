@@ -350,6 +350,9 @@ msgstr "Compras"
 msgid "Daily Purchases (Total)"
 msgstr "Compras Diarias (Total)"
 
+msgid "Total purchases = Purchases + Receipts - Shipments"
+msgstr "Total purchases = Purchases + Receipts - Shipments"
+
 msgid "Total Difference"
 msgstr "Diferencia Total"
 
