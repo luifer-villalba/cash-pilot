@@ -39,6 +39,13 @@ def parse_purchases_total(value: str | None) -> int | None:
     if not value.strip():
         return None
 
+    if "-" in value:
+        raise ValueError("Purchases total cannot be negative")
+    if re.search(r"[^\d+.,\s]", value):
+        raise ValueError(
+            "Purchases total can only contain digits, +, commas, dots, and spaces"
+        )
+
     parts = value.split("+")
     total = 0
     has_number = False
@@ -782,10 +789,15 @@ async def update_daily_reconciliation(
     if total_sales is not None:
         reconciliation.total_sales = total_sales
     if purchases_total is not None:
-        parsed_purchases_total = parse_purchases_total(purchases_total)
-        if parsed_purchases_total is not None:
-            validate_currency(Decimal(parsed_purchases_total))
-        reconciliation.purchases_total = parsed_purchases_total
+        try:
+            parsed_purchases_total = parse_purchases_total(purchases_total)
+            if parsed_purchases_total is not None:
+                validate_currency(Decimal(parsed_purchases_total))
+            reconciliation.purchases_total = parsed_purchases_total
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+            ) from e
     if invoice_count is not None:
         reconciliation.invoice_count = invoice_count
     # Convert string to bool for is_closed

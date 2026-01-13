@@ -96,15 +96,39 @@
                     </button>
                 </div>
                 
-                <input
-                    type="date"
-                    name="date"
-                    id="date"
-                    class="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
-                    value="{{ selected_date }}"
-                    required
-                    aria-describedby="date-help"
-                />
+                <div class="flex flex-col sm:flex-row items-center gap-2">
+                    <input
+                        type="date"
+                        name="date"
+                        id="date"
+                        class="input input-bordered input-sm w-40 sm:w-40 flex-none focus:ring-2 focus:ring-primary/20 transition-all"
+                        value="{{ selected_date }}"
+                        required
+                        aria-describedby="date-help"
+                    />
+                    <button
+                        type="button"
+                        id="date-next"
+                        class="btn btn-sm btn-outline gap-2"
+                        aria-label="{{ _('Next day') }}"
+                    >
+                        {{ _('Next') }}
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <button
+                        type="button"
+                        id="date-prev"
+                        class="btn btn-sm btn-outline gap-2"
+                        aria-label="{{ _('Previous day') }}"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                        {{ _('Previous') }}
+                    </button>
+                </div>
                 <label class="label pt-2" id="date-help">
                     <span class="label-text-alt text-xs text-base-content/60">{{ _('Date for reconciliation entry') }}</span>
                 </label>
@@ -451,6 +475,51 @@
             }
         });
 
+        const dateInput = document.getElementById('date');
+
+        function formatLocalDate(d) {
+            const yearStr = d.getFullYear();
+            const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+            const dayStr = String(d.getDate()).padStart(2, '0');
+            return `${yearStr}-${monthStr}-${dayStr}`;
+        }
+
+        function getBaseDate() {
+            if (!dateInput || !dateInput.value) {
+                return new Date();
+            }
+            const parts = dateInput.value.split('-').map(Number);
+            if (parts.length === 3 && parts[0] && parts[1] && parts[2]) {
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+            return new Date();
+        }
+
+        function navigateToDate(targetDate) {
+            const dateStr = formatLocalDate(targetDate);
+            if (dateInput) {
+                dateInput.value = dateStr;
+            }
+            window.location.href = `/reconciliation/daily?date=${dateStr}`;
+        }
+
+        const prevBtn = document.getElementById('date-prev');
+        const nextBtn = document.getElementById('date-next');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                const targetDate = getBaseDate();
+                targetDate.setDate(targetDate.getDate() - 1);
+                navigateToDate(targetDate);
+            });
+        }
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                const targetDate = getBaseDate();
+                targetDate.setDate(targetDate.getDate() + 1);
+                navigateToDate(targetDate);
+            });
+        }
+
         // Quick date buttons
         document.querySelectorAll('.quick-date-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -461,14 +530,6 @@
                 const month = today.getMonth();
                 const day = today.getDate();
                 const targetDate = new Date(year, month, day - daysAgo);
-                // Format as YYYY-MM-DD for input[type="date"]
-                const yearStr = targetDate.getFullYear();
-                const monthStr = String(targetDate.getMonth() + 1).padStart(2, '0');
-                const dayStr = String(targetDate.getDate()).padStart(2, '0');
-                const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
-                
-                // Update the date input
-                document.getElementById('date').value = dateStr;
                 
                 // Highlight active button
                 document.querySelectorAll('.quick-date-btn').forEach(b => {
@@ -478,25 +539,16 @@
                 this.classList.remove('btn-outline');
                 this.classList.add('btn-primary');
                 
-                // Reload the form with the new date to fetch existing reconciliations
-                window.location.href = `/reconciliation/daily?date=${dateStr}`;
+                navigateToDate(targetDate);
             });
         });
 
         // Highlight active button based on current date
-        const dateInput = document.getElementById('date');
         const currentDate = dateInput.value;
         const today = new Date();
         const year = today.getFullYear();
         const month = today.getMonth();
         const day = today.getDate();
-        
-        function formatLocalDate(d) {
-            const yearStr = d.getFullYear();
-            const monthStr = String(d.getMonth() + 1).padStart(2, '0');
-            const dayStr = String(d.getDate()).padStart(2, '0');
-            return `${yearStr}-${monthStr}-${dayStr}`;
-        }
         
         const todayStr = formatLocalDate(today);
         const yesterday = new Date(year, month, day - 1);
@@ -555,4 +607,3 @@
     }
 </script>
 {% endblock %}
-
