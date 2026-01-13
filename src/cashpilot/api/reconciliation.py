@@ -1,6 +1,7 @@
 # File: src/cashpilot/api/reconciliation.py
 """Daily reconciliation API endpoints."""
 
+import re
 from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
@@ -29,6 +30,25 @@ from cashpilot.utils.datetime import now_utc, today_local
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reconciliation", tags=["reconciliation"])
+
+
+def parse_purchases_total(value: str | None) -> int | None:
+    """Parse a purchases total field supporting inline sums like 1000+2000."""
+    if value is None or not isinstance(value, str):
+        return None
+    if not value.strip():
+        return None
+
+    parts = value.split("+")
+    total = 0
+    has_number = False
+    for part in parts:
+        digits = re.sub(r"\D", "", part)
+        if digits:
+            total += int(digits)
+            has_number = True
+
+    return total if has_number else None
 
 
 @router.get("/badge", response_class=HTMLResponse)
@@ -260,7 +280,16 @@ async def daily_reconciliation_post(
             credit_sales = None
             card_sales = None
             total_sales = None
+            purchases_total = None
             invoice_count = None
+
+            purchases_total_val = form_data.get(f"purchases_total_{business_id_str}", "")
+            purchases_total_str = (
+                purchases_total_val if isinstance(purchases_total_val, str) else ""
+            )
+            purchases_total = (
+                parse_purchases_total(purchases_total_str) if purchases_total_str else None
+            )
 
             if not is_closed:
                 cash_sales_val = form_data.get(f"cash_sales_{business_id_str}", "")
@@ -295,6 +324,9 @@ async def daily_reconciliation_post(
                 if total_sales is not None:
                     validate_currency(total_sales)
 
+            if purchases_total is not None:
+                validate_currency(Decimal(purchases_total))
+
             if existing:
                 # Update existing reconciliation
                 old_values = {
@@ -302,6 +334,11 @@ async def daily_reconciliation_post(
                     "credit_sales": str(existing.credit_sales) if existing.credit_sales else None,
                     "card_sales": str(existing.card_sales) if existing.card_sales else None,
                     "total_sales": str(existing.total_sales) if existing.total_sales else None,
+                    "purchases_total": (
+                        str(existing.purchases_total)
+                        if existing.purchases_total is not None
+                        else None
+                    ),
                     "invoice_count": existing.invoice_count,
                     "is_closed": existing.is_closed,
                 }
@@ -316,6 +353,8 @@ async def daily_reconciliation_post(
                     card_sales = existing.card_sales
                 if total_sales is None:
                     total_sales = existing.total_sales
+                if purchases_total is None:
+                    purchases_total = existing.purchases_total
                 if invoice_count is None:
                     invoice_count = existing.invoice_count
 
@@ -323,6 +362,7 @@ async def daily_reconciliation_post(
                 existing.credit_sales = credit_sales
                 existing.card_sales = card_sales
                 existing.total_sales = total_sales
+                existing.purchases_total = purchases_total
                 existing.invoice_count = invoice_count
                 existing.is_closed = is_closed
 
@@ -331,6 +371,9 @@ async def daily_reconciliation_post(
                     "credit_sales": str(credit_sales) if credit_sales else None,
                     "card_sales": str(card_sales) if card_sales else None,
                     "total_sales": str(total_sales) if total_sales else None,
+                    "purchases_total": (
+                        str(purchases_total) if purchases_total is not None else None
+                    ),
                     "invoice_count": invoice_count,
                     "is_closed": is_closed,
                 }
@@ -372,6 +415,7 @@ async def daily_reconciliation_post(
                     credit_sales=credit_sales,
                     card_sales=card_sales,
                     total_sales=total_sales,
+                    purchases_total=purchases_total,
                     invoice_count=invoice_count,
                     is_closed=is_closed,
                     admin_id=current_user.id,
@@ -676,6 +720,7 @@ async def get_daily_reconciliations(
             "credit_sales": str(r.credit_sales) if r.credit_sales else None,
             "card_sales": str(r.card_sales) if r.card_sales else None,
             "total_sales": str(r.total_sales) if r.total_sales else None,
+            "purchases_total": r.purchases_total,
             "invoice_count": r.invoice_count,
             "is_closed": r.is_closed,
             "admin_id": str(r.admin_id),
@@ -692,6 +737,7 @@ async def update_daily_reconciliation(
     credit_sales: Decimal | None = Form(None),
     card_sales: Decimal | None = Form(None),
     total_sales: Decimal | None = Form(None),
+    purchases_total: str | None = Form(None),
     invoice_count: int | None = Form(None),
     is_closed: str | None = Form(None),
     reason: str = Form(..., min_length=5),
@@ -717,6 +763,11 @@ async def update_daily_reconciliation(
         "credit_sales": str(reconciliation.credit_sales) if reconciliation.credit_sales else None,
         "card_sales": str(reconciliation.card_sales) if reconciliation.card_sales else None,
         "total_sales": str(reconciliation.total_sales) if reconciliation.total_sales else None,
+        "purchases_total": (
+            str(reconciliation.purchases_total)
+            if reconciliation.purchases_total is not None
+            else None
+        ),
         "invoice_count": reconciliation.invoice_count,
         "is_closed": reconciliation.is_closed,
     }
@@ -730,6 +781,11 @@ async def update_daily_reconciliation(
         reconciliation.card_sales = card_sales
     if total_sales is not None:
         reconciliation.total_sales = total_sales
+    if purchases_total is not None:
+        parsed_purchases_total = parse_purchases_total(purchases_total)
+        if parsed_purchases_total is not None:
+            validate_currency(Decimal(parsed_purchases_total))
+        reconciliation.purchases_total = parsed_purchases_total
     if invoice_count is not None:
         reconciliation.invoice_count = invoice_count
     # Convert string to bool for is_closed
@@ -742,6 +798,11 @@ async def update_daily_reconciliation(
         "credit_sales": str(reconciliation.credit_sales) if reconciliation.credit_sales else None,
         "card_sales": str(reconciliation.card_sales) if reconciliation.card_sales else None,
         "total_sales": str(reconciliation.total_sales) if reconciliation.total_sales else None,
+        "purchases_total": (
+            str(reconciliation.purchases_total)
+            if reconciliation.purchases_total is not None
+            else None
+        ),
         "invoice_count": reconciliation.invoice_count,
         "is_closed": reconciliation.is_closed,
     }
@@ -767,6 +828,7 @@ async def update_daily_reconciliation(
         "credit_sales": str(reconciliation.credit_sales) if reconciliation.credit_sales else None,
         "card_sales": str(reconciliation.card_sales) if reconciliation.card_sales else None,
         "total_sales": str(reconciliation.total_sales) if reconciliation.total_sales else None,
+        "purchases_total": reconciliation.purchases_total,
         "invoice_count": reconciliation.invoice_count,
         "is_closed": reconciliation.is_closed,
     }
@@ -798,6 +860,11 @@ async def delete_daily_reconciliation(
         "credit_sales": str(reconciliation.credit_sales) if reconciliation.credit_sales else None,
         "card_sales": str(reconciliation.card_sales) if reconciliation.card_sales else None,
         "total_sales": str(reconciliation.total_sales) if reconciliation.total_sales else None,
+        "purchases_total": (
+            str(reconciliation.purchases_total)
+            if reconciliation.purchases_total is not None
+            else None
+        ),
         "invoice_count": reconciliation.invoice_count,
         "is_closed": reconciliation.is_closed,
     }

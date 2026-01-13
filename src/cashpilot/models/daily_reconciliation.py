@@ -12,7 +12,7 @@ from datetime import date as date_type
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -68,6 +68,11 @@ class DailyReconciliation(Base):
 
     total_sales: Mapped[Decimal | None] = mapped_column(
         Numeric(12, 2),
+        nullable=True,
+    )
+
+    purchases_total: Mapped[int | None] = mapped_column(
+        BigInteger,
         nullable=True,
     )
 

@@ -139,7 +139,7 @@
                     </div>
 
                     <!-- Sales Fields (Hidden when closed) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" id="fields_{{ business.id }}">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4" id="fields_{{ business.id }}">
                         <!-- Cash Sales -->
                         <div class="form-control">
                             <label class="label py-1">
@@ -256,6 +256,32 @@
                                 />
                             </div>
                         </div>
+
+                        <!-- Daily Purchases (Total) -->
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Daily Purchases (Total)') }}</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                <input
+                                    type="text"
+                                    name="purchases_total_{{ business.id }}"
+                                    id="purchases_total_{{ business.id }}"
+                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                    placeholder="0"
+                                    inputmode="decimal"
+                                    data-currency-input
+                                    data-sum-input
+                                    data-allow-closed
+                                    autocomplete="off"
+                                    {% if existing and existing.purchases_total is not none %}value="{{ '{:,.0f}'.format(existing.purchases_total) }}"{% endif %}
+                                />
+                            </div>
+                            <label class="label pt-2">
+                                <span class="label-text-alt text-xs text-base-content/60">{{ _('You can type sums like 10000+15000+20000 - total will be calculated automatically.') }}</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -322,6 +348,54 @@
             toggleBusinessFields(businessId, checkbox.checked);
         });
 
+        function formatGuarani(value) {
+            return value.toLocaleString('es-PY').replace(/,/g, '.');
+        }
+
+        function parseSumExpression(rawValue) {
+            const parts = rawValue.split('+');
+            let total = 0;
+            let hasNumber = false;
+
+            parts.forEach(part => {
+                const digits = part.replace(/\D/g, '');
+                if (digits) {
+                    total += parseInt(digits, 10);
+                    hasNumber = true;
+                }
+            });
+
+            return hasNumber ? total : null;
+        }
+
+        function normalizeCurrencyInput(input) {
+            if (input.disabled) return;
+
+            const rawValue = input.value || '';
+            const isSumInput = input.hasAttribute('data-sum-input');
+            let parsedValue = null;
+
+            if (isSumInput && rawValue.includes('+')) {
+                parsedValue = parseSumExpression(rawValue);
+                if (parsedValue === null) {
+                    const lastValid = input.dataset.lastValid;
+                    parsedValue = lastValid ? parseInt(lastValid, 10) : 0;
+                }
+            } else {
+                const digits = rawValue.replace(/\D/g, '');
+                if (digits) {
+                    parsedValue = parseInt(digits, 10);
+                }
+            }
+
+            if (parsedValue === null) {
+                return;
+            }
+
+            input.dataset.lastValid = String(parsedValue);
+            input.value = formatGuarani(parsedValue);
+        }
+
         // Auto-calculate total sales
         function calculateTotalSales(businessId) {
             const cashInput = document.getElementById(`cash_sales_${businessId}`);
@@ -343,18 +417,16 @@
         // Auto-format currency inputs on blur
         document.querySelectorAll('[data-currency-input]').forEach(input => {
             input.addEventListener('blur', function() {
-                if (this.value && !this.disabled) {
-                    const digits = this.value.replace(/\D/g, '');
-                    if (digits) {
-                        const num = parseInt(digits);
-                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
-                    }
-                }
+                normalizeCurrencyInput(this);
             });
 
             input.addEventListener('input', function() {
                 if (!this.disabled) {
-                    this.value = this.value.replace(/[^\d.,]/g, '');
+                    if (this.hasAttribute('data-sum-input')) {
+                        this.value = this.value.replace(/[^\d+.,\s]/g, '');
+                    } else {
+                        this.value = this.value.replace(/[^\d.,]/g, '');
+                    }
                     
                     // Auto-calculate if this is a sales component
                     if (this.hasAttribute('data-sales-component')) {
@@ -451,6 +523,15 @@
             activeBtn.classList.remove('btn-outline');
             activeBtn.classList.add('btn-primary');
         }
+
+        const form = document.getElementById('reconciliation-form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                document.querySelectorAll('[data-currency-input]').forEach(input => {
+                    normalizeCurrencyInput(input);
+                });
+            });
+        }
     });
 
     function toggleBusinessFields(businessId, isClosed) {
@@ -459,6 +540,9 @@
 
         const inputs = fieldsContainer.querySelectorAll('input[data-currency-input]');
         inputs.forEach(input => {
+            if (input.hasAttribute('data-allow-closed')) {
+                return;
+            }
             if (isClosed) {
                 input.disabled = true;
                 input.value = '';
