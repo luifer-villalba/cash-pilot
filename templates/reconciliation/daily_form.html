@@ -137,150 +137,152 @@
                             <span class="text-xs font-semibold uppercase tracking-wider text-warning whitespace-nowrap">{{ _('Closed') }}</span>
                         </label>
                     </div>
-
                     <!-- Sales Fields (Hidden when closed) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4" id="fields_{{ business.id }}">
-                        <!-- Cash Sales -->
-                        <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cash Sales') }}</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
-                                <input
-                                    type="text"
-                                    name="cash_sales_{{ business.id }}"
-                                    id="cash_sales_{{ business.id }}"
-                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
-                                    placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
-                                    data-business-id="{{ business.id }}"
-                                    data-sales-component
-                                    autocomplete="off"
-                                    {% if existing and existing.is_closed %}disabled{% endif %}
-                                    {% if existing and existing.cash_sales %}value="{{ '{:,.0f}'.format(existing.cash_sales) }}"{% endif %}
-                                />
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4" id="fields_{{ business.id }}">
+                        <div class="space-y-4 lg:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Cash Sales -->
+                                <div class="form-control">
+                                    <label class="label py-1">
+                                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cash Sales') }}</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                        <input
+                                            type="text"
+                                            name="cash_sales_{{ business.id }}"
+                                            id="cash_sales_{{ business.id }}"
+                                            class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                            placeholder="0"
+                                            inputmode="decimal"
+                                            data-currency-input
+                                            data-business-id="{{ business.id }}"
+                                            data-sales-component
+                                            autocomplete="off"
+                                            {% if existing and existing.is_closed %}disabled{% endif %}
+                                            {% if existing and existing.cash_sales %}value="{{ '{:,.0f}'.format(existing.cash_sales) }}"{% endif %}
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Credit Sales -->
+                                <div class="form-control">
+                                    <label class="label py-1">
+                                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Credit Sales') }}</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                        <input
+                                            type="text"
+                                            name="credit_sales_{{ business.id }}"
+                                            id="credit_sales_{{ business.id }}"
+                                            class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                            placeholder="0"
+                                            inputmode="decimal"
+                                            data-currency-input
+                                            data-business-id="{{ business.id }}"
+                                            data-sales-component
+                                            autocomplete="off"
+                                            {% if existing and existing.is_closed %}disabled{% endif %}
+                                            {% if existing and existing.credit_sales %}value="{{ '{:,.0f}'.format(existing.credit_sales) }}"{% endif %}
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Card Sales -->
+                                <div class="form-control">
+                                    <label class="label py-1">
+                                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Card Sales') }}</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                        <input
+                                            type="text"
+                                            name="card_sales_{{ business.id }}"
+                                            id="card_sales_{{ business.id }}"
+                                            class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                            placeholder="0"
+                                            inputmode="decimal"
+                                            data-currency-input
+                                            data-business-id="{{ business.id }}"
+                                            data-sales-component
+                                            autocomplete="off"
+                                            {% if existing and existing.is_closed %}disabled{% endif %}
+                                            {% if existing and existing.card_sales %}value="{{ '{:,.0f}'.format(existing.card_sales) }}"{% endif %}
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Number of Invoices -->
+                                <div class="form-control">
+                                    <label class="label py-1">
+                                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Number of Invoices') }}</span>
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">#</span>
+                                        <input
+                                            type="number"
+                                            name="invoice_count_{{ business.id }}"
+                                            id="invoice_count_{{ business.id }}"
+                                            class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                            placeholder="0"
+                                            min="0"
+                                            step="1"
+                                            autocomplete="off"
+                                            {% if existing and existing.is_closed %}disabled{% endif %}
+                                            {% if existing and existing.invoice_count %}value="{{ existing.invoice_count }}"{% endif %}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Credit Sales -->
-                        <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Credit Sales') }}</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
-                                <input
-                                    type="text"
-                                    name="credit_sales_{{ business.id }}"
-                                    id="credit_sales_{{ business.id }}"
-                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
-                                    placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
-                                    data-business-id="{{ business.id }}"
-                                    data-sales-component
-                                    autocomplete="off"
-                                    {% if existing and existing.is_closed %}disabled{% endif %}
-                                    {% if existing and existing.credit_sales %}value="{{ '{:,.0f}'.format(existing.credit_sales) }}"{% endif %}
-                                />
+                        <div class="space-y-4">
+                            <!-- Total Sales -->
+                            <div class="form-control">
+                                <label class="label py-1">
+                                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Total Sales') }}</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                    <input
+                                        type="text"
+                                        name="total_sales_{{ business.id }}"
+                                        id="total_sales_{{ business.id }}"
+                                        class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                        placeholder="0"
+                                        inputmode="decimal"
+                                        data-currency-input
+                                        data-total-sales-input
+                                        autocomplete="off"
+                                        {% if existing and existing.is_closed %}disabled{% endif %}
+                                        {% if existing and existing.total_sales %}value="{{ '{:,.0f}'.format(existing.total_sales) }}"{% endif %}
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Card Sales -->
-                        <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Card Sales') }}</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
-                                <input
-                                    type="text"
-                                    name="card_sales_{{ business.id }}"
-                                    id="card_sales_{{ business.id }}"
-                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
-                                    placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
-                                    data-business-id="{{ business.id }}"
-                                    data-sales-component
-                                    autocomplete="off"
-                                    {% if existing and existing.is_closed %}disabled{% endif %}
-                                    {% if existing and existing.card_sales %}value="{{ '{:,.0f}'.format(existing.card_sales) }}"{% endif %}
-                                />
+                            <!-- Daily Purchases (Total) -->
+                            <div class="form-control">
+                                <label class="label py-1">
+                                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Daily Purchases (Total)') }}</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                                    <input
+                                        type="text"
+                                        name="purchases_total_{{ business.id }}"
+                                        id="purchases_total_{{ business.id }}"
+                                        class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                        placeholder="0"
+                                        inputmode="decimal"
+                                        data-currency-input
+                                        data-sum-input
+                                        data-allow-closed
+                                        autocomplete="off"
+                                        {% if existing and existing.purchases_total is not none %}value="{{ '{:,.0f}'.format(existing.purchases_total) }}"{% endif %}
+                                    />
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Number of Invoices -->
-                        <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Number of Invoices') }}</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">#</span>
-                                <input
-                                    type="number"
-                                    name="invoice_count_{{ business.id }}"
-                                    id="invoice_count_{{ business.id }}"
-                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
-                                    placeholder="0"
-                                    min="0"
-                                    step="1"
-                                    autocomplete="off"
-                                    {% if existing and existing.is_closed %}disabled{% endif %}
-                                    {% if existing and existing.invoice_count %}value="{{ existing.invoice_count }}"{% endif %}
-                                />
-                            </div>
-                        </div>
-
-                        <!-- Total Sales -->
-                        <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Total Sales') }}</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
-                                <input
-                                    type="text"
-                                    name="total_sales_{{ business.id }}"
-                                    id="total_sales_{{ business.id }}"
-                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
-                                    placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
-                                    data-total-sales-input
-                                    autocomplete="off"
-                                    {% if existing and existing.is_closed %}disabled{% endif %}
-                                    {% if existing and existing.total_sales %}value="{{ '{:,.0f}'.format(existing.total_sales) }}"{% endif %}
-                                />
-                            </div>
-                        </div>
-
-                        <!-- Daily Purchases (Total) -->
-                        <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Daily Purchases (Total)') }}</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
-                                <input
-                                    type="text"
-                                    name="purchases_total_{{ business.id }}"
-                                    id="purchases_total_{{ business.id }}"
-                                    class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
-                                    placeholder="0"
-                                    inputmode="decimal"
-                                    data-currency-input
-                                    data-sum-input
-                                    data-allow-closed
-                                    autocomplete="off"
-                                    {% if existing and existing.purchases_total is not none %}value="{{ '{:,.0f}'.format(existing.purchases_total) }}"{% endif %}
-                                />
-                            </div>
-                            <label class="label pt-2">
-                                <span class="label-text-alt text-xs text-base-content/60">{{ _('You can type sums like 10000+15000+20000 - total will be calculated automatically.') }}</span>
-                            </label>
                         </div>
                     </div>
                 </div>
