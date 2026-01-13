@@ -42,7 +42,11 @@ def parse_purchases_total(value: str | None) -> int | None:
     if re.search(r"[^\d+\-.,\s]", value):
         raise ValueError("Purchases total can only contain digits, +, -, commas, dots, and spaces")
 
-    parts = value.split("+")
+    compact = re.sub(r"\s+", "", value)
+    if re.search(r"[+\-]{2,}", compact) or re.search(r"[+\-]$", compact):
+        raise ValueError("Purchases total has an invalid operator sequence")
+
+    parts = re.findall(r"[+\-]?\s*[\d.,]+", value)
     total = 0
     has_number = False
     for part in parts:
@@ -50,8 +54,6 @@ def parse_purchases_total(value: str | None) -> int | None:
         if not cleaned:
             continue
         is_negative = cleaned.startswith("-")
-        if "-" in cleaned[1:]:
-            raise ValueError("Purchases total has an invalid '-' placement")
         digits = re.sub(r"\D", "", cleaned)
         if digits:
             value_part = int(digits)

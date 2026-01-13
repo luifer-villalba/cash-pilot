@@ -386,7 +386,11 @@
         }
 
         function parseSumExpression(rawValue) {
-            const parts = rawValue.split('+');
+            const compact = rawValue.replace(/\s+/g, '');
+            if (/[+\-]{2,}/.test(compact) || /[+\-]$/.test(compact)) {
+                return null;
+            }
+            const parts = rawValue.match(/[+\-]?\s*[\d.,]+/g) || [];
             let total = 0;
             let hasNumber = false;
 
@@ -414,7 +418,7 @@
             const isSumInput = input.hasAttribute('data-sum-input');
             let parsedValue = null;
 
-            if (isSumInput && rawValue.includes('+')) {
+            if (isSumInput && /[+\-]/.test(rawValue)) {
                 parsedValue = parseSumExpression(rawValue);
                 if (parsedValue === null) {
                     const lastValid = input.dataset.lastValid;
