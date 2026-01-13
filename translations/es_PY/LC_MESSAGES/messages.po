@@ -344,6 +344,9 @@ msgstr "Ventas a Crédito"
 msgid "Total Sales"
 msgstr "Ventas Totales"
 
+msgid "Purchases"
+msgstr "Compras"
+
 msgid "Daily Purchases (Total)"
 msgstr "Compras Diarias (Total)"
 
@@ -1084,6 +1087,15 @@ msgstr "Actual"
 
 msgid "Previous"
 msgstr "Anterior"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Previous day"
+msgstr "Día anterior"
+
+msgid "Next day"
+msgstr "Día siguiente"
 
 msgid "No data"
 msgstr "Sin datos"
@@ -2215,4 +2227,3 @@ msgstr "Limpiar"
 
 #~ msgid "Debit Card"
 #~ msgstr "Tarjeta de Débito"
-
