@@ -337,7 +337,10 @@ msgstr ""
 msgid "Purchases"
 msgstr ""
 
-msgid "Daily Purchases (Total)"
+msgid "Daily Cost"
+msgstr ""
+
+msgid "Daily Cost (Total)"
 msgstr ""
 
 msgid "Total purchases = Purchases + Receipts - Shipments"

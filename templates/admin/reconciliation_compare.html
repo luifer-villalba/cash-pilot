@@ -211,9 +211,9 @@
                     <td class="font-medium">
                         <div>{{ item.business.name }}</div>
                         <div class="text-xs text-base-content/60">
-                            {{ _('Purchases') }}:
-                            {% if item.manual_entry and item.manual_entry.purchases_total is not none %}
-                            <span class="font-mono tabular-nums">{{ "{:,.0f}".format(item.manual_entry.purchases_total) }}</span>
+                            {{ _('Daily Cost') }}:
+                            {% if item.manual_entry and item.manual_entry.daily_cost_total is not none %}
+                            <span class="font-mono tabular-nums">{{ "{:,.0f}".format(item.manual_entry.daily_cost_total) }}</span>
                             {% else %}
                             <span class="text-base-content/40">-</span>
                             {% endif %}
@@ -383,9 +383,15 @@
                         </div>
                     </td>
                     <td class="text-right font-mono tabular-nums">
-                        {% if item.differences.total_sales is not none %}
-                        {% set diff = item.differences.total_sales %}
-                        {% set variance_pct = item.variance.total_sales %}
+                        {% if item.manual.total_sales is not none %}
+                        {% set system_total = item.system.total_sales %}
+                        {% set manual_total = item.manual.total_sales %}
+                        {% set diff = system_total - manual_total %}
+                        {% if system_total != 0 %}
+                        {% set variance_pct = (diff / system_total) * 100 %}
+                        {% else %}
+                        {% set variance_pct = none %}
+                        {% endif %}
                         {% if diff != 0 %}
                             {% if variance_pct is not none and (variance_pct > 2.0 or variance_pct < -2.0) %}
                             <div class="space-y-0.5">
