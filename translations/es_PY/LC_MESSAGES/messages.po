@@ -347,8 +347,11 @@ msgstr "Ventas Totales"
 msgid "Purchases"
 msgstr "Compras"
 
-msgid "Daily Purchases (Total)"
-msgstr "Compras Diarias (Total)"
+msgid "Daily Cost"
+msgstr "Costo Diario"
+
+msgid "Daily Cost (Total)"
+msgstr "Costo Diario (Total)"
 
 msgid "Total purchases = Purchases + Receipts - Shipments"
 msgstr "Total purchases = Purchases + Receipts - Shipments"

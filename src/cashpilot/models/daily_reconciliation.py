@@ -71,7 +71,7 @@ class DailyReconciliation(Base):
         nullable=True,
     )
 
-    purchases_total: Mapped[int | None] = mapped_column(
+    daily_cost_total: Mapped[int | None] = mapped_column(
         BigInteger,
         nullable=True,
     )

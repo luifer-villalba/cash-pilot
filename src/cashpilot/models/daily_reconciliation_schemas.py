@@ -20,7 +20,7 @@ class DailyReconciliationCreate(BaseModel):
     credit_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     card_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     total_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
-    purchases_total: int | None = Field(None, ge=0)
+    daily_cost_total: int | None = Field(None, ge=0)
     invoice_count: int | None = Field(None, ge=0, description="Number of invoices/transactions")
     is_closed: bool = Field(False, description="Marks location closed that day")
 
@@ -32,10 +32,10 @@ class DailyReconciliationCreate(BaseModel):
             return None
         return validate_currency(v)
 
-    @field_validator("purchases_total")
+    @field_validator("daily_cost_total")
     @classmethod
-    def validate_purchases_total(cls, v: int | None) -> int | None:
-        """Validate purchases total if provided."""
+    def validate_daily_cost_total(cls, v: int | None) -> int | None:
+        """Validate daily cost total if provided."""
         if v is None:
             return None
         validate_currency(Decimal(v))
@@ -55,7 +55,7 @@ class DailyReconciliationUpdate(BaseModel):
     credit_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     card_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
     total_sales: Decimal | None = Field(None, ge=0, decimal_places=2)
-    purchases_total: int | None = Field(None, ge=0)
+    daily_cost_total: int | None = Field(None, ge=0)
     invoice_count: int | None = Field(None, ge=0, description="Number of invoices/transactions")
     is_closed: bool | None = Field(None)
     reason: str = Field(..., min_length=5, description="Required reason for edit")
@@ -68,10 +68,10 @@ class DailyReconciliationUpdate(BaseModel):
             return None
         return validate_currency(v)
 
-    @field_validator("purchases_total")
+    @field_validator("daily_cost_total")
     @classmethod
-    def validate_purchases_total(cls, v: int | None) -> int | None:
-        """Validate purchases total if provided."""
+    def validate_daily_cost_total(cls, v: int | None) -> int | None:
+        """Validate daily cost total if provided."""
         if v is None:
             return None
         validate_currency(Decimal(v))
@@ -88,7 +88,7 @@ class DailyReconciliationRead(BaseModel):
     credit_sales: Decimal | None
     card_sales: Decimal | None
     total_sales: Decimal | None
-    purchases_total: int | None
+    daily_cost_total: int | None
     invoice_count: int | None
     is_closed: bool
     admin_id: UUID
@@ -107,7 +107,7 @@ class DailyReconciliationBulkCreate(BaseModel):
         ...,
         description=(
             "List of business data: {business_id, cash_sales, credit_sales, "
-            "card_sales, total_sales, purchases_total, invoice_count, is_closed}"
+            "card_sales, total_sales, daily_cost_total, invoice_count, is_closed}"
         ),
     )
 
