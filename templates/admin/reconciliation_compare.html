@@ -566,11 +566,8 @@
                 {% set totals.manual_sales = totals.manual_sales + manual_sales %}
                 {% set totals.has_any = true %}
                 {% endif %}
-                {% if cost_total is not none %}
+                {% if manual_sales is not none and cost_total is not none %}
                 {% set totals.cost = totals.cost + cost_total %}
-                {% set totals.has_any = true %}
-                {% endif %}
-                {% if gross_margin is not none %}
                 {% set totals.gross_margin = totals.gross_margin + gross_margin %}
                 {% set totals.has_any = true %}
                 {% endif %}

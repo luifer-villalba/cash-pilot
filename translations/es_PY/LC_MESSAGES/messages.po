@@ -673,7 +673,7 @@ msgstr "Nombre de la ubicación del negocio"
 msgid "Address"
 msgstr "Dirección"
 
-msgid "e.g., Av. España 123"
+msgid "e.g., 123 Main St"
 msgstr "ej. Av. España 123"
 
 msgid "Optional: Street address"
@@ -855,34 +855,29 @@ msgstr "sesión"
 msgid "sessions"
 msgstr "sesiones"
 
-msgid "Abrir Caja"
-msgstr ""
+msgid "Open Cash Session"
+msgstr "Abrir Caja"
 
-#, fuzzy
-msgid "Acciones"
+msgid "Actions"
 msgstr "Acciones"
 
-#, fuzzy
-msgid "Reconciliación"
+msgid "Reconciliation"
 msgstr "Reconciliación"
 
-#, fuzzy
-msgid "Agregar Reconciliación"
-msgstr "Guardar Reconciliación"
+msgid "Add Reconciliation"
+msgstr "Agregar Reconciliación"
 
-#, fuzzy
-msgid "Ver Reconciliaciones"
-msgstr "Guardar Reconciliación"
+msgid "View Reconciliations"
+msgstr "Ver Reconciliaciones"
 
-#, fuzzy
-msgid "Exportar"
-msgstr "Reporte"
+msgid "Export"
+msgstr "Exportar"
 
-msgid "Exportar como CSV"
-msgstr ""
+msgid "Export as CSV"
+msgstr "Exportar como CSV"
 
-msgid "Exportar como Excel"
-msgstr ""
+msgid "Export as Excel"
+msgstr "Exportar como Excel"
 
 msgid "Click to sort"
 msgstr "Click para ordenar"
@@ -1050,7 +1045,7 @@ msgstr "Añadir Transferencia"
 msgid "Transfer description"
 msgstr "Descripción de la transferencia"
 
-msgid "e.g., Cliente Juan Pérez / Pago factura 12345"
+msgid "e.g., Customer John Perez / Invoice payment 12345"
 msgstr "ej., Cliente Juan Pérez / Pago factura 12345"
 
 msgid "Transfer amount"

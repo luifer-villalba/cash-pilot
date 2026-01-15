@@ -661,7 +661,7 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-msgid "e.g., Av. España 123"
+msgid "e.g., 123 Main St"
 msgstr ""
 
 msgid "Optional: Street address"
@@ -843,28 +843,28 @@ msgstr ""
 msgid "sessions"
 msgstr ""
 
-msgid "Abrir Caja"
+msgid "Open Cash Session"
 msgstr ""
 
-msgid "Acciones"
+msgid "Actions"
 msgstr ""
 
-msgid "Reconciliación"
+msgid "Reconciliation"
 msgstr ""
 
-msgid "Agregar Reconciliación"
+msgid "Add Reconciliation"
 msgstr ""
 
-msgid "Ver Reconciliaciones"
+msgid "View Reconciliations"
 msgstr ""
 
-msgid "Exportar"
+msgid "Export"
 msgstr ""
 
-msgid "Exportar como CSV"
+msgid "Export as CSV"
 msgstr ""
 
-msgid "Exportar como Excel"
+msgid "Export as Excel"
 msgstr ""
 
 msgid "Click to sort"
@@ -1031,7 +1031,7 @@ msgstr ""
 msgid "Transfer description"
 msgstr ""
 
-msgid "e.g., Cliente Juan Pérez / Pago factura 12345"
+msgid "e.g., Customer John Perez / Invoice payment 12345"
 msgstr ""
 
 msgid "Transfer amount"
@@ -2213,4 +2213,3 @@ msgstr ""
 
 msgid "Clear"
 msgstr ""
-
