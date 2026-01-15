@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-11 02:01+0000\n"
+"POT-Creation-Date: 2026-01-15 15:22+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -323,6 +323,12 @@ msgstr "Fecha"
 msgid "Select a date to compare reconciliation data"
 msgstr "Seleccioná una fecha para comparar datos de reconciliación"
 
+msgid "Sales Reconciliation Comparison"
+msgstr "Comparación de Reconciliación de Ventas"
+
+msgid "System vs manual totals by business"
+msgstr "Totales del sistema vs manuales por negocio"
+
 msgid "Cashiers"
 msgstr "Cajeros"
 
@@ -343,18 +349,6 @@ msgstr "Ventas a Crédito"
 
 msgid "Total Sales"
 msgstr "Ventas Totales"
-
-msgid "Purchases"
-msgstr "Compras"
-
-msgid "Daily Cost"
-msgstr "Costo Diario"
-
-msgid "Daily Cost (Total)"
-msgstr "Costo Diario (Total)"
-
-msgid "Total purchases = Purchases + Receipts - Shipments"
-msgstr "Total purchases = Purchases + Receipts - Shipments"
 
 msgid "Total Difference"
 msgstr "Diferencia Total"
@@ -418,6 +412,38 @@ msgstr "Rojo (Déficit)"
 
 msgid "Manual has LESS than System (negative difference)"
 msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
+
+msgid "Margin Comparison"
+msgstr "Comparación de Margen"
+
+msgid "Sales vs daily cost totals by business"
+msgstr "Ventas vs total de costo diario por negocio"
+
+msgid "Sales Total"
+msgstr "Total de Ventas"
+
+msgid "Daily Cost Total"
+msgstr "Total de Costo Diario"
+
+msgid "Gross Margin"
+msgstr "Margen Bruto"
+
+msgid "Margin %"
+msgstr "Margen %"
+
+msgid "Cost Percent of Sales"
+msgstr "Costo sobre Ventas"
+
+msgid "Totals"
+msgstr "Totales"
+
+msgid "Margin Tips:"
+msgstr "Consejos de Margen:"
+
+msgid "Gross margin uses manual sales minus daily cost total when available."
+msgstr ""
+"El margen bruto usa ventas manuales menos el total de costo diario cuando"
+" está disponible."
 
 msgid "User Management - CashPilot"
 msgstr "Gestión de Usuarios - CashPilot"
@@ -647,7 +673,7 @@ msgstr "Nombre de la ubicación del negocio"
 msgid "Address"
 msgstr "Dirección"
 
-msgid "e.g., Av. España 123"
+msgid "e.g., 123 Main St"
 msgstr "ej. Av. España 123"
 
 msgid "Optional: Street address"
@@ -829,8 +855,11 @@ msgstr "sesión"
 msgid "sessions"
 msgstr "sesiones"
 
-msgid "New Session"
+msgid "Open Cash Session"
 msgstr "Abrir Caja"
+
+msgid "Actions"
+msgstr "Acciones"
 
 msgid "Reconciliation"
 msgstr "Reconciliación"
@@ -850,6 +879,15 @@ msgstr "Exportar como CSV"
 msgid "Export as Excel"
 msgstr "Exportar como Excel"
 
+msgid "Click to sort"
+msgstr "Click para ordenar"
+
+msgid "Click to sort by cashier"
+msgstr "Click para ordenar por cajero"
+
+msgid "Click to sort by business"
+msgstr "Click para ordenar por negocio"
+
 msgid "Date & Time"
 msgstr "Fecha y Hora"
 
@@ -861,9 +899,6 @@ msgstr "Tarjetas"
 
 msgid "Transfer"
 msgstr "Transferencia"
-
-msgid "Sales Total"
-msgstr "Venta Total"
 
 msgid "View session"
 msgstr "Ver Caja"
@@ -1010,7 +1045,7 @@ msgstr "Añadir Transferencia"
 msgid "Transfer description"
 msgstr "Descripción de la transferencia"
 
-msgid "e.g., Cliente Juan Pérez / Pago factura 12345"
+msgid "e.g., Customer John Perez / Invoice payment 12345"
 msgstr "ej., Cliente Juan Pérez / Pago factura 12345"
 
 msgid "Transfer amount"
@@ -1052,6 +1087,18 @@ msgstr "Ver informe de comparación"
 msgid "Select Date"
 msgstr "Seleccionar Fecha"
 
+msgid "Next day"
+msgstr "Día siguiente"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Previous day"
+msgstr "Día anterior"
+
+msgid "Previous"
+msgstr "Anterior"
+
 msgid "Date for reconciliation entry"
 msgstr "Fecha para la entrada de reconciliación"
 
@@ -1060,6 +1107,9 @@ msgstr "Ubicaciones del Negocio"
 
 msgid "Number of Invoices"
 msgstr "Cantidad de Facturas"
+
+msgid "Daily Cost (Total)"
+msgstr "Costo Diario (Total)"
 
 msgid "Edit Reason"
 msgstr "Razón de Edición"
@@ -1090,18 +1140,6 @@ msgstr "Volver a Reportes"
 
 msgid "Current"
 msgstr "Actual"
-
-msgid "Previous"
-msgstr "Anterior"
-
-msgid "Next"
-msgstr "Siguiente"
-
-msgid "Previous day"
-msgstr "Día anterior"
-
-msgid "Next day"
-msgstr "Día siguiente"
 
 msgid "No data"
 msgstr "Sin datos"
@@ -2073,6 +2111,9 @@ msgstr "Gastos del negocio durante el turno"
 msgid "Credit & Debit Cards"
 msgstr "Tarjeta de Crédito y Débito"
 
+msgid "Reconciliation"
+msgstr "Reconciliación"
+
 msgid "CASH SALES & BANK TRANSFER"
 msgstr "VENTAS EFECTIVO & TRANSFERENCIAS"
 
@@ -2233,3 +2274,15 @@ msgstr "Limpiar"
 
 #~ msgid "Debit Card"
 #~ msgstr "Tarjeta de Débito"
+
+#~ msgid "Purchases"
+#~ msgstr "Compras"
+
+#~ msgid "Daily Cost"
+#~ msgstr "Costo Diario"
+
+#~ msgid "New Session"
+#~ msgstr "Abrir Caja"
+
+#~ msgid "Add Reconciliation"
+#~ msgstr "Agregar Reconciliación"

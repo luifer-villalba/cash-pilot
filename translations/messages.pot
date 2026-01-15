@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-11 02:01+0000\n"
+"POT-Creation-Date: 2026-01-15 15:22+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -313,6 +313,12 @@ msgstr ""
 msgid "Select a date to compare reconciliation data"
 msgstr ""
 
+msgid "Sales Reconciliation Comparison"
+msgstr ""
+
+msgid "System vs manual totals by business"
+msgstr ""
+
 msgid "Cashiers"
 msgstr ""
 
@@ -332,18 +338,6 @@ msgid "Credit Sales"
 msgstr ""
 
 msgid "Total Sales"
-msgstr ""
-
-msgid "Purchases"
-msgstr ""
-
-msgid "Daily Cost"
-msgstr ""
-
-msgid "Daily Cost (Total)"
-msgstr ""
-
-msgid "Total purchases = Purchases + Receipts - Shipments"
 msgstr ""
 
 msgid "Total Difference"
@@ -407,6 +401,36 @@ msgid "Red (Deficit)"
 msgstr ""
 
 msgid "Manual has LESS than System (negative difference)"
+msgstr ""
+
+msgid "Margin Comparison"
+msgstr ""
+
+msgid "Sales vs daily cost totals by business"
+msgstr ""
+
+msgid "Sales Total"
+msgstr ""
+
+msgid "Daily Cost Total"
+msgstr ""
+
+msgid "Gross Margin"
+msgstr ""
+
+msgid "Margin %"
+msgstr ""
+
+msgid "Cost Percent of Sales"
+msgstr ""
+
+msgid "Totals"
+msgstr ""
+
+msgid "Margin Tips:"
+msgstr ""
+
+msgid "Gross margin uses manual sales minus daily cost total when available."
 msgstr ""
 
 msgid "User Management - CashPilot"
@@ -637,7 +661,7 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-msgid "e.g., Av. España 123"
+msgid "e.g., 123 Main St"
 msgstr ""
 
 msgid "Optional: Street address"
@@ -819,7 +843,10 @@ msgstr ""
 msgid "sessions"
 msgstr ""
 
-msgid "New Session"
+msgid "Open Cash Session"
+msgstr ""
+
+msgid "Actions"
 msgstr ""
 
 msgid "Reconciliation"
@@ -829,6 +856,24 @@ msgid "Add Reconciliation"
 msgstr ""
 
 msgid "View Reconciliations"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Export as CSV"
+msgstr ""
+
+msgid "Export as Excel"
+msgstr ""
+
+msgid "Click to sort"
+msgstr ""
+
+msgid "Click to sort by cashier"
+msgstr ""
+
+msgid "Click to sort by business"
 msgstr ""
 
 msgid "Date & Time"
@@ -841,9 +886,6 @@ msgid "Cards"
 msgstr ""
 
 msgid "Transfer"
-msgstr ""
-
-msgid "Sales Total"
 msgstr ""
 
 msgid "View session"
@@ -989,7 +1031,7 @@ msgstr ""
 msgid "Transfer description"
 msgstr ""
 
-msgid "e.g., Cliente Juan Pérez / Pago factura 12345"
+msgid "e.g., Customer John Perez / Invoice payment 12345"
 msgstr ""
 
 msgid "Transfer amount"
@@ -1031,6 +1073,18 @@ msgstr ""
 msgid "Select Date"
 msgstr ""
 
+msgid "Next day"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Previous day"
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
 msgid "Date for reconciliation entry"
 msgstr ""
 
@@ -1038,6 +1092,9 @@ msgid "Business Locations"
 msgstr ""
 
 msgid "Number of Invoices"
+msgstr ""
+
+msgid "Daily Cost (Total)"
 msgstr ""
 
 msgid "Edit Reason"
@@ -1068,18 +1125,6 @@ msgid "Back to Reports"
 msgstr ""
 
 msgid "Current"
-msgstr ""
-
-msgid "Previous"
-msgstr ""
-
-msgid "Next"
-msgstr ""
-
-msgid "Previous day"
-msgstr ""
-
-msgid "Next day"
 msgstr ""
 
 msgid "No data"
@@ -2030,6 +2075,9 @@ msgid "Business expenses during shift"
 msgstr ""
 
 msgid "Credit & Debit Cards"
+msgstr ""
+
+msgid "Reconciliation"
 msgstr ""
 
 msgid "CASH SALES & BANK TRANSFER"

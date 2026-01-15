@@ -19,7 +19,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
-                    {{ _('Abrir Caja') }}
+                    {{ _('Open Cash Session') }}
                 </a>
                 {% if current_user.role == 'ADMIN' %}
                 <div class="dropdown dropdown-end">
@@ -27,19 +27,19 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        {{ _('Acciones') }}
+                        {{ _('Actions') }}
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
                     <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-56 border border-base-200 mt-2">
-                        <li class="menu-title">{{ _('Reconciliación') }}</li>
+                        <li class="menu-title">{{ _('Reconciliation') }}</li>
                         <li>
                             <a href="/reconciliation/daily" id="add-reconciliation-link" class="gap-2 transition-colors hover:bg-primary/10">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                {{ _('Agregar Reconciliación') }}
+                                {{ _('Add Reconciliation') }}
                             </a>
                         </li>
                         <li>
@@ -48,16 +48,16 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                 </svg>
-                                {{ _('Ver Reconciliaciones') }}
+                                {{ _('View Reconciliations') }}
                             </a>
                         </li>
-                        <li class="menu-title mt-2">{{ _('Exportar') }}</li>
+                        <li class="menu-title mt-2">{{ _('Export') }}</li>
                         <li>
                             <a href="#" onclick="exportSessions('csv'); return false;" class="gap-2 transition-colors hover:bg-success/10">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                {{ _('Exportar como CSV') }}
+                                {{ _('Export as CSV') }}
                             </a>
                         </li>
                         <li>
@@ -65,7 +65,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
-                                {{ _('Exportar como Excel') }}
+                                {{ _('Export as Excel') }}
                             </a>
                         </li>
                     </ul>
