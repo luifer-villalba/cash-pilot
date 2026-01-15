@@ -116,21 +116,157 @@ textarea:-ms-input-placeholder {
 }
 
 @layer components {
-  .stats-compact {
-    display: none;
-  }
-
-  .stats-sep {
-    margin: 0 0.35rem;
-  }
-
   .dashboard-filters-body {
     padding: 0.75rem;
+  }
+
+  .dashboard-filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .filters-primary-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    justify-content: space-between;
+  }
+
+  .filters-primary-row .filters-item {
+    flex: 0 0 auto;
+  }
+
+  .filters-left {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .filters-right {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+
+  .filters-primary-row .filters-quick {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+  }
+
+  .filters-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .filters-actions .btn {
+    transform: none;
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+
+  .filters-actions .btn:hover,
+  .filters-actions .btn:active {
+    transform: none;
+  }
+
+  .filters-actions .btn-square {
+    width: 1.85rem;
+    min-width: 1.85rem;
+    height: 1.85rem;
+    padding: 0;
+  }
+
+  .filters-primary-row .preset-btn {
+    min-height: 1.85rem;
+    height: 1.85rem;
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+    font-size: 0.75rem;
+  }
+
+  .filters-primary-row .preset-btn svg {
+    width: 0.85rem;
+    height: 0.85rem;
+  }
+
+  .filters-compact-select {
+    min-height: 1.85rem;
+    height: 1.85rem;
+    font-size: 0.75rem;
+  }
+
+  #include-deleted-toggle {
+    transform: scale(0.9);
+  }
+
+  .filters-advanced-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filters-advanced-row .filters-item {
+    flex: 0 0 auto;
+  }
+
+  .dashboard-filters-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+
+  .dashboard-filters-row .filters-item {
+    flex: 0 0 auto;
+    margin-right: 0.5rem;
+  }
+
+  .dashboard-filters-row .filters-item:last-child {
+    margin-right: 0;
+  }
+
+  .dashboard-filters-row .filters-title {
+    display: flex;
+    align-items: center;
+  }
+
+  .dashboard-filters-row .filters-title svg {
+    margin-right: 0.4rem;
+  }
+
+  .dashboard-filters-header {
+    gap: 0.5rem;
+  }
+
+  .dashboard-filters-chips {
+    gap: 0.5rem;
   }
 
   .dashboard-filters-body .label {
     padding-top: 0.125rem;
     padding-bottom: 0.125rem;
+  }
+
+  .dashboard-filters-chips .btn {
+    min-height: 1.9rem;
+    height: 1.9rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .dashboard-filters-chips .select {
+    min-height: 1.9rem;
+    height: 1.9rem;
   }
 
   .dashboard-filters-body .btn {
@@ -152,15 +288,5 @@ textarea:-ms-input-placeholder {
 
   .dashboard-filters-body .space-y-6 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 0.75rem;
-  }
-}
-
-@media (max-height: 800px) {
-  .stats-compact {
-    display: block;
-  }
-
-  .stats-full {
-    display: none;
   }
 }

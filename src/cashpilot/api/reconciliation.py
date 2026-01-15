@@ -138,12 +138,27 @@ async def reconciliation_badge(
                     "reconciled_count": reconciled_dates,
                     "total_count": total_dates,
                     "is_range": True,
+                    "is_empty": False,
                     "locale": locale,
                     "_": _,
                 },
             )
         else:
-            return HTMLResponse(content="", status_code=200)
+            return templates.TemplateResponse(
+                "partials/reconciliation_badge.html",
+                {
+                    "request": request,
+                    "reconciliation_date": None,
+                    "from_date": start_date.isoformat(),
+                    "to_date": end_date.isoformat(),
+                    "reconciled_count": 0,
+                    "total_count": total_dates,
+                    "is_range": True,
+                    "is_empty": True,
+                    "locale": locale,
+                    "_": _,
+                },
+            )
     else:
         # Single date: check if reconciliation exists
         check_date = end_date  # Use to_date (or from_date if to_date not set)
@@ -169,12 +184,27 @@ async def reconciliation_badge(
                     "reconciled_count": None,
                     "total_count": None,
                     "is_range": False,
+                    "is_empty": False,
                     "locale": locale,
                     "_": _,
                 },
             )
         else:
-            return HTMLResponse(content="", status_code=200)
+            return templates.TemplateResponse(
+                "partials/reconciliation_badge.html",
+                {
+                    "request": request,
+                    "reconciliation_date": check_date.isoformat(),
+                    "from_date": None,
+                    "to_date": None,
+                    "reconciled_count": None,
+                    "total_count": None,
+                    "is_range": False,
+                    "is_empty": True,
+                    "locale": locale,
+                    "_": _,
+                },
+            )
 
 
 # Variance thresholds for flagging discrepancies

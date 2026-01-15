@@ -1,29 +1,7 @@
 <!-- File: src/cashpilot/templates/partials/stats_row.html -->
 <div id="stats-row" class="space-y-4">
-    <div class="stats-compact hidden bg-base-100 border border-base-300 rounded-lg px-3 py-2 shadow-sm">
-        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
-            <span><span class="font-semibold text-primary">{{ _('TOTAL SALES') }}</span> <span class="font-mono text-base-content">Gs {{ total_sales | format_currency_py }}</span></span>
-            <span class="stats-sep text-base-content/40" aria-hidden="true">|</span>
-            <span><span class="font-semibold text-base-content/70">{{ _('Cash Sales') }}</span> <span class="font-mono text-base-content">Gs {{ cash_sales | format_currency_py }}</span></span>
-            <span class="stats-sep text-base-content/40" aria-hidden="true">|</span>
-            <span><span class="font-semibold text-base-content/70">{{ _('Card Payments') }}</span> <span class="font-mono text-base-content">Gs {{ card_payments_total | format_currency_py }}</span></span>
-            <span class="stats-sep text-base-content/40" aria-hidden="true">|</span>
-            <span><span class="font-semibold text-base-content/70">{{ _('Credit Sales') }}</span> <span class="font-mono text-base-content">Gs {{ credit_sales_total | format_currency_py }}</span></span>
-            <span class="stats-sep text-base-content/40" aria-hidden="true">|</span>
-            <span><span class="font-semibold text-base-content/70">{{ _('Bank Transfers') }}</span> <span class="font-mono text-base-content">Gs {{ bank_transfer_total | format_currency_py }}</span></span>
-        </div>
-    </div>
-
-    <div class="stats-full">
-        <!-- Hero: Total Sales -->
-        <div class="bg-gradient-to-br from-primary/5 to-base-100 rounded-lg border-2 border-primary shadow-lg p-4 md:p-6 transition-all duration-200 hover:shadow-xl hover:scale-[1.01]">
-            <p class="text-xs text-primary/70 uppercase tracking-wider font-bold">{{ _('TOTAL SALES') }}</p>
-            <p class="text-3xl md:text-4xl font-bold text-primary mt-3">Gs {{ total_sales | format_currency_py }}</p>
-            <p class="text-xs text-base-content/60 mt-2">{{ _('Cash') }} + {{ _('Cards') }} + {{ _('Credit Sales') }}</p>
-        </div>
-
-    <!-- Primary Grid: 5 Visible Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-3">
+    <!-- Primary Grid: 4 Visible Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
         <!-- Cash Sales -->
         <div class="bg-base-100 rounded-lg border border-base-300 shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
             <p class="text-xs text-base-content/70 uppercase tracking-wider font-semibold">{{ _('Cash Sales') }}</p>
@@ -44,82 +22,13 @@
             <p class="text-xl md:text-2xl font-bold mt-2 text-base-content">Gs {{ credit_sales_total | format_currency_py }}</p>
             <p class="text-xs text-base-content/60 mt-2">{{ _('Pending payments') }}</p>
         </div>
-
-        <!-- Collections -->
-        <div class="bg-base-100 rounded-lg border border-base-300 shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
-            <p class="text-xs text-base-content/70 uppercase tracking-wider font-semibold">{{ _('Collections') }}</p>
-            <p class="text-xl md:text-2xl font-bold mt-2 text-base-content">Gs {{ credit_payments_collected | format_currency_py }}</p>
-            <p class="text-xs text-base-content/60 mt-2">{{ _('Payments collected') }}</p>
-        </div>
-
-        <!-- Bank Transfers -->
-        <div class="bg-base-100 rounded-lg border border-base-300 shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
-            <p class="text-xs text-base-content/70 uppercase tracking-wider font-semibold">{{ _('Bank Transfers') }}</p>
-            <p class="text-xl md:text-2xl font-bold mt-2 text-base-content">Gs {{ bank_transfer_total | format_currency_py }}</p>
-            <p class="text-xs text-base-content/60 mt-2">{{ _('Direct transfers') }}</p>
+        
+        <!-- Total Sales -->
+        <div class="bg-gradient-to-br from-primary/5 to-base-100 rounded-lg border-2 border-primary shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+            <p class="text-xs text-primary/70 uppercase tracking-wider font-semibold">{{ _('Total Sales') }}</p>
+            <p class="text-xl md:text-2xl font-bold mt-2 text-primary">Gs {{ total_sales | format_currency_py }}</p>
+            <p class="text-xs text-base-content/60 mt-2">{{ _('Cash') }} + {{ _('Cards') }} + {{ _('Credit Sales') }}</p>
         </div>
     </div>
 
-    <!-- More Details Toggle -->
-    <div class="text-center">
-        <button onclick="toggleMoreStats()" class="btn btn-sm btn-ghost gap-2 transition-all duration-200 hover:scale-105 active:scale-95">
-            <span id="toggle-text">{{ _('More Details') }}</span>
-            <svg id="toggle-icon" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-        </button>
-    </div>
-
-        <!-- Collapsible: Additional Metrics (5 more cards) -->
-        <div id="more-stats" class="hidden">
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-3">
-            <!-- Total Expenses -->
-            <div class="bg-base-100 rounded-lg border border-error/30 shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
-                <p class="text-xs text-error/70 uppercase tracking-wider font-semibold">{{ _('Expenses') }}</p>
-                <p class="text-xl md:text-2xl font-bold mt-2 text-error">−Gs {{ total_expenses | format_currency_py }}</p>
-                <p class="text-xs text-base-content/60 mt-2">{{ _('Cash outflows') }}</p>
-            </div>
-
-            <!-- Cash Profit -->
-            <div class="bg-base-100 rounded-lg {% if cash_profit >= 0 %}border-success/30{% else %}border-error/30{% endif %} border shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
-                <p class="text-xs {% if cash_profit >= 0 %}text-success/70{% else %}text-error/70{% endif %} uppercase tracking-wider font-semibold">{{ _('Cash Profit') }}</p>
-                <p class="text-xl md:text-2xl font-bold mt-2 {% if cash_profit >= 0 %}text-success{% else %}text-error{% endif %}">{% if cash_profit >= 0 %}+{% endif %}Gs {{ cash_profit|abs | format_currency_py }}</p>
-                <p class="text-xs text-base-content/60 mt-2">{{ _('Cash Sales') }} − {{ _('Expenses') }}</p>
-            </div>
-
-            <!-- Open Sessions -->
-            <div class="bg-base-100 rounded-lg border border-warning/30 shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
-                <p class="text-xs text-warning/70 uppercase tracking-wider font-semibold">{{ _('Open Sessions') }}</p>
-                <p class="text-xl md:text-2xl font-bold mt-2 text-warning">{{ sessions_open }}</p>
-                <p class="text-xs text-base-content/60 mt-2">{{ _('Active') }}</p>
-            </div>
-
-            <!-- Closed Sessions -->
-            <div class="bg-base-100 rounded-lg border border-success/30 shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
-                <p class="text-xs text-success/70 uppercase tracking-wider font-semibold">{{ _('Closed Sessions') }}</p>
-                <p class="text-xl md:text-2xl font-bold mt-2 text-success">{{ sessions_closed }}</p>
-                <p class="text-xs text-base-content/60 mt-2">{{ _('Completed') }}</p>
-            </div>
-
-            <!-- Flagged Sessions -->
-            <div class="bg-base-100 rounded-lg border border-error/30 shadow-sm p-3 md:p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
-                <p class="text-xs text-error/70 uppercase tracking-wider font-semibold">{{ _('Flagged Sessions') }}</p>
-                <p class="text-xl md:text-2xl font-bold mt-2 text-error">{{ sessions_need_review }}</p>
-                <p class="text-xs text-base-content/60 mt-2">{{ _('Need review') }}</p>
-            </div>
-        </div>
-    </div>
-    </div>
 </div>
-
-<script>
-    function toggleMoreStats() {
-        const moreStats = document.getElementById('more-stats');
-        const icon = document.getElementById('toggle-icon');
-        const text = document.getElementById('toggle-text');
-
-        moreStats.classList.toggle('hidden');
-        icon.classList.toggle('rotate-180');
-        text.textContent = moreStats.classList.contains('hidden') ? '{{ _("More Details") }}' : '{{ _("Less Details") }}';
-    }
-</script>
