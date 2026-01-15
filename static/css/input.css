@@ -114,3 +114,53 @@ input:-ms-input-placeholder,
 textarea:-ms-input-placeholder {
   color: rgba(31, 41, 55, 0.5); /* Direct rgba color for IE11 (doesn't support CSS variables or opacity on placeholder) */
 }
+
+@layer components {
+  .stats-compact {
+    display: none;
+  }
+
+  .stats-sep {
+    margin: 0 0.35rem;
+  }
+
+  .dashboard-filters-body {
+    padding: 0.75rem;
+  }
+
+  .dashboard-filters-body .label {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+  }
+
+  .dashboard-filters-body .btn {
+    min-height: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+
+  .dashboard-filters-body .select,
+  .dashboard-filters-body .input {
+    min-height: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+
+  .dashboard-filters-body .gap-4 {
+    gap: 0.5rem;
+  }
+
+  .dashboard-filters-body .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.75rem;
+  }
+}
+
+@media (max-height: 800px) {
+  .stats-compact {
+    display: block;
+  }
+
+  .stats-full {
+    display: none;
+  }
+}
