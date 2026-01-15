@@ -306,11 +306,6 @@
                                         {% if existing and existing.daily_cost_total is not none %}value="{{ '{:,.0f}'.format(existing.daily_cost_total) }}"{% endif %}
                                     />
                                 </div>
-                                <label class="label pt-2">
-                                    <span class="label-text-alt text-xs text-base-content/60">
-                                        {{ _('Total purchases = Purchases + Receipts - Shipments') }}
-                                    </span>
-                                </label>
                             </div>
                         </div>
                     </div>

@@ -158,6 +158,19 @@
 
     <!-- Comparison Table -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-x-auto">
+        <div class="px-4 pt-4 pb-2">
+            <div class="flex items-center gap-2">
+                <div class="p-2 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 shadow-sm">
+                    <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M7 15l4-4 4 3 5-6"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-base md:text-lg font-semibold text-base-content">{{ _('Sales Reconciliation Comparison') }}</h2>
+                    <p class="text-xs text-base-content/60">{{ _('System vs manual totals by business') }}</p>
+                </div>
+            </div>
+        </div>
         <style>
             /* Hover tint */
             .table tbody tr.session-row:hover td {
@@ -210,14 +223,6 @@
                 <tr class="session-row transition-all duration-200 border-l-2 border-transparent{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50{% endif %}" data-business-id="{{ item.business.id }}">
                     <td class="font-medium">
                         <div>{{ item.business.name }}</div>
-                        <div class="text-xs text-base-content/60">
-                            {{ _('Daily Cost') }}:
-                            {% if item.manual_entry and item.manual_entry.daily_cost_total is not none %}
-                            <span class="font-mono tabular-nums">{{ "{:,.0f}".format(item.manual_entry.daily_cost_total) }}</span>
-                            {% else %}
-                            <span class="text-base-content/40">-</span>
-                            {% endif %}
-                        </div>
                     </td>
                     <td class="text-xs text-base-content/70">{{ item.cashiers }}</td>
                     <td class="text-right">
@@ -507,6 +512,169 @@
                 <span class="text-error font-semibold ml-4">{{ _('Red (Deficit)') }}</span>
                 <span>=</span>
                 <span>{{ _('Manual has LESS than System (negative difference)') }}.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Margin Comparison Table -->
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-x-auto">
+        <div class="px-4 pt-4">
+            <div class="flex items-center gap-2">
+                <div class="p-2 bg-gradient-to-br from-info/10 to-info/5 rounded-lg border border-info/20 shadow-sm">
+                    <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18h18M9 17V9m4 8V5m4 12v-6"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-base md:text-lg font-semibold text-base-content">{{ _('Margin Comparison') }}</h2>
+                    <p class="text-xs text-base-content/60">{{ _('Sales vs daily cost totals by business') }}</p>
+                </div>
+            </div>
+        </div>
+        <table class="table table-sm w-full mt-2">
+            <thead>
+                <tr class="bg-base-200">
+                    <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Sales Total') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Daily Cost Total') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Gross Margin') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Margin %') }}</th>
+                    <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Cost Percent of Sales') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set totals = namespace(system_sales=0, manual_sales=0, cost=0, gross_margin=0, has_any=false) %}
+                {% for item in comparison_data %}
+                {% set manual_sales = item.manual.total_sales if item.manual and item.manual.total_sales is not none else none %}
+                {% set system_sales = item.system.total_sales if item.system and item.system.total_sales is not none else none %}
+                {% set cost_total = item.manual_entry.daily_cost_total if item.manual_entry and item.manual_entry.daily_cost_total is not none else none %}
+                {% if manual_sales is not none and cost_total is not none %}
+                {% set gross_margin = manual_sales - cost_total %}
+                {% if manual_sales != 0 %}
+                {% set margin_pct = (gross_margin / manual_sales) * 100 %}
+                {% set cost_pct = (cost_total / manual_sales) * 100 %}
+                {% else %}
+                {% set margin_pct = none %}
+                {% set cost_pct = none %}
+                {% endif %}
+                {% else %}
+                {% set gross_margin = none %}
+                {% set margin_pct = none %}
+                {% set cost_pct = none %}
+                {% endif %}
+                {% if manual_sales is not none %}
+                {% set totals.manual_sales = totals.manual_sales + manual_sales %}
+                {% set totals.has_any = true %}
+                {% endif %}
+                {% if cost_total is not none %}
+                {% set totals.cost = totals.cost + cost_total %}
+                {% set totals.has_any = true %}
+                {% endif %}
+                {% if gross_margin is not none %}
+                {% set totals.gross_margin = totals.gross_margin + gross_margin %}
+                {% set totals.has_any = true %}
+                {% endif %}
+                <tr class="session-row transition-all duration-200 border-l-2 border-transparent{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50{% endif %}">
+                    <td class="font-medium">
+                        {{ item.business.name }}
+                    </td>
+                    <td class="text-right font-mono tabular-nums">
+                        {% if manual_sales is not none %}
+                        <span class="font-semibold text-primary">{{ "{:,.0f}".format(manual_sales) }}</span>
+                        {% else %}
+                        <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-mono tabular-nums">
+                        {% if cost_total is not none %}
+                        {{ "{:,.0f}".format(cost_total) }}
+                        {% else %}
+                        <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-mono tabular-nums">
+                        {% if gross_margin is not none %}
+                        {% if gross_margin >= 0 %}
+                        <span class="text-success font-semibold">{{ "{:,.0f}".format(gross_margin) }}</span>
+                        {% else %}
+                        <span class="text-error font-semibold">{{ "{:,.0f}".format(gross_margin) }}</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-mono tabular-nums">
+                        {% if margin_pct is not none %}
+                        <span class="text-xs font-semibold {% if margin_pct >= 0 %}text-success{% else %}text-error{% endif %}">
+                            {{ "{:+.2f}".format(margin_pct) }}%
+                        </span>
+                        {% else %}
+                        <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-mono tabular-nums">
+                        {% if cost_pct is not none %}
+                        <span class="text-xs text-base-content/70">{{ "{:.2f}".format(cost_pct) }}%</span>
+                        {% else %}
+                        <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not comparison_data %}
+                <tr>
+                    <td colspan="7" class="text-center py-6 text-sm text-base-content/60 italic">
+                        {{ _('No businesses found') }}
+                    </td>
+                </tr>
+                {% elif totals.has_any %}
+                {% if totals.manual_sales != 0 %}
+                {% set total_margin_pct = (totals.gross_margin / totals.manual_sales) * 100 %}
+                {% set total_cost_pct = (totals.cost / totals.manual_sales) * 100 %}
+                {% else %}
+                {% set total_margin_pct = none %}
+                {% set total_cost_pct = none %}
+                {% endif %}
+                <tr class="bg-base-200/70 border-t border-base-300">
+                    <td class="font-semibold uppercase text-xs tracking-wider text-base-content/70">
+                        {{ _('Totals') }}
+                    </td>
+                    <td class="text-right font-mono tabular-nums font-semibold text-primary">
+                        {{ "{:,.0f}".format(totals.manual_sales) }}
+                    </td>
+                    <td class="text-right font-mono tabular-nums font-semibold">
+                        {{ "{:,.0f}".format(totals.cost) }}
+                    </td>
+                    <td class="text-right font-mono tabular-nums font-semibold {% if totals.gross_margin >= 0 %}text-success{% else %}text-error{% endif %}">
+                        {{ "{:,.0f}".format(totals.gross_margin) }}
+                    </td>
+                    <td class="text-right font-mono tabular-nums">
+                        {% if total_margin_pct is not none %}
+                        <span class="text-xs font-semibold {% if total_margin_pct >= 0 %}text-success{% else %}text-error{% endif %}">
+                            {{ "{:+.2f}".format(total_margin_pct) }}%
+                        </span>
+                        {% else %}
+                        <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-mono tabular-nums">
+                        {% if total_cost_pct is not none %}
+                        <span class="text-xs text-base-content/70">{{ "{:.2f}".format(total_cost_pct) }}%</span>
+                        {% else %}
+                        <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <div class="bg-base-200/50 border-t border-base-300 px-4 py-3">
+            <div class="flex items-center gap-2 text-xs text-base-content/70">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="font-medium text-base-content">{{ _('Margin Tips:') }}</span>
+                <span>{{ _('Gross margin uses manual sales minus daily cost total when available.') }}</span>
             </div>
         </div>
     </div>
