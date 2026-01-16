@@ -25,7 +25,7 @@ from cashpilot.api.auth import get_current_user
 from cashpilot.core.cache import clear_cache, get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
-from cashpilot.models import CashSession, User
+from cashpilot.models import CashSession, DailyReconciliation, User
 from cashpilot.models.report_schemas import DayOfWeekRevenue, WeeklyRevenueTrend
 
 logger = get_logger(__name__)
@@ -33,7 +33,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 # Cache version - increment when calculation logic changes
-CACHE_VERSION = "v4"
+CACHE_VERSION = "v5"
 
 
 def clear_old_cache_versions() -> None:
@@ -47,7 +47,7 @@ def clear_old_cache_versions() -> None:
     # Clear all weekly_trend entries that don't match current version
     # In a production system with persistent cache (Redis), you would
     # iterate through keys and delete non-matching versions
-    for old_version in ["v1", "v2", "v3"]:  # Add old versions here
+    for old_version in ["v1", "v2", "v3", "v4"]:  # Add old versions here
         clear_cache(f"weekly_trend_{old_version}")
     logger.info(f"Cleared old cache versions. Current version: {CACHE_VERSION}")
 
@@ -251,6 +251,45 @@ async def get_weekly_trend(
     daily_bank_transfer = {row[0]: row[4] for row in rows}
     daily_credit = {row[0]: row[5] for row in rows}
 
+    cost_stmt = (
+        select(
+            DailyReconciliation.date,
+            func.max(DailyReconciliation.daily_cost_total).label("daily_cost_total"),
+        )
+        .where(
+            and_(
+                DailyReconciliation.business_id == business_uuid,
+                DailyReconciliation.date >= overall_start,
+                DailyReconciliation.date <= overall_end,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+        .group_by(DailyReconciliation.date)
+    )
+    cost_result = await db.execute(cost_stmt)
+    cost_rows = cost_result.all()
+    daily_costs = {
+        row[0]: Decimal(str(row[1])) if row[1] is not None else None for row in cost_rows
+    }
+    ticket_stmt = (
+        select(
+            DailyReconciliation.date,
+            func.sum(DailyReconciliation.invoice_count).label("ticket_count"),
+        )
+        .where(
+            and_(
+                DailyReconciliation.business_id == business_uuid,
+                DailyReconciliation.date >= overall_start,
+                DailyReconciliation.date <= overall_end,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+        .group_by(DailyReconciliation.date)
+    )
+    ticket_result = await db.execute(ticket_stmt)
+    ticket_rows = ticket_result.all()
+    daily_tickets = {row[0]: row[1] for row in ticket_rows}
+
     # Build day-by-day data for each week
     day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -262,12 +301,16 @@ async def get_weekly_trend(
             revenue = daily_revenues.get(current_date, None)
             if revenue is not None:
                 revenue = Decimal(str(revenue))
+            cost_total = daily_costs.get(current_date)
+            ticket_count = daily_tickets.get(current_date)
 
             day_data = DayOfWeekRevenue(
                 day_name=day_names[day_offset],
                 day_number=day_offset + 1,
                 date=current_date,
                 revenue=revenue if revenue is not None else Decimal("0.00"),
+                cost_total=cost_total,
+                ticket_count=int(ticket_count) if ticket_count is not None else None,
                 growth_percent=None,
                 trend_arrow="→",
             )

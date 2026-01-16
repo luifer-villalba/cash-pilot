@@ -395,14 +395,14 @@ msgstr "Colores de Diferencia:"
 msgid "Green (Surplus)"
 msgstr "Verde (Superávit)"
 
-msgid "Manual has MORE than System (positive difference)"
-msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
+msgid "System has MORE than Manual (positive difference)"
+msgstr "Agenda tiene MÁS que Farmagic (diferencia positiva)"
 
 msgid "Red (Deficit)"
 msgstr "Rojo (Déficit)"
 
-msgid "Manual has LESS than System (negative difference)"
-msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
+msgid "System has LESS than Manual (negative difference)"
+msgstr "Agenda tiene MENOS que Farmagic (diferencia negativa)"
 
 msgid "Margin Comparison"
 msgstr "Comparación de Margen"
@@ -418,9 +418,6 @@ msgstr "Total de Costo Diario"
 
 msgid "Gross Margin"
 msgstr "Margen Bruto"
-
-msgid "Margin %"
-msgstr "Margen %"
 
 msgid "Cost Percent of Sales"
 msgstr "Costo sobre Ventas"
@@ -1107,6 +1104,128 @@ msgstr "a"
 
 msgid "End date for custom range"
 msgstr "Ingrese contraseña personalizada"
+
+msgid "Line charts: revenue vs margin when cost data exists. Bar chart: 5-week revenue/margin trend."
+msgstr ""
+"Gráficos de líneas: ingresos vs margen cuando hay costos. Gráfico de barras:"
+" tendencia de 5 semanas de ingresos/margen."
+
+msgid "Week Margin"
+msgstr "Margen semanal"
+
+msgid "Week Cost"
+msgstr "Costo semanal"
+
+msgid "Margin %"
+msgstr "Margen %"
+
+msgid "Cost data missing"
+msgstr "Faltan datos de costo"
+
+msgid "Cost data complete"
+msgstr "Con datos de costo"
+
+msgid "Cost data incomplete"
+msgstr "Datos de costo incompletos"
+
+msgid "Margin (This Week)"
+msgstr "Margen (esta semana)"
+
+msgid "Margin (Last Week)"
+msgstr "Margen (semana pasada)"
+
+msgid "Cost"
+msgstr "Costo"
+
+msgid "Margin"
+msgstr "Margen"
+
+msgid "This Week vs Last Week"
+msgstr "Esta semana vs semana pasada"
+
+msgid "Sales vs Cost"
+msgstr "Ventas vs costos"
+
+msgid "Sales total"
+msgstr "Ventas totales"
+
+msgid "Sales"
+msgstr "Ventas"
+
+msgid "Cost total"
+msgstr "Costo total"
+
+msgid "of sales"
+msgstr "sobre ventas"
+
+msgid "Business Health Insights"
+msgstr "Insights de salud del negocio"
+
+msgid "Drivers of Change"
+msgstr "Motores del cambio"
+
+msgid "No negative drivers detected"
+msgstr "No se detectaron caídas relevantes"
+
+msgid "Top drops vs last week"
+msgstr "Mayores caídas vs semana pasada"
+
+msgid "of change"
+msgstr "del cambio"
+
+msgid "Discount Elasticity"
+msgstr "Elasticidad de descuentos"
+
+msgid "Avg ticket and margin by day type"
+msgstr "Ticket promedio y margen por tipo de día"
+
+msgid "Margin Impact"
+msgstr "Impacto en margen"
+
+msgid "Health Index"
+msgstr "Índice de salud"
+
+msgid "Needs Attention"
+msgstr "Necesita atención"
+
+msgid "Very Strong"
+msgstr "Muy sólido"
+
+msgid "Healthy"
+msgstr "Saludable"
+
+msgid "Watch"
+msgstr "En observación"
+
+msgid "Cost coverage"
+msgstr "Cobertura de costos"
+
+msgid "Ticket & Efficiency"
+msgstr "Tickets y eficiencia"
+
+msgid "Tickets"
+msgstr "Tickets"
+
+msgid "Avg Ticket"
+msgstr "Ticket promedio"
+
+msgid "Tickets vs Last Week"
+msgstr "Tickets vs semana pasada"
+
+msgid "No ticket data"
+msgstr "Sin datos de tickets"
+
+msgid "Weekly ticket volume and efficiency"
+msgstr "Volumen semanal y eficiencia de tickets"
+
+msgid "vs last week"
+msgstr "vs semana pasada"
+
+msgid "of week"
+msgstr "de la semana"
+
+msgid "Margin %"
+msgstr "Margen %"
 
 msgid "Apply"
 msgstr "Aplicar"
