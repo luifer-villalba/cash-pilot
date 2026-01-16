@@ -1224,9 +1224,6 @@ msgstr "vs semana pasada"
 msgid "of week"
 msgstr "de la semana"
 
-msgid "Margin %"
-msgstr "Margen %"
-
 msgid "Apply"
 msgstr "Aplicar"
 
