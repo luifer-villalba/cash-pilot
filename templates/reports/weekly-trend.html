@@ -148,10 +148,10 @@
                     <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Highest Revenue Day') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Highest Revenue Day') }}</h3>
                 </div>
-                <p class="text-xl font-bold text-base-content" id="highestDay">-</p>
-                <p class="text-sm text-base-content/60 mt-1" id="highestDayRevenue">-</p>
+                <p class="text-xl font-bold text-base-content truncate whitespace-nowrap" id="highestDay">-</p>
+                <p class="text-sm text-base-content/60 mt-1 truncate whitespace-nowrap" id="highestDayRevenue">-</p>
             </div>
 
             <!-- Lowest Revenue Day -->
@@ -160,10 +160,10 @@
                     <svg class="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Lowest Revenue Day') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Lowest Revenue Day') }}</h3>
                 </div>
-                <p class="text-xl font-bold text-base-content" id="lowestDay">-</p>
-                <p class="text-sm text-base-content/60 mt-1" id="lowestDayRevenue">-</p>
+                <p class="text-xl font-bold text-base-content truncate whitespace-nowrap" id="lowestDay">-</p>
+                <p class="text-sm text-base-content/60 mt-1 truncate whitespace-nowrap" id="lowestDayRevenue">-</p>
             </div>
 
             <!-- Week Total Sales -->
@@ -172,10 +172,10 @@
                     <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Week Total') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Week Total') }}</h3>
                 </div>
-                <p class="text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekTotal">-</p>
-                <p class="text-sm text-base-content/60 mt-1">{{ _('Total sales this week') }}</p>
+                <p class="text-xl md:text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekTotal">-</p>
+                <p class="text-sm text-base-content/60 mt-1 truncate whitespace-nowrap">{{ _('Total sales this week') }}</p>
             </div>
 
             <!-- Week Cost -->
@@ -184,10 +184,10 @@
                     <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Week Cost') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Week Cost') }}</h3>
                 </div>
-                <p class="text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekCost">-</p>
-                <p class="text-sm text-base-content/60 mt-1" id="currentWeekCostShare">-</p>
+                <p class="text-xl md:text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekCost">-</p>
+                <p class="text-sm text-base-content/60 mt-1 truncate whitespace-nowrap" id="currentWeekCostShare">-</p>
             </div>
 
             <!-- Week Margin -->
@@ -196,10 +196,10 @@
                     <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Week Margin') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Week Margin') }}</h3>
                 </div>
-                <p class="text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekMargin">-</p>
-                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1" id="currentWeekMarginPct">-</p>
+                <p class="text-xl md:text-2xl font-bold font-mono tabular-nums text-base-content" id="currentWeekMargin">-</p>
+                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1 truncate whitespace-nowrap" id="currentWeekMarginPct">-</p>
             </div>
 
             <!-- Week-over-Week Growth -->
@@ -208,10 +208,10 @@
                     <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                     </svg>
-                    <h3 class="font-semibold text-sm text-base-content/70">{{ _('Growth vs Previous') }}</h3>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Growth vs Previous') }}</h3>
                 </div>
-                <p class="text-2xl font-bold font-mono tabular-nums" id="weekGrowthPercent">-</p>
-                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1" id="weekGrowthDifference">-</p>
+                <p class="text-xl md:text-2xl font-bold font-mono tabular-nums" id="weekGrowthPercent">-</p>
+                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1 truncate whitespace-nowrap" id="weekGrowthDifference">-</p>
             </div>
         </div>
 
@@ -353,6 +353,25 @@
         const num = Math.round(parseFloat(value));
         // es-PY uses comma, but we need dots per design system
         return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+    };
+
+    const formatCompactCurrency = (value) => {
+        const num = Math.round(parseFloat(value));
+        if (!Number.isFinite(num)) {
+            return '-';
+        }
+        const abs = Math.abs(num);
+        let formatted = null;
+        if (abs >= 1_000_000_000) {
+            formatted = (num / 1_000_000_000).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d)0$/, '$1') + 'B';
+        } else if (abs >= 1_000_000) {
+            formatted = (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+        } else if (abs >= 1_000) {
+            formatted = (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+        } else {
+            formatted = num.toString();
+        }
+        return 'Gs ' + formatted;
     };
 
     const parseNumber = (value) => {
@@ -630,8 +649,8 @@
         if (data.highest_day && data.highest_day.day_name) {
             highestDayEl.innerHTML = `<span class="font-bold">${translateDayName(data.highest_day.day_name)}</span> · <span class="font-normal text-base-content/60">${formatShortDate(data.highest_day.date)}</span>`;
             const highestShare = weekTotalValue > 0 ? (parseNumber(data.highest_day.revenue) / weekTotalValue) * 100 : null;
-            const highestShareText = highestShare !== null ? ` · ${highestShare.toFixed(1)}% {{ _("of week") }}` : '';
-            document.getElementById('highestDayRevenue').textContent = `${formatCurrency(data.highest_day.revenue)}${highestShareText}`;
+            const highestShareText = highestShare !== null ? ` · ${highestShare.toFixed(1)}%` : '';
+            document.getElementById('highestDayRevenue').textContent = `${formatCompactCurrency(data.highest_day.revenue)}${highestShareText}`;
         } else {
             highestDayEl.textContent = '-';
             document.getElementById('highestDayRevenue').textContent = '-';
@@ -641,8 +660,8 @@
         if (data.lowest_day && data.lowest_day.day_name) {
             lowestDayEl.innerHTML = `<span class="font-bold">${translateDayName(data.lowest_day.day_name)}</span> · <span class="font-normal text-base-content/60">${formatShortDate(data.lowest_day.date)}</span>`;
             const lowestShare = weekTotalValue > 0 ? (parseNumber(data.lowest_day.revenue) / weekTotalValue) * 100 : null;
-            const lowestShareText = lowestShare !== null ? ` · ${lowestShare.toFixed(1)}% {{ _("of week") }}` : '';
-            document.getElementById('lowestDayRevenue').textContent = `${formatCurrency(data.lowest_day.revenue)}${lowestShareText}`;
+            const lowestShareText = lowestShare !== null ? ` · ${lowestShare.toFixed(1)}%` : '';
+            document.getElementById('lowestDayRevenue').textContent = `${formatCompactCurrency(data.lowest_day.revenue)}${lowestShareText}`;
         } else {
             lowestDayEl.textContent = '-';
             document.getElementById('lowestDayRevenue').textContent = '-';
@@ -654,7 +673,7 @@
         const growthDiffEl = document.getElementById('weekGrowthDifference');
         
         // Show current week total
-        currentWeekTotalEl.textContent = formatCurrency(data.current_week_total);
+        currentWeekTotalEl.textContent = formatCompactCurrency(data.current_week_total);
 
         // Week margin summary (uses cost data when available)
         const marginTotalEl = document.getElementById('currentWeekMargin');
@@ -697,11 +716,11 @@
             const costRatio = revenueWithCost > 0 ? (costTotal / revenueWithCost) * 100 : null;
             const marginColor = marginTotal > 0 ? 'text-success' : marginTotal < 0 ? 'text-error' : 'text-base-content/60';
 
-            marginTotalEl.textContent = formatCurrency(marginTotal);
+            marginTotalEl.textContent = formatCompactCurrency(marginTotal);
             marginTotalEl.className = `text-2xl font-bold font-mono tabular-nums ${marginColor}`;
             const marginPctText = marginPct !== null ? `${marginPct > 0 ? '+' : ''}${marginPct.toFixed(1)}%` : '-';
             marginPctEl.className = `text-sm font-mono tabular-nums ${marginColor}`;
-            weekCostEl.textContent = formatCurrency(costTotal);
+            weekCostEl.textContent = formatCompactCurrency(costTotal);
             weekCostEl.className = 'text-2xl font-bold font-mono tabular-nums text-base-content';
 
 
@@ -734,9 +753,9 @@
             
             // Show difference
             const diff = parseFloat(data.week_over_week_difference);
-            const diffText = diff > 0 ? `+${formatCurrency(Math.abs(diff))}` : 
-                            diff < 0 ? `-${formatCurrency(Math.abs(diff))}` : 
-                            formatCurrency(0);
+            const diffText = diff > 0 ? `+${formatCompactCurrency(Math.abs(diff))}` : 
+                            diff < 0 ? `-${formatCompactCurrency(Math.abs(diff))}` : 
+                            formatCompactCurrency(0);
             growthDiffEl.className = `text-sm font-mono tabular-nums mt-1 ${colorClass}`;
             growthDiffEl.textContent = diffText;
         } else {
