@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-15 15:22+0000\n"
+"POT-Creation-Date: 2026-01-15 21:18+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -112,18 +112,6 @@ msgstr ""
 msgid "Back to Report"
 msgstr ""
 
-msgid "Filter Sessions"
-msgstr ""
-
-msgid "Show Deleted"
-msgstr ""
-
-msgid "Toggle filters"
-msgstr ""
-
-msgid "More Options"
-msgstr ""
-
 msgid "Today"
 msgstr ""
 
@@ -134,21 +122,6 @@ msgid "Last 7 Days"
 msgstr ""
 
 msgid "Last 30 Days"
-msgstr ""
-
-msgid "All Businesses"
-msgstr ""
-
-msgid "From Date"
-msgstr ""
-
-msgid "Clear from date"
-msgstr ""
-
-msgid "To Date"
-msgstr ""
-
-msgid "Clear to date"
 msgstr ""
 
 msgid "Status"
@@ -163,13 +136,34 @@ msgstr ""
 msgid "Closed"
 msgstr ""
 
-msgid "Clear status"
+msgid "Business"
+msgstr ""
+
+msgid "All Businesses"
+msgstr ""
+
+msgid "Deleted"
+msgstr ""
+
+msgid "More options"
+msgstr ""
+
+msgid "From Date"
+msgstr ""
+
+msgid "Clear from date"
+msgstr ""
+
+msgid "To Date"
+msgstr ""
+
+msgid "Clear to date"
 msgstr ""
 
 msgid "Cashier Name"
 msgstr ""
 
-msgid "Search..."
+msgid "Cashier"
 msgstr ""
 
 msgid "Clear cashier name"
@@ -266,9 +260,6 @@ msgid "Compare system entries vs manual records"
 msgstr ""
 
 msgid "Edit Entries"
-msgstr ""
-
-msgid "Business"
 msgstr ""
 
 msgid "Select business to analyze"
@@ -467,9 +458,6 @@ msgid "First Name"
 msgstr ""
 
 msgid "Last Name"
-msgstr ""
-
-msgid "Cashier"
 msgstr ""
 
 msgid "Admin"
@@ -831,6 +819,12 @@ msgstr ""
 msgid "Total expenses"
 msgstr ""
 
+msgid "No reconciliation yet"
+msgstr ""
+
+msgid "Click to reconcile"
+msgstr ""
+
 msgid "Reconciled"
 msgstr ""
 
@@ -844,9 +838,6 @@ msgid "sessions"
 msgstr ""
 
 msgid "Open Cash Session"
-msgstr ""
-
-msgid "Actions"
 msgstr ""
 
 msgid "Reconciliation"
@@ -889,9 +880,6 @@ msgid "Transfer"
 msgstr ""
 
 msgid "View session"
-msgstr ""
-
-msgid "Deleted"
 msgstr ""
 
 msgid "Envelope"
@@ -968,9 +956,6 @@ msgstr ""
 msgid "Create New Session"
 msgstr ""
 
-msgid "TOTAL SALES"
-msgstr ""
-
 msgid "Card Payments"
 msgstr ""
 
@@ -980,46 +965,13 @@ msgstr ""
 msgid "Pending payments"
 msgstr ""
 
-msgid "Collections"
-msgstr ""
-
-msgid "Payments collected"
-msgstr ""
-
-msgid "Bank Transfers"
-msgstr ""
-
-msgid "Direct transfers"
-msgstr ""
-
-msgid "More Details"
-msgstr ""
-
-msgid "Cash outflows"
-msgstr ""
-
-msgid "Cash Profit"
-msgstr ""
-
-msgid "Open Sessions"
-msgstr ""
-
-msgid "Closed Sessions"
-msgstr ""
-
-msgid "Flagged Sessions"
-msgstr ""
-
-msgid "Need review"
-msgstr ""
-
-msgid "Less Details"
-msgstr ""
-
 msgid "No transfer entries yet"
 msgstr ""
 
 msgid "Toggle bank transfers section"
+msgstr ""
+
+msgid "Bank Transfers"
 msgstr ""
 
 msgid "Click here to add your first transfer"
@@ -1151,6 +1103,9 @@ msgstr ""
 msgid "down"
 msgstr ""
 
+msgid "Collections"
+msgstr ""
+
 msgid "Best Performer"
 msgstr ""
 
@@ -1176,6 +1131,12 @@ msgid "TOTAL"
 msgstr ""
 
 msgid "Toggle more details for"
+msgstr ""
+
+msgid "More Details"
+msgstr ""
+
+msgid "Cash Profit"
 msgstr ""
 
 msgid "Sessions Open"
@@ -1259,6 +1220,9 @@ msgid "Report"
 msgstr ""
 
 msgid "Net Earnings"
+msgstr ""
+
+msgid "Closed Sessions"
 msgstr ""
 
 msgid "Top Performer Today"
@@ -2077,9 +2041,6 @@ msgstr ""
 msgid "Credit & Debit Cards"
 msgstr ""
 
-msgid "Reconciliation"
-msgstr ""
-
 msgid "CASH SALES & BANK TRANSFER"
 msgstr ""
 
@@ -2213,3 +2174,4 @@ msgstr ""
 
 msgid "Clear"
 msgstr ""
+

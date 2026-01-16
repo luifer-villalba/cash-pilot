@@ -43,123 +43,117 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-        <div class="p-4 md:p-6 space-y-6">
-            <!-- Filter Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                        </svg>
-                        {{ _('Filter Sessions') }}
-                    </h2>
-                </div>
-                <div class="flex gap-2 items-center">
-                    {% if current_user.role == 'ADMIN' %}
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" 
-                               id="include-deleted-toggle" 
-                               class="toggle toggle-sm toggle-primary"
-                               {% if include_deleted %}checked{% endif %}
-                               onchange="toggleDeletedSessions()">
-                        <span class="text-xs text-base-content/70">{{ _('Show Deleted') }}</span>
-                    </label>
-                    {% endif %}
-                    <button
-                            type="button"
-                            id="filter-toggle"
-                            class="btn btn-sm btn-ghost gap-2 hover:bg-base-200 transition-all duration-200 hover:scale-105 active:scale-95"
-                            aria-label="{{ _('Toggle filters') }}"
-                            aria-expanded="false"
-                    >
-                        <span>{{ _('More Options') }}</span>
-                        <svg id="filter-chevron" class="w-4 h-4 transition-transform duration-300" fill="none"
-                             stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+    <div class="dashboard-filters bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="dashboard-filters-body p-4 md:p-6 space-y-6">
+            <form id="filter-form" class="dashboard-filters-form">
+                <div class="filters-primary-row">
+                    <div class="filters-left">
+                        <div class="filters-item filters-quick">
+                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="today">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Today') }}
+                            </button>
+                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="yesterday">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7 14 L9 16 L7 18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Yesterday') }}
+                            </button>
+                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="week">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="7" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="14" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Last 7 Days') }}
+                            </button>
+                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="month">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="7" y="13" width="3" height="6" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="11" y="9" width="3" height="10" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="15" y="6" width="3" height="13" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Last 30 Days') }}
+                            </button>
+                        </div>
 
-            <!-- Preset Buttons + Business Selector (Always Visible) -->
-            <div class="flex flex-col sm:flex-row flex-wrap gap-2 items-start sm:items-center">
-                <div class="flex flex-wrap gap-2">
-                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-all duration-200 hover:scale-105 active:scale-95" data-preset="today">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span>{{ _('Today') }}</span>
-                    </button>
-                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-all duration-200 hover:scale-105 active:scale-95" data-preset="yesterday">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M7 14 L9 16 L7 18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span>{{ _('Yesterday') }}</span>
-                    </button>
-                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-all duration-200 hover:scale-105 active:scale-95" data-preset="week">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <rect x="7" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <rect x="14" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span>{{ _('Last 7 Days') }}</span>
-                    </button>
-                    <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 hover:btn-primary transition-all duration-200 hover:scale-105 active:scale-95" data-preset="month">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <rect x="7" y="13" width="3" height="6" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <rect x="11" y="9" width="3" height="10" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <rect x="15" y="6" width="3" height="13" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span>{{ _('Last 30 Days') }}</span>
-                    </button>
-                </div>
-                
-                <!-- Business Quick Filter -->
-                <div class="form-control sm:ml-auto">
-                    <select id="business_quick" class="select select-sm select-bordered w-full sm:w-56">
-                        <option value="">{{ _('All Businesses') }}</option>
-                        {% for biz in businesses %}
-                        <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+                        <div class="filters-item">
+                            <label class="sr-only" for="status">{{ _('Status') }}</label>
+                            <select id="status" name="status" class="select select-sm select-bordered w-24 filters-compact-select{% if current_filters.status %} select-primary{% endif %}" aria-label="{{ _('Status') }}">
+                                <option value="">{{ _('All') }}</option>
+                                <option value="OPEN" {% if current_filters.status=='OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
+                                <option value="CLOSED" {% if current_filters.status=='CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
+                            </select>
+                        </div>
 
-            <!-- Collapsible Filter Form (Hidden by default, controlled by toggle) -->
-            <form id="filter-form" class="hidden transition-all duration-300 pt-2">
-                <!-- Hidden business_id input -->
-                <input type="hidden" id="business_id" name="business_id" value="{{ current_filters.business_id or '' }}">
-                
-                <!-- Single Row: All Filters -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-end">
-                    <!-- From Date -->
-                    <div class="form-control">
-                        <label class="label py-1 px-0">
-                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('From Date') }}</span>
-                        </label>
+                        <div class="filters-item">
+                            <label class="sr-only" for="business_quick">{{ _('Business') }}</label>
+                            <select id="business_quick" class="select select-sm select-bordered w-36 filters-compact-select" aria-label="{{ _('Business') }}">
+                                <option value="">{{ _('All Businesses') }}</option>
+                                {% for biz in businesses %}
+                                <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filters-right">
+                        <div class="filters-actions">
+                            {% if current_user.role == 'ADMIN' %}
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox"
+                                       id="include-deleted-toggle"
+                                       class="toggle toggle-sm toggle-primary"
+                                       {% if include_deleted %}checked{% endif %}
+                                       onchange="toggleDeletedSessions()">
+                                <span class="text-xs text-base-content/70">{{ _('Deleted') }}</span>
+                            </label>
+                            {% endif %}
+
+                            <button
+                                    type="button"
+                                    id="filter-toggle"
+                                    class="btn btn-sm btn-ghost btn-square hover:bg-base-200"
+                                    aria-label="{{ _('More options') }}"
+                                    aria-expanded="false"
+                            >
+                                <svg id="filter-chevron" class="w-4 h-4" fill="none"
+                                     stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="filter-advanced" class="filters-advanced-row hidden">
+                    <div class="filters-item">
+                        <label class="sr-only" for="from_date">{{ _('From Date') }}</label>
                         <div class="relative">
                             <input
                                     type="date"
                                     id="from_date"
                                     name="from_date"
-                                    class="input input-sm input-bordered w-full pr-10 h-9{% if current_filters.from_date %} input-primary{% endif %}"
+                                    class="input input-sm input-bordered w-36 pr-8 h-9{% if current_filters.from_date %} input-primary{% endif %}"
                                     value="{{ current_filters.from_date }}"
+                                    aria-label="{{ _('From Date') }}"
                             />
                             <button type="button"
-                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
                                     data-field="from_date"
                                     aria-label="{{ _('Clear from date') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -169,21 +163,19 @@
                         </div>
                     </div>
 
-                    <!-- To Date -->
-                    <div class="form-control">
-                        <label class="label py-1 px-0">
-                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('To Date') }}</span>
-                        </label>
+                    <div class="filters-item">
+                        <label class="sr-only" for="to_date">{{ _('To Date') }}</label>
                         <div class="relative">
                             <input
                                     type="date"
                                     id="to_date"
                                     name="to_date"
-                                    class="input input-sm input-bordered w-full pr-10 h-9{% if current_filters.to_date %} input-primary{% endif %}"
+                                    class="input input-sm input-bordered w-36 pr-8 h-9{% if current_filters.to_date %} input-primary{% endif %}"
                                     value="{{ current_filters.to_date }}"
+                                    aria-label="{{ _('To Date') }}"
                             />
                             <button type="button"
-                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
                                     data-field="to_date"
                                     aria-label="{{ _('Clear to date') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -193,44 +185,20 @@
                         </div>
                     </div>
 
-                    <!-- Status -->
-                    <div class="form-control">
-                        <label class="label py-1 px-0">
-                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('Status') }}</span>
-                        </label>
-                        <div class="relative">
-                            <select id="status" name="status" class="select select-sm select-bordered w-full pr-10 h-9{% if current_filters.status %} select-primary{% endif %}">
-                                <option value="">{{ _('All') }}</option>
-                                <option value="OPEN" {% if current_filters.status=='OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
-                                <option value="CLOSED" {% if current_filters.status=='CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
-                            </select>
-                            <button type="button"
-                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
-                                    data-field="status"
-                                    aria-label="{{ _('Clear status') }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Cashier Name -->
-                    <div class="form-control">
-                        <label class="label py-1 px-0">
-                            <span class="label-text text-xs font-semibold text-base-content/70">{{ _('Cashier Name') }}</span>
-                        </label>
+                    <div class="filters-item">
+                        <label class="sr-only" for="cashier_name">{{ _('Cashier Name') }}</label>
                         <div class="relative">
                             <input
                                     type="text"
                                     id="cashier_name"
                                     name="cashier_name"
-                                    class="input input-sm input-bordered w-full pr-10 h-9{% if current_filters.cashier_name %} input-primary{% endif %}"
-                                    placeholder="{{ _('Search...') }}"
+                                    class="input input-sm input-bordered w-44 pr-8 h-9{% if current_filters.cashier_name %} input-primary{% endif %}"
+                                    placeholder="{{ _('Cashier') }}"
                                     value="{{ current_filters.cashier_name or '' }}"
+                                    aria-label="{{ _('Cashier Name') }}"
                             />
                             <button type="button"
-                                    class="clear-filter-btn absolute right-3 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
+                                    class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
                                     data-field="cashier_name"
                                     aria-label="{{ _('Clear cashier name') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -240,9 +208,13 @@
                         </div>
                     </div>
 
-                    <!-- Clear All Button -->
-                    <a href="/" class="btn btn-outline btn-sm px-4 h-9 hover:btn-error transition-all duration-200 hover:scale-105 active:scale-95">{{ _('Clear All') }}</a>
+                    <div class="filters-item">
+                        <a href="/" class="btn btn-outline btn-sm px-3 h-9 hover:btn-error transition-all duration-200 hover:scale-105 active:scale-95">{{ _('Clear All') }}</a>
+                    </div>
                 </div>
+
+                <input type="hidden" id="business_id" name="business_id" value="{{ current_filters.business_id or '' }}">
+                <input type="hidden" id="all_dates" name="all_dates" value="">
             </form>
         </div>
     </div>
@@ -319,15 +291,17 @@
 
     // Filter Toggle
     const filterToggle = document.getElementById('filter-toggle');
-    const filterForm = document.getElementById('filter-form');
+    const filterAdvanced = document.getElementById('filter-advanced');
     const filterChevron = document.getElementById('filter-chevron');
 
-    filterToggle.addEventListener('click', function () {
-        const isExpanded = filterForm.classList.contains('hidden');
-        filterForm.classList.toggle('hidden');
-        filterChevron.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
-        filterToggle.setAttribute('aria-expanded', isExpanded);
-    });
+    if (filterToggle && filterAdvanced && filterChevron) {
+        filterToggle.addEventListener('click', function () {
+            const isExpanded = filterAdvanced.classList.contains('hidden');
+            filterAdvanced.classList.toggle('hidden');
+            filterChevron.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+            filterToggle.setAttribute('aria-expanded', isExpanded);
+        });
+    }
 
 
     // Helper to trigger both stats and table updates
@@ -431,14 +405,21 @@
         const monthStart = formatLocalDate(monthStartDate);
         const monthEnd = today;
         
+        const presetSelect = document.getElementById('preset_quick');
         if (fromDate === today && toDate === today) {
             setActivePreset('today');
+            if (presetSelect) presetSelect.value = 'today';
         } else if (fromDate === yesterdayStr && toDate === yesterdayStr) {
             setActivePreset('yesterday');
+            if (presetSelect) presetSelect.value = 'yesterday';
         } else if (fromDate === weekStart && toDate === weekEndStr) {
             setActivePreset('week');
+            if (presetSelect) presetSelect.value = 'week';
         } else if (fromDate === monthStart && toDate === monthEnd) {
             setActivePreset('month');
+            if (presetSelect) presetSelect.value = 'month';
+        } else if (presetSelect) {
+            presetSelect.value = '';
         }
     }
 
@@ -490,6 +471,54 @@
             }, 100);
         });
     });
+
+    const presetSelect = document.getElementById('preset_quick');
+    if (presetSelect) {
+        presetSelect.addEventListener('change', function (e) {
+            e.stopPropagation();
+            const preset = this.value;
+            if (!preset) return;
+
+            const now = new Date();
+            let startDate, endDate;
+
+            if (preset === 'today') {
+                startDate = endDate = now;
+            } else if (preset === 'yesterday') {
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 1);
+                endDate = startDate;
+            } else if (preset === 'week') {
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 6);
+                endDate = new Date(now);
+            } else if (preset === 'month') {
+                startDate = new Date(now);
+                startDate.setDate(startDate.getDate() - 29);
+                endDate = new Date(now);
+            }
+
+            function formatLocalDate(d) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            document.getElementById('from_date').value = formatLocalDate(startDate);
+            document.getElementById('to_date').value = formatLocalDate(endDate);
+
+            setActivePreset(preset);
+            updateReconciliationLinks();
+            applyFilters();
+
+            setTimeout(() => {
+                if (typeof htmx !== 'undefined') {
+                    htmx.trigger(document.body, 'reconciliationBadgeUpdate');
+                }
+            }, 100);
+        });
+    }
 
     // Detect active preset on page load
     detectActivePreset();

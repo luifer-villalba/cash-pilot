@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-15 15:22+0000\n"
+"POT-Creation-Date: 2026-01-15 21:18+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -112,27 +112,15 @@ msgid "Login"
 msgstr "Iniciar sesión"
 
 msgid "Business Cash Register Reconciliation System"
-msgstr "Sistema de Reconciliación de Caja para Negocios"
+msgstr "Sistema de Conciliación de Caja para Negocios"
 
 msgid ""
 "Monitor cash sessions and\n"
 "                        reconciliation"
-msgstr "Monitorear sesiones de caja y reconciliación"
+msgstr "Monitorear sesiones de caja y conciliación"
 
 msgid "Back to Report"
 msgstr "Volver al Reporte"
-
-msgid "Filter Sessions"
-msgstr "Filtrar Sesiones"
-
-msgid "Show Deleted"
-msgstr "Mostrar Eliminadas"
-
-msgid "Toggle filters"
-msgstr "Alternar filtros"
-
-msgid "More Options"
-msgstr "Más Opciones"
 
 msgid "Today"
 msgstr "Hoy"
@@ -146,8 +134,29 @@ msgstr "Últimos 7 días"
 msgid "Last 30 Days"
 msgstr "Últimos 30 días"
 
+msgid "Status"
+msgstr "Estado"
+
+msgid "All"
+msgstr "Todos"
+
+msgid "Open"
+msgstr "Abierto"
+
+msgid "Closed"
+msgstr "Cerrado"
+
+msgid "Business"
+msgstr "Negocio"
+
 msgid "All Businesses"
 msgstr "Todos los Negocios"
+
+msgid "Deleted"
+msgstr "Eliminado"
+
+msgid "More options"
+msgstr "Más opciones"
 
 msgid "From Date"
 msgstr "Desde Fecha"
@@ -161,26 +170,11 @@ msgstr "Hasta Fecha"
 msgid "Clear to date"
 msgstr "Limpiar fecha hasta"
 
-msgid "Status"
-msgstr "Estado"
-
-msgid "All"
-msgstr "Todos"
-
-msgid "Open"
-msgstr "Abierto"
-
-msgid "Closed"
-msgstr "Cerrado"
-
-msgid "Clear status"
-msgstr "Limpiar estado"
-
 msgid "Cashier Name"
 msgstr "Nombre del Cajero"
 
-msgid "Search..."
-msgstr "Buscar..."
+msgid "Cashier"
+msgstr "Cajero"
 
 msgid "Clear cashier name"
 msgstr "Limpiar nombre del cajero"
@@ -192,7 +186,7 @@ msgid "Loading sessions..."
 msgstr "Cargando sesiones..."
 
 msgid "Business Cash Reconciliation System"
-msgstr "Sistema de Reconciliación de Caja para Negocios"
+msgstr "Sistema de Conciliación de Caja para Negocios"
 
 msgid "Invalid credentials"
 msgstr "Email o contraseña inválidas"
@@ -270,16 +264,13 @@ msgid "Back to Dashboard"
 msgstr "Volver al Panel"
 
 msgid "Daily Reconciliation Comparison"
-msgstr "Comparación de Reconciliación Diaria"
+msgstr "Comparación de Conciliación Diaria"
 
 msgid "Compare system entries vs manual records"
 msgstr "Comparar registros automáticos vs manuales"
 
 msgid "Edit Entries"
 msgstr "Editar Entradas"
-
-msgid "Business"
-msgstr "Negocio"
 
 msgid "Select business to analyze"
 msgstr "Seleccione un negocio para analizar"
@@ -321,10 +312,10 @@ msgid "Date"
 msgstr "Fecha"
 
 msgid "Select a date to compare reconciliation data"
-msgstr "Seleccioná una fecha para comparar datos de reconciliación"
+msgstr "Seleccioná una fecha para comparar datos de conciliación"
 
 msgid "Sales Reconciliation Comparison"
-msgstr "Comparación de Reconciliación de Ventas"
+msgstr "Comparación de Conciliación de Ventas"
 
 msgid "System vs manual totals by business"
 msgstr "Totales del sistema vs manuales por negocio"
@@ -480,9 +471,6 @@ msgstr "Nombre"
 
 msgid "Last Name"
 msgstr "Apellido"
-
-msgid "Cashier"
-msgstr "Cajero"
 
 msgid "Admin"
 msgstr "Administrador"
@@ -787,7 +775,7 @@ msgstr "Solo administradores pueden borrar"
 msgid ""
 "Create your first business to start managing cash sessions and "
 "reconciliations."
-msgstr "Creá tu primer sucursal para monitorear sesiones de caja y reconciliación"
+msgstr "Creá tu primer sucursal para monitorear sesiones de caja y conciliación"
 
 msgid "No expense entries yet"
 msgstr "Sin entradas de gastos todavía"
@@ -843,8 +831,14 @@ msgstr "Total de Gastos"
 msgid "Total expenses"
 msgstr "Total de gastos"
 
+msgid "No reconciliation yet"
+msgstr "Sin conciliación aún"
+
+msgid "Click to reconcile"
+msgstr "Click para empezar"
+
 msgid "Reconciled"
-msgstr "Reconciliado"
+msgstr "Conciliado"
 
 msgid "Cash Sessions"
 msgstr "Sesiones de Caja"
@@ -858,17 +852,14 @@ msgstr "sesiones"
 msgid "Open Cash Session"
 msgstr "Abrir Caja"
 
-msgid "Actions"
-msgstr "Acciones"
-
 msgid "Reconciliation"
-msgstr "Reconciliación"
+msgstr "Conciliación"
 
 msgid "Add Reconciliation"
-msgstr "Agregar Reconciliación"
+msgstr "Agregar Conciliación"
 
 msgid "View Reconciliations"
-msgstr "Ver Reconciliaciones"
+msgstr "Ver Conciliaciones"
 
 msgid "Export"
 msgstr "Exportar"
@@ -902,9 +893,6 @@ msgstr "Transferencia"
 
 msgid "View session"
 msgstr "Ver Caja"
-
-msgid "Deleted"
-msgstr "Eliminado"
 
 msgid "Envelope"
 msgstr "Sobre"
@@ -982,9 +970,6 @@ msgstr ""
 msgid "Create New Session"
 msgstr "Crear Nueva Sesión"
 
-msgid "TOTAL SALES"
-msgstr "VENTAS TOTALES"
-
 msgid "Card Payments"
 msgstr "Ventas con Tarjeta"
 
@@ -994,47 +979,14 @@ msgstr "Débito"
 msgid "Pending payments"
 msgstr "Pagos pendientes"
 
-msgid "Collections"
-msgstr "Cobranzas"
-
-msgid "Payments collected"
-msgstr "Pagos cobrados"
-
-msgid "Bank Transfers"
-msgstr "Transferencias"
-
-msgid "Direct transfers"
-msgstr "Transferencias directas"
-
-msgid "More Details"
-msgstr "Más Detalles"
-
-msgid "Cash outflows"
-msgstr "Salida de efectivo"
-
-msgid "Cash Profit"
-msgstr "Ganancia en Efectivo"
-
-msgid "Open Sessions"
-msgstr "Sesiones Abiertas"
-
-msgid "Closed Sessions"
-msgstr "Sesiones Cerradas"
-
-msgid "Flagged Sessions"
-msgstr "Sesiones Marcadas"
-
-msgid "Need review"
-msgstr "Necesitan revisión"
-
-msgid "Less Details"
-msgstr "Menos Detalles"
-
 msgid "No transfer entries yet"
 msgstr "Sin entradas de transferencias todavía"
 
 msgid "Toggle bank transfers section"
 msgstr "Alternar sección de transferencias bancarias"
+
+msgid "Bank Transfers"
+msgstr "Transferencias"
 
 msgid "Click here to add your first transfer"
 msgstr "Hacé clic acá para agregar tu primera transferencia"
@@ -1076,7 +1028,7 @@ msgid "Total bank transfers"
 msgstr "Total de transferencias bancarias"
 
 msgid "Daily Reconciliation"
-msgstr "Reconciliación Diaria"
+msgstr "Conciliación Diaria"
 
 msgid "Enter daily sales data for all business locations"
 msgstr "Ingresá datos de ventas diarias para todas las ubicaciones del negocio"
@@ -1100,7 +1052,7 @@ msgid "Previous"
 msgstr "Anterior"
 
 msgid "Date for reconciliation entry"
-msgstr "Fecha para la entrada de reconciliación"
+msgstr "Fecha para la entrada de conciliación"
 
 msgid "Business Locations"
 msgstr "Ubicaciones del Negocio"
@@ -1124,10 +1076,10 @@ msgid "Required when editing existing data (minimum 5 characters)"
 msgstr "Requerido al editar datos existentes (mínimo 5 caracteres)"
 
 msgid "Save daily reconciliation"
-msgstr "Guardar reconciliación diaria"
+msgstr "Guardar conciliación diaria"
 
 msgid "Save Reconciliation"
-msgstr "Guardar Reconciliación"
+msgstr "Guardar Conciliación"
 
 msgid "Cancel and return to dashboard"
 msgstr "Cancelar y volver al panel"
@@ -1165,6 +1117,9 @@ msgstr "arriba"
 msgid "down"
 msgstr "abajo"
 
+msgid "Collections"
+msgstr "Cobranzas"
+
 msgid "Best Performer"
 msgstr "Mejor Rendimiento"
 
@@ -1191,6 +1146,12 @@ msgstr "TOTAL"
 
 msgid "Toggle more details for"
 msgstr "Más Detalles"
+
+msgid "More Details"
+msgstr "Más Detalles"
+
+msgid "Cash Profit"
+msgstr "Ganancia en Efectivo"
 
 msgid "Sessions Open"
 msgstr "Sesiones Abiertas"
@@ -1244,7 +1205,7 @@ msgid ""
 "Daily reconciliation view with sales by payment method and discrepancy "
 "analysis"
 msgstr ""
-"Vista de reconciliación diaria con ventas por método de pago y análisis "
+"Vista de conciliación diaria con ventas por método de pago y análisis "
 "de discrepancias"
 
 msgid "Select Business"
@@ -1276,6 +1237,9 @@ msgstr "Reporte"
 
 msgid "Net Earnings"
 msgstr "Ganancias Netas"
+
+msgid "Closed Sessions"
+msgstr "Sesiones Cerradas"
 
 msgid "Top Performer Today"
 msgstr "Mejor Rendimiento Hoy"
@@ -1862,7 +1826,7 @@ msgid "Initial Cash"
 msgstr "Efectivo Inicial"
 
 msgid "Live Reconciliation"
-msgstr "Reconciliación en Vivo"
+msgstr "Conciliación en Vivo"
 
 msgid "Fill form fields to see live calculations..."
 msgstr "Completá los campos del formulario para ver los cálculos en vivo..."
@@ -2111,9 +2075,6 @@ msgstr "Gastos del negocio durante el turno"
 msgid "Credit & Debit Cards"
 msgstr "Tarjeta de Crédito y Débito"
 
-msgid "Reconciliation"
-msgstr "Reconciliación"
-
 msgid "CASH SALES & BANK TRANSFER"
 msgstr "VENTAS EFECTIVO & TRANSFERENCIAS"
 
@@ -2285,4 +2246,43 @@ msgstr "Limpiar"
 #~ msgstr "Abrir Caja"
 
 #~ msgid "Add Reconciliation"
-#~ msgstr "Agregar Reconciliación"
+#~ msgstr "Agregar Conciliación"
+
+#~ msgid "Filter Sessions"
+#~ msgstr "Filtrar Sesiones"
+
+#~ msgid "Show Deleted"
+#~ msgstr "Mostrar Eliminadas"
+
+#~ msgid "Toggle filters"
+#~ msgstr "Alternar filtros"
+
+#~ msgid "Clear status"
+#~ msgstr "Limpiar estado"
+
+#~ msgid "Search..."
+#~ msgstr "Buscar..."
+
+#~ msgid "TOTAL SALES"
+#~ msgstr "VENTAS TOTALES"
+
+#~ msgid "Payments collected"
+#~ msgstr "Pagos cobrados"
+
+#~ msgid "Direct transfers"
+#~ msgstr "Transferencias directas"
+
+#~ msgid "Cash outflows"
+#~ msgstr "Salida de efectivo"
+
+#~ msgid "Open Sessions"
+#~ msgstr "Sesiones Abiertas"
+
+#~ msgid "Flagged Sessions"
+#~ msgstr "Sesiones Marcadas"
+
+#~ msgid "Need review"
+#~ msgstr "Necesitan revisión"
+
+#~ msgid "Less Details"
+#~ msgstr "Menos Detalles"
