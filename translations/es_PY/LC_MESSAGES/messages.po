@@ -849,6 +849,9 @@ msgstr "sesiones"
 msgid "Open Cash Session"
 msgstr "Abrir Caja"
 
+msgid "Use the \"Open Cash Session\" button above to create your first session."
+msgstr "Usá el botón \"Abrir Caja\" de arriba para crear tu primera sesión."
+
 msgid "Reconciliation"
 msgstr "Conciliación"
 
