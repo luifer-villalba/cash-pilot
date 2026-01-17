@@ -327,6 +327,7 @@
             if (isMobile) {
                 filterAdvanced.appendChild(el);
             } else {
+                // Guard: original.next may no longer be a sibling when restoring, so insertBefore can throw.
                 original.parent.insertBefore(el, original.next);
             }
         });
