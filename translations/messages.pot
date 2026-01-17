@@ -840,6 +840,9 @@ msgstr ""
 msgid "Open Cash Session"
 msgstr ""
 
+msgid "Use the \"Open Cash Session\" button above to create your first session."
+msgstr ""
+
 msgid "Reconciliation"
 msgstr ""
 

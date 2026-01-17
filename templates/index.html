@@ -90,7 +90,7 @@
                             </button>
                         </div>
 
-                        <div class="filters-item">
+                        <div class="filters-item" id="filters-status-item">
                             <label class="sr-only" for="status">{{ _('Status') }}</label>
                             <select id="status" name="status" class="select select-sm select-bordered w-24 filters-compact-select{% if current_filters.status %} select-primary{% endif %}" aria-label="{{ _('Status') }}">
                                 <option value="">{{ _('All') }}</option>
@@ -99,7 +99,7 @@
                             </select>
                         </div>
 
-                        <div class="filters-item">
+                        <div class="filters-item" id="filters-business-item">
                             <label class="sr-only" for="business_quick">{{ _('Business') }}</label>
                             <select id="business_quick" class="select select-sm select-bordered w-36 filters-compact-select" aria-label="{{ _('Business') }}">
                                 <option value="">{{ _('All Businesses') }}</option>
@@ -113,7 +113,7 @@
                     <div class="filters-right">
                         <div class="filters-actions">
                             {% if current_user.role == 'ADMIN' %}
-                            <label class="flex items-center gap-2 cursor-pointer">
+                            <label class="flex items-center gap-2 cursor-pointer" id="filters-deleted-item">
                                 <input type="checkbox"
                                        id="include-deleted-toggle"
                                        class="toggle toggle-sm toggle-primary"
@@ -302,6 +302,38 @@
             filterToggle.setAttribute('aria-expanded', isExpanded);
         });
     }
+
+    // Move primary filters into advanced options on mobile
+    const mobileFilterQuery = window.matchMedia('(max-width: 640px)');
+    const mobileFilterTargets = [
+        document.getElementById('filters-status-item'),
+        document.getElementById('filters-business-item'),
+        document.getElementById('filters-deleted-item')
+    ].filter(Boolean);
+    const mobileFilterPositions = new Map();
+
+    mobileFilterTargets.forEach((el) => {
+        mobileFilterPositions.set(el, {
+            parent: el.parentElement,
+            next: el.nextElementSibling
+        });
+    });
+
+    function relocateMobileFilters(isMobile) {
+        if (!filterAdvanced) return;
+        mobileFilterTargets.forEach((el) => {
+            const original = mobileFilterPositions.get(el);
+            if (!original) return;
+            if (isMobile) {
+                filterAdvanced.appendChild(el);
+            } else {
+                original.parent.insertBefore(el, original.next);
+            }
+        });
+    }
+
+    relocateMobileFilters(mobileFilterQuery.matches);
+    mobileFilterQuery.addEventListener('change', (event) => relocateMobileFilters(event.matches));
 
 
     // Helper to trigger both stats and table updates

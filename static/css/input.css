@@ -289,4 +289,54 @@ textarea:-ms-input-placeholder {
   .dashboard-filters-body .space-y-6 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 0.75rem;
   }
+
+  @media (max-width: 640px) {
+    .filters-primary-row {
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filters-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .filters-primary-row .filters-quick {
+      flex: 1 1 auto;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+    }
+
+    .filters-primary-row .preset-btn {
+      white-space: nowrap;
+    }
+
+    .filters-primary-row .preset-btn[data-preset="month"] {
+      display: none !important;
+    }
+
+    .filters-right {
+      flex: 0 0 auto;
+      justify-content: flex-end;
+    }
+
+    .filters-compact-select,
+    .dashboard-filters-body .select,
+    .dashboard-filters-body .input {
+      width: 100%;
+    }
+
+    .filters-advanced-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .filters-advanced-row .filters-item {
+      width: 100%;
+    }
+  }
 }
