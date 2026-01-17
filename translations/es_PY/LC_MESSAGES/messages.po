@@ -1539,14 +1539,26 @@ msgstr "Promedio diario"
 msgid "Highest Revenue Day"
 msgstr "Día de Mayor Ingreso"
 
+msgid "Highest Revenue Week"
+msgstr "Semana de Mayor Ingreso"
+
 msgid "Lowest Revenue Day"
 msgstr "Día de Menor Ingreso"
+
+msgid "Lowest Revenue Week"
+msgstr "Semana de Menor Ingreso"
 
 msgid "Top Performing Day"
 msgstr "Día de Mejor Rendimiento"
 
 msgid "Month Total"
 msgstr "Total del Mes"
+
+msgid "Month Cost"
+msgstr "Costo del Mes"
+
+msgid "Month Margin"
+msgstr "Margen del Mes"
 
 msgid "Total sales this month"
 msgstr "Ventas totales de este mes"
@@ -1599,6 +1611,9 @@ msgstr "Acumulado"
 
 msgid "Day-by-Day Comparison"
 msgstr "Comparación Día a Día"
+
+msgid "Week-by-Week Comparison"
+msgstr "Comparación Sem. a Sem."
 
 msgid "Current vs Previous"
 msgstr "Actual vs Anterior"
@@ -1730,8 +1745,14 @@ msgstr "Consistente"
 msgid "Through day"
 msgstr "Hasta el día"
 
+msgid "Through week"
+msgstr "Hasta sem."
+
 msgid "Day of Month"
 msgstr "Día del Mes"
+
+msgid "Week of Month"
+msgstr "Sem. del Mes"
 
 msgid "Monthly Total"
 msgstr "Total Mensual"
