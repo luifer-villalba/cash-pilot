@@ -576,12 +576,9 @@
             <p class="text-sm text-base-content/60 mb-4 max-w-md">
                 {{ _('No cash sessions match your current filters. Try adjusting your search criteria or create a new session.') }}
             </p>
-            <a href="/sessions/create" class="btn btn-primary btn-sm gap-2 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 active:scale-95">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                {{ _('Create New Session') }}
-            </a>
+            <p class="text-xs text-base-content/50">
+                {{ _('Use the "Open Cash Session" button above to create your first session.') }}
+            </p>
         </div>
         {% endif %}
     </div>
