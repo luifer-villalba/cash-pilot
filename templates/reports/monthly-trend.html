@@ -20,12 +20,20 @@
                 </div>
             </div>
         </div>
-        <a href="/reports" class="btn btn-outline btn-sm gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
-            {{ _('Back') }}
-        </a>
+        <div class="flex items-center gap-2">
+            <a id="switchToWeekly" href="#" class="btn btn-outline btn-sm gap-2 hidden">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                {{ _('View Weekly') }}
+            </a>
+            <a href="/reports" class="btn btn-outline btn-sm gap-2" data-back>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                {{ _('Back') }}
+            </a>
+        </div>
     </div>
 
     <!-- Controls Section -->
@@ -467,6 +475,16 @@
         return `${day} ${shortMonthNames[monthIndex]}`;
     }
 
+    function getISOWeek(dateStr) {
+        const parts = dateStr.split('-');
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+        const yearStart = new Date(d.getFullYear(), 0, 1);
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return { year: d.getFullYear(), week: weekNo };
+    }
+
     // Initialize month picker with current month
     function initializeMonthPickers() {
         const today = new Date();
@@ -489,6 +507,38 @@
         } else {
             monthDisplay.textContent = '{{ _("Select a month to view") }}';
         }
+        updateSwitchToWeeklyLink();
+    }
+
+    function updateSwitchToWeeklyLink() {
+        const switchLink = document.getElementById('switchToWeekly');
+        if (!switchLink) {
+            return;
+        }
+        const businessId = document.getElementById('businessId').value;
+        const monthValue = document.getElementById('reportMonth').value;
+        if (!businessId || !monthValue) {
+            switchLink.classList.add('hidden');
+            switchLink.setAttribute('href', '#');
+            return;
+        }
+        const parts = monthValue.split('-');
+        if (parts.length !== 2) {
+            switchLink.classList.add('hidden');
+            switchLink.setAttribute('href', '#');
+            return;
+        }
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        if (!Number.isFinite(year) || !Number.isFinite(month)) {
+            switchLink.classList.add('hidden');
+            switchLink.setAttribute('href', '#');
+            return;
+        }
+        const monthStr = String(month).padStart(2, '0');
+        const { year: isoYear, week } = getISOWeek(`${year}-${monthStr}-01`);
+        switchLink.href = `/reports/weekly-trend?year=${isoYear}&week=${week}&business_id=${businessId}`;
+        switchLink.classList.remove('hidden');
     }
 
     // Month change handler
@@ -501,6 +551,7 @@
 
     // Business change handler - auto-generate
     document.getElementById('businessId').addEventListener('change', () => {
+        updateSwitchToWeeklyLink();
         if (document.getElementById('businessId').value) {
             generateReport();
         }

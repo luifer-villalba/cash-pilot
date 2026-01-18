@@ -703,6 +703,12 @@ msgstr "Editar Negocio"
 msgid "Back"
 msgstr "Volver"
 
+msgid "View Monthly"
+msgstr "Ver mensual"
+
+msgid "View Weekly"
+msgstr "Ver semanal"
+
 msgid "Enable or disable this business location"
 msgstr "Habilitar o deshabilitar esta sucursal"
 
