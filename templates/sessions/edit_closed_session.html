@@ -41,6 +41,32 @@
                         <h2 class="text-lg font-bold text-base-content">{{ _('Cash Count') }}</h2>
                     </div>
 
+                    <!-- Initial Cash -->
+                    <div class="form-control">
+                        <label class="label pb-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Initial Cash') }}</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-primary pointer-events-none z-10" aria-hidden="true">₲</span>
+                            <input
+                                type="text"
+                                name="initial_cash"
+                                id="initial_cash"
+                                class="input input-lg input-bordered w-full font-mono pl-10 text-lg focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                value="{{ " {:,.0f}".format(session.initial_cash) }}"
+                                placeholder="500.000"
+                                inputmode="decimal"
+                                required
+                                data-currency-input
+                                autocomplete="off"
+                                aria-describedby="initial-cash-help"
+                            />
+                        </div>
+                        <label class="label pt-2" id="initial-cash-help">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Starting amount in drawer') }}</span>
+                        </label>
+                    </div>
+
                     <!-- Final Cash -->
                     <div class="form-control">
                         <label class="label pb-2">

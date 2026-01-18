@@ -546,6 +546,7 @@ def _update_field(
 
 async def update_closed_session_fields(
     session: CashSession,
+    initial_cash: str | None = None,
     final_cash: str | None = None,
     envelope_amount: str | None = None,
     card_total: str | None = None,
@@ -560,6 +561,10 @@ async def update_closed_session_fields(
     new_values = {}
 
     # Parse and validate currency fields
+    initial_cash_val = parse_currency(initial_cash) if initial_cash else None
+    if initial_cash_val is not None:
+        validate_currency(initial_cash_val)
+
     final_cash_val = parse_currency(final_cash) if final_cash else None
     if final_cash_val is not None:
         validate_currency(final_cash_val)
@@ -576,6 +581,15 @@ async def update_closed_session_fields(
     credit_payments_collected_val = parse_currency(credit_payments_collected) or Decimal("0")
     validate_currency(credit_payments_collected_val)
 
+    _update_field(
+        session,
+        "initial_cash",
+        initial_cash_val,
+        session.initial_cash,
+        changed_fields,
+        old_values,
+        new_values,
+    )
     _update_field(
         session,
         "final_cash",

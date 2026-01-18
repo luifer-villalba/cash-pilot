@@ -193,6 +193,7 @@ async def edit_closed_session_post(
     session_id: str,
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
+    initial_cash: str | None = Form(None),
     final_cash: str | None = Form(None),
     envelope_amount: str | None = Form(None),
     card_total: str | None = Form(None),
@@ -231,6 +232,7 @@ async def edit_closed_session_post(
 
         changed_fields, old_values, new_values = await update_closed_session_fields(
             session,
+            initial_cash,
             final_cash,
             envelope_amount,
             card_total,
