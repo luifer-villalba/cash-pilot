@@ -208,7 +208,6 @@ async def reconciliation_badge(
                 return True
             return value == 0
 
-        has_effective_values = False
         is_partial = False
         for row in rows:
             values = row_values(row)
@@ -217,7 +216,7 @@ async def reconciliation_badge(
             all_present = all(value is not None for value in values)
 
             if is_closed or not all_empty:
-                has_effective_values = True
+                pass
             if not is_closed and (all_empty or not all_present):
                 is_partial = True
 
