@@ -18,6 +18,24 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
     </svg>
 </a>
+{% elif is_partial %}
+<a href="/admin/reconciliation/compare?date={{ reconciliation_date }}" 
+   class="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-base-100 border border-base-300 rounded-full hover:bg-base-200 dark:hover:bg-base-300 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">
+    <div class="flex items-center justify-center w-6 h-6 bg-warning rounded-full flex-shrink-0 shadow-sm">
+        <svg class="w-4 h-4 text-base-content" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+        </svg>
+    </div>
+    <span class="text-sm font-semibold text-base-content whitespace-nowrap">
+        {{ _('Reconciliation started') }}
+    </span>
+    <span class="text-xs text-base-content/60 group-hover:text-base-content/80 whitespace-nowrap">
+        {{ _('Pending completion') }}
+    </span>
+    <svg class="w-4 h-4 text-base-content/60 opacity-70 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    </svg>
+</a>
 {% elif is_range %}
 <a href="/admin/reconciliation/compare?from_date={{ from_date }}&to_date={{ to_date }}" 
    class="group flex items-center gap-2 px-4 py-2 bg-white dark:bg-base-100 border border-base-300 rounded-full hover:bg-base-200 dark:hover:bg-base-300 transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md">

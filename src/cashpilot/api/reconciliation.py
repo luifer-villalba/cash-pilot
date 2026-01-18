@@ -139,6 +139,7 @@ async def reconciliation_badge(
                     "total_count": total_dates,
                     "is_range": True,
                     "is_empty": False,
+                    "is_partial": False,
                     "locale": locale,
                     "_": _,
                 },
@@ -155,41 +156,33 @@ async def reconciliation_badge(
                     "total_count": total_dates,
                     "is_range": True,
                     "is_empty": True,
+                    "is_partial": False,
                     "locale": locale,
                     "_": _,
                 },
             )
     else:
-        # Single date: check if reconciliation exists
+        # Single date: detect empty vs started vs reconciled
         check_date = end_date  # Use to_date (or from_date if to_date not set)
 
-        stmt_recon = select(func.count(DailyReconciliation.id)).where(
+        stmt_recon = select(
+            DailyReconciliation.cash_sales,
+            DailyReconciliation.credit_sales,
+            DailyReconciliation.card_sales,
+            DailyReconciliation.total_sales,
+            DailyReconciliation.daily_cost_total,
+            DailyReconciliation.invoice_count,
+            DailyReconciliation.is_closed,
+        ).where(
             and_(
                 DailyReconciliation.date == check_date,
                 DailyReconciliation.deleted_at.is_(None),
             )
         )
         result_recon = await db.execute(stmt_recon)
-        recon_count = result_recon.scalar() or 0
-        has_reconciliation = recon_count > 0
+        rows = result_recon.all()
 
-        if has_reconciliation:
-            return templates.TemplateResponse(
-                "partials/reconciliation_badge.html",
-                {
-                    "request": request,
-                    "reconciliation_date": check_date.isoformat(),
-                    "from_date": None,
-                    "to_date": None,
-                    "reconciled_count": None,
-                    "total_count": None,
-                    "is_range": False,
-                    "is_empty": False,
-                    "locale": locale,
-                    "_": _,
-                },
-            )
-        else:
+        if not rows:
             return templates.TemplateResponse(
                 "partials/reconciliation_badge.html",
                 {
@@ -201,10 +194,49 @@ async def reconciliation_badge(
                     "total_count": None,
                     "is_range": False,
                     "is_empty": True,
+                    "is_partial": False,
                     "locale": locale,
                     "_": _,
                 },
             )
+
+        def row_values(row: tuple) -> tuple:
+            return row[0:6]
+
+        def is_zero_or_none(value: Decimal | int | None) -> bool:
+            if value is None:
+                return True
+            return value == 0
+
+        has_effective_values = False
+        is_partial = False
+        for row in rows:
+            values = row_values(row)
+            is_closed = row[6]
+            all_empty = all(is_zero_or_none(value) for value in values)
+            all_present = all(value is not None for value in values)
+
+            if is_closed or not all_empty:
+                has_effective_values = True
+            if not is_closed and (all_empty or not all_present):
+                is_partial = True
+
+        return templates.TemplateResponse(
+            "partials/reconciliation_badge.html",
+            {
+                "request": request,
+                "reconciliation_date": check_date.isoformat(),
+                "from_date": None,
+                "to_date": None,
+                "reconciled_count": None,
+                "total_count": None,
+                "is_range": False,
+                "is_empty": False,
+                "is_partial": is_partial,
+                "locale": locale,
+                "_": _,
+            },
+        )
 
 
 # Variance thresholds for flagging discrepancies
@@ -435,20 +467,6 @@ async def daily_reconciliation_post(
 
                 updated_count += 1
             else:
-                # New reconciliation: require sales data when business is not closed
-                # Note: This validation fails the entire batch operation if any business
-                # fails validation. This all-or-nothing approach ensures data consistency
-                # across all businesses for a given date.
-                if not is_closed and (
-                    cash_sales is None
-                    and credit_sales is None
-                    and card_sales is None
-                    and total_sales is None
-                ):
-                    raise ValidationError(
-                        f"Sales data is required when business is not closed "
-                        f"(business: {business.name})"
-                    )
                 # Create new reconciliation
                 reconciliation = DailyReconciliation(
                     business_id=business.id,

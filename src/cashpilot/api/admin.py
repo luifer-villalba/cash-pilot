@@ -462,6 +462,18 @@ async def reconciliation_compare_dashboard(
         system_total_sales = system_data.total_sales or Decimal("0.00")
         session_count = system_data.session_count or 0
 
+        stmt_open_sessions = select(func.count(CashSession.id)).where(
+            and_(
+                CashSession.business_id == business.id,
+                CashSession.session_date == comparison_date,
+                CashSession.status == "OPEN",
+                ~CashSession.is_deleted,
+            )
+        )
+        result_open_sessions = await db.execute(stmt_open_sessions)
+        open_sessions_count = result_open_sessions.scalar() or 0
+        has_open_sessions = open_sessions_count > 0
+
         # Get unique cashiers for this business on this date
         stmt_cashiers = (
             select(User.first_name, User.last_name)
@@ -500,6 +512,32 @@ async def reconciliation_compare_dashboard(
             manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
         )
         is_closed = manual_entry.is_closed if manual_entry else False
+        has_manual_values = False
+        is_partial_entry = False
+        if manual_entry:
+            sales_values = (
+                manual_entry.cash_sales,
+                manual_entry.card_sales,
+                manual_entry.credit_sales,
+                manual_entry.total_sales,
+            )
+
+            def is_zero_or_none(value: Decimal | int | None) -> bool:
+                if value is None:
+                    return True
+                return value == 0
+
+            all_sales_present = all(value is not None for value in sales_values)
+            any_sales_nonzero = any(not is_zero_or_none(value) for value in sales_values)
+            total_sales_nonzero = (
+                manual_entry.total_sales is not None and manual_entry.total_sales != 0
+            )
+
+            if is_closed:
+                has_manual_values = True
+            else:
+                has_manual_values = total_sales_nonzero or (all_sales_present and any_sales_nonzero)
+                is_partial_entry = not has_manual_values
 
         # Calculate differences and variance
         def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
@@ -557,6 +595,8 @@ async def reconciliation_compare_dashboard(
                 "business": business,
                 "cashiers": cashiers_str,
                 "manual_entry": manual_entry,
+                "has_manual_values": has_manual_values,
+                "is_partial_entry": is_partial_entry,
                 "is_closed": is_closed,
                 "manual": {
                     "cash_sales": manual_cash_sales,
@@ -584,6 +624,8 @@ async def reconciliation_compare_dashboard(
                     "total_sales": total_variance["variance_percent"],
                 },
                 "status": status,
+                "has_open_sessions": has_open_sessions,
+                "open_sessions_count": open_sessions_count,
             }
         )
 
