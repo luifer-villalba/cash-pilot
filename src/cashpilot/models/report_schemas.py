@@ -261,6 +261,12 @@ class DayOfMonthRevenue(BaseModel):
     day_number: int = Field(..., description="Day of month (1-31)")
     date: date_type = Field(..., description="The specific date")
     revenue: Decimal = Field(default=Decimal("0.00"), description="Total revenue for the day")
+    cost_total: Decimal | None = Field(
+        default=None, description="Total cost for the day when available"
+    )
+    ticket_count: int | None = Field(
+        default=None, description="Ticket count for the day when available"
+    )
     has_data: bool = Field(default=True, description="Whether we have session data for this day")
     growth_percent: Decimal | None = Field(
         None,

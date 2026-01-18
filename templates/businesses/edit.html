@@ -7,7 +7,7 @@
 <div class="container mx-auto px-4 py-6 max-w-2xl">
     <div class="flex items-center justify-between mb-6">
         <h1 class="text-3xl font-bold">{{ _('Edit Business') }}</h1>
-        <a href="/businesses" class="btn btn-ghost btn-sm">{{ _('Back') }}</a>
+        <a href="/businesses" class="btn btn-ghost btn-sm" data-back>{{ _('Back') }}</a>
     </div>
 
     <div class="card bg-base-100 shadow-xl">
@@ -140,7 +140,7 @@
 
             <!-- Back Button -->
             <div class="card-actions justify-end mt-4">
-                <a href="/businesses" class="btn btn-outline">{{ _('Back to Businesses') }}</a>
+                <a href="/businesses" class="btn btn-outline" data-back>{{ _('Back to Businesses') }}</a>
             </div>
         </div>
     </div>

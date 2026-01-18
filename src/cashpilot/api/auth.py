@@ -26,7 +26,7 @@ templates = Jinja2Templates(directory="templates")
 # Configurable inactivity timeout by role (seconds)
 ROLE_TIMEOUTS = {
     UserRole.CASHIER: 10 * 60 * 60,  # 10 hours
-    UserRole.ADMIN: 2 * 60 * 60,  # 2 hours
+    UserRole.ADMIN: 5 * 60 * 60,  # 2 hours
 }
 
 
