@@ -310,6 +310,23 @@ async def daily_reconciliation_post(
     _ = get_translation_function(locale)
 
     try:
+
+        def has_sales_data(
+            cash_sales_value: Decimal | None,
+            credit_sales_value: Decimal | None,
+            card_sales_value: Decimal | None,
+            total_sales_value: Decimal | None,
+        ) -> bool:
+            return any(
+                value is not None
+                for value in (
+                    cash_sales_value,
+                    credit_sales_value,
+                    card_sales_value,
+                    total_sales_value,
+                )
+            )
+
         # Parse date
         try:
             if isinstance(date, str):
@@ -431,6 +448,11 @@ async def daily_reconciliation_post(
                 if invoice_count is None:
                     invoice_count = existing.invoice_count
 
+                if not is_closed and not has_sales_data(
+                    cash_sales, credit_sales, card_sales, total_sales
+                ):
+                    raise ValidationError("Sales data is required when location is open")
+
                 existing.cash_sales = cash_sales
                 existing.credit_sales = credit_sales
                 existing.card_sales = card_sales
@@ -466,6 +488,11 @@ async def daily_reconciliation_post(
 
                 updated_count += 1
             else:
+                if not is_closed and not has_sales_data(
+                    cash_sales, credit_sales, card_sales, total_sales
+                ):
+                    raise ValidationError("Sales data is required when location is open")
+
                 # Create new reconciliation
                 reconciliation = DailyReconciliation(
                     business_id=business.id,
