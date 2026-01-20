@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-15 21:18+0000\n"
+"POT-Creation-Date: 2026-01-20 19:13+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -70,6 +70,12 @@ msgstr "Formato de número inválido. Por favor ingresá un monto válido."
 
 msgid "Edit window expired (32 hours passed)"
 msgstr "No podes editar (pasaron más de 32 horas)"
+
+msgid "Invalid business selection."
+msgstr "Selección de negocio inválida."
+
+msgid "Selected business not found."
+msgstr "No se encontró el negocio seleccionado."
 
 msgid ""
 "Reason for edit is required when editing closed sessions for audit "
@@ -350,6 +356,9 @@ msgstr "(Agenda - Farmagic)"
 msgid "Sessions"
 msgstr "Sesiones"
 
+msgid "Sesiones abiertas"
+msgstr "Sesiones abiertas"
+
 msgid "Click to review and edit"
 msgstr "Clic para revisar y editar"
 
@@ -359,8 +368,11 @@ msgstr "Revisar diferencias para"
 msgid "Review"
 msgstr "Revisar"
 
-msgid "Completed"
-msgstr "Completado"
+msgid "Validado"
+msgstr "Validado"
+
+msgid "Conciliacion iniciada"
+msgstr "Conciliación iniciada"
 
 msgid "Click to add manual entry"
 msgstr "Clic para agregar entrada manual"
@@ -395,14 +407,14 @@ msgstr "Colores de Diferencia:"
 msgid "Green (Surplus)"
 msgstr "Verde (Superávit)"
 
-msgid "System has MORE than Manual (positive difference)"
-msgstr "Agenda tiene MÁS que Farmagic (diferencia positiva)"
+msgid "Manual has MORE than System (positive difference)"
+msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
 
 msgid "Red (Deficit)"
 msgstr "Rojo (Déficit)"
 
-msgid "System has LESS than Manual (negative difference)"
-msgstr "Agenda tiene MENOS que Farmagic (diferencia negativa)"
+msgid "Manual has LESS than System (negative difference)"
+msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
 
 msgid "Margin Comparison"
 msgstr "Comparación de Margen"
@@ -418,6 +430,9 @@ msgstr "Total de Costo Diario"
 
 msgid "Gross Margin"
 msgstr "Margen Bruto"
+
+msgid "Margin %"
+msgstr "Margen %"
 
 msgid "Cost Percent of Sales"
 msgstr "Costo sobre Ventas"
@@ -703,12 +718,6 @@ msgstr "Editar Negocio"
 msgid "Back"
 msgstr "Volver"
 
-msgid "View Monthly"
-msgstr "Ver mensual"
-
-msgid "View Weekly"
-msgstr "Ver semanal"
-
 msgid "Enable or disable this business location"
 msgstr "Habilitar o deshabilitar esta sucursal"
 
@@ -840,6 +849,12 @@ msgstr "Sin conciliación aún"
 msgid "Click to reconcile"
 msgstr "Click para empezar"
 
+msgid "Reconciliation started"
+msgstr "Conciliación iniciada"
+
+msgid "Pending completion"
+msgstr "Pendiente de completar"
+
 msgid "Reconciled"
 msgstr "Conciliado"
 
@@ -854,9 +869,6 @@ msgstr "sesiones"
 
 msgid "Open Cash Session"
 msgstr "Abrir Caja"
-
-msgid "Use the \"Open Cash Session\" button above to create your first session."
-msgstr "Usá el botón \"Abrir Caja\" de arriba para crear tu primera sesión."
 
 msgid "Reconciliation"
 msgstr "Conciliación"
@@ -973,8 +985,8 @@ msgstr ""
 "No hay sesiones de caja que coincidan con tus filtros actuales. Intentá "
 "ajustar los criterios de búsqueda o creá una nueva sesión."
 
-msgid "Create New Session"
-msgstr "Crear Nueva Sesión"
+msgid "Use the \"Open Cash Session\" button above to create your first session."
+msgstr "Usá el botón \"Abrir Caja\" de arriba para crear tu primera sesión."
 
 msgid "Card Payments"
 msgstr "Ventas con Tarjeta"
@@ -1114,125 +1126,6 @@ msgstr "a"
 msgid "End date for custom range"
 msgstr "Ingrese contraseña personalizada"
 
-msgid "Line charts: revenue vs margin when cost data exists. Bar chart: 5-week revenue/margin trend."
-msgstr ""
-"Gráficos de líneas: ingresos vs margen cuando hay costos. Gráfico de barras:"
-" tendencia de 5 semanas de ingresos/margen."
-
-msgid "Week Margin"
-msgstr "Margen semanal"
-
-msgid "Week Cost"
-msgstr "Costo semanal"
-
-msgid "Margin %"
-msgstr "Margen %"
-
-msgid "Cost data missing"
-msgstr "Faltan datos de costo"
-
-msgid "Cost data complete"
-msgstr "Con datos de costo"
-
-msgid "Cost data incomplete"
-msgstr "Datos de costo incompletos"
-
-msgid "Margin (This Week)"
-msgstr "Margen (esta semana)"
-
-msgid "Margin (Last Week)"
-msgstr "Margen (semana pasada)"
-
-msgid "Cost"
-msgstr "Costo"
-
-msgid "Margin"
-msgstr "Margen"
-
-msgid "This Week vs Last Week"
-msgstr "Esta semana vs semana pasada"
-
-msgid "Sales vs Cost"
-msgstr "Ventas vs costos"
-
-msgid "Sales total"
-msgstr "Ventas totales"
-
-msgid "Sales"
-msgstr "Ventas"
-
-msgid "Cost total"
-msgstr "Costo total"
-
-msgid "of sales"
-msgstr "sobre ventas"
-
-msgid "Business Health Insights"
-msgstr "Insights de salud del negocio"
-
-msgid "Drivers of Change"
-msgstr "Motores del cambio"
-
-msgid "No negative drivers detected"
-msgstr "No se detectaron caídas relevantes"
-
-msgid "Top drops vs last week"
-msgstr "Mayores caídas vs semana pasada"
-
-msgid "of change"
-msgstr "del cambio"
-
-msgid "Discount Elasticity"
-msgstr "Elasticidad de descuentos"
-
-msgid "Avg ticket and margin by day type"
-msgstr "Ticket promedio y margen por tipo de día"
-
-msgid "Margin Impact"
-msgstr "Impacto en margen"
-
-msgid "Health Index"
-msgstr "Índice de salud"
-
-msgid "Needs Attention"
-msgstr "Necesita atención"
-
-msgid "Very Strong"
-msgstr "Muy sólido"
-
-msgid "Healthy"
-msgstr "Saludable"
-
-msgid "Watch"
-msgstr "En observación"
-
-msgid "Cost coverage"
-msgstr "Cobertura de costos"
-
-msgid "Ticket & Efficiency"
-msgstr "Tickets y eficiencia"
-
-msgid "Tickets"
-msgstr "Tickets"
-
-msgid "Avg Ticket"
-msgstr "Ticket promedio"
-
-msgid "Tickets vs Last Week"
-msgstr "Tickets vs semana pasada"
-
-msgid "No ticket data"
-msgstr "Sin datos de tickets"
-
-msgid "Weekly ticket volume and efficiency"
-msgstr "Volumen semanal y eficiencia de tickets"
-
-msgid "vs last week"
-msgstr "vs semana pasada"
-
-msgid "of week"
-msgstr "de la semana"
-
 msgid "Apply"
 msgstr "Aplicar"
 
@@ -1255,7 +1148,7 @@ msgid "Most Improved"
 msgstr "Más Mejorado"
 
 msgid "Needs Attention"
-msgstr "Necesita Atención"
+msgstr "Necesita atención"
 
 msgid "Revenue Breakdown by Business"
 msgstr "Desglose de Ingresos por Negocio"
@@ -1330,8 +1223,8 @@ msgid ""
 "Daily reconciliation view with sales by payment method and discrepancy "
 "analysis"
 msgstr ""
-"Vista de conciliación diaria con ventas por método de pago y análisis "
-"de discrepancias"
+"Vista de conciliación diaria con ventas por método de pago y análisis de "
+"discrepancias"
 
 msgid "Select Business"
 msgstr "Seleccionar un Negocio"
@@ -1487,6 +1380,9 @@ msgstr ""
 "Comparar ingresos diarios entre meses para identificar días pico/bajos y "
 "patrones de crecimiento mes a mes"
 
+msgid "View Weekly"
+msgstr "Ver semanal"
+
 msgid "Select time period"
 msgstr "Seleccione el período de tiempo"
 
@@ -1536,29 +1432,17 @@ msgstr ""
 "Gráfico de líneas: mes actual vs anterior (día a día). Gráfico de barras:"
 " tendencia de 6 meses."
 
-msgid "Days with data"
-msgstr "Días con datos"
-
-msgid "Average daily"
-msgstr "Promedio diario"
-
-msgid "Highest Revenue Day"
-msgstr "Día de Mayor Ingreso"
-
 msgid "Highest Revenue Week"
 msgstr "Semana de Mayor Ingreso"
-
-msgid "Lowest Revenue Day"
-msgstr "Día de Menor Ingreso"
 
 msgid "Lowest Revenue Week"
 msgstr "Semana de Menor Ingreso"
 
-msgid "Top Performing Day"
-msgstr "Día de Mejor Rendimiento"
-
 msgid "Month Total"
 msgstr "Total del Mes"
+
+msgid "Total sales this month"
+msgstr "Ventas totales de este mes"
 
 msgid "Month Cost"
 msgstr "Costo del Mes"
@@ -1566,11 +1450,8 @@ msgstr "Costo del Mes"
 msgid "Month Margin"
 msgstr "Margen del Mes"
 
-msgid "Total sales this month"
-msgstr "Ventas totales de este mes"
-
-msgid "Stability Score"
-msgstr "Puntuación de Estabilidad"
+msgid "Growth vs Previous"
+msgstr "Crecimiento vs Anterior"
 
 msgid "Revenue by Day Type"
 msgstr "Ingresos por Tipo de Día"
@@ -1597,26 +1478,11 @@ msgstr "Sábado"
 msgid "Weekend (full price)"
 msgstr "Fin de semana (precio completo)"
 
-msgid "Month-over-Month Growth"
-msgstr "Crecimiento Mes a Mes"
-
-msgid "Total Growth"
-msgstr "Crecimiento Total"
-
-msgid "Avg/day:"
-msgstr "Prom/día:"
-
-msgid "Projected:"
-msgstr "Proyectado:"
-
 msgid "Revenue Progress"
 msgstr "Progreso de Ingresos"
 
 msgid "Cumulative"
 msgstr "Acumulado"
-
-msgid "Day-by-Day Comparison"
-msgstr "Comparación Día a Día"
 
 msgid "Week-by-Week Comparison"
 msgstr "Comparación Sem. a Sem."
@@ -1635,6 +1501,12 @@ msgstr "Semana"
 
 msgid "Date Range"
 msgstr "Rango de Fechas"
+
+msgid "Cost"
+msgstr "Costo"
+
+msgid "Margin"
+msgstr "Margen"
 
 msgid "Growth"
 msgstr "Crecimiento"
@@ -1678,149 +1550,6 @@ msgstr "Noviembre"
 msgid "December"
 msgstr "Diciembre"
 
-msgid "Please select a month"
-msgstr "Por favor seleccioná un mes"
-
-msgid "Very Stable"
-msgstr "Muy Estable"
-
-msgid "Moderate"
-msgstr "Moderado"
-
-msgid "Volatile"
-msgstr "Volátil"
-
-msgid "Core"
-msgstr "Principal"
-
-msgid "exceptional day"
-msgstr "día excepcional"
-
-msgid "Insufficient data"
-msgstr "Datos insuficientes"
-
-msgid "Monday"
-msgstr "Lunes"
-
-msgid "Tuesday"
-msgstr "Martes"
-
-msgid "Wednesday"
-msgstr "Miércoles"
-
-msgid "Thursday"
-msgstr "Jueves"
-
-msgid "Friday"
-msgstr "Viernes"
-
-msgid "Sunday"
-msgstr "Domingo"
-
-msgid "Top day in"
-msgstr "Mejor día en"
-
-msgid "weeks"
-msgstr "semanas"
-
-msgid "Only"
-msgstr "Solo"
-
-msgid ""
-"days of data available. Monthly trends are more reliable after at least 7"
-" days."
-msgstr ""
-"días de datos disponibles. Las tendencias mensuales son más confiables "
-"después de al menos 7 días."
-
-msgid "day"
-msgstr "día"
-
-msgid "No previous data"
-msgstr "Sin datos previos"
-
-msgid "Strong finish"
-msgstr "Final fuerte"
-
-msgid "Fade detected"
-msgstr "Disminución detectada"
-
-msgid "Consistent"
-msgstr "Consistente"
-
-msgid "Through day"
-msgstr "Hasta el día"
-
-msgid "Through week"
-msgstr "Hasta sem."
-
-msgid "Day of Month"
-msgstr "Día del Mes"
-
-msgid "Week of Month"
-msgstr "Sem. del Mes"
-
-msgid "Monthly Total"
-msgstr "Total Mensual"
-
-msgid "Show current week"
-msgstr "Mostrar semana actual"
-
-msgid "This Week"
-msgstr "Esta Semana"
-
-msgid "Show last week"
-msgstr "Mostrar semana pasada"
-
-msgid "Last Week"
-msgstr "Semana Pasada"
-
-msgid "Show 2 weeks ago"
-msgstr "Mostrar hace 2 semanas"
-
-msgid "2 Weeks Ago"
-msgstr "Hace 2 semanas"
-
-msgid "Show 4 weeks ago"
-msgstr "Mostrar hace 4 semanas"
-
-msgid "Any date in the week"
-msgstr "Cualquier fecha de la semana"
-
-msgid "Select a date to see its week"
-msgstr "Seleccione una fecha para ver su semana"
-
-msgid ""
-"Line chart: current vs previous week (day-by-day). Bar chart: 5-week "
-"revenue trend."
-msgstr ""
-"Gráfico de líneas: semana actual vs anterior (día a día). Gráfico de "
-"barras: tendencia de 5 semanas."
-
-msgid "Week Total"
-msgstr "Total de la Semana"
-
-msgid "Total sales this week"
-msgstr "Ventas totales de esta semana"
-
-msgid "Growth vs Previous"
-msgstr "Crecimiento vs Anterior"
-
-msgid "Week-over-Week Growth"
-msgstr "Crecimiento Semanal"
-
-msgid "5-Week Trend"
-msgstr "Tendencia de 5 Semanas"
-
-msgid "Selected Week Details"
-msgstr "Detalles de la Semana Seleccionada"
-
-msgid "Day"
-msgstr "Día"
-
-msgid "WoW Growth"
-msgstr "Crecimiento Semanal"
-
 msgid "Jan"
 msgstr "Ene"
 
@@ -1854,11 +1583,142 @@ msgstr "Nov"
 msgid "Dec"
 msgstr "Dic"
 
-msgid "Week of"
-msgstr "Semana del"
+msgid "Monday"
+msgstr "Lunes"
 
-msgid "Please select a date"
-msgstr "Por favor seleccione una fecha"
+msgid "Tuesday"
+msgstr "Martes"
+
+msgid "Wednesday"
+msgstr "Miércoles"
+
+msgid "Thursday"
+msgstr "Jueves"
+
+msgid "Friday"
+msgstr "Viernes"
+
+msgid "Sunday"
+msgstr "Domingo"
+
+msgid "Please select a month"
+msgstr "Por favor seleccioná un mes"
+
+msgid "Tickets"
+msgstr "Tickets"
+
+msgid "Only"
+msgstr "Solo"
+
+msgid ""
+"days of data available. Monthly trends are more reliable after at least 7"
+" days."
+msgstr ""
+"días de datos disponibles. Las tendencias mensuales son más confiables "
+"después de al menos 7 días."
+
+msgid "Cost data missing"
+msgstr "Faltan datos de costo"
+
+msgid "Cost data complete"
+msgstr "Con datos de costo"
+
+msgid "of sales"
+msgstr "sobre ventas"
+
+msgid "Cost data incomplete"
+msgstr "Datos de costo incompletos"
+
+msgid "No previous data"
+msgstr "Sin datos previos"
+
+msgid "Strong finish"
+msgstr "Final fuerte"
+
+msgid "Fade detected"
+msgstr "Disminución detectada"
+
+msgid "Consistent"
+msgstr "Consistente"
+
+msgid "Through week"
+msgstr "Hasta sem."
+
+msgid "Week of Month"
+msgstr "Sem. del Mes"
+
+msgid "Monthly Total"
+msgstr "Total Mensual"
+
+msgid "View Monthly"
+msgstr "Ver mensual"
+
+msgid "Show current week"
+msgstr "Mostrar semana actual"
+
+msgid "This Week"
+msgstr "Esta Semana"
+
+msgid "Show last week"
+msgstr "Mostrar semana pasada"
+
+msgid "Last Week"
+msgstr "Semana Pasada"
+
+msgid "Show 2 weeks ago"
+msgstr "Mostrar hace 2 semanas"
+
+msgid "2 Weeks Ago"
+msgstr "Hace 2 semanas"
+
+msgid "Show 4 weeks ago"
+msgstr "Mostrar hace 4 semanas"
+
+msgid "Any date in the week"
+msgstr "Cualquier fecha de la semana"
+
+msgid "Select a date to see its week"
+msgstr "Seleccione una fecha para ver su semana"
+
+msgid ""
+"Line charts: revenue vs margin when cost data exists. Bar chart: 5-week "
+"revenue/margin trend."
+msgstr ""
+"Gráficos de líneas: ingresos vs margen cuando hay costos. Gráfico de "
+"barras: tendencia de 5 semanas de ingresos/margen."
+
+msgid "Highest Revenue Day"
+msgstr "Día de Mayor Ingreso"
+
+msgid "Lowest Revenue Day"
+msgstr "Día de Menor Ingreso"
+
+msgid "Week Total"
+msgstr "Total de la Semana"
+
+msgid "Total sales this week"
+msgstr "Ventas totales de esta semana"
+
+msgid "Week Cost"
+msgstr "Costo semanal"
+
+msgid "Week Margin"
+msgstr "Margen semanal"
+
+msgid "Day-by-Day Comparison"
+msgstr "Comparación Día a Día"
+
+msgid "5-Week Trend"
+msgstr "Tendencia de 5 Semanas"
+
+msgid "Selected Week Details"
+msgstr "Detalles de la Semana Seleccionada"
+
+msgid "Day"
+msgstr "Día"
+
+msgid "WoW Growth"
+msgstr "Crecimiento Semanal"
 
 msgid "Mon"
 msgstr "Lun"
@@ -1881,11 +1741,20 @@ msgstr "Sáb"
 msgid "Sun"
 msgstr "Dom"
 
+msgid "Week of"
+msgstr "Semana del"
+
+msgid "Please select a date"
+msgstr "Por favor seleccione una fecha"
+
+msgid "Margin (Last Week)"
+msgstr "Margen (semana pasada)"
+
+msgid "Margin (This Week)"
+msgstr "Margen (esta semana)"
+
 msgid "Wk"
 msgstr "Sem"
-
-msgid "Weekly Total"
-msgstr "Total Semanal"
 
 msgid "Now"
 msgstr "Ahora"
@@ -2054,6 +1923,12 @@ msgstr ""
 
 msgid "Edit Closed Cash Session"
 msgstr "Editar Sesión de Caja Cerrada"
+
+msgid "Admin Settings"
+msgstr "Configuraciones de administrador"
+
+msgid "Change the business for this closed session"
+msgstr "Cambiar el negocio de esta sesión cerrada"
 
 msgid "Amount counted from cash"
 msgstr "Monto contabilizado de efectivo"
@@ -2432,3 +2307,156 @@ msgstr "Limpiar"
 
 #~ msgid "Less Details"
 #~ msgstr "Menos Detalles"
+
+#~ msgid "Completed"
+#~ msgstr "Completado"
+
+#~ msgid "Create New Session"
+#~ msgstr "Crear Nueva Sesión"
+
+#~ msgid "This Week vs Last Week"
+#~ msgstr "Esta semana vs semana pasada"
+
+#~ msgid "Sales vs Cost"
+#~ msgstr "Ventas vs costos"
+
+#~ msgid "Sales total"
+#~ msgstr "Ventas totales"
+
+#~ msgid "Sales"
+#~ msgstr "Ventas"
+
+#~ msgid "Cost total"
+#~ msgstr "Costo total"
+
+#~ msgid "Business Health Insights"
+#~ msgstr "Insights de salud del negocio"
+
+#~ msgid "Drivers of Change"
+#~ msgstr "Motores del cambio"
+
+#~ msgid "No negative drivers detected"
+#~ msgstr "No se detectaron caídas relevantes"
+
+#~ msgid "Top drops vs last week"
+#~ msgstr "Mayores caídas vs semana pasada"
+
+#~ msgid "of change"
+#~ msgstr "del cambio"
+
+#~ msgid "Discount Elasticity"
+#~ msgstr "Elasticidad de descuentos"
+
+#~ msgid "Avg ticket and margin by day type"
+#~ msgstr "Ticket promedio y margen por tipo de día"
+
+#~ msgid "Margin Impact"
+#~ msgstr "Impacto en margen"
+
+#~ msgid "Health Index"
+#~ msgstr "Índice de salud"
+
+#~ msgid "Very Strong"
+#~ msgstr "Muy sólido"
+
+#~ msgid "Healthy"
+#~ msgstr "Saludable"
+
+#~ msgid "Watch"
+#~ msgstr "En observación"
+
+#~ msgid "Cost coverage"
+#~ msgstr "Cobertura de costos"
+
+#~ msgid "Ticket & Efficiency"
+#~ msgstr "Tickets y eficiencia"
+
+#~ msgid "Avg Ticket"
+#~ msgstr "Ticket promedio"
+
+#~ msgid "Tickets vs Last Week"
+#~ msgstr "Tickets vs semana pasada"
+
+#~ msgid "No ticket data"
+#~ msgstr "Sin datos de tickets"
+
+#~ msgid "Weekly ticket volume and efficiency"
+#~ msgstr "Volumen semanal y eficiencia de tickets"
+
+#~ msgid "vs last week"
+#~ msgstr "vs semana pasada"
+
+#~ msgid "of week"
+#~ msgstr "de la semana"
+
+#~ msgid "Days with data"
+#~ msgstr "Días con datos"
+
+#~ msgid "Average daily"
+#~ msgstr "Promedio diario"
+
+#~ msgid "Top Performing Day"
+#~ msgstr "Día de Mejor Rendimiento"
+
+#~ msgid "Stability Score"
+#~ msgstr "Puntuación de Estabilidad"
+
+#~ msgid "Month-over-Month Growth"
+#~ msgstr "Crecimiento Mes a Mes"
+
+#~ msgid "Total Growth"
+#~ msgstr "Crecimiento Total"
+
+#~ msgid "Avg/day:"
+#~ msgstr "Prom/día:"
+
+#~ msgid "Projected:"
+#~ msgstr "Proyectado:"
+
+#~ msgid "Very Stable"
+#~ msgstr "Muy Estable"
+
+#~ msgid "Moderate"
+#~ msgstr "Moderado"
+
+#~ msgid "Volatile"
+#~ msgstr "Volátil"
+
+#~ msgid "Core"
+#~ msgstr "Principal"
+
+#~ msgid "exceptional day"
+#~ msgstr "día excepcional"
+
+#~ msgid "Insufficient data"
+#~ msgstr "Datos insuficientes"
+
+#~ msgid "Top day in"
+#~ msgstr "Mejor día en"
+
+#~ msgid "weeks"
+#~ msgstr "semanas"
+
+#~ msgid "day"
+#~ msgstr "día"
+
+#~ msgid "Through day"
+#~ msgstr "Hasta el día"
+
+#~ msgid "Day of Month"
+#~ msgstr "Día del Mes"
+
+#~ msgid ""
+#~ "Line chart: current vs previous week "
+#~ "(day-by-day). Bar chart: 5-week "
+#~ "revenue trend."
+#~ msgstr ""
+#~ "Gráfico de líneas: semana actual vs "
+#~ "anterior (día a día). Gráfico de "
+#~ "barras: tendencia de 5 semanas."
+
+#~ msgid "Week-over-Week Growth"
+#~ msgstr "Crecimiento Semanal"
+
+#~ msgid "Weekly Total"
+#~ msgstr "Total Semanal"
