@@ -165,24 +165,16 @@ async def reconciliation_badge(
         # Single date: detect empty vs started vs reconciled
         check_date = end_date  # Use to_date (or from_date if to_date not set)
 
-        stmt_recon = select(
-            DailyReconciliation.cash_sales,
-            DailyReconciliation.credit_sales,
-            DailyReconciliation.card_sales,
-            DailyReconciliation.total_sales,
-            DailyReconciliation.daily_cost_total,
-            DailyReconciliation.invoice_count,
-            DailyReconciliation.is_closed,
-        ).where(
+        stmt_recon = select(DailyReconciliation).where(
             and_(
                 DailyReconciliation.date == check_date,
                 DailyReconciliation.deleted_at.is_(None),
             )
         )
         result_recon = await db.execute(stmt_recon)
-        rows = result_recon.all()
+        reconciliations = result_recon.scalars().all()
 
-        if not rows:
+        if not reconciliations:
             return templates.TemplateResponse(
                 "partials/reconciliation_badge.html",
                 {
@@ -200,25 +192,33 @@ async def reconciliation_badge(
                 },
             )
 
-        def row_values(row: tuple) -> tuple:
-            return row[0:6]
+        active_businesses = await get_active_businesses(db)
+        active_business_ids = {b.id for b in active_businesses}
+        recon_by_business = {r.business_id: r for r in reconciliations}
 
-        def is_zero_or_none(value: Decimal | int | None) -> bool:
-            if value is None:
-                return True
-            return value == 0
+        missing_businesses = active_business_ids - recon_by_business.keys()
+
+        def has_sales_data(recon: DailyReconciliation) -> bool:
+            return any(
+                value is not None
+                for value in (
+                    recon.cash_sales,
+                    recon.credit_sales,
+                    recon.card_sales,
+                    recon.total_sales,
+                )
+            )
 
         is_partial = False
-        for row in rows:
-            values = row_values(row)
-            is_closed = row[6]
-            all_empty = all(is_zero_or_none(value) for value in values)
-            all_present = all(value is not None for value in values)
-
-            if is_closed or not all_empty:
-                pass
-            if not is_closed and (all_empty or not all_present):
-                is_partial = True
+        if missing_businesses:
+            is_partial = True
+        else:
+            for recon in recon_by_business.values():
+                if recon.is_closed:
+                    continue
+                if not has_sales_data(recon):
+                    is_partial = True
+                    break
 
         return templates.TemplateResponse(
             "partials/reconciliation_badge.html",
