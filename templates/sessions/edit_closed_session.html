@@ -33,6 +33,35 @@
         <div class="lg:col-span-2">
             <form method="POST" action="/sessions/{{ session.id }}/edit-closed" class="space-y-6"
                   data-initial-cash="{{ session.initial_cash }}" onsubmit="document.getElementById('edit-loading').classList.remove('hidden');">
+
+                {% if current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
+                <div class="bg-base-100 border border-base-300 rounded-xl shadow p-6 space-y-4">
+                    <div class="flex items-center gap-3 pb-2 border-b border-base-300">
+                        <div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center font-bold text-sm shadow-sm" aria-hidden="true">A</div>
+                        <h2 class="text-lg font-bold text-base-content">{{ _('Admin Settings') }}</h2>
+                    </div>
+                    <div class="form-control">
+                        <label class="label pb-2" for="business_id">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+                        </label>
+                        <select
+                            name="business_id"
+                            id="business_id"
+                            class="select select-bordered w-full"
+                            required
+                        >
+                            {% for business in businesses %}
+                                <option value="{{ business.id }}" {% if business.id == session.business_id %}selected{% endif %}>
+                                    {{ business.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <label class="label pt-2">
+                            <span class="label-text-alt text-xs text-base-content/60">{{ _('Change the business for this closed session') }}</span>
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
                 
                 <!-- STEP 1: Cash Count -->
                 <div class="bg-gradient-to-br from-primary/5 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-6 space-y-6 transition-all duration-200">

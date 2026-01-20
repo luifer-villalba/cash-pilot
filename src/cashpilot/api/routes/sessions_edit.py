@@ -2,14 +2,17 @@
 """Session edit routes (edit-open, edit-closed)."""
 
 from datetime import timedelta
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_admin, require_own_session
 from cashpilot.api.utils import (
+    get_active_businesses,
     get_locale,
     get_translation_function,
     templates,
@@ -19,6 +22,7 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession
+from cashpilot.models.business import Business
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import now_utc
@@ -26,6 +30,18 @@ from cashpilot.utils.datetime import now_utc
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/sessions", tags=["sessions-edit"])
+
+
+async def _get_admin_businesses(
+    db: AsyncSession,
+    session: CashSession,
+) -> list[Business]:
+    """Return active businesses, ensuring the session's business is included."""
+    businesses = await get_active_businesses(db)
+    await db.refresh(session, ["business"])
+    if session.business and all(b.id != session.business_id for b in businesses):
+        businesses = [session.business, *businesses]
+    return businesses
 
 
 # ─────── EDIT OPEN SESSION ────────
@@ -124,6 +140,10 @@ async def edit_open_session_post(
             error_message = _("Currency value too large. Maximum allowed: 9,999,999,999.99")
         elif "Invalid" in error_message and "format" in error_message:
             error_message = _("Invalid number format. Please enter a valid amount.")
+        elif "business_id format" in error_message:
+            error_message = _("Invalid business selection.")
+        elif "Business not found" in error_message:
+            error_message = _("Selected business not found.")
 
         logger.warning(
             "session.edit_open_validation_failed",
@@ -154,6 +174,7 @@ async def edit_closed_session_form(
     session_id: str,
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
+    db: AsyncSession = Depends(get_db),
 ):
     """Form to edit a CLOSED cash session (with permission check)."""
     locale = get_locale(request)
@@ -172,12 +193,17 @@ async def edit_closed_session_form(
             can_edit = False
             edit_expired_msg = _("Edit window expired (32 hours passed)")
 
+    businesses = None
+    if current_user.role == UserRole.ADMIN:
+        businesses = await _get_admin_businesses(db, session)
+
     return templates.TemplateResponse(
         request,
         "sessions/edit_closed_session.html",
         {
             "current_user": current_user,
             "session": session,
+            "businesses": businesses,
             "locale": locale,
             "can_edit": can_edit,
             "edit_expired_msg": edit_expired_msg,
@@ -201,6 +227,7 @@ async def edit_closed_session_post(
     credit_payments_collected: str | None = Form(None),
     closing_ticket: str | None = Form(None),
     notes: str | None = Form(None),
+    business_id: str | None = Form(None),
     reason: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
@@ -241,6 +268,25 @@ async def edit_closed_session_post(
             closing_ticket,
             notes,
         )
+
+        if current_user.role == UserRole.ADMIN and business_id is not None:
+            business_id = business_id.strip()
+            if business_id:
+                try:
+                    business_uuid = UUID(business_id)
+                except (ValueError, TypeError):
+                    raise ValueError("Invalid business_id format")
+
+                result = await db.execute(select(Business).where(Business.id == business_uuid))
+                business = result.scalar_one_or_none()
+                if not business:
+                    raise ValueError("Business not found")
+
+                if business_uuid != session.business_id:
+                    changed_fields.append("business_id")
+                    old_values["business_id"] = str(session.business_id)
+                    new_values["business_id"] = str(business_uuid)
+                    session.business_id = business_uuid
 
         session.last_modified_at = now_utc()
         session.last_modified_by = current_user.display_name
@@ -284,6 +330,9 @@ async def edit_closed_session_post(
             error=str(e),
             user_id=str(current_user.id),
         )
+        businesses = None
+        if current_user.role == UserRole.ADMIN:
+            businesses = await _get_admin_businesses(db, session)
         return templates.TemplateResponse(
             request,
             "sessions/edit_closed_session.html",
@@ -291,6 +340,7 @@ async def edit_closed_session_post(
                 "current_user": current_user,
                 "session": session,
                 "error": error_message,
+                "businesses": businesses,
                 "locale": locale,
                 "_": _,
             },
