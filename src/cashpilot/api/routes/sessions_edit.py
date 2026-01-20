@@ -257,18 +257,7 @@ async def edit_closed_session_post(
                 status_code=400,
             )
 
-        changed_fields, old_values, new_values = await update_closed_session_fields(
-            session,
-            initial_cash,
-            final_cash,
-            envelope_amount,
-            card_total,
-            credit_sales_total,
-            credit_payments_collected,
-            closing_ticket,
-            notes,
-        )
-
+        business_uuid = None
         if current_user.role == UserRole.ADMIN and business_id is not None:
             business_id = business_id.strip()
             if business_id:
@@ -282,11 +271,24 @@ async def edit_closed_session_post(
                 if not business:
                     raise ValueError("Business not found")
 
-                if business_uuid != session.business_id:
-                    changed_fields.append("business_id")
-                    old_values["business_id"] = str(session.business_id)
-                    new_values["business_id"] = str(business_uuid)
-                    session.business_id = business_uuid
+        changed_fields, old_values, new_values = await update_closed_session_fields(
+            session,
+            initial_cash,
+            final_cash,
+            envelope_amount,
+            card_total,
+            credit_sales_total,
+            credit_payments_collected,
+            closing_ticket,
+            notes,
+        )
+
+        if current_user.role == UserRole.ADMIN and business_uuid:
+            if business_uuid != session.business_id:
+                changed_fields.append("business_id")
+                old_values["business_id"] = str(session.business_id)
+                new_values["business_id"] = str(business_uuid)
+                session.business_id = business_uuid
 
         session.last_modified_at = now_utc()
         session.last_modified_by = current_user.display_name
@@ -330,6 +332,7 @@ async def edit_closed_session_post(
             error=str(e),
             user_id=str(current_user.id),
         )
+        await db.rollback()
         businesses = None
         if current_user.role == UserRole.ADMIN:
             businesses = await _get_admin_businesses(db, session)
