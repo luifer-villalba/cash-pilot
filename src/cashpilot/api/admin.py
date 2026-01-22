@@ -358,7 +358,7 @@ async def reconciliation_compare_dashboard(
         comparison_date = today_local()
 
     # Get businesses (filtered if business_id provided)
-    stmt_businesses = select(Business).where(Business.is_active)
+    stmt_businesses = select(Business).where(Business.is_active).order_by(Business.name)
     selected_business_id = None
     if business_id and business_id.strip():
         try:
