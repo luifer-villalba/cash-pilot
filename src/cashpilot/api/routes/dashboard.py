@@ -27,6 +27,15 @@ from cashpilot.utils.datetime import now_local, today_local
 router = APIRouter(tags=["dashboard"])
 
 
+def _is_single_day_filter(from_date: str | None, to_date: str | None) -> bool:
+    if not from_date or not to_date:
+        return False
+    try:
+        return datetime.fromisoformat(from_date).date() == datetime.fromisoformat(to_date).date()
+    except (ValueError, TypeError, AttributeError):
+        return False
+
+
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -58,6 +67,11 @@ async def dashboard(
     filters, include_deleted_flag = await _build_session_filters(
         from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
+    group_by_business_for_single_day = _is_single_day_filter(from_date, to_date)
+    if group_by_business_for_single_day and sort_by == "date":
+        sort_by = "business"
+        sort_order = "asc"
+
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
         db,
         filters,
@@ -66,6 +80,7 @@ async def dashboard(
         include_deleted=include_deleted_flag,
         sort_by=sort_by,
         sort_order=sort_order,
+        group_by_business_for_single_day=group_by_business_for_single_day,
     )
 
     stmt_active = select(func.count(CashSession.id)).where(
@@ -223,6 +238,11 @@ async def sessions_table(
     filters, include_deleted_flag = await _build_session_filters(
         from_date, to_date, cashier_name, business_id, status, current_user, include_deleted
     )
+    group_by_business_for_single_day = _is_single_day_filter(from_date, to_date)
+    if group_by_business_for_single_day and sort_by == "date":
+        sort_by = "business"
+        sort_order = "asc"
+
     sessions, total_sessions, total_pages = await _get_paginated_sessions(
         db,
         filters,
@@ -231,6 +251,7 @@ async def sessions_table(
         include_deleted=include_deleted_flag,
         sort_by=sort_by,
         sort_order=sort_order,
+        group_by_business_for_single_day=group_by_business_for_single_day,
     )
 
     query_params = []

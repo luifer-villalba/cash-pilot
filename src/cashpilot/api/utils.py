@@ -285,6 +285,7 @@ async def _get_paginated_sessions(
     include_deleted: bool = False,
     sort_by: str = "date",
     sort_order: str = "desc",
+    group_by_business_for_single_day: bool = False,
 ) -> tuple[list, int, int]:
     """Fetch paginated sessions with filters. Returns (sessions, total_count, total_pages).
 
@@ -334,6 +335,16 @@ async def _get_paginated_sessions(
 
     # Determine sort order
     order_clauses = []
+    if group_by_business_for_single_day:
+        order_clauses.append(
+            Business.name.desc() if sort_order == "desc" else Business.name.asc()
+        )
+        order_clauses.extend([CashSession.session_date.asc(), CashSession.opened_time.asc()])
+        stmt = stmt.order_by(*order_clauses).offset(skip).limit(per_page)
+        result = await db.execute(stmt)
+        sessions = result.scalars().all()
+        return list(sessions), total, total_pages
+
     if sort_by == "business":
         order_clauses.append(Business.name.desc() if sort_order == "desc" else Business.name.asc())
         # Secondary sort by date
