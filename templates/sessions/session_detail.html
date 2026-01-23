@@ -399,62 +399,29 @@
                         {{ _('Reconciliation') }}
                     </h2>
 
-                    <!-- Hero: Cash Sales & Bank Transfer -->
-                    <div class="bg-gradient-to-br from-primary/10 to-base-100 border-2 border-primary/30 rounded-xl shadow-lg p-8 mb-4 transition-all duration-200">
-                        <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2">
-                            {{ _('CASH SALES & BANK TRANSFER') }}
-                        </p>
-                        <div class="mt-4 flex items-baseline gap-2">
-                            <p class="text-4xl sm:text-6xl font-black font-mono {% if net_cash_movement >= 0 %}text-primary{% else %}text-error{% endif %} tabular-nums">
-                                Gs {{ net_cash_movement | format_currency_py }}
-                            </p>
+                    <!-- Stats Row (match dashboard styling) -->
+                    <div class="mb-4">
+                        <div class="bg-gradient-to-br from-primary/5 to-base-100 rounded-lg border-2 border-primary shadow-sm p-4 md:p-5 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+                            <p class="text-xs text-primary/70 uppercase tracking-wider font-semibold">{{ _('Total Sales') }}</p>
+                            <p class="text-2xl md:text-3xl font-bold mt-2 text-primary">Gs {{ total_sales | format_currency_py }}</p>
+                            <p class="text-sm text-base-content/60 mt-2">{{ _('Cash') }} + {{ _('Cards') }} + {{ _('Credit Sales') }}</p>
                         </div>
-                        <p class="text-xs text-base-content/60 mt-3 font-mono">{{ _('Final Cash') }} − {{ _('Initial') }} + {{ _('Envelope') }} + {{ _('Bank Transfer') }} + {{ _('Expenses') }}</p>
                     </div>
-
-                    <!-- Secondary Stats (3-column grid) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                        <!-- Cash Profit card -->
-                        <div class="{% if cash_profit >= 0 %}bg-gradient-to-br from-success/20 to-base-100 border-success/30{% else %}bg-gradient-to-br from-error/20 to-base-100 border-error/30{% endif %} rounded-xl border shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
-                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2">
-                                {{ _('Cash Profit') }}</p>
-                            <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 {% if cash_profit >= 0 %}text-success{% else %}text-error{% endif %} tabular-nums">
-                                {% if cash_profit >= 0 %}+{% endif %}Gs {{ (net_cash_movement - session.expenses) | format_currency_py }}
-                            </p>
-                            <p class="text-xs text-base-content/60 mt-3">{{ _('Cash only') }}</p>
-                            <p class="text-xs text-base-content/50 mt-2 font-mono">
-                                {{ _('Cash Sales') }} + {{ _('Transfer') }} − {{ _('Expenses') }}</p>
+                    <div class="grid grid-cols-3 gap-3 md:gap-4 mb-4">
+                        <div class="bg-base-100 rounded-lg border border-base-300 shadow-sm p-4 md:p-5 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+                            <p class="text-xs text-base-content/70 uppercase tracking-wider font-semibold">{{ _('Cash Sales') }}</p>
+                            <p class="text-2xl md:text-3xl font-bold mt-2 text-base-content">Gs {{ cash_sales | format_currency_py }}</p>
+                            <p class="text-sm text-base-content/60 mt-2">{{ _('Register') }} + {{ _('Envelope') }} + {{ _('Transfer') }} + {{ _('Expenses') }}</p>
                         </div>
-
-                        <!-- Digital card -->
-                        <div class="bg-gradient-to-br from-info/20 to-base-100 border border-info/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
-                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                                </svg>
-                                {{ _('Card Payments') }}
-                            </p>
-                            <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-info tabular-nums">
-                                +Gs {{ session.card_total | format_currency_py }}
-                            </p>
-                            <p class="text-xs text-base-content/60 mt-3">{{ _('Credit & Debit') }}</p>
+                        <div class="bg-base-100 rounded-lg border border-base-300 shadow-sm p-4 md:p-5 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+                            <p class="text-xs text-base-content/70 uppercase tracking-wider font-semibold">{{ _('Card Payments') }}</p>
+                            <p class="text-2xl md:text-3xl font-bold mt-2 text-base-content">Gs {{ card_payments_total | format_currency_py }}</p>
+                            <p class="text-sm text-base-content/60 mt-2">{{ _('Credit') }} + {{ _('Debit') }}</p>
                         </div>
-
-                        <!-- Revenue card -->
-                        <div class="bg-gradient-to-br from-success/20 to-base-100 border border-success/30 rounded-xl shadow-lg p-5 transition-all duration-200 hover:shadow-xl">
-                            <p class="text-xs text-base-content/80 uppercase tracking-wider font-semibold mb-2 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                {{ _('Total Sales') }}
-                            </p>
-                            <p class="text-2xl sm:text-3xl font-bold font-mono mt-2 text-success tabular-nums">
-                                +Gs {{ session.total_sales | format_currency_py }}
-                            </p>
-                            <p class="text-xs text-base-content/60 mt-3">{{ _('All sales') }}</p>
-                            <p class="text-xs text-base-content/50 mt-2 font-mono">
-                                {{ _('Cash Sales') }} + {{ _('Cards') }} + {{ _('Transfer') }}
-                            </p>
+                        <div class="bg-base-100 rounded-lg border border-base-300 shadow-sm p-4 md:p-5 transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+                            <p class="text-xs text-base-content/70 uppercase tracking-wider font-semibold">{{ _('Credit Sales') }}</p>
+                            <p class="text-2xl md:text-3xl font-bold mt-2 text-base-content">Gs {{ credit_sales_total | format_currency_py }}</p>
+                            <p class="text-sm text-base-content/60 mt-2">{{ _('Pending payments') }}</p>
                         </div>
                     </div>
                 </section>
@@ -543,8 +510,17 @@
                             <p class="text-xs text-base-content/60 uppercase tracking-wider font-semibold mb-2">
                                 {{ _('Notes') }}
                             </p>
-                            <p class="text-sm mt-2 whitespace-pre-wrap text-base-content/80 bg-base-200 p-4 rounded-lg border-l-4 border-primary">
-                                {{ session.notes }}</p>
+                            {% set notes_text = session.notes | trim %}
+                            {% set notes_lines = notes_text.splitlines() %}
+                            <div class="text-sm mt-2 text-base-content/80 bg-base-200 p-4 rounded-lg border-l-4 border-primary">
+                                <ul class="list-disc list-inside space-y-1 break-words leading-relaxed text-left">
+                                    {% for line in notes_lines %}
+                                        {% if line | trim %}
+                                            <li>{{ line | trim }}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
                         {% endif %}
                     </div>

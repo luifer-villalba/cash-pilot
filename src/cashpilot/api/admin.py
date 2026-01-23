@@ -723,7 +723,7 @@ async def get_business_sessions_detail(
 
     return templates.TemplateResponse(
         request,
-        "admin/partials/session_details.html",
+        "admin/partials/sessions_summary.html",
         {
             "sessions": session_details,
             "locale": locale,
