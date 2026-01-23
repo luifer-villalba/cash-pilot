@@ -165,35 +165,51 @@
                     <tr class="session-row transition-all duration-200 cursor-pointer hover:shadow-md border-l-2 border-transparent hover:!border-primary/70{% if session.is_deleted %} border-l-4 border-base-content/30 bg-base-200/50 hover:bg-base-200/70 opacity-75{% elif session.status == 'CLOSED' and session.flagged %} flagged border-l-4 border-error bg-error/10 hover:bg-error/20{% endif %}" {% if not session.is_deleted %}onclick="window.location.href='/sessions/{{ session.id|string }}'" onkeydown="if(event.key==='Enter'||event.key===' '){window.location.href='/sessions/{{ session.id|string }}';}"{% endif %} role="button" tabindex="0" aria-label="{{ _('View session') }}">
                         <!-- Status -->
                         <td onclick="event.stopPropagation()">
-                            {% if session.is_deleted %}
-                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
+                            <div class="flex items-center gap-2">
+                                {% if current_user.role == 'ADMIN' %}
+                                <a class="relative inline-flex items-center justify-center w-6 h-6 rounded-full {% if session.notes %}text-primary bg-primary/10{% else %}text-base-content/40{% endif %}"
+                                   href="/sessions/{{ session.id|string }}#session-notes"
+                                   onclick="event.stopPropagation()"
+                                   title="{{ _('Notes') }}{% if session.notes %}: {{ session.notes | trim | truncate(80, True) | e }}{% endif %}"
+                                   aria-label="{{ _('Notes') }}">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-6 8l-3-3V5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H8l-1 5z"/>
                                     </svg>
-                                    {{ _('Deleted') }}
-                                </span>
-                            {% elif session.status == 'OPEN' %}
-                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-sky-50 dark:bg-sky-950/50 text-xs font-medium text-sky-700 dark:text-sky-300">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                                    </svg>
-                                    {{ _('Open') }}
-                                </span>
-                            {% elif session.status == 'CLOSED' and session.flagged %}
-                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md border border-base-content/40 dark:border-base-content/30 bg-base-300/70 dark:bg-base-700 text-xs font-medium text-base-content/80">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                    {{ _('Review') }}
-                                </span>
-                            {% else %}
-                                <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                    {{ _('Closed') }}
-                                </span>
-                            {% endif %}
+                                    {% if session.notes %}
+                                        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary"></span>
+                                    {% endif %}
+                                </a>
+                                {% endif %}
+                                {% if session.is_deleted %}
+                                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        {{ _('Deleted') }}
+                                    </span>
+                                {% elif session.status == 'OPEN' %}
+                                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-sky-50 dark:bg-sky-950/50 text-xs font-medium text-sky-700 dark:text-sky-300">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ _('Open') }}
+                                    </span>
+                                {% elif session.status == 'CLOSED' and session.flagged %}
+                                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md border border-base-content/40 dark:border-base-content/30 bg-base-300/70 dark:bg-base-700 text-xs font-medium text-base-content/80">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ _('Review') }}
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                        {{ _('Closed') }}
+                                    </span>
+                                {% endif %}
+                            </div>
                         </td>
                         <!-- Cashier / Business -->
                         <td>
@@ -375,35 +391,51 @@
                         <h3 class="font-bold text-base text-base-content">{{ session.cashier.display_name }}</h3>
                         <p class="text-sm text-base-content/70">{{ session.business.name }}</p>
                     </div>
-                    {% if session.is_deleted %}
-                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
+                    <div class="flex items-center gap-2">
+                        {% if current_user.role == 'ADMIN' %}
+                        <a class="relative inline-flex items-center justify-center w-6 h-6 rounded-full {% if session.notes %}text-primary bg-primary/10{% else %}text-base-content/40{% endif %}"
+                           href="/sessions/{{ session.id|string }}#session-notes"
+                           onclick="event.stopPropagation()"
+                           title="{{ _('Notes') }}{% if session.notes %}: {{ session.notes | trim | truncate(80, True) | e }}{% endif %}"
+                           aria-label="{{ _('Notes') }}">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-6 8l-3-3V5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H8l-1 5z"/>
                             </svg>
-                            {{ _('Deleted') }}
-                        </span>
-                    {% elif session.status == 'OPEN' %}
-                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-sky-50 dark:bg-sky-950/50 text-xs font-medium text-sky-700 dark:text-sky-300">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                            </svg>
-                            {{ _('Open') }}
-                        </span>
-                    {% elif session.status == 'CLOSED' and session.flagged %}
-                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md border border-base-content/40 dark:border-base-content/30 bg-base-300/70 dark:bg-base-700 text-xs font-medium text-base-content/80">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                            {{ _('Review') }}
-                        </span>
-                    {% else %}
-                        <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                            </svg>
-                            {{ _('Closed') }}
-                        </span>
-                    {% endif %}
+                            {% if session.notes %}
+                                <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary"></span>
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                        {% if session.is_deleted %}
+                            <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                {{ _('Deleted') }}
+                            </span>
+                        {% elif session.status == 'OPEN' %}
+                            <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-sky-50 dark:bg-sky-950/50 text-xs font-medium text-sky-700 dark:text-sky-300">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ _('Open') }}
+                            </span>
+                        {% elif session.status == 'CLOSED' and session.flagged %}
+                            <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md border border-base-content/40 dark:border-base-content/30 bg-base-300/70 dark:bg-base-700 text-xs font-medium text-base-content/80">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ _('Review') }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ _('Closed') }}
+                            </span>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <!-- Date & Period -->
