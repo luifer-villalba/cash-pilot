@@ -474,6 +474,18 @@ async def reconciliation_compare_dashboard(
         open_sessions_count = result_open_sessions.scalar() or 0
         has_open_sessions = open_sessions_count > 0
 
+        stmt_notes_count = select(func.count(CashSession.id)).where(
+            and_(
+                CashSession.business_id == business.id,
+                CashSession.session_date == comparison_date,
+                ~CashSession.is_deleted,
+                CashSession.notes.is_not(None),
+                CashSession.notes != "",
+            )
+        )
+        result_notes_count = await db.execute(stmt_notes_count)
+        notes_count = result_notes_count.scalar() or 0
+
         # Get unique cashiers for this business on this date
         stmt_cashiers = (
             select(User.first_name, User.last_name)
@@ -626,6 +638,7 @@ async def reconciliation_compare_dashboard(
                 "status": status,
                 "has_open_sessions": has_open_sessions,
                 "open_sessions_count": open_sessions_count,
+                "notes_count": notes_count,
             }
         )
 
@@ -725,7 +738,54 @@ async def get_business_sessions_detail(
         request,
         "admin/partials/sessions_summary.html",
         {
+            "business_id": business_id,
             "sessions": session_details,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.get("/reconciliation/session-notes", response_class=HTMLResponse)
+async def get_business_session_notes(
+    request: Request,
+    business_id: str = Query(..., description="Business ID"),
+    date: str = Query(..., description="Date in YYYY-MM-DD format"),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get session notes for a business on a specific date."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    try:
+        business_uuid = UUID(business_id)
+        session_date = datetime.fromisoformat(date).date()
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid business_id or date format")
+
+    stmt = (
+        select(CashSession)
+        .where(
+            and_(
+                CashSession.business_id == business_uuid,
+                CashSession.session_date == session_date,
+                ~CashSession.is_deleted,
+                CashSession.notes.is_not(None),
+                CashSession.notes != "",
+            )
+        )
+        .order_by(CashSession.session_number)
+        .options(selectinload(CashSession.cashier))
+    )
+    result = await db.execute(stmt)
+    sessions = result.scalars().all()
+
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/session_notes.html",
+        {
+            "sessions": sessions,
             "locale": locale,
             "_": _,
         },

@@ -11,6 +11,9 @@
                         <th class="text-[10px] font-bold uppercase tracking-wider border-r border-info/10 text-info">{{ _('Cashier') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider border-r border-info/10 text-info">{{ _('Time') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Cash') }}</th>
+                        <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Envelope') }}</th>
+                        <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Transfer') }}</th>
+                        <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Expenses') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Card') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Credit') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Total') }}</th>
@@ -53,6 +56,27 @@
                                 <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.cash_sales) }}</span>
                             {% else %}
                                 <span class="text-base-content/40">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right font-mono tabular-nums text-xs border-r border-info/10 text-base-content/50">
+                            {% if item.session.status == 'CLOSED' %}
+                                <span>{{ "{:,.0f}".format(item.session.envelope_amount or 0) }}</span>
+                            {% else %}
+                                <span>-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right font-mono tabular-nums text-xs border-r border-info/10 text-base-content/50">
+                            {% if item.session.status == 'CLOSED' %}
+                                <span>{{ "{:,.0f}".format(item.session.bank_transfer_total or 0) }}</span>
+                            {% else %}
+                                <span>-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right font-mono tabular-nums text-xs border-r border-info/10 text-base-content/50">
+                            {% if item.session.status == 'CLOSED' %}
+                                <span>{{ "{:,.0f}".format(item.session.expenses or 0) }}</span>
+                            {% else %}
+                                <span>-</span>
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">

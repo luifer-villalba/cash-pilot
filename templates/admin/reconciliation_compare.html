@@ -157,7 +157,7 @@
     </div>
 
     <!-- Comparison Table -->
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-x-auto">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm">
         <div class="px-4 pt-4 pb-2">
             <div class="flex items-center gap-2">
                 <div class="p-2 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 shadow-sm">
@@ -170,6 +170,170 @@
                     <p class="text-xs text-base-content/60">{{ _('System vs manual totals by business') }}</p>
                 </div>
             </div>
+        </div>
+        <!-- Mobile Cards (visible on mobile only) -->
+        <div class="lg:hidden px-4 pb-4 space-y-4">
+            {% for item in comparison_data %}
+            <div class="border border-base-300 rounded-lg p-4 bg-base-100{% if item.status == 'Needs Review' %} border-warning bg-base-200/40{% endif %}">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <div class="font-semibold text-base-content">{{ item.business.name }}</div>
+                        <div class="text-xs text-base-content/70">{{ item.cashiers }}</div>
+                    </div>
+                    {% if item.notes_count and item.notes_count > 0 %}
+                    <button
+                        type="button"
+                        hx-get="/admin/reconciliation/session-notes?business_id={{ item.business.id }}&date={{ comparison_date.isoformat() }}"
+                        hx-target="#notes-content-{{ item.business.id }}"
+                        hx-swap="innerHTML"
+                        hx-indicator="#notes-loading-{{ item.business.id }}"
+                        onclick="document.getElementById('notes-modal-{{ item.business.id }}').showModal()"
+                        class="relative inline-flex items-center justify-center w-6 h-6 rounded-full text-primary bg-primary/10 transition-all duration-200 hover:scale-105 active:scale-95 border border-primary/20 hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        title="{{ _('Notes') }}"
+                        aria-label="{{ _('View session notes for') }} {{ item.business.name }}">
+                        <span class="loading loading-spinner loading-xs hidden" id="notes-loading-{{ item.business.id }}"></span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-6 8l-3-3V5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H8l-1 5z"/>
+                        </svg>
+                        <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary"></span>
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="mt-3">
+                    {% if item.is_closed %}
+                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21V5a2 2 0 012-2h7a2 2 0 012 2v16M4 21h16M16 12h.01"/>
+                        </svg>
+                        {{ _('Closed') }}
+                    </span>
+                    {% elif item.has_open_sessions %}
+                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md border border-base-300 dark:border-base-700 bg-base-300/70 dark:bg-base-700 text-xs font-medium text-base-content/80">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+                        </svg>
+                        {{ _('Sesiones abiertas') }}
+                    </span>
+                    {% elif item.status == 'Needs Review' %}
+                    <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}{% if item.business %}&business_id={{ item.business.id }}{% endif %}" 
+                       class="inline-flex items-center gap-2 px-2 py-1 rounded-md border border-base-300 dark:border-base-700 bg-base-300/70 dark:bg-base-700 text-xs font-medium text-base-content/80 hover:bg-base-300 dark:hover:bg-base-700 hover:text-base-content hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-base-content/20 cursor-pointer group"
+                       title="{{ _('Click to review and edit') }}"
+                       aria-label="{{ _('Review differences for') }} {{ item.business.name }}">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ _('Review') }}
+                    </a>
+                    {% elif item.has_manual_values %}
+                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ _('Validado') }}
+                    </span>
+                    {% elif item.is_partial_entry %}
+                    <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md border border-base-300 dark:border-base-700 bg-base-300/70 dark:bg-base-700 text-xs font-medium text-base-content/80">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+                        </svg>
+                        {{ _('Conciliacion iniciada') }}
+                    </span>
+                    {% else %}
+                    <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}{% if item.business %}&business_id={{ item.business.id }}{% endif %}" 
+                       class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-200 dark:bg-base-800 text-xs font-medium text-base-content/60 hover:bg-base-300 dark:hover:bg-base-700 hover:text-base-content hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-base-content/30 cursor-pointer group"
+                       title="{{ _('Click to add manual entry') }}"
+                       aria-label="{{ _('Add manual entry for') }} {{ item.business.name }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        {{ _('Pending') }}
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="mt-4 rounded-lg border border-base-200 bg-base-100 p-3">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ _('Total Sales') }}</p>
+                    <div class="mt-2 space-y-1 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-base-content/50">{{ _('System') }}</span>
+                            <span class="font-mono text-xs text-base-content/70">{{ "{:,.0f}".format(item.system.total_sales) }}</span>
+                        </div>
+                        {% if item.manual.total_sales is not none %}
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-base-content/50">{{ _('Manual') }}</span>
+                            <span class="font-mono text-sm font-semibold text-primary">{{ "{:,.0f}".format(item.manual.total_sales) }}</span>
+                        </div>
+                        {% if item.differences.total_sales is not none and item.differences.total_sales != 0 %}
+                        {% set total_diff = item.differences.total_sales %}
+                        <div class="flex items-center justify-between pt-1 border-t border-base-content/10">
+                            <span class="text-[10px] {% if total_diff > 0 %}text-success{% else %}text-error{% endif %}">{{ _('Diff') }}</span>
+                            <span class="font-mono text-xs font-semibold {% if total_diff > 0 %}text-success{% else %}text-error{% endif %}">{% if total_diff > 0 %}+{% endif %}{{ "{:,.0f}".format(total_diff) }}</span>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-base-content/50">{{ _('Manual') }}</span>
+                            <span class="text-xs text-base-content/40">-</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-3 grid grid-cols-1 gap-2 text-xs">
+                    <div class="rounded-lg border border-base-200 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-base-content/70">{{ _('Cash') }}</span>
+                            <span class="font-mono text-base-content/70">{{ "{:,.0f}".format(item.system.cash_sales) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
+                            <span>{{ _('Manual') }}</span>
+                            <span class="font-mono">{% if item.manual.cash_sales is not none %}{{ "{:,.0f}".format(item.manual.cash_sales) }}{% else %}-{% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="rounded-lg border border-base-200 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-base-content/70">{{ _('Card') }}</span>
+                            <span class="font-mono text-base-content/70">{{ "{:,.0f}".format(item.system.card_sales) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
+                            <span>{{ _('Manual') }}</span>
+                            <span class="font-mono">{% if item.manual.card_sales is not none %}{{ "{:,.0f}".format(item.manual.card_sales) }}{% else %}-{% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="rounded-lg border border-base-200 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-base-content/70">{{ _('Credit') }}</span>
+                            <span class="font-mono text-base-content/70">{{ "{:,.0f}".format(item.system.credit_sales) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
+                            <span>{{ _('Manual') }}</span>
+                            <span class="font-mono">{% if item.manual.credit_sales is not none %}{{ "{:,.0f}".format(item.manual.credit_sales) }}{% else %}-{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    {% if item.system.session_count > 0 %}
+                    <button 
+                        hx-get="/admin/reconciliation/sessions?business_id={{ item.business.id }}&date={{ comparison_date.isoformat() }}"
+                        hx-target="#mobile-sessions-{{ item.business.id }}"
+                        hx-swap="innerHTML"
+                        hx-indicator="#mobile-sessions-loading-{{ item.business.id }}"
+                        class="inline-flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg bg-info/10 hover:bg-info/20 text-info hover:text-info-focus font-medium text-sm transition-all duration-200 hover:shadow-md border border-info/30 hover:border-info/50 focus:outline-none focus:ring-2 focus:ring-info/50"
+                        title="{{ _('Click to view sessions detail') }}"
+                        aria-label="{{ _('View sessions for') }} {{ item.business.name }}"
+                    >
+                        <span class="loading loading-spinner loading-xs hidden" id="mobile-sessions-loading-{{ item.business.id }}"></span>
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                        <span class="font-mono tabular-nums font-semibold">{{ item.system.session_count }}</span>
+                        <span class="text-xs">{{ _('Sessions') }}</span>
+                    </button>
+                    <div id="mobile-sessions-{{ item.business.id }}" class="mt-3"></div>
+                    {% else %}
+                    <div class="text-xs text-base-content/40">{{ _('No sessions') }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
         </div>
         <style>
             /* Hover tint */
@@ -204,11 +368,11 @@
                 }
             }
         </style>
+        <div class="overflow-x-auto hidden lg:block">
         <table class="table table-sm w-full">
             <thead>
                 <tr class="bg-base-200">
                     <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider">{{ _('Cashiers') }}</th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Entry Status') }}</th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Cash Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('System vs Manual') }}</span></th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Card Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('System vs Manual') }}</span></th>
@@ -221,10 +385,32 @@
             <tbody>
                 {% for item in comparison_data %}
                 <tr class="session-row transition-all duration-200 border-l-2 border-transparent{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50{% endif %}" data-business-id="{{ item.business.id }}">
-                    <td class="font-medium">
-                        <div>{{ item.business.name }}</div>
+                    <td>
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="font-medium">{{ item.business.name }}</div>
+                                <div class="text-xs text-base-content/70">{{ item.cashiers }}</div>
+                            </div>
+                            {% if item.notes_count and item.notes_count > 0 %}
+                            <button
+                                type="button"
+                                hx-get="/admin/reconciliation/session-notes?business_id={{ item.business.id }}&date={{ comparison_date.isoformat() }}"
+                                hx-target="#notes-content-{{ item.business.id }}"
+                                hx-swap="innerHTML"
+                                hx-indicator="#notes-loading-{{ item.business.id }}"
+                                onclick="document.getElementById('notes-modal-{{ item.business.id }}').showModal()"
+                                class="relative inline-flex items-center justify-center w-6 h-6 rounded-full text-primary bg-primary/10 transition-all duration-200 hover:scale-105 active:scale-95 border border-primary/20 hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+                                title="{{ _('Notes') }}"
+                                aria-label="{{ _('View session notes for') }} {{ item.business.name }}">
+                                <span class="loading loading-spinner loading-xs hidden" id="notes-loading-{{ item.business.id }}"></span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-6 8l-3-3V5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H8l-1 5z"/>
+                                </svg>
+                                <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary"></span>
+                            </button>
+                            {% endif %}
+                        </div>
                     </td>
-                    <td class="text-xs text-base-content/70">{{ item.cashiers }}</td>
                     <td class="text-right">
                         {% if item.is_closed %}
                         <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">
@@ -513,6 +699,30 @@
                 {% endif %}
             </tbody>
         </table>
+        </div>
+        {% for item in comparison_data %}
+        {% if item.notes_count and item.notes_count > 0 %}
+        <dialog id="notes-modal-{{ item.business.id }}" class="modal">
+            <div class="modal-box max-w-2xl">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-base-content/70">{{ _('Notes') }}</h3>
+                        <p class="text-xs text-base-content/60">{{ item.business.name }} · {{ comparison_date.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-xs" onclick="document.getElementById('notes-modal-{{ item.business.id }}').close()">
+                        {{ _('Close') }}
+                    </button>
+                </div>
+                <div id="notes-content-{{ item.business.id }}" class="mt-4 max-h-[60vh] overflow-y-auto pr-1">
+                    <div class="text-sm text-base-content/60">{{ _('Loading...') }}</div>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>{{ _('Close') }}</button>
+            </form>
+        </dialog>
+        {% endif %}
+        {% endfor %}
         <!-- Color Legend -->
         <div class="bg-base-200/50 border-t border-base-300 px-4 py-3">
             <div class="flex items-center gap-2 text-xs text-base-content/70">
@@ -531,7 +741,7 @@
     </div>
 
     <!-- Margin Comparison Table -->
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-x-auto">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm">
         <div class="px-4 pt-4">
             <div class="flex items-center gap-2">
                 <div class="p-2 bg-gradient-to-br from-info/10 to-info/5 rounded-lg border border-info/20 shadow-sm">
@@ -545,6 +755,122 @@
                 </div>
             </div>
         </div>
+        <!-- Mobile Cards (visible on mobile only) -->
+        <div class="lg:hidden px-4 pb-4 space-y-4">
+            {% set totals = namespace(system_sales=0, manual_sales=0, cost=0, gross_margin=0, has_any=false) %}
+            {% for item in comparison_data %}
+            {% set manual_sales = item.manual.total_sales if item.manual and item.manual.total_sales is not none else none %}
+            {% set system_sales = item.system.total_sales if item.system and item.system.total_sales is not none else none %}
+            {% set cost_total = item.manual_entry.daily_cost_total if item.manual_entry and item.manual_entry.daily_cost_total is not none else none %}
+            {% if manual_sales is not none and cost_total is not none %}
+            {% set gross_margin = manual_sales - cost_total %}
+            {% if manual_sales != 0 %}
+            {% set margin_pct = (gross_margin / manual_sales) * 100 %}
+            {% set cost_pct = (cost_total / manual_sales) * 100 %}
+            {% else %}
+            {% set margin_pct = none %}
+            {% set cost_pct = none %}
+            {% endif %}
+            {% else %}
+            {% set gross_margin = none %}
+            {% set margin_pct = none %}
+            {% set cost_pct = none %}
+            {% endif %}
+            {% if manual_sales is not none %}
+            {% set totals.manual_sales = totals.manual_sales + manual_sales %}
+            {% set totals.has_any = true %}
+            {% endif %}
+            {% if manual_sales is not none and cost_total is not none %}
+            {% set totals.cost = totals.cost + cost_total %}
+            {% set totals.gross_margin = totals.gross_margin + gross_margin %}
+            {% set totals.has_any = true %}
+            {% endif %}
+            <div class="border border-base-300 rounded-lg p-4 bg-base-100{% if item.status == 'Needs Review' %} border-warning bg-base-200/40{% endif %}">
+                <div class="font-semibold text-base-content">{{ item.business.name }}</div>
+                <div class="mt-3 grid grid-cols-1 gap-2 text-xs">
+                    <div class="rounded-lg border border-base-200 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-base-content/70">{{ _('Sales Total') }}</span>
+                            <span class="font-mono text-base-content/70">
+                                {% if manual_sales is not none %}{{ "{:,.0f}".format(manual_sales) }}{% else %}-{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
+                            <span>{{ _('System') }}</span>
+                            <span class="font-mono">{% if system_sales is not none %}{{ "{:,.0f}".format(system_sales) }}{% else %}-{% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="rounded-lg border border-base-200 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-base-content/70">{{ _('Daily Cost Total') }}</span>
+                            <span class="font-mono text-base-content/70">
+                                {% if cost_total is not none %}{{ "{:,.0f}".format(cost_total) }}{% else %}-{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="rounded-lg border border-base-200 p-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-base-content/70">{{ _('Gross Margin') }}</span>
+                            <span class="font-mono {% if gross_margin is not none and gross_margin >= 0 %}text-success{% elif gross_margin is not none %}text-error{% else %}text-base-content/40{% endif %}">
+                                {% if gross_margin is not none %}{{ "{:,.0f}".format(gross_margin) }}{% else %}-{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
+                            <span>{{ _('Margin %') }}</span>
+                            <span class="{% if margin_pct is not none and margin_pct >= 0 %}text-success{% elif margin_pct is not none %}text-error{% else %}text-base-content/40{% endif %}">
+                                {% if margin_pct is not none %}{{ "{:+.2f}".format(margin_pct) }}%{% else %}-{% endif %}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
+                            <span>{{ _('Cost % of Sales') }}</span>
+                            <span>{% if cost_pct is not none %}{{ "{:.2f}".format(cost_pct) }}%{% else %}-{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% if not comparison_data %}
+            <div class="bg-base-200/50 border border-dashed border-base-300 rounded-lg p-6 text-center text-sm text-base-content/60 italic">
+                {{ _('No businesses found') }}
+            </div>
+            {% elif totals.has_any %}
+            {% if totals.manual_sales != 0 %}
+            {% set total_margin_pct = (totals.gross_margin / totals.manual_sales) * 100 %}
+            {% set total_cost_pct = (totals.cost / totals.manual_sales) * 100 %}
+            {% else %}
+            {% set total_margin_pct = none %}
+            {% set total_cost_pct = none %}
+            {% endif %}
+            <div class="rounded-lg border border-base-300 bg-base-100 p-4">
+                <div class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ _('Totals') }}</div>
+                <div class="mt-2 grid grid-cols-1 gap-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-base-content/70">{{ _('Sales Total') }}</span>
+                        <span class="font-mono text-primary font-semibold">{{ "{:,.0f}".format(totals.manual_sales) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-base-content/70">{{ _('Daily Cost Total') }}</span>
+                        <span class="font-mono font-semibold">{{ "{:,.0f}".format(totals.cost) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-base-content/70">{{ _('Gross Margin') }}</span>
+                        <span class="font-mono font-semibold {% if totals.gross_margin >= 0 %}text-success{% else %}text-error{% endif %}">{{ "{:,.0f}".format(totals.gross_margin) }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-base-content/70">{{ _('Margin %') }}</span>
+                        <span class="{% if total_margin_pct is not none and total_margin_pct >= 0 %}text-success{% elif total_margin_pct is not none %}text-error{% else %}text-base-content/40{% endif %}">
+                            {% if total_margin_pct is not none %}{{ "{:+.2f}".format(total_margin_pct) }}%{% else %}-{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="font-semibold text-base-content/70">{{ _('Cost % of Sales') }}</span>
+                        <span class="text-base-content/70">{% if total_cost_pct is not none %}{{ "{:.2f}".format(total_cost_pct) }}%{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="overflow-x-auto hidden lg:block">
         <table class="table table-sm w-full mt-2">
             <thead>
                 <tr class="bg-base-200">
@@ -679,6 +1005,7 @@
                 {% endif %}
             </tbody>
         </table>
+        </div>
         <div class="bg-base-200/50 border-t border-base-300 px-4 py-3">
             <div class="flex items-center gap-2 text-xs text-base-content/70">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
