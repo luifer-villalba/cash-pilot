@@ -208,7 +208,6 @@
             <thead>
                 <tr class="bg-base-200">
                     <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
-                    <th class="text-xs font-bold uppercase tracking-wider">{{ _('Cashiers') }}</th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Entry Status') }}</th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Cash Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('System vs Manual') }}</span></th>
                     <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Card Sales') }}<br><span class="text-[10px] font-normal normal-case text-base-content/50">{{ _('System vs Manual') }}</span></th>
@@ -221,10 +220,51 @@
             <tbody>
                 {% for item in comparison_data %}
                 <tr class="session-row transition-all duration-200 border-l-2 border-transparent{% if item.status == 'Needs Review' %} flagged border-l-4 border-warning bg-base-200/50{% endif %}" data-business-id="{{ item.business.id }}">
-                    <td class="font-medium">
-                        <div>{{ item.business.name }}</div>
+                    <td>
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="font-medium">{{ item.business.name }}</div>
+                                <div class="text-xs text-base-content/70">{{ item.cashiers }}</div>
+                            </div>
+                            {% if item.notes_count and item.notes_count > 0 %}
+                            <button
+                                type="button"
+                                hx-get="/admin/reconciliation/session-notes?business_id={{ item.business.id }}&date={{ comparison_date.isoformat() }}"
+                                hx-target="#notes-content-{{ item.business.id }}"
+                                hx-swap="innerHTML"
+                                hx-indicator="#notes-loading-{{ item.business.id }}"
+                                onclick="document.getElementById('notes-modal-{{ item.business.id }}').showModal()"
+                                class="relative inline-flex items-center justify-center w-6 h-6 rounded-full text-primary bg-primary/10 transition-all duration-200 hover:scale-105 active:scale-95 border border-primary/20 hover:border-primary/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+                                title="{{ _('Notes') }}"
+                                aria-label="{{ _('View session notes for') }} {{ item.business.name }}">
+                                <span class="loading loading-spinner loading-xs hidden" id="notes-loading-{{ item.business.id }}"></span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h6m-6 8l-3-3V5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H8l-1 5z"/>
+                                </svg>
+                                <span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-primary"></span>
+                            </button>
+                            <dialog id="notes-modal-{{ item.business.id }}" class="modal">
+                                <div class="modal-box max-w-2xl">
+                                    <div class="flex items-center justify-between gap-4">
+                                        <div>
+                                            <h3 class="text-sm font-bold uppercase tracking-widest text-base-content/70">{{ _('Notes') }}</h3>
+                                            <p class="text-xs text-base-content/60">{{ item.business.name }} · {{ comparison_date.strftime('%d/%m/%Y') }}</p>
+                                        </div>
+                                        <button type="button" class="btn btn-ghost btn-xs" onclick="document.getElementById('notes-modal-{{ item.business.id }}').close()">
+                                            {{ _('Close') }}
+                                        </button>
+                                    </div>
+                                    <div id="notes-content-{{ item.business.id }}" class="mt-4 max-h-[60vh] overflow-y-auto pr-1">
+                                        <div class="text-sm text-base-content/60">{{ _('Loading...') }}</div>
+                                    </div>
+                                </div>
+                                <form method="dialog" class="modal-backdrop">
+                                    <button>{{ _('Close') }}</button>
+                                </form>
+                            </dialog>
+                            {% endif %}
+                        </div>
                     </td>
-                    <td class="text-xs text-base-content/70">{{ item.cashiers }}</td>
                     <td class="text-right">
                         {% if item.is_closed %}
                         <span class="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-base-300 dark:bg-base-700 text-xs font-medium text-base-content/60">

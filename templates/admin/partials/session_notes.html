@@ -1,0 +1,32 @@
+<!-- File: templates/admin/partials/session_notes.html -->
+{% if sessions %}
+<div class="space-y-3">
+    {% for session in sessions %}
+    {% set notes_text = session.notes | trim %}
+    {% set notes_lines = notes_text.splitlines() %}
+    <div class="rounded-lg border border-base-300 bg-base-100 p-3">
+        <div class="flex items-center justify-between gap-3 text-xs text-base-content/70">
+            <span class="font-semibold text-base-content">{{ _('Session') }} #{{ session.session_number }}</span>
+            <span>
+                {% if session.cashier %}
+                    {{ session.cashier.display_name }}
+                {% else %}
+                    {{ _('Unknown') }}
+                {% endif %}
+            </span>
+        </div>
+        <div class="mt-2 text-sm text-base-content/80">
+            <ul class="list-disc list-inside space-y-1 break-words leading-relaxed">
+                {% for line in notes_lines %}
+                    {% if line | trim %}
+                        <li>{{ line | trim }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-sm text-base-content/60">{{ _('No notes available for this date.') }}</div>
+{% endif %}
