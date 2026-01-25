@@ -6,47 +6,32 @@ on:
   pull_request:
     branches: [ main, dev ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_BUILDKIT: 1
+
 jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
+  lint:
+    uses: ./.github/workflows/ci-job.yml
+    with:
+      timeout_minutes: 20
+      use_db: false
+      run_command: |
+        docker compose run --rm --no-deps app bash -lc "ruff check src && black --check src && isort --check-only src"
+        docker compose run --rm --no-deps app bash -lc "pip-audit --desc"
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v3
-
-      - name: Create .env file
-        run: cp .env.example .env
-
-      - name: Ensure SENTRY_DSN is unset for tests
-        run: |
-          # Remove SENTRY_DSN from .env if it exists (to disable Sentry in CI)
-          sed -i '/^SENTRY_DSN=/d' .env || true
-
-      - name: Build Docker images
-        run: docker compose build
-
-      - name: Start database
-        run: docker compose up -d db
-
-      - name: Wait for database to be ready
-        run: |
-          timeout 30 bash -c 'until docker compose exec -T db pg_isready -U cashpilot; do sleep 1; done'
-
-      - name: Create test database
-        run: |
-          docker compose exec -T db psql -U cashpilot -d cashpilot_dev -c "CREATE DATABASE cashpilot_test;"
-
-      - name: Run linters
-        run: docker compose run --rm --no-deps app bash -lc "ruff check src && black --check src && isort --check-only src"
-
-      - name: Run security audit
-        run: docker compose run --rm --no-deps app bash -lc "pip-audit --desc"
-
-      - name: Run tests
-        run: docker compose run --rm app bash -lc "pytest -q"
-
-      - name: Cleanup
-        if: always()
-        run: docker compose down -v
+  test:
+    uses: ./.github/workflows/ci-job.yml
+    needs: lint
+    with:
+      timeout_minutes: 30
+      use_db: true
+      run_command: |
+        docker compose run --rm app bash -lc "pytest -q"

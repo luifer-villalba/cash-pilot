@@ -1,0 +1,75 @@
+name: CI Job
+
+on:
+  workflow_call:
+    inputs:
+      run_command:
+        description: "Shell command(s) to execute in the job."
+        required: true
+        type: string
+      use_db:
+        description: "Whether to start the database before running commands."
+        required: false
+        default: false
+        type: boolean
+      timeout_minutes:
+        description: "Job timeout in minutes."
+        required: false
+        default: 20
+        type: number
+
+permissions:
+  contents: read
+
+env:
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_BUILDKIT: 1
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.timeout_minutes }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create .env file
+        run: cp .env.example .env
+
+      - name: Ensure SENTRY_DSN is unset for tests
+        run: |
+          # Remove SENTRY_DSN from .env if it exists (to disable Sentry in CI)
+          sed -i '/^SENTRY_DSN=/d' .env || true
+
+      - name: Build Docker images
+        uses: docker/bake-action@v5
+        with:
+          files: docker-compose.yml
+          targets: app
+          set: |
+            app.cache-from=type=gha
+            app.cache-to=type=gha,mode=max
+
+      - name: Start database
+        if: ${{ inputs.use_db }}
+        run: docker compose up -d db
+
+      - name: Wait for database to be ready
+        if: ${{ inputs.use_db }}
+        run: |
+          timeout 30 bash -c 'until docker compose exec -T db pg_isready -U cashpilot; do sleep 1; done'
+
+      - name: Create test database
+        if: ${{ inputs.use_db }}
+        run: |
+          docker compose exec -T db psql -U cashpilot -d cashpilot_dev -c "CREATE DATABASE cashpilot_test;"
+
+      - name: Run job command(s)
+        run: ${{ inputs.run_command }}
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
