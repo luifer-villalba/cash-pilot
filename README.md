@@ -2,8 +2,6 @@
 
 Business cash register reconciliation system built for multi-location operations. Replaces manual paper-based daily reconciliation with automated session tracking, multi-payment support, and role-based access control.
 
-**Live:** https://cash-pilot-production.up.railway.app
-
 [![Documentation](https://img.shields.io/badge/docs-available-blue)](docs/README.md)
 [![Security](https://img.shields.io/badge/security-policy-green)](SECURITY.md)
 [![Tests](https://img.shields.io/badge/tests-262+-success)](tests/)
