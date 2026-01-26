@@ -2242,6 +2242,15 @@ msgstr "¿Remover marca de esta sesión?"
 msgid "Clear"
 msgstr "Limpiar"
 
+msgid "Weekly Report"
+msgstr "Reporte semanal"
+
+msgid "Date range"
+msgstr "Rango de fechas"
+
+msgid "Generated at"
+msgstr "Generado el"
+
 #~ msgid "Received"
 #~ msgstr "Recibido"
 

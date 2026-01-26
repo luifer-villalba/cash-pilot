@@ -33,6 +33,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash git build-essential ca-certificates \
+    libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 \
+    libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 \
+    libpangocairo-1.0-0 libpango-1.0-0 libcairo2 libatspi2.0-0 \
+    libx11-6 libx11-xcb1 libxcb1 libxext6 libxrender1 libxtst6 libwayland-client0 \
+    libwayland-cursor0 libwayland-egl1 libxshmfence1 libegl1 libgl1 \
+    fonts-liberation fonts-noto-color-emoji fonts-unifont \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -70,6 +76,7 @@ RUN echo "=== Static Files Verification ===" && \
 RUN pip install -U pip setuptools wheel
 RUN pip install --no-cache-dir -e .
 RUN pip install --no-cache-dir .[dev]
+RUN python -m playwright install chromium
 
 # Compile translations for production
 RUN pybabel compile -d translations
