@@ -4,9 +4,298 @@
 {% block title %}{{ _('Weekly Revenue Trend') }} - CashPilot{% endblock %}
 
 {% block content %}
+<style>
+    .pdf-only {
+        display: none;
+    }
+
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 18mm;
+        }
+
+        @page page-one {
+            size: A4 portrait;
+            margin: 18mm;
+        }
+
+        @page page-two {
+            size: A4 portrait;
+            margin: 18mm;
+        }
+
+        @page page-three {
+            size: A4 portrait;
+            margin: 18mm;
+        }
+
+        @page page-three-landscape {
+            size: A4 landscape;
+            margin: 18mm;
+        }
+
+        nav,
+        footer {
+            display: none !important;
+        }
+
+        main {
+            padding: 0 !important;
+        }
+
+        body {
+            background: #ffffff;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .pdf-only {
+            display: block !important;
+        }
+
+        .pdf-header {
+            margin-bottom: 16px;
+        }
+
+        .pdf-meta {
+            font-size: 11px;
+            color: #4b5563;
+        }
+
+        .pdf-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size: 10px;
+            color: #4b5563;
+            text-align: right;
+        }
+
+        .pdf-footer::after {
+            content: "Page " counter(page) " of " counter(pages);
+        }
+
+        .pdf-footer {
+            display: none !important;
+        }
+
+        #reportContent {
+            margin: 0 auto;
+            padding-bottom: 12mm;
+        }
+
+        .pdf-page {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            max-width: 174mm;
+            margin: 0 auto;
+        }
+
+        .pdf-page:empty,
+        .pdf-charts-two:empty,
+        .pdf-charts-three:empty {
+            display: none !important;
+        }
+
+        .pdf-page-one {
+            page: page-one;
+            break-after: page;
+            page-break-after: always;
+        }
+
+        .pdf-page-two {
+            page: page-two;
+            break-after: page;
+            page-break-after: always;
+            min-height: 261mm;
+            display: flex;
+            align-items: center;
+        }
+
+        .pdf-page-two #pdfChartComparison {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .pdf-page-two #pdfChartComparison .pdf-chart {
+            height: 180mm !important;
+        }
+
+        .pdf-page-three {
+            page: page-three;
+            min-height: 261mm;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .pdf-page-three.pdf-table-landscape {
+            page: page-three-landscape;
+            max-width: 260mm;
+        }
+
+        .pdf-page-two {
+            display: flex;
+            align-items: center;
+        }
+
+        .pdf-page-two #pdfChartComparison {
+            width: 100%;
+        }
+
+        .pdf-keep {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .pdf-chart-block {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .pdf-exclude {
+            display: none !important;
+        }
+
+        .pdf-cards-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            overflow: visible !important;
+        }
+
+        .pdf-charts-two,
+        .pdf-charts-three {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 10px !important;
+        }
+
+        .pdf-chart {
+            height: 200px !important;
+        }
+
+        .pdf-table {
+            font-size: 10px;
+        }
+
+        .overflow-x-auto {
+            overflow: visible !important;
+        }
+
+        table {
+            table-layout: auto;
+            width: 100%;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        th,
+        td {
+            padding: 4px 6px !important;
+            word-break: break-word;
+        }
+
+        th.text-right,
+        td.text-right,
+        .pdf-table .font-mono {
+            white-space: nowrap;
+        }
+
+        .pdf-table .pdf-nowrap {
+            white-space: nowrap;
+        }
+
+        tfoot tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .pdf-table-block {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .pdf-page-three #pdfTableSection {
+            width: 100%;
+        }
+
+        .pdf-page-three .pdf-table {
+            font-size: 9px;
+        }
+
+        .pdf-page-three .pdf-table th,
+        .pdf-page-three .pdf-table td {
+            padding: 3px 5px !important;
+        }
+
+        .pdf-page-three.pdf-table-compact .pdf-table {
+            font-size: 8.5px;
+        }
+
+        .pdf-page-three.pdf-table-compact .pdf-table th,
+        .pdf-page-three.pdf-table-compact .pdf-table td {
+            padding: 2px 4px !important;
+        }
+
+        .pdf-page-three.pdf-table-scaled #pdfTableSection {
+            transform: scale(var(--pdf-table-scale, 1));
+            transform-origin: top left;
+        }
+
+        #reportContent > :not([hidden]) + :not([hidden]) {
+            margin-top: 10px !important;
+        }
+
+        .pdf-page > :not([hidden]) + :not([hidden]) {
+            margin-top: 10px !important;
+        }
+
+        .pdf-donut-row {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        #pdfSummaryNote {
+            margin-bottom: 0 !important;
+        }
+
+        #pdfSummaryNote,
+        #pdfDayTypeBreakdown,
+        #pdfTableSection {
+            padding: 10px !important;
+        }
+
+        .pdf-chart-block {
+            padding: 10px !important;
+        }
+    }
+
+    .pdf-donut-row {
+        display: contents;
+    }
+</style>
 <div class="space-y-8">
     <!-- Header Section -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 no-print">
         <div class="flex-1">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-primary/10 rounded-lg">
@@ -21,6 +310,13 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
+            <button id="exportPdfButton" class="btn btn-primary btn-sm gap-2" type="button">
+                <span id="exportPdfSpinner" class="loading loading-spinner loading-xs hidden"></span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-8m0 8l-3-3m3 3l3-3m6 4v-1a3 3 0 00-3-3H7a3 3 0 00-3 3v1m0 0v4a2 2 0 002 2h12a2 2 0 002-2v-4m0 0H5"/>
+                </svg>
+                <span id="exportPdfLabel">{{ _('Export PDF') }}</span>
+            </button>
             <a id="switchToMonthly" href="#" class="btn btn-outline btn-sm gap-2 hidden">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -37,7 +333,7 @@
     </div>
 
     <!-- Controls Section -->
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4 no-print">
         <!-- Business Selector (Most Important) -->
         <div class="mb-4">
             <label for="businessId" class="label py-1">
@@ -113,7 +409,7 @@
     </div>
 
     <!-- Loading State -->
-    <div id="loadingState" class="hidden">
+    <div id="loadingState" class="hidden no-print">
         <div class="flex items-center justify-center py-12">
             <div class="text-center">
                 <span class="loading loading-spinner loading-lg text-primary"></span>
@@ -123,7 +419,7 @@
     </div>
 
     <!-- Error State -->
-    <div id="errorState" class="hidden">
+    <div id="errorState" class="hidden no-print">
         <div class="alert alert-error shadow-lg">
             <div class="flex items-start gap-3">
                 <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -139,8 +435,19 @@
 
     <!-- Report Content -->
     <div id="reportContent" class="hidden space-y-6">
+        <div class="pdf-only pdf-header" id="pdfHeaderBlock">
+            <div class="text-xl font-bold text-base-content">{{ _('Weekly Report') }}</div>
+            <div class="pdf-meta mt-2">
+                <div><span class="font-semibold">{{ _('Date range') }}:</span> <span id="pdfDateRange">-</span></div>
+                <div><span class="font-semibold">{{ _('Generated at') }}:</span> <span id="pdfGeneratedAt">-</span></div>
+            </div>
+        </div>
+        <div class="pdf-only pdf-footer" aria-hidden="true"></div>
+        <div id="pdfPageOne" class="pdf-page pdf-page-one"></div>
+        <div id="pdfPageTwo" class="pdf-page pdf-page-two"></div>
+        <div id="pdfPageThree" class="pdf-page pdf-page-three"></div>
         <!-- Summary Cards -->
-        <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/20 rounded-lg p-4 mb-6">
+        <div class="bg-gradient-to-br from-primary/5 to-base-100 border border-primary/20 rounded-lg p-4 mb-6 pdf-keep pdf-exclude" id="pdfSummaryNote">
             <div class="flex items-center gap-2 text-sm text-base-content/70">
                 <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -149,9 +456,9 @@
             </div>
         </div>
 
-        <div class="flex gap-4 overflow-x-auto pb-2">
+        <div class="flex gap-4 overflow-x-auto pb-2 pdf-cards-grid" id="pdfKpiCards">
             <!-- Highest Revenue Day -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1 pdf-keep">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
@@ -163,7 +470,7 @@
             </div>
 
             <!-- Lowest Revenue Day -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1 pdf-keep">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
@@ -175,7 +482,7 @@
             </div>
 
             <!-- Week Total Sales -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1 pdf-keep">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -187,7 +494,7 @@
             </div>
 
             <!-- Week Cost -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1 pdf-keep">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -199,7 +506,7 @@
             </div>
 
             <!-- Week Margin -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1 pdf-keep">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -211,7 +518,7 @@
             </div>
 
             <!-- Week-over-Week Growth -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1 pdf-keep">
                 <div class="flex items-center gap-2 mb-2">
                     <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
@@ -224,7 +531,7 @@
         </div>
 
         <!-- Day Type Revenue Breakdown -->
-        <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm">
+        <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm pdf-keep" id="pdfDayTypeBreakdown">
             <div class="flex items-center gap-2 mb-3">
                 <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -255,69 +562,71 @@
         </div>
 
         <!-- Charts Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pdf-charts-two pdf-exclude" id="pdfChartsPrimary">
             <!-- Running Total Progress Chart -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm pdf-keep pdf-chart-block pdf-exclude" id="pdfChartProgress">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-semibold">{{ _('Revenue Progress') }}</h2>
                     <div class="text-xs text-base-content/60">{{ _('Cumulative') }}</div>
                 </div>
-                <div class="relative" style="height: 280px;">
+                <div class="relative pdf-chart" style="height: 280px;">
                     <canvas id="runningTotalChart"></canvas>
                 </div>
             </div>
 
             <!-- Day-by-Day Comparison Chart -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm pdf-keep pdf-chart-block" id="pdfChartComparison">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-semibold">{{ _('Day-by-Day Comparison') }}</h2>
                     <div class="text-xs text-base-content/60">{{ _('Current vs Previous') }}</div>
                 </div>
-                <div class="relative" style="height: 280px;">
+                <div class="relative pdf-chart" style="height: 280px;">
                     <canvas id="comparisonChart"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- Second Row: 3 Equal Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pdf-charts-three pdf-exclude">
             <!-- 5-Week Trend (Bar Chart) -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm pdf-keep pdf-chart-block pdf-exclude" id="pdfChartTrend">
                     <h2 class="text-lg font-semibold mb-4">{{ _('5-Week Trend') }}</h2>
-                    <div class="relative" style="height: 280px;">
+                    <div class="relative pdf-chart" style="height: 280px;">
                         <canvas id="trendChart"></canvas>
                     </div>
             </div>
             
-            <!-- Payment Methods Chart -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
-                <h2 class="text-lg font-semibold mb-4">{{ _('Payment Methods') }}</h2>
-                <div class="relative" style="height: 280px;">
-                    <canvas id="paymentMethodsChart"></canvas>
+            <div class="pdf-donut-row pdf-exclude" id="pdfChartDonuts">
+                <!-- Payment Methods Chart -->
+                <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm pdf-keep pdf-chart-block">
+                    <h2 class="text-lg font-semibold mb-4">{{ _('Payment Methods') }}</h2>
+                    <div class="relative pdf-chart" style="height: 280px;">
+                        <canvas id="paymentMethodsChart"></canvas>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Day Type Revenue Chart -->
-            <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
-                <h2 class="text-lg font-semibold mb-4">{{ _('Revenue by Day Type') }}</h2>
-                <div class="relative" style="height: 280px;">
-                    <canvas id="dayTypeChart"></canvas>
+                <!-- Day Type Revenue Chart -->
+                <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm pdf-keep pdf-chart-block">
+                    <h2 class="text-lg font-semibold mb-4">{{ _('Revenue by Day Type') }}</h2>
+                    <div class="relative pdf-chart" style="height: 280px;">
+                        <canvas id="dayTypeChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Selected Week Details -->
-        <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm">
+        <div class="bg-base-100 border border-base-300 rounded-lg p-6 shadow-sm pdf-keep pdf-table-block" id="pdfTableSection">
             <h2 class="text-lg font-semibold mb-4">{{ _('Selected Week Details') }}</h2>
             <div class="overflow-x-auto">
-                <table class="table table-sm table-zebra w-full">
+                <table class="table table-sm table-zebra w-full pdf-table">
                     <thead>
                         <tr>
-                            <th>{{ _('Day') }}</th>
-                            <th>{{ _('Date') }}</th>
-                            <th class="text-right">{{ _('Revenue') }}</th>
-                            <th class="text-right">{{ _('Cost') }}</th>
-                            <th class="text-right">{{ _('Margin') }}</th>
+                            <th class="pdf-nowrap">{{ _('Day') }}</th>
+                            <th class="pdf-nowrap">{{ _('Date') }}</th>
+                            <th class="text-right pdf-nowrap">{{ _('Revenue') }}</th>
+                            <th class="text-right pdf-nowrap">{{ _('Cost') }}</th>
+                            <th class="text-right pdf-nowrap">{{ _('Margin') }}</th>
                             <th class="text-right">{{ _('Margin %') }}</th>
                             <th class="text-right">{{ _('WoW Growth') }}</th>
                             <th class="text-center">{{ _('Trend') }}</th>
@@ -328,11 +637,11 @@
                     </tbody>
                     <tfoot>
                         <tr class="font-semibold">
-                            <td>{{ _('Total') }}</td>
-                            <td>-</td>
-                            <td class="text-right font-mono" id="weekTotalRevenue">-</td>
-                            <td class="text-right font-mono" id="weekTotalCost">-</td>
-                            <td class="text-right font-mono" id="weekTotalMargin">-</td>
+                            <td class="pdf-nowrap">{{ _('Total') }}</td>
+                            <td class="pdf-nowrap">-</td>
+                            <td class="text-right font-mono pdf-nowrap" id="weekTotalRevenue">-</td>
+                            <td class="text-right font-mono pdf-nowrap" id="weekTotalCost">-</td>
+                            <td class="text-right font-mono pdf-nowrap" id="weekTotalMargin">-</td>
                             <td class="text-right font-mono" id="weekTotalMarginPct">-</td>
                             <td class="text-right font-mono" id="weekTotalGrowth">-</td>
                             <td class="text-center" id="weekTotalTrend">-</td>
@@ -424,6 +733,145 @@
         };
     };
 
+    window.reportContentReady = false;
+    window.reportChartsReady = false;
+    window.reportReady = false;
+    window.reportChartsExpected = 0;
+    window.reportChartsRendered = 0;
+
+    const setReportReadyIfComplete = () => {
+        if (window.reportContentReady && window.reportChartsReady) {
+            window.reportReady = true;
+        }
+    };
+
+    const setupChartRenderTracking = () => {
+        const canvases = Array.from(document.querySelectorAll('#reportContent canvas'));
+        window.reportChartsExpected = canvases.length;
+        window.reportChartsRendered = 0;
+        window.reportChartsReady = window.reportChartsExpected === 0;
+        canvases.forEach((canvas) => {
+            canvas.dataset.rendered = 'false';
+        });
+        setReportReadyIfComplete();
+    };
+
+    const isPdfMode = () => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('pdf') === '1';
+    };
+
+    const applyPdfLayout = () => {
+        if (!isPdfMode()) {
+            return;
+        }
+        const pageOne = document.getElementById('pdfPageOne');
+        const pageTwo = document.getElementById('pdfPageTwo');
+        const pageThree = document.getElementById('pdfPageThree');
+        if (!pageOne || !pageTwo) {
+            return;
+        }
+
+        const sectionsPageOne = [
+            document.getElementById('pdfHeaderBlock'),
+            document.getElementById('pdfKpiCards'),
+            document.getElementById('pdfDayTypeBreakdown'),
+        ];
+        const sectionsPageTwo = [
+            document.getElementById('pdfChartComparison'),
+        ];
+        const sectionsPageThree = [
+            document.getElementById('pdfTableSection'),
+        ];
+
+        sectionsPageOne.forEach((section) => {
+            if (section) {
+                pageOne.appendChild(section);
+            }
+        });
+        sectionsPageTwo.forEach((section) => {
+            if (section) {
+                pageTwo.appendChild(section);
+            }
+        });
+        sectionsPageThree.forEach((section) => {
+            if (section && pageThree) {
+                pageThree.appendChild(section);
+            }
+        });
+    };
+
+    const updatePdfTableOrientation = () => {
+        const pageThree = document.getElementById('pdfPageThree');
+        const tableSection = document.getElementById('pdfTableSection');
+        const table = document.querySelector('#pdfTableSection table');
+        const container = document.querySelector('#pdfTableSection .overflow-x-auto');
+        if (!pageThree || !tableSection || !table || !container) {
+            return;
+        }
+        const pxPerMm = 96 / 25.4;
+        const portraitWidth = 174 * pxPerMm;
+        const landscapeWidth = 261 * pxPerMm;
+        const portraitHeight = 261 * pxPerMm;
+        const landscapeHeight = 174 * pxPerMm;
+
+        const scalePortrait = Math.min(
+            1,
+            portraitWidth / table.scrollWidth,
+            portraitHeight / table.scrollHeight
+        );
+        const scaleLandscape = Math.min(
+            1,
+            landscapeWidth / table.scrollWidth,
+            landscapeHeight / table.scrollHeight
+        );
+        const useLandscape = scaleLandscape > scalePortrait;
+        const targetWidth = useLandscape ? landscapeWidth : portraitWidth;
+        const targetHeight = useLandscape ? landscapeHeight : portraitHeight;
+
+        const scale = Math.min(
+            1,
+            targetWidth / table.scrollWidth,
+            targetHeight / table.scrollHeight
+        );
+        const needsCompact = scale < 0.93;
+
+        pageThree.classList.toggle('pdf-table-landscape', useLandscape);
+        pageThree.classList.toggle('pdf-table-compact', needsCompact);
+        pageThree.classList.toggle('pdf-table-scaled', scale < 0.99);
+        tableSection.style.setProperty('--pdf-table-scale', scale.toFixed(3));
+    };
+
+    const markChartRendered = (chart) => {
+        if (!chart || !chart.canvas) {
+            return;
+        }
+        if (chart.canvas.dataset.rendered === 'true') {
+            return;
+        }
+        chart.canvas.dataset.rendered = 'true';
+        window.reportChartsRendered += 1;
+        if (window.reportChartsRendered >= window.reportChartsExpected) {
+            window.reportChartsReady = true;
+            setReportReadyIfComplete();
+        }
+    };
+
+    const chartAnimationComplete = (context) => {
+        if (context && context.chart) {
+            markChartRendered(context.chart);
+        }
+    };
+
+    const getDateFromIsoWeek = (year, week) => {
+        const simple = new Date(year, 0, 1 + (week - 1) * 7);
+        const dayOfWeek = simple.getDay();
+        const monday = new Date(simple);
+        const diff = dayOfWeek <= 4 ? 1 - dayOfWeek : 8 - dayOfWeek;
+        monday.setDate(simple.getDate() + diff);
+        return monday;
+    };
+
     const sumTickets = (weekDays) => (
         weekDays.reduce((sum, day) => sum + (getTicketValue(day) || 0), 0)
     );
@@ -470,8 +918,7 @@
         return { year: d.getFullYear(), week: weekNo };
     }
 
-    // Format date range for week (parse date string to avoid timezone issues)
-    function formatWeekRange(dateStr) {
+    function getWeekBounds(dateStr) {
         // Parse YYYY-MM-DD string to avoid timezone issues
         const parts = dateStr.split('-');
         const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
@@ -484,15 +931,38 @@
         // Get Sunday
         const sunday = new Date(monday);
         sunday.setDate(monday.getDate() + 6);
-        
+        return { monday, sunday };
+    }
+
+    const formatIsoDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    // Format date range for week (parse date string to avoid timezone issues)
+    function formatWeekRange(dateStr) {
+        const bounds = getWeekBounds(dateStr);
+
         const formatDate = (date) => {
             const months = ['{{ _("Jan") }}', '{{ _("Feb") }}', '{{ _("Mar") }}', '{{ _("Apr") }}', '{{ _("May") }}', '{{ _("Jun") }}', 
                           '{{ _("Jul") }}', '{{ _("Aug") }}', '{{ _("Sep") }}', '{{ _("Oct") }}', '{{ _("Nov") }}', '{{ _("Dec") }}'];
             return `${date.getDate()} ${months[date.getMonth()]}`;
         };
         
-        return `${formatDate(monday)} - ${formatDate(sunday)}`;
+        return `${formatDate(bounds.monday)} - ${formatDate(bounds.sunday)}`;
     }
+
+    const formatExportTimestamp = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    };
 
     function formatShortDate(dateStr) {
         if (!dateStr) {
@@ -566,6 +1036,22 @@
         updateWeekDisplay();
     }
 
+    function initializeFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const year = parseInt(params.get('year'), 10);
+        const week = parseInt(params.get('week'), 10);
+        const businessId = params.get('business_id');
+        if (!businessId || !Number.isFinite(year) || !Number.isFinite(week)) {
+            return;
+        }
+        const monday = getDateFromIsoWeek(year, week);
+        document.getElementById('reportDate').value = formatIsoDate(monday);
+        document.getElementById('businessId').value = businessId;
+        updateWeekDisplay();
+        updateSwitchToMonthlyLink();
+        generateReport();
+    }
+
     // Date change handler
     document.getElementById('reportDate').addEventListener('change', () => {
         updateWeekDisplay();
@@ -618,6 +1104,9 @@
     });
 
     async function generateReport() {
+        window.reportContentReady = false;
+        window.reportChartsReady = false;
+        window.reportReady = false;
         const businessId = document.getElementById('businessId').value;
         const dateStr = document.getElementById('reportDate').value;
 
@@ -912,18 +1401,19 @@
             
             // Day name cell
             const dayCell = document.createElement('td');
-            dayCell.className = 'font-medium';
+            dayCell.className = 'font-medium pdf-nowrap';
             dayCell.textContent = translateDayName(day.day_name);
             row.appendChild(dayCell);
             
             // Date cell
             const dateCell = document.createElement('td');
+            dateCell.className = 'pdf-nowrap';
             dateCell.textContent = day.date;
             row.appendChild(dateCell);
             
             // Revenue cell
             const revenueCell = document.createElement('td');
-            revenueCell.className = `text-right ${revenueClass}`;
+            revenueCell.className = `text-right ${revenueClass} pdf-nowrap`;
             revenueCell.textContent = revenueDisplay;
             row.appendChild(revenueCell);
 
@@ -931,7 +1421,7 @@
             const costValue = getCostValue(day);
             const costDisplay = day.has_data && costValue !== null ? formatCurrency(costValue) : '-';
             const costCell = document.createElement('td');
-            costCell.className = `text-right ${costValue !== null ? 'font-mono' : 'text-base-content/40'}`;
+            costCell.className = `text-right ${costValue !== null ? 'font-mono' : 'text-base-content/40'} pdf-nowrap`;
             costCell.textContent = costDisplay;
             row.appendChild(costCell);
 
@@ -940,7 +1430,7 @@
             const marginDisplay = day.has_data && marginValue !== null ? formatCurrency(marginValue) : '-';
             const marginColor = marginValue > 0 ? 'text-success' : marginValue < 0 ? 'text-error' : 'text-base-content/60';
             const marginCell = document.createElement('td');
-            marginCell.className = `text-right font-mono ${marginValue !== null ? marginColor : 'text-base-content/40'}`;
+            marginCell.className = `text-right font-mono ${marginValue !== null ? marginColor : 'text-base-content/40'} pdf-nowrap`;
             marginCell.textContent = marginDisplay;
             row.appendChild(marginCell);
 
@@ -1001,6 +1491,14 @@
 
         // Show report content
         document.getElementById('reportContent').classList.remove('hidden');
+        updatePdfHeader();
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                updatePdfTableOrientation();
+            });
+        });
+        window.reportContentReady = true;
+        setReportReadyIfComplete();
     }
 
     let comparisonChart = null;
@@ -1016,6 +1514,8 @@
             showError('Chart library failed to load. Please refresh the page.');
             return;
         }
+
+        setupChartRenderTracking();
         
         // Chart 1: Running Total Progress (Cumulative)
         const runningTotalCtx = document.getElementById('runningTotalChart');
@@ -1146,6 +1646,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    onComplete: chartAnimationComplete,
+                },
                 interaction: {
                     mode: 'index',
                     intersect: false,
@@ -1264,6 +1767,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    onComplete: chartAnimationComplete,
+                },
                 interaction: {
                     mode: 'index',
                     intersect: false,
@@ -1419,6 +1925,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    onComplete: chartAnimationComplete,
+                },
                 plugins: {
                     legend: {
                         position: 'bottom'
@@ -1498,6 +2007,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    onComplete: chartAnimationComplete,
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -1561,6 +2073,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    onComplete: chartAnimationComplete,
+                },
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -1657,6 +2172,9 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: {
+                    onComplete: chartAnimationComplete,
+                },
                 plugins: {
                     legend: {
                         display: false
@@ -1693,11 +2211,133 @@
         document.getElementById('errorState').classList.remove('hidden');
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('reportContent').classList.add('hidden');
+        window.reportContentReady = false;
+        window.reportChartsReady = false;
+        window.reportReady = false;
+    }
+
+    const setExportState = (state) => {
+        const button = document.getElementById('exportPdfButton');
+        const label = document.getElementById('exportPdfLabel');
+        const spinner = document.getElementById('exportPdfSpinner');
+        if (!button || !label || !spinner) {
+            return;
+        }
+        if (state === 'loading') {
+            button.disabled = true;
+            spinner.classList.remove('hidden');
+            label.textContent = "{{ _('Generating PDF...') }}";
+            return;
+        }
+        if (state === 'error') {
+            button.disabled = false;
+            spinner.classList.add('hidden');
+            label.textContent = "{{ _('Could not generate PDF. Try again.') }}";
+            return;
+        }
+        button.disabled = false;
+        spinner.classList.add('hidden');
+        label.textContent = "{{ _('Export PDF') }}";
+    };
+
+    const updatePdfHeader = () => {
+        const dateInput = document.getElementById('reportDate');
+        const dateRange = document.getElementById('pdfDateRange');
+        const generatedAt = document.getElementById('pdfGeneratedAt');
+        if (!dateInput || !dateRange || !generatedAt) {
+            return null;
+        }
+        if (!dateInput.value) {
+            return null;
+        }
+        const bounds = getWeekBounds(dateInput.value);
+        const startDate = formatIsoDate(bounds.monday);
+        const endDate = formatIsoDate(bounds.sunday);
+        dateRange.textContent = `${startDate} {{ _("to") }} ${endDate}`;
+        generatedAt.textContent = formatExportTimestamp();
+        return { startDate, endDate };
+    };
+
+    const waitForChartsToRender = async () => {
+        const charts = [trendChart, comparisonChart, runningTotalChart, paymentMethodsChart, dayTypeChart].filter(Boolean);
+        charts.forEach((chart) => chart.update('none'));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await new Promise((resolve) => setTimeout(resolve, 150));
+    };
+
+    const exportReportPdf = async () => {
+        const businessId = document.getElementById('businessId').value;
+        const dateStr = document.getElementById('reportDate').value;
+        if (!businessId || !dateStr) {
+            setExportState('error');
+            setTimeout(() => setExportState('idle'), 2500);
+            return;
+        }
+
+        setExportState('loading');
+        const dateRange = updatePdfHeader();
+        if (!dateRange) {
+            setExportState('error');
+            setTimeout(() => setExportState('idle'), 2500);
+            return;
+        }
+
+        const defaultFilename = `weekly-report_${dateRange.startDate}_to_${dateRange.endDate}.pdf`;
+        try {
+            await waitForChartsToRender();
+            const { year, week } = getISOWeek(dateStr);
+            const params = new URLSearchParams({
+                year: String(year),
+                week: String(week),
+                business_id: businessId,
+            });
+            if (window.LOCALE) {
+                params.set('lang', window.LOCALE);
+            }
+            const response = await fetch(`/reports/weekly-trend/pdf?${params.toString()}`, {
+                headers: {
+                    'Accept': 'application/pdf',
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+            const contentDisposition = response.headers.get('Content-Disposition') || response.headers.get('content-disposition');
+            let filename = defaultFilename;
+            if (contentDisposition) {
+                const match = contentDisposition.match(/filename="([^"]+)"/);
+                if (match && match[1]) {
+                    filename = match[1];
+                }
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('PDF export failed:', error);
+            setExportState('error');
+            setTimeout(() => setExportState('idle'), 2500);
+            return;
+        }
+        setExportState('idle');
+    };
+
+    const exportPdfButton = document.getElementById('exportPdfButton');
+    if (exportPdfButton) {
+        exportPdfButton.addEventListener('click', exportReportPdf);
     }
 
 
     // Initialize on load
+    applyPdfLayout();
     initializeDatePickers();
+    initializeFromQuery();
     
     // Auto-click "This Week" button on page load
     document.addEventListener('DOMContentLoaded', () => {

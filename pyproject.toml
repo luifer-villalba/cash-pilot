@@ -34,6 +34,7 @@ dependencies = [
     "watchfiles==0.22.0",
     "sentry-sdk>=2.0.0,<3.0.0",
     "openpyxl>=3.1.0",
+    "playwright==1.49.1",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,860 @@
+<!-- File: templates/reports/weekly-trend-pdf.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ _('Weekly Revenue Trend') }} - PDF - CashPilot{% endblock %}
+
+{% block content %}
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
+    @page page-one {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
+    @page page-three {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
+    @page page-three-landscape {
+        size: A4 landscape;
+        margin: 12mm;
+    }
+
+    nav,
+    footer,
+    .no-print {
+        display: none !important;
+    }
+
+    main {
+        padding: 0 !important;
+    }
+
+    body {
+        background: #ffffff;
+    }
+
+    .pdf-root {
+        color: #111827;
+    }
+
+    .pdf-page {
+        max-width: 180mm;
+        margin: 0 auto;
+    }
+
+    .pdf-page-one {
+        page: page-one;
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .pdf-page-three {
+        page: page-three;
+        min-height: 255mm;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .pdf-page-three.pdf-table-landscape {
+        page: page-three-landscape;
+        max-width: 260mm;
+    }
+
+    .pdf-header {
+        margin-bottom: 10px;
+    }
+
+    .pdf-meta {
+        font-size: 10px;
+        color: #4b5563;
+    }
+
+    .pdf-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .pdf-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+        background: #ffffff;
+    }
+
+    .pdf-daytype {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+    }
+
+    .pdf-daytype-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .pdf-chart-block {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+        width: 100%;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        overflow: hidden;
+    }
+
+    .pdf-chart {
+        height: 200mm;
+        max-width: 100%;
+    }
+
+    .pdf-page-one .pdf-chart {
+        height: 60mm;
+    }
+
+    .pdf-page-one #pdfChartComparison {
+        max-width: 168mm;
+        margin: 0 auto;
+    }
+
+    .pdf-table-block {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+        width: 100%;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        align-self: flex-start;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    th,
+    td {
+        padding: 4px 6px;
+        font-size: 10px;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    th.text-right,
+    td.text-right,
+    .pdf-nowrap {
+        white-space: nowrap;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .pdf-page-three.pdf-table-compact th,
+    .pdf-page-three.pdf-table-compact td {
+        padding: 2px 4px;
+        font-size: 9px;
+    }
+
+    .pdf-page-three.pdf-table-scaled #pdfTableSection {
+        transform: scale(var(--pdf-table-scale, 1));
+        transform-origin: top left;
+    }
+
+    .pdf-page-one {
+        font-size: 11px;
+    }
+
+    .pdf-page-one h2,
+    .pdf-page-one .text-xl {
+        font-size: 16px;
+    }
+
+    .pdf-page-one .text-lg {
+        font-size: 13px;
+    }
+
+    .pdf-page-one .text-sm {
+        font-size: 10px;
+    }
+
+    .pdf-page-one .text-xs {
+        font-size: 9px;
+    }
+</style>
+
+<div class="pdf-root" id="pdfRoot">
+    <section class="pdf-page pdf-page-one">
+        <div class="pdf-header">
+            <div class="text-xl font-bold">{{ _('Weekly Report') }}</div>
+            <div class="pdf-meta mt-2">
+                <div><span class="font-semibold">{{ _('Date range') }}:</span> <span id="pdfDateRange">-</span></div>
+                <div><span class="font-semibold">{{ _('Generated at') }}:</span> <span id="pdfGeneratedAt">-</span></div>
+            </div>
+        </div>
+
+        <div class="pdf-cards-grid" id="pdfKpiCards">
+            <div class="pdf-card">
+                <div class="text-sm font-semibold text-base-content/70">{{ _('Highest Revenue Day') }}</div>
+                <div class="text-xl font-bold" id="highestDay">-</div>
+                <div class="text-sm text-base-content/60" id="highestDayRevenue">-</div>
+            </div>
+            <div class="pdf-card">
+                <div class="text-sm font-semibold text-base-content/70">{{ _('Lowest Revenue Day') }}</div>
+                <div class="text-xl font-bold" id="lowestDay">-</div>
+                <div class="text-sm text-base-content/60" id="lowestDayRevenue">-</div>
+            </div>
+            <div class="pdf-card">
+                <div class="text-sm font-semibold text-base-content/70">{{ _('Week Total') }}</div>
+                <div class="text-xl font-bold" id="currentWeekTotal">-</div>
+                <div class="text-sm text-base-content/60">{{ _('Total sales this week') }}</div>
+            </div>
+            <div class="pdf-card">
+                <div class="text-sm font-semibold text-base-content/70">{{ _('Week Cost') }}</div>
+                <div class="text-xl font-bold" id="currentWeekCost">-</div>
+                <div class="text-sm text-base-content/60" id="currentWeekCostShare">-</div>
+            </div>
+            <div class="pdf-card">
+                <div class="text-sm font-semibold text-base-content/70">{{ _('Week Margin') }}</div>
+                <div class="text-xl font-bold" id="currentWeekMargin">-</div>
+                <div class="text-sm text-base-content/60" id="currentWeekMarginPct">-</div>
+            </div>
+            <div class="pdf-card">
+                <div class="text-sm font-semibold text-base-content/70">{{ _('Growth vs Previous') }}</div>
+                <div class="text-xl font-bold" id="weekGrowthPercent">-</div>
+                <div class="text-sm text-base-content/60" id="weekGrowthDifference">-</div>
+            </div>
+        </div>
+
+        <div class="pdf-chart-block mt-4" id="pdfChartComparison">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-semibold">{{ _('Day-by-Day Comparison') }}</h2>
+                <div class="text-xs text-base-content/60">{{ _('Current vs Previous') }}</div>
+            </div>
+            <div class="pdf-chart">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </div>
+
+        <div class="pdf-daytype mt-4" id="pdfDayTypeBreakdown">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="font-semibold">{{ _('Revenue by Day Type') }}</span>
+                <span class="text-xs text-base-content/60">{{ _('Thu/Fri = 25% discount days | Closed Sundays') }}</span>
+            </div>
+            <div class="pdf-daytype-grid">
+                <div class="text-center">
+                    <div class="text-sm font-medium text-base-content/70 mb-1">{{ _('Regular Days') }}</div>
+                    <div class="text-xs text-base-content/50 mb-2">{{ _('Mon, Tue, Wed') }}</div>
+                    <div class="text-lg font-bold" id="regularDaysRevenue">-</div>
+                    <div class="text-xs text-base-content/60" id="regularDaysMeta">-</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-base-content/70 mb-1">{{ _('Discount Days') }}</div>
+                    <div class="text-xs text-base-content/50 mb-2">{{ _('Thu, Fri (-25%)') }}</div>
+                    <div class="text-lg font-bold" id="discountDaysRevenue">-</div>
+                    <div class="text-xs text-base-content/60" id="discountDaysMeta">-</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-sm font-medium text-base-content/70 mb-1">{{ _('Saturday') }}</div>
+                    <div class="text-xs text-base-content/50 mb-2">{{ _('Weekend (full price)') }}</div>
+                    <div class="text-lg font-bold" id="saturdayRevenue">-</div>
+                    <div class="text-xs text-base-content/60" id="saturdayMeta">-</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pdf-page pdf-page-three" id="pdfPageThree">
+        <div class="pdf-table-block" id="pdfTableSection">
+            <h2 class="text-lg font-semibold mb-3">{{ _('Selected Week Details') }}</h2>
+            <div class="overflow-x-auto">
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th class="pdf-nowrap">{{ _('Day') }}</th>
+                            <th class="pdf-nowrap">{{ _('Date') }}</th>
+                            <th class="text-right pdf-nowrap">{{ _('Revenue') }}</th>
+                            <th class="text-right pdf-nowrap">{{ _('Cost') }}</th>
+                            <th class="text-right pdf-nowrap">{{ _('Margin') }}</th>
+                            <th class="text-right">{{ _('Margin %') }}</th>
+                            <th class="text-right">{{ _('WoW Growth') }}</th>
+                            <th class="text-center">{{ _('Trend') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="currentWeekTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous" onerror="console.error('Failed to load Chart.js from CDN')"></script>
+<script src="/static/js/currency-formatter.js"></script>
+<script>
+    window.reportContentReady = false;
+    window.reportChartsReady = false;
+    window.reportReady = false;
+
+    const formatCurrency = (value) => {
+        const num = Math.round(parseFloat(value));
+        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+    };
+
+    const formatCompactCurrency = (value) => {
+        const num = Math.round(parseFloat(value));
+        if (!Number.isFinite(num)) {
+            return '-';
+        }
+        const abs = Math.abs(num);
+        let formatted = null;
+        if (abs >= 1_000_000_000) {
+            formatted = (num / 1_000_000_000).toFixed(2).replace(/\.0+$/, '').replace(/(\.\d)0$/, '$1') + 'B';
+        } else if (abs >= 1_000_000) {
+            formatted = (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+        } else if (abs >= 1_000) {
+            formatted = (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+        } else {
+            formatted = num.toString();
+        }
+        return 'Gs ' + formatted;
+    };
+
+    const parseNumber = (value) => {
+        const parsed = parseFloat(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const getCostValue = (day) => {
+        if (day.cost_total === null || day.cost_total === undefined) {
+            return null;
+        }
+        return parseNumber(day.cost_total);
+    };
+
+    const getTicketValue = (day) => {
+        if (day.ticket_count === null || day.ticket_count === undefined) {
+            return null;
+        }
+        const parsed = parseInt(day.ticket_count, 10);
+        return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const getMarginValue = (day) => {
+        if (!day.has_data) {
+            return null;
+        }
+        const revenue = parseNumber(day.revenue);
+        const cost = getCostValue(day);
+        if (revenue === null || cost === null) {
+            return null;
+        }
+        return revenue - cost;
+    };
+
+    const getCostCoverage = (weekDays) => {
+        const daysWithData = weekDays.filter(day => day.has_data);
+        const daysWithCost = daysWithData.filter(day => getCostValue(day) !== null);
+        return {
+            daysWithData,
+            daysWithCost,
+            isComplete: daysWithData.length > 0 && daysWithCost.length === daysWithData.length,
+        };
+    };
+
+    const translateDayName = (dayName) => {
+        const translations = {
+            'Monday': '{{ _("Monday") }}',
+            'Tuesday': '{{ _("Tuesday") }}',
+            'Wednesday': '{{ _("Wednesday") }}',
+            'Thursday': '{{ _("Thursday") }}',
+            'Friday': '{{ _("Friday") }}',
+            'Saturday': '{{ _("Saturday") }}',
+            'Sunday': '{{ _("Sunday") }}'
+        };
+        return translations[dayName] || dayName;
+    };
+
+    const formatShortDate = (dateStr) => {
+        if (!dateStr) {
+            return '-';
+        }
+        const parts = String(dateStr).split('-');
+        if (parts.length !== 3) {
+            return dateStr;
+        }
+        const months = ['{{ _("Jan") }}', '{{ _("Feb") }}', '{{ _("Mar") }}', '{{ _("Apr") }}', '{{ _("May") }}', '{{ _("Jun") }}',
+                      '{{ _("Jul") }}', '{{ _("Aug") }}', '{{ _("Sep") }}', '{{ _("Oct") }}', '{{ _("Nov") }}', '{{ _("Dec") }}'];
+        const day = parseInt(parts[2], 10);
+        const monthIndex = parseInt(parts[1], 10) - 1;
+        if (!Number.isFinite(day) || monthIndex < 0 || monthIndex >= months.length) {
+            return dateStr;
+        }
+        return `${day} ${months[monthIndex]}`;
+    };
+
+    const getWeekBounds = (dateStr) => {
+        const parts = dateStr.split('-');
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d.getFullYear(), d.getMonth(), diff);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        return { monday, sunday };
+    };
+
+    const getDateFromIsoWeek = (year, week) => {
+        const simple = new Date(year, 0, 1 + (week - 1) * 7);
+        const dayOfWeek = simple.getDay();
+        const monday = new Date(simple);
+        const diff = dayOfWeek <= 4 ? 1 - dayOfWeek : 8 - dayOfWeek;
+        monday.setDate(simple.getDate() + diff);
+        return monday;
+    };
+
+    const formatIsoDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const formatExportTimestamp = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+    };
+
+    const updatePdfHeader = (dateStr) => {
+        if (!dateStr) {
+            return;
+        }
+        const bounds = getWeekBounds(dateStr);
+        document.getElementById('pdfDateRange').textContent = `${formatIsoDate(bounds.monday)} {{ _("to") }} ${formatIsoDate(bounds.sunday)}`;
+        document.getElementById('pdfGeneratedAt').textContent = formatExportTimestamp();
+    };
+
+    const updatePdfTableOrientation = () => {
+        const pageThree = document.getElementById('pdfPageThree');
+        const tableSection = document.getElementById('pdfTableSection');
+        const table = document.querySelector('#pdfTableSection table');
+        if (!pageThree || !tableSection || !table) {
+            return;
+        }
+        const pxPerMm = 96 / 25.4;
+        const portraitWidth = 180 * pxPerMm;
+        const landscapeWidth = 261 * pxPerMm;
+        const portraitHeight = 261 * pxPerMm;
+        const landscapeHeight = 174 * pxPerMm;
+
+        const scalePortrait = Math.min(1, portraitWidth / table.scrollWidth, portraitHeight / table.scrollHeight);
+        const scaleLandscape = Math.min(1, landscapeWidth / table.scrollWidth, landscapeHeight / table.scrollHeight);
+        const useLandscape = false;
+        const targetWidth = useLandscape ? landscapeWidth : portraitWidth;
+        const targetHeight = useLandscape ? landscapeHeight : portraitHeight;
+        const scale = Math.min(1, targetWidth / table.scrollWidth, targetHeight / table.scrollHeight);
+        const needsCompact = scale < 0.93;
+
+        pageThree.classList.toggle('pdf-table-landscape', useLandscape);
+        pageThree.classList.toggle('pdf-table-compact', needsCompact);
+        pageThree.classList.toggle('pdf-table-scaled', scale < 0.99);
+        tableSection.style.setProperty('--pdf-table-scale', scale.toFixed(3));
+    };
+
+    const renderComparisonChart = (data, labels) => {
+        const comparisonCtx = document.getElementById('comparisonChart');
+        const previousWeek = data.previous_weeks && data.previous_weeks.length > 0
+            ? data.previous_weeks[data.previous_weeks.length - 1]
+            : null;
+        const datasets = [];
+
+        if (previousWeek) {
+            datasets.push({
+                label: '{{ _("Last Week") }}',
+                data: previousWeek.map(day => day.has_data ? parseFloat(day.revenue) : null),
+                borderColor: 'rgb(156, 163, 175)',
+                backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                spanGaps: false,
+                fill: false,
+            });
+        }
+
+        datasets.push({
+            label: '{{ _("This Week") }}',
+            data: data.current_week.map(day => day.has_data ? parseFloat(day.revenue) : null),
+            borderColor: 'rgb(99, 102, 241)',
+            backgroundColor: 'rgba(99, 102, 241, 0.15)',
+            borderWidth: 3,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            spanGaps: false,
+            fill: true,
+        });
+
+        const comparisonChart = new Chart(comparisonCtx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y === null) {
+                                    label += '{{ _("No data") }}';
+                                } else {
+                                    label += formatCurrency(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCurrency(value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        return comparisonChart;
+    };
+
+    const renderReport = (data, dateStr) => {
+        updatePdfHeader(dateStr);
+        const weekTotalValue = parseNumber(data.current_week_total) || 0;
+
+        if (data.highest_day && data.highest_day.day_name) {
+            const highestDayEl = document.getElementById('highestDay');
+            highestDayEl.innerHTML = `<span class=\"font-bold\">${translateDayName(data.highest_day.day_name)}</span> · ` +
+                `<span class=\"font-normal text-base-content/60\">${formatShortDate(data.highest_day.date)}</span>`;
+            const highestShare = weekTotalValue > 0 ? (parseNumber(data.highest_day.revenue) / weekTotalValue) * 100 : null;
+            const highestShareText = highestShare !== null ? ` · ${highestShare.toFixed(1)}%` : '';
+            document.getElementById('highestDayRevenue').textContent = `${formatCompactCurrency(data.highest_day.revenue)}${highestShareText}`;
+        }
+
+        if (data.lowest_day && data.lowest_day.day_name) {
+            const lowestDayEl = document.getElementById('lowestDay');
+            lowestDayEl.innerHTML = `<span class=\"font-bold\">${translateDayName(data.lowest_day.day_name)}</span> · ` +
+                `<span class=\"font-normal text-base-content/60\">${formatShortDate(data.lowest_day.date)}</span>`;
+            const lowestShare = weekTotalValue > 0 ? (parseNumber(data.lowest_day.revenue) / weekTotalValue) * 100 : null;
+            const lowestShareText = lowestShare !== null ? ` · ${lowestShare.toFixed(1)}%` : '';
+            document.getElementById('lowestDayRevenue').textContent = `${formatCompactCurrency(data.lowest_day.revenue)}${lowestShareText}`;
+        }
+
+        document.getElementById('currentWeekTotal').textContent = formatCompactCurrency(data.current_week_total);
+
+        const marginTotalEl = document.getElementById('currentWeekMargin');
+        const marginPctEl = document.getElementById('currentWeekMarginPct');
+        const weekCostEl = document.getElementById('currentWeekCost');
+        const weekCostShareEl = document.getElementById('currentWeekCostShare');
+        const costCoverage = getCostCoverage(data.current_week);
+
+        if (costCoverage.daysWithData.length === 0) {
+            marginTotalEl.textContent = '-';
+            marginPctEl.textContent = '{{ _("No data") }}';
+            weekCostEl.textContent = '-';
+            weekCostShareEl.textContent = '-';
+        } else {
+            const costSum = costCoverage.daysWithCost.reduce((sum, day) => sum + getCostValue(day), 0);
+            const marginValue = weekTotalValue - costSum;
+            const marginPct = weekTotalValue > 0 ? (marginValue / weekTotalValue) * 100 : null;
+            marginTotalEl.textContent = formatCompactCurrency(marginValue);
+            marginPctEl.textContent = marginPct !== null ? `${marginPct > 0 ? '+' : ''}${marginPct.toFixed(1)}%` : '-';
+            weekCostEl.textContent = formatCompactCurrency(costSum);
+            const costRatio = weekTotalValue > 0 ? (costSum / weekTotalValue) * 100 : null;
+            weekCostShareEl.textContent = costRatio !== null ? `${costRatio.toFixed(1)}% {{ _("of sales") }}` : '-';
+        }
+
+        const growthPercentEl = document.getElementById('weekGrowthPercent');
+        const growthDiffEl = document.getElementById('weekGrowthDifference');
+        const growth = parseNumber(data.week_over_week_growth) || 0;
+        const diff = parseNumber(data.week_over_week_difference) || 0;
+        const colorClass = growth > 0 ? 'text-success' : growth < 0 ? 'text-error' : 'text-base-content/60';
+        const arrow = growth > 0 ? '▲' : growth < 0 ? '▼' : '●';
+        growthPercentEl.className = `text-xl font-bold ${colorClass}`;
+        growthPercentEl.textContent = `${arrow} ${growth > 0 ? '+' : ''}${growth}%`;
+        const diffText = diff > 0 ? `+${formatCompactCurrency(Math.abs(diff))}` : diff < 0 ? `-${formatCompactCurrency(Math.abs(diff))}` : formatCompactCurrency(0);
+        growthDiffEl.className = `text-sm ${colorClass}`;
+        growthDiffEl.textContent = diffText;
+
+        let regularDaysRev = 0;
+        let discountDaysRev = 0;
+        let saturdayRev = 0;
+        let regularDaysCost = 0;
+        let discountDaysCost = 0;
+        let saturdayCost = 0;
+        let regularCostComplete = true;
+        let discountCostComplete = true;
+        let saturdayCostComplete = true;
+        let regularTickets = 0;
+        let discountTickets = 0;
+        let saturdayTickets = 0;
+
+        data.current_week.forEach(day => {
+            if (!day.has_data) return;
+            const dayNum = day.day_number;
+            const revenue = parseFloat(day.revenue);
+            const costValue = getCostValue(day);
+            const ticketValue = getTicketValue(day);
+
+            if (dayNum >= 1 && dayNum <= 3) {
+                regularDaysRev += revenue;
+                if (costValue === null) {
+                    regularCostComplete = false;
+                } else {
+                    regularDaysCost += costValue;
+                }
+                if (ticketValue !== null) {
+                    regularTickets += ticketValue;
+                }
+            } else if (dayNum === 4 || dayNum === 5) {
+                discountDaysRev += revenue;
+                if (costValue === null) {
+                    discountCostComplete = false;
+                } else {
+                    discountDaysCost += costValue;
+                }
+                if (ticketValue !== null) {
+                    discountTickets += ticketValue;
+                }
+            } else if (dayNum === 6) {
+                saturdayRev += revenue;
+                if (costValue === null) {
+                    saturdayCostComplete = false;
+                } else {
+                    saturdayCost += costValue;
+                }
+                if (ticketValue !== null) {
+                    saturdayTickets += ticketValue;
+                }
+            }
+        });
+
+        const totalRev = regularDaysRev + discountDaysRev + saturdayRev;
+        const buildMetaLine = (revenue, cost, costComplete, tickets) => {
+            const percentText = totalRev > 0 ? `${((revenue / totalRev) * 100).toFixed(1)}% {{ _("of total") }}` : '-';
+            const marginText = costComplete ? formatCurrency(revenue - cost) : '-';
+            const ticketsText = tickets > 0 ? tickets.toLocaleString('es-PY') : '-';
+            return `${percentText} · {{ _("Margin") }}: ${marginText} · {{ _("Tickets") }}: ${ticketsText}`;
+        };
+
+        document.getElementById('regularDaysRevenue').textContent = formatCurrency(regularDaysRev);
+        document.getElementById('regularDaysMeta').textContent = buildMetaLine(
+            regularDaysRev,
+            regularDaysCost,
+            regularCostComplete,
+            regularTickets
+        );
+        document.getElementById('discountDaysRevenue').textContent = formatCurrency(discountDaysRev);
+        document.getElementById('discountDaysMeta').textContent = buildMetaLine(
+            discountDaysRev,
+            discountDaysCost,
+            discountCostComplete,
+            discountTickets
+        );
+        document.getElementById('saturdayRevenue').textContent = formatCurrency(saturdayRev);
+        document.getElementById('saturdayMeta').textContent = buildMetaLine(
+            saturdayRev,
+            saturdayCost,
+            saturdayCostComplete,
+            saturdayTickets
+        );
+
+        const tableBody = document.getElementById('currentWeekTable');
+        tableBody.innerHTML = '';
+        data.current_week.forEach(day => {
+            const row = document.createElement('tr');
+            const growthClass = day.growth_percent > 0 ? 'text-success' : day.growth_percent < 0 ? 'text-error' : 'text-base-content/60';
+            const growthText = day.growth_percent !== null ? `${day.growth_percent > 0 ? '+' : ''}${day.growth_percent}%` : '-';
+            const revenueDisplay = day.has_data ? formatCurrency(day.revenue) : '-';
+            const revenueClass = day.has_data ? 'font-mono' : 'text-base-content/40';
+
+            const dayCell = document.createElement('td');
+            dayCell.className = 'pdf-nowrap';
+            dayCell.textContent = translateDayName(day.day_name);
+            row.appendChild(dayCell);
+
+            const dateCell = document.createElement('td');
+            dateCell.className = 'pdf-nowrap';
+            dateCell.textContent = day.date;
+            row.appendChild(dateCell);
+
+            const revenueCell = document.createElement('td');
+            revenueCell.className = `text-right ${revenueClass} pdf-nowrap`;
+            revenueCell.textContent = revenueDisplay;
+            row.appendChild(revenueCell);
+
+            const costValue = getCostValue(day);
+            const costDisplay = day.has_data && costValue !== null ? formatCurrency(costValue) : '-';
+            const costCell = document.createElement('td');
+            costCell.className = `text-right ${costValue !== null ? 'font-mono' : 'text-base-content/40'} pdf-nowrap`;
+            costCell.textContent = costDisplay;
+            row.appendChild(costCell);
+
+            const marginValue = getMarginValue(day);
+            const marginDisplay = day.has_data && marginValue !== null ? formatCurrency(marginValue) : '-';
+            const marginColor = marginValue > 0 ? 'text-success' : marginValue < 0 ? 'text-error' : 'text-base-content/60';
+            const marginCell = document.createElement('td');
+            marginCell.className = `text-right font-mono ${marginValue !== null ? marginColor : 'text-base-content/40'} pdf-nowrap`;
+            marginCell.textContent = marginDisplay;
+            row.appendChild(marginCell);
+
+            const revenueValue = day.has_data ? parseNumber(day.revenue) : null;
+            const marginPct = revenueValue && marginValue !== null ? (marginValue / revenueValue) * 100 : null;
+            const marginPctDisplay = marginPct !== null ? `${marginPct > 0 ? '+' : ''}${marginPct.toFixed(1)}%` : '-';
+            const marginPctCell = document.createElement('td');
+            marginPctCell.className = `text-right font-mono ${marginPct !== null ? marginColor : 'text-base-content/40'}`;
+            marginPctCell.textContent = marginPctDisplay;
+            row.appendChild(marginPctCell);
+
+            const growthCell = document.createElement('td');
+            growthCell.className = `text-right font-mono ${growthClass}`;
+            growthCell.textContent = growthText;
+            row.appendChild(growthCell);
+
+            const trendCell = document.createElement('td');
+            trendCell.className = 'text-center text-lg';
+            trendCell.textContent = day.trend_arrow || '';
+            row.appendChild(trendCell);
+
+            tableBody.appendChild(row);
+        });
+
+        const totalRevenue = data.current_week.reduce(
+            (sum, day) => sum + (day.has_data ? parseNumber(day.revenue) : 0),
+            0
+        );
+        const totalCost = costCoverage.isComplete
+            ? costCoverage.daysWithCost.reduce((sum, day) => sum + getCostValue(day), 0)
+            : null;
+        const totalMargin = totalCost !== null ? totalRevenue - totalCost : null;
+        const totalMarginPct = totalMargin !== null && totalRevenue > 0
+            ? (totalMargin / totalRevenue) * 100
+            : null;
+
+        const weekGrowthValue = parseNumber(data.week_over_week_growth);
+        const weekTrendArrow = weekGrowthValue > 0 ? '↑' : weekGrowthValue < 0 ? '↓' : '→';
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'font-semibold';
+        totalRow.innerHTML = `
+            <td class="pdf-nowrap">{{ _('Total') }}</td>
+            <td class="pdf-nowrap">-</td>
+            <td class="text-right pdf-nowrap">${totalRevenue > 0 ? formatCurrency(totalRevenue) : '-'}</td>
+            <td class="text-right pdf-nowrap">${totalCost !== null ? formatCurrency(totalCost) : '-'}</td>
+            <td class="text-right pdf-nowrap">${totalMargin !== null ? formatCurrency(totalMargin) : '-'}</td>
+            <td class="text-right">${totalMarginPct !== null ? `${totalMarginPct > 0 ? '+' : ''}${totalMarginPct.toFixed(1)}%` : '-'}</td>
+            <td class="text-right">${weekGrowthValue !== null ? `${weekGrowthValue > 0 ? '+' : ''}${weekGrowthValue}%` : '-'}</td>
+            <td class="text-center">${weekGrowthValue !== null ? weekTrendArrow : '-'}</td>
+        `;
+        tableBody.appendChild(totalRow);
+
+        const labels = ['{{ _("Mon") }}', '{{ _("Tue") }}', '{{ _("Wed") }}', '{{ _("Thu") }}', '{{ _("Fri") }}', '{{ _("Sat") }}', '{{ _("Sun") }}'];
+        const comparisonChart = renderComparisonChart(data, labels);
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (comparisonChart && comparisonChart.canvas) {
+                    comparisonChart.update();
+                    comparisonChart.canvas.dataset.rendered = 'true';
+                }
+                updatePdfTableOrientation();
+                window.reportContentReady = true;
+                window.reportChartsReady = true;
+                window.reportReady = true;
+            });
+        });
+    };
+
+    const getParams = () => {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            year: params.get('year'),
+            week: params.get('week'),
+            businessId: params.get('business_id')
+        };
+    };
+
+    const generateReport = async () => {
+        const { year, week, businessId } = getParams();
+        if (!year || !week || !businessId) {
+            return;
+        }
+        const response = await fetch(`/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}`);
+        if (!response.ok) {
+            return;
+        }
+        const data = await response.json();
+        const monday = getDateFromIsoWeek(parseInt(year, 10), parseInt(week, 10));
+        const dateStr = formatIsoDate(monday);
+        renderReport(data, dateStr);
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        generateReport();
+    });
+</script>
+{% endblock %}

@@ -1,8 +1,13 @@
 # File: src/cashpilot/api/routes/reports.py
 """Reports routes (HTML endpoints)."""
 
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse
+import secrets
+import unicodedata
+from datetime import date
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,11 +15,31 @@ from cashpilot.api.auth_helpers import require_admin
 from cashpilot.api.utils import get_locale, get_translation_function, templates
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
+from cashpilot.core.report_pdf import get_internal_base_url, render_pdf_from_url
 from cashpilot.models import Business, User
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+def slugify_filename(value: str, max_length: int = 24) -> str:
+    normalized = unicodedata.normalize("NFKD", value)
+    ascii_text = normalized.encode("ascii", "ignore").decode("ascii")
+    cleaned = []
+    prev_dash = False
+    for char in ascii_text.lower():
+        if char.isalnum():
+            cleaned.append(char)
+            prev_dash = False
+        else:
+            if not prev_dash:
+                cleaned.append("-")
+                prev_dash = True
+    slug = "".join(cleaned).strip("-")
+    if max_length and len(slug) > max_length:
+        slug = slug[:max_length].rstrip("-")
+    return slug or "business"
 
 
 @router.get("", response_class=HTMLResponse)
@@ -151,6 +176,112 @@ async def weekly_trend_report(
             "request": request,
             "current_user": current_user,
             "businesses": businesses,
+            "locale": locale,
+            "_": _,
+        },
+    )
+
+
+@router.get("/weekly-trend/pdf")
+async def weekly_trend_report_pdf(
+    request: Request,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generate weekly trend report PDF (admin only)."""
+    locale = get_locale(request)
+    year_param = request.query_params.get("year")
+    week_param = request.query_params.get("week")
+    business_id_raw = request.query_params.get("business_id")
+    if not year_param or not week_param or not business_id_raw:
+        raise HTTPException(status_code=400, detail="year, week, and business_id are required")
+
+    try:
+        year = int(year_param)
+        week = int(week_param)
+        week_start = date.fromisocalendar(year, week, 1)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid year or week") from exc
+
+    try:
+        business_id = str(UUID(str(business_id_raw)))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="Invalid business_id") from exc
+
+    week_end = date.fromisocalendar(year, week, 7)
+    export_hash = secrets.token_hex(3)
+    business = await db.execute(select(Business).where(Business.id == business_id))
+    business_obj = business.scalar_one_or_none()
+    business_slug = slugify_filename(
+        business_obj.name if business_obj else "business", max_length=24
+    )
+    filename = (
+        f"{business_slug}-weekly-report_{week_start:%m-%d}_to_{week_end:%m-%d}_"
+        f"{export_hash}.pdf"
+    )
+
+    base_url = get_internal_base_url(str(request.base_url))
+    pdf_url = (
+        f"{base_url}/reports/weekly-trend/pdf-view?"
+        f"year={year}&week={week}&business_id={business_id}&pdf=1&lang={locale}"
+    )
+    session_cookie = request.cookies.get("session")
+    if locale == "es":
+        page_label = "Pagina"
+        of_label = "de"
+    else:
+        page_label = "Page"
+        of_label = "of"
+    footer_template = (
+        '<div style="font-size:10px; width:100%; text-align:right; padding-right:12mm;">'
+        f'{page_label} <span class="pageNumber"></span> {of_label} '
+        '<span class="totalPages"></span>'
+        "</div>"
+    )
+
+    logger.info(
+        "weekly_trend_pdf_requested",
+        user_id=str(current_user.id),
+        business_id=business_id,
+        year=year,
+        week=week,
+    )
+
+    pdf_bytes = await render_pdf_from_url(
+        url=pdf_url,
+        base_url=base_url,
+        session_cookie=session_cookie,
+        footer_template=footer_template,
+        locale="es-ES" if locale == "es" else "en-US",
+        wait_selector="#pdfRoot",
+        wait_for_flag=(
+            "window.reportReady === true && window.reportChartsReady === true && "
+            "Array.from(document.querySelectorAll('canvas')).every("
+            "c => c.dataset.rendered === 'true' && c.width > 0 && c.height > 0)"
+        ),
+    )
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/weekly-trend/pdf-view", response_class=HTMLResponse)
+async def weekly_trend_report_pdf_view(
+    request: Request,
+    current_user: User = Depends(require_admin),
+):
+    """Weekly trend PDF view (layout-only template)."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    return templates.TemplateResponse(
+        "reports/weekly-trend-pdf.html",
+        {
+            "request": request,
+            "current_user": current_user,
             "locale": locale,
             "_": _,
         },
