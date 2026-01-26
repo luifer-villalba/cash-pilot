@@ -138,7 +138,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        table-layout: auto;
+        table-layout: fixed;
         break-inside: avoid;
         page-break-inside: avoid;
     }
@@ -166,6 +166,24 @@
     .pdf-nowrap {
         white-space: nowrap;
     }
+
+    .pdf-label-truncate {
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        white-space: nowrap;
+    }
+
+    .pdf-col-day { width: 12%; }
+    .pdf-col-date { width: 12%; }
+    .pdf-col-revenue { width: 16%; }
+    .pdf-col-cost { width: 14%; }
+    .pdf-col-margin { width: 14%; }
+    .pdf-col-margin-pct { width: 9%; }
+    .pdf-col-growth { width: 15%; }
+    .pdf-col-trend { width: 8%; }
 
     .text-right {
         text-align: right;
@@ -294,6 +312,16 @@
             <h2 class="text-lg font-semibold mb-3">{{ _('Selected Week Details') }}</h2>
             <div class="overflow-x-auto">
                 <table class="pdf-table">
+                    <colgroup>
+                        <col class="pdf-col-day" />
+                        <col class="pdf-col-date" />
+                        <col class="pdf-col-revenue" />
+                        <col class="pdf-col-cost" />
+                        <col class="pdf-col-margin" />
+                        <col class="pdf-col-margin-pct" />
+                        <col class="pdf-col-growth" />
+                        <col class="pdf-col-trend" />
+                    </colgroup>
                     <thead>
                         <tr>
                             <th class="pdf-nowrap">{{ _('Day') }}</th>
@@ -302,8 +330,8 @@
                             <th class="text-right pdf-nowrap">{{ _('Cost') }}</th>
                             <th class="text-right pdf-nowrap">{{ _('Margin') }}</th>
                             <th class="text-right">{{ _('Margin %') }}</th>
-                            <th class="text-right">{{ _('WoW Growth') }}</th>
-                            <th class="text-center">{{ _('Trend') }}</th>
+                            <th class="text-right"><span class="pdf-label-truncate">{{ _('WoW Growth') }}</span></th>
+                            <th class="text-center"><span class="pdf-label-truncate">{{ _('Trend') }}</span></th>
                         </tr>
                     </thead>
                     <tbody id="currentWeekTable"></tbody>
@@ -772,12 +800,12 @@
             row.appendChild(marginPctCell);
 
             const growthCell = document.createElement('td');
-            growthCell.className = `text-right font-mono ${growthClass}`;
+            growthCell.className = `text-right font-mono pdf-col-growth ${growthClass}`;
             growthCell.textContent = growthText;
             row.appendChild(growthCell);
 
             const trendCell = document.createElement('td');
-            trendCell.className = 'text-center text-lg';
+            trendCell.className = 'text-center text-lg pdf-col-trend';
             trendCell.textContent = day.trend_arrow || '';
             row.appendChild(trendCell);
 
@@ -807,8 +835,8 @@
             <td class="text-right pdf-nowrap">${totalCost !== null ? formatCurrency(totalCost) : '-'}</td>
             <td class="text-right pdf-nowrap">${totalMargin !== null ? formatCurrency(totalMargin) : '-'}</td>
             <td class="text-right">${totalMarginPct !== null ? `${totalMarginPct > 0 ? '+' : ''}${totalMarginPct.toFixed(1)}%` : '-'}</td>
-            <td class="text-right">${weekGrowthValue !== null ? `${weekGrowthValue > 0 ? '+' : ''}${weekGrowthValue}%` : '-'}</td>
-            <td class="text-center">${weekGrowthValue !== null ? weekTrendArrow : '-'}</td>
+            <td class="text-right pdf-col-growth">${weekGrowthValue !== null ? `${weekGrowthValue > 0 ? '+' : ''}${weekGrowthValue}%` : '-'}</td>
+            <td class="text-center pdf-col-trend">${weekGrowthValue !== null ? weekTrendArrow : '-'}</td>
         `;
         tableBody.appendChild(totalRow);
 
