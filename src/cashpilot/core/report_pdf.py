@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from typing import Optional
+from urllib.parse import urlparse, urlunparse
 
 from playwright.async_api import async_playwright
 
@@ -69,5 +70,24 @@ async def render_pdf_from_url(
         return pdf_bytes
 
 
+def _dedupe_netloc(netloc: str) -> str:
+    if not netloc:
+        return netloc
+    if len(netloc) % 2 == 0:
+        mid = len(netloc) // 2
+        if netloc[:mid] == netloc[mid:]:
+            return netloc[:mid]
+    return netloc
+
+
 def get_internal_base_url(fallback: str) -> str:
-    return os.getenv("INTERNAL_BASE_URL", fallback).rstrip("/")
+    raw = os.getenv("INTERNAL_BASE_URL", fallback).strip()
+    if not raw:
+        raw = fallback
+    raw = raw.rstrip("/")
+    parsed = urlparse(raw)
+    if parsed.scheme and parsed.netloc:
+        deduped = _dedupe_netloc(parsed.netloc)
+        if deduped != parsed.netloc:
+            raw = urlunparse((parsed.scheme, deduped, parsed.path, "", "", ""))
+    return raw.rstrip("/")
