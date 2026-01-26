@@ -13,7 +13,7 @@ from cashpilot.models import Business
 async def test_weekly_trend_pdf_view_returns_html(admin_client):
     response = await admin_client.get("/reports/weekly-trend/pdf-view?lang=es")
     assert response.status_code == 200
-    assert "Weekly Report" in response.text
+    assert "Reporte semanal" in response.text
 
 
 @pytest.mark.asyncio
@@ -57,7 +57,7 @@ async def test_weekly_trend_pdf_filename_includes_business_and_hash(admin_client
     week_start = date.fromisocalendar(2026, 4, 1)
     week_end = date.fromisocalendar(2026, 4, 7)
     expected_prefix = (
-        f\"farmacia-zulmi-suc-2-weekly-report_{week_start:%m-%d}_to_{week_end:%m-%d}_\"
+        f"farmacia-zulmi-suc-2-weekly-report_{week_start:%m-%d}_to_{week_end:%m-%d}_"
     )
     assert filename.startswith(expected_prefix)
     assert filename.endswith(".pdf")
