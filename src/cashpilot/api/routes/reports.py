@@ -4,6 +4,7 @@
 import secrets
 import unicodedata
 from datetime import date
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
@@ -191,8 +192,8 @@ async def weekly_trend_report_pdf(
     locale = get_locale(request)
     year_param = request.query_params.get("year")
     week_param = request.query_params.get("week")
-    business_id = request.query_params.get("business_id")
-    if not year_param or not week_param or not business_id:
+    business_id_raw = request.query_params.get("business_id")
+    if not year_param or not week_param or not business_id_raw:
         raise HTTPException(status_code=400, detail="year, week, and business_id are required")
 
     try:
@@ -201,6 +202,11 @@ async def weekly_trend_report_pdf(
         week_start = date.fromisocalendar(year, week, 1)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="Invalid year or week") from exc
+
+    try:
+        business_id = str(UUID(str(business_id_raw)))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail="Invalid business_id") from exc
 
     week_end = date.fromisocalendar(year, week, 7)
     export_hash = secrets.token_hex(3)
