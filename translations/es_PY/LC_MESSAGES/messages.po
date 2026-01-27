@@ -432,7 +432,7 @@ msgid "Gross Margin"
 msgstr "Margen Bruto"
 
 msgid "Margin %"
-msgstr "Margen %"
+msgstr "% de Margen"
 
 msgid "Cost Percent of Sales"
 msgstr "Costo sobre Ventas"
@@ -1512,7 +1512,7 @@ msgid "Growth"
 msgstr "Crecimiento"
 
 msgid "Trend"
-msgstr "Tendencia"
+msgstr "Dif."
 
 msgid "January"
 msgstr "Enero"
@@ -1718,7 +1718,7 @@ msgid "Day"
 msgstr "Día"
 
 msgid "WoW Growth"
-msgstr "Crecimiento Semanal"
+msgstr "% de Crec."
 
 msgid "Mon"
 msgstr "Lun"

@@ -73,6 +73,8 @@ async def render_pdf_from_url(
 def _dedupe_netloc(netloc: str) -> str:
     if not netloc:
         return netloc
+    if "." not in netloc:
+        return netloc
     if len(netloc) % 2 == 0:
         mid = len(netloc) // 2
         if netloc[:mid] == netloc[mid:]:
