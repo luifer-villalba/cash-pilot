@@ -1141,14 +1141,32 @@ msgstr "Cobranzas"
 msgid "Best Performer"
 msgstr "Mejor Rendimiento"
 
+msgid "Lower Volume"
+msgstr "Menor volumen"
+
 msgid "Loading..."
 msgstr "Cargando..."
 
 msgid "Most Improved"
-msgstr "Más Mejorado"
+msgstr "Mayor crecimiento"
 
-msgid "Needs Attention"
-msgstr "Necesita atención"
+msgid "Needs Care"
+msgstr "Necesita cariño"
+
+msgid "Ranking based on total sales for the current period."
+msgstr "Ranking basado en ventas totales del período actual."
+
+msgid "Lower share of total"
+msgstr "Participación menor del total"
+
+msgid "Gross margin = sales − cost of goods."
+msgstr "Margen bruto = ventas − costo de mercaderías."
+
+msgid "Cost of Goods"
+msgstr "Costo de Mercaderías"
+
+msgid "Gross Margin %"
+msgstr "% de Margen Bruto"
 
 msgid "Revenue Breakdown by Business"
 msgstr "Desglose de Ingresos por Negocio"
@@ -1161,6 +1179,9 @@ msgstr "Por Negocio"
 
 msgid "TOTAL"
 msgstr "TOTAL"
+
+msgid "Rank"
+msgstr "Ranking"
 
 msgid "Toggle more details for"
 msgstr "Más Detalles"

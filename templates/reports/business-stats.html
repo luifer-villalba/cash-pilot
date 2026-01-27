@@ -159,7 +159,7 @@
     </div>
 
     <!-- Top Performers Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
         <!-- Best Performer Card -->
         <div class="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border-2 border-yellow-500/30 rounded-xl shadow-lg p-4">
             <div class="flex items-center gap-2 mb-3">
@@ -169,6 +169,19 @@
                 <h3 class="font-bold text-sm uppercase tracking-wider text-yellow-700">{{ _('Best Performer') }}</h3>
             </div>
             <div id="bestPerformer">
+                <p class="text-base-content/60 text-sm italic">{{ _('Loading...') }}</p>
+            </div>
+        </div>
+
+        <!-- Lower Volume Card -->
+        <div class="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-2 border-amber-500/30 rounded-xl shadow-lg p-4">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                </svg>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-amber-700">{{ _('Lower Volume') }}</h3>
+            </div>
+            <div id="worstPerformer">
                 <p class="text-base-content/60 text-sm italic">{{ _('Loading...') }}</p>
             </div>
         </div>
@@ -186,19 +199,20 @@
             </div>
         </div>
 
-        <!-- Needs Attention Card -->
+        <!-- Needs Care Card -->
         <div class="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-2 border-orange-500/30 rounded-xl shadow-lg p-4">
             <div class="flex items-center gap-2 mb-3">
                 <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
-                <h3 class="font-bold text-sm uppercase tracking-wider text-orange-700">{{ _('Needs Attention') }}</h3>
+                <h3 class="font-bold text-sm uppercase tracking-wider text-orange-700">{{ _('Needs Care') }}</h3>
             </div>
-            <div id="needsAttention">
+            <div id="needsCare">
                 <p class="text-base-content/60 text-sm italic">{{ _('Loading...') }}</p>
             </div>
         </div>
     </div>
+    <p class="text-xs text-base-content/50 mb-4">{{ _('Ranking based on total sales for the current period.') }}</p>
 
     <!-- Visualizations Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -222,32 +236,95 @@
     <!-- Business Details Section -->
     <div class="space-y-3">
         <h2 class="text-sm font-bold uppercase tracking-widest text-base-content/70">{{ _('By Business') }}</h2>
+        <p class="text-xs text-base-content/50">{{ _('Gross margin = sales − cost of goods.') }}</p>
+
+        <style>
+            .business-table tbody tr:hover td {
+                background-color: hsl(var(--p) / 0.06) !important;
+            }
+
+            .business-table tbody tr {
+                border-bottom: 1px solid hsl(var(--b2));
+            }
+
+            .business-table tbody td:not(:last-child),
+            .business-table thead th:not(:last-child) {
+                border-right: 1px solid hsl(var(--bc) / 0.08);
+            }
+
+            .business-table thead th.sortable-header {
+                position: relative;
+                cursor: default;
+                padding-right: 1.4rem;
+                user-select: none;
+            }
+
+            .business-table thead th.sortable-header:hover {
+                background-color: hsl(var(--b2));
+            }
+
+            .business-table thead th .sort-icon {
+                position: absolute;
+                right: 0.35rem;
+                top: 50%;
+                transform: translateY(-50%);
+                opacity: 0.35;
+                font-size: 0.7rem;
+            }
+        </style>
         
         <!-- Desktop Table View - visible on screens 1024px and wider -->
-        <div class="hidden lg:block overflow-x-auto bg-base-100 border border-base-300 rounded-xl shadow-lg">
-            <table class="table table-sm w-full">
+        <div class="hidden lg:block overflow-x-auto bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+            <table class="table table-sm w-full business-table">
                 <thead>
-                    <tr class="bg-gradient-to-r from-base-200 to-base-200/80 border-b-2 border-primary/20">
-                        <th class="sticky left-0 z-20 bg-gradient-to-r from-base-200 to-base-200/80 border-r border-base-300/50 min-w-[200px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70">
+                    <tr class="border-b border-base-300">
+                        <th class="sticky left-0 z-30 bg-base-50 border-r border-base-300/50 w-14 min-w-[56px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 sortable-header text-center">
+                            {{ _('Rank') }}
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="sticky left-14 z-20 bg-base-50 border-r border-base-300/50 min-w-[220px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 sortable-header">
                             {{ _('Business') }}
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                        <th class="text-right min-w-[130px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
                             {{ _('Cash Sales') }}
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                        <th class="text-right min-w-[130px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
                             {{ _('Credit Sales') }}
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                        <th class="text-right min-w-[130px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
                             {{ _('Cards') }}
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                        <th class="text-right min-w-[130px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header hidden xl:table-cell">
                             {{ _('Collections') }}
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="text-right min-w-[140px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70 border-r border-base-300/30">
+                        <th class="text-right min-w-[130px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header hidden xl:table-cell">
                             {{ _('Bank Transfers') }}
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="text-right min-w-[180px] px-4 py-3 text-xs font-bold uppercase tracking-wider text-base-content/70">
+                        <th class="text-right min-w-[150px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
+                            {{ _('Cost of Goods') }}
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="text-right min-w-[150px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
+                            {{ _('Gross Margin') }}
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="text-right min-w-[120px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
+                            {{ _('Gross Margin %') }}
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="text-right min-w-[90px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
+                            {{ _('Tickets') }}
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="text-right min-w-[160px] px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-base-content/60 bg-base-50 sortable-header">
                             {{ _('Total Sales') }}
+                            <span class="sort-icon">↕</span>
                         </th>
                     </tr>
                 </thead>
@@ -255,60 +332,82 @@
                     {% for item in businesses %}
                     {% set business_closed = item.current.total_sales == 0 and item.previous.total_sales > 0 %}
                     {% set no_current_sessions = item.current.total_sales == 0 %}
-                    <tr class="hover:bg-primary/5 transition-all duration-200 border-b border-base-200/50 group">
-                        <td class="sticky left-0 z-10 bg-base-100 group-hover:bg-primary/5 border-r border-base-300/50 px-4 py-3 font-semibold text-sm transition-colors duration-200 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
-                            <div class="flex items-center gap-2">
-                                {% if loop.index == 1 %}
-                                <span class="badge badge-sm bg-yellow-500 text-yellow-50 border-none">🥇</span>
-                                {% elif loop.index == 2 %}
-                                <span class="badge badge-sm bg-gray-400 text-gray-50 border-none">🥈</span>
-                                {% elif loop.index == 3 %}
-                                <span class="badge badge-sm bg-orange-600 text-orange-50 border-none">🥉</span>
-                                {% endif %}
-                                <span>{{ item.business.name }}</span>
-                            </div>
+                    <tr class="transition-all duration-200 cursor-default border-l-2 border-transparent hover:!border-primary/60">
+                        <td class="sticky left-0 z-20 bg-base-100 border-r border-base-300/50 px-3 py-2 text-[11px] font-semibold text-base-content/70 text-center shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]">
+                            #{{ loop.index }}
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                        <td class="sticky left-14 z-10 bg-base-100 border-r border-base-300/50 px-3 py-2 font-semibold text-[11px] transition-colors duration-150 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]">
+                            <span class="truncate block max-w-[220px] leading-4">{{ item.business.name }}</span>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 text-[11px]">
                             {% if no_current_sessions %}
-                                <span class="text-base-content/30 text-sm">—</span>
+                                <span class="text-base-content/30 text-[11px]">—</span>
                             {% else %}
-                                <span class="font-mono tabular-nums text-base">Gs {{ item.current.cash_sales | format_currency_py }}</span>
+                                <span class="font-mono tabular-nums text-[11px]">Gs {{ item.current.cash_sales | format_currency_py }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 text-[11px]">
                             {% if no_current_sessions %}
-                                <span class="text-base-content/30 text-sm">—</span>
+                                <span class="text-base-content/30 text-[11px]">—</span>
                             {% else %}
-                                <span class="font-mono tabular-nums text-base">Gs {{ item.current.credit_sales_total | format_currency_py }}</span>
+                                <span class="font-mono tabular-nums text-[11px]">Gs {{ item.current.credit_sales_total | format_currency_py }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 text-[11px]">
                             {% if no_current_sessions %}
-                                <span class="text-base-content/30 text-sm">—</span>
+                                <span class="text-base-content/30 text-[11px]">—</span>
                             {% else %}
-                                <span class="font-mono tabular-nums text-base">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
+                                <span class="font-mono tabular-nums text-[11px]">Gs {{ item.current.card_payments_total | format_currency_py }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 hidden xl:table-cell text-[11px]">
                             {% if no_current_sessions %}
-                                <span class="text-base-content/30 text-sm">—</span>
+                                <span class="text-base-content/30 text-[11px]">—</span>
                             {% else %}
-                                <span class="font-mono tabular-nums text-base">Gs {{ item.current.credit_payments_collected | format_currency_py }}</span>
+                                <span class="font-mono tabular-nums text-[11px]">Gs {{ item.current.credit_payments_collected | format_currency_py }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-base-300/30">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 hidden xl:table-cell text-[11px]">
                             {% if no_current_sessions %}
-                                <span class="text-base-content/30 text-sm">—</span>
+                                <span class="text-base-content/30 text-[11px]">—</span>
                             {% else %}
-                                <span class="font-mono tabular-nums text-base">Gs {{ item.current.bank_transfer_total | format_currency_py }}</span>
+                                <span class="font-mono tabular-nums text-[11px]">Gs {{ item.current.bank_transfer_total | format_currency_py }}</span>
                             {% endif %}
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 text-[11px]">
+                            {% if no_current_sessions %}
+                                <span class="text-base-content/30 text-[11px]">—</span>
+                            {% else %}
+                                <span class="font-mono tabular-nums text-[11px]">Gs {{ item.current.daily_cost_total | format_currency_py }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 text-[11px]">
+                            {% if no_current_sessions %}
+                                <span class="text-base-content/30 text-[11px]">—</span>
+                            {% else %}
+                                <span class="font-mono tabular-nums text-[11px]">Gs {{ item.current.gross_margin | format_currency_py }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 text-[11px]">
+                            {% if no_current_sessions %}
+                                <span class="text-base-content/30 text-[11px]">—</span>
+                            {% else %}
+                                <span class="font-mono tabular-nums text-[11px]">{{ "%.1f"|format(item.current.gross_margin_percent) }}%</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-base-300/30 text-[11px]">
+                            {% if no_current_sessions %}
+                                <span class="text-base-content/30 text-[11px]">—</span>
+                            {% else %}
+                                <span class="font-mono tabular-nums text-[11px]">{{ item.current.invoice_count }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 text-[11px]">
                             <div class="flex flex-col items-end gap-1">
                                 {% if no_current_sessions %}
-                                    <span class="text-base-content/30 text-sm">—</span>
+                                    <span class="text-base-content/30 text-[11px]">—</span>
                                 {% else %}
-                                    <span class="font-bold font-mono tabular-nums text-base">Gs {{ item.current.total_sales | format_currency_py }}</span>
+                                    <span class="font-bold font-mono tabular-nums text-[11px]">Gs {{ item.current.total_sales | format_currency_py }}</span>
                                 {% endif %}
                                 <div class="text-xs">
                                     {{ delta_display(item.deltas.total_sales, item.current.total_sales, item.previous.total_sales) }}
@@ -318,53 +417,76 @@
                     </tr>
                     {% endfor %}
                     <!-- Totals Row -->
-                    <tr class="bg-gradient-to-r from-primary/10 via-primary/5 to-base-200 font-bold border-t-2 border-primary/40">
-                        <td class="sticky left-0 z-10 bg-gradient-to-r from-primary/10 via-primary/5 to-base-200 border-r border-primary/30 px-4 py-3 text-sm uppercase tracking-wider shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                    <tr class="bg-primary/10 font-bold border-t border-primary/30">
+                        <td class="sticky left-0 z-20 bg-primary/10 border-r border-primary/30 px-3 py-2 text-[11px] uppercase tracking-[0.14em] text-center shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]">
+                            —
+                        </td>
+                        <td class="sticky left-14 z-10 bg-primary/10 border-r border-primary/30 px-3 py-2 text-[11px] uppercase tracking-[0.14em] shadow-[2px_0_4px_-2px_rgba(0,0,0,0.06)]">
                             {{ _('TOTAL') }}
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 text-[11px]">
                             <div class="flex flex-col items-end gap-1">
-                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.cash_sales | format_currency_py }}</span>
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.cash_sales | format_currency_py }}</span>
                                 <div class="text-xs">
                                     {{ delta_display(totals_deltas.cash_sales, totals_current.cash_sales, totals_previous.cash_sales) }}
                                 </div>
                             </div>
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 text-[11px]">
                             <div class="flex flex-col items-end gap-1">
-                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.credit_sales_total | format_currency_py }}</span>
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.credit_sales_total | format_currency_py }}</span>
                                 <div class="text-xs">
                                     {{ delta_display(totals_deltas.credit_sales_total, totals_current.credit_sales_total, totals_previous.credit_sales_total) }}
                                 </div>
                             </div>
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 text-[11px]">
                             <div class="flex flex-col items-end gap-1">
-                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.card_payments_total | format_currency_py }}</span>
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.card_payments_total | format_currency_py }}</span>
                                 <div class="text-xs">
                                     {{ delta_display(totals_deltas.card_payments_total, totals_current.card_payments_total, totals_previous.card_payments_total) }}
                                 </div>
                             </div>
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 hidden xl:table-cell text-[11px]">
                             <div class="flex flex-col items-end gap-1">
-                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.credit_payments_collected | format_currency_py }}</span>
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.credit_payments_collected | format_currency_py }}</span>
                                 <div class="text-xs">
                                     {{ delta_display(totals_deltas.credit_payments_collected, totals_current.credit_payments_collected, totals_previous.credit_payments_collected) }}
                                 </div>
                             </div>
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3 border-r border-primary/20">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 hidden xl:table-cell text-[11px]">
                             <div class="flex flex-col items-end gap-1">
-                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.bank_transfer_total | format_currency_py }}</span>
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.bank_transfer_total | format_currency_py }}</span>
                                 <div class="text-xs">
                                     {{ delta_display(totals_deltas.bank_transfer_total, totals_current.bank_transfer_total, totals_previous.bank_transfer_total) }}
                                 </div>
                             </div>
                         </td>
-                        <td class="text-right whitespace-nowrap px-4 py-3">
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 text-[11px]">
                             <div class="flex flex-col items-end gap-1">
-                                <span class="font-bold font-mono tabular-nums text-base text-primary">Gs {{ totals_current.total_sales | format_currency_py }}</span>
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.daily_cost_total | format_currency_py }}</span>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 text-[11px]">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.gross_margin | format_currency_py }}</span>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 text-[11px]">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">{{ "%.1f"|format(totals_current.gross_margin_percent) }}%</span>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 border-r border-primary/20 text-[11px]">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">{{ totals_current.invoice_count }}</span>
+                            </div>
+                        </td>
+                        <td class="text-right whitespace-nowrap px-3 py-2 text-[11px]">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="font-bold font-mono tabular-nums text-[11px] text-primary">Gs {{ totals_current.total_sales | format_currency_py }}</span>
                                 <div class="text-xs">
                                     {{ delta_display(totals_deltas.total_sales, totals_current.total_sales, totals_previous.total_sales) }}
                                 </div>
@@ -422,6 +544,30 @@
                             <span class="text-sm text-base-content/40">—</span>
                         {% else %}
                             <span class="text-sm font-mono tabular-nums">Gs {{ item.current.bank_transfer_total | format_currency_py }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cost of Goods') }}</span>
+                        {% if no_current_sessions %}
+                            <span class="text-sm text-base-content/40">—</span>
+                        {% else %}
+                            <span class="text-sm font-mono tabular-nums">Gs {{ item.current.daily_cost_total | format_currency_py }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Gross Margin') }}</span>
+                        {% if no_current_sessions %}
+                            <span class="text-sm text-base-content/40">—</span>
+                        {% else %}
+                            <span class="text-sm font-mono tabular-nums">Gs {{ item.current.gross_margin | format_currency_py }} ({{ "%.1f"|format(item.current.gross_margin_percent) }}%)</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Tickets') }}</span>
+                        {% if no_current_sessions %}
+                            <span class="text-sm text-base-content/40">—</span>
+                        {% else %}
+                            <span class="text-sm font-mono tabular-nums">{{ item.current.invoice_count }}</span>
                         {% endif %}
                     </div>
                     <div class="flex justify-between items-center">
@@ -506,6 +652,10 @@ document.addEventListener('DOMContentLoaded', function() {
             cardPayments: {{ item.current.card_payments_total }},
             creditSales: {{ item.current.credit_sales_total }},
             bankTransfer: {{ item.current.bank_transfer_total }},
+            costTotal: {{ item.current.daily_cost_total }},
+            grossMargin: {{ item.current.gross_margin }},
+            grossMarginPercent: {{ item.current.gross_margin_percent }},
+            tickets: {{ item.current.invoice_count }},
             delta: {{ item.deltas.total_sales.percent }},
             direction: "{{ item.deltas.total_sales.direction }}"
         }{% if not loop.last %},{% endif %}
@@ -532,10 +682,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Calculate top performers
-    const sorted = [...businesses].sort((a, b) => b.currentTotal - a.currentTotal);
+    const activeBusinesses = businesses.filter(b => b.currentTotal > 0);
+    const sorted = [...activeBusinesses].sort((a, b) => b.currentTotal - a.currentTotal);
+    const sortedByWorst = [...activeBusinesses].sort((a, b) => a.currentTotal - b.currentTotal);
     const withGrowth = businesses.filter(b => b.currentTotal > 0 && b.previousTotal > 0);
     const sortedByGrowth = [...withGrowth].sort((a, b) => b.delta - a.delta);
-    const declining = [...withGrowth].filter(b => b.delta < -10).sort((a, b) => a.delta - b.delta);
+    const sortedByMargin = [...activeBusinesses].sort((a, b) => a.grossMarginPercent - b.grossMarginPercent);
 
     // Display Best Performer
     if (sorted.length > 0 && sorted[0].currentTotal > 0) {
@@ -547,6 +699,18 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     } else {
         document.getElementById('bestPerformer').innerHTML = '<p class="text-sm text-base-content/60">{{ _("No data") }}</p>';
+    }
+
+    // Display Worst Performer
+    if (sortedByWorst.length > 0) {
+        const worst = sortedByWorst[0];
+        document.getElementById('worstPerformer').innerHTML = `
+            <p class="text-lg font-bold text-base-content">${worst.name}</p>
+            <p class="text-xl font-bold font-mono text-amber-600">${formatCurrency(worst.currentTotal)}</p>
+            <p class="text-sm text-base-content/60 mt-1">{{ _('Lower share of total') }} (${(worst.currentTotal / totalSales * 100).toFixed(1)}%)</p>
+        `;
+    } else {
+        document.getElementById('worstPerformer').innerHTML = '<p class="text-sm text-base-content/60">{{ _("No data") }}</p>';
     }
 
     // Display Most Improved
@@ -562,22 +726,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('mostImproved').innerHTML = '<p class="text-sm text-base-content/60">{{ _("No comparison data") }}</p>';
     }
 
-    // Display Needs Attention
-    if (declining.length > 0) {
-        const needsAttention = declining[0];
-        document.getElementById('needsAttention').innerHTML = `
-            <p class="text-lg font-bold text-base-content">${needsAttention.name}</p>
-            <p class="text-xl font-bold font-mono text-orange-600">↓ ${needsAttention.delta}%</p>
-            <p class="text-sm text-base-content/60 mt-1">${getGrowthLabel(needsAttention.delta)}</p>
+    // Display Needs Care (lowest margin %)
+    if (sortedByMargin.length > 0) {
+        const needsCare = sortedByMargin[0];
+        document.getElementById('needsCare').innerHTML = `
+            <p class="text-lg font-bold text-base-content">${needsCare.name}</p>
+            <p class="text-xl font-bold font-mono text-orange-600">${needsCare.grossMarginPercent.toFixed(1)}%</p>
+            <p class="text-sm text-base-content/60 mt-1">{{ _('Gross Margin') }} ${formatCurrency(needsCare.grossMargin)}</p>
         `;
     } else {
-        document.getElementById('needsAttention').innerHTML = '<p class="text-sm text-base-content/60">{{ _("All businesses stable") }}</p>';
+        document.getElementById('needsCare').innerHTML = '<p class="text-sm text-base-content/60">{{ _("No data") }}</p>';
     }
 
     // Stacked Bar Chart
     const stackedCtx = document.getElementById('stackedBarChart');
     if (stackedCtx && typeof Chart !== 'undefined') {
-        const activeBusinesses = businesses.filter(b => b.currentTotal > 0);
         new Chart(stackedCtx, {
             type: 'bar',
             data: {
