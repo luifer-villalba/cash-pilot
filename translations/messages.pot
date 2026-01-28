@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-15 21:18+0000\n"
+"POT-Creation-Date: 2026-01-28 20:05+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -61,6 +61,12 @@ msgid "Invalid number format. Please enter a valid amount."
 msgstr ""
 
 msgid "Edit window expired (32 hours passed)"
+msgstr ""
+
+msgid "Invalid business selection."
+msgstr ""
+
+msgid "Selected business not found."
 msgstr ""
 
 msgid ""
@@ -310,7 +316,70 @@ msgstr ""
 msgid "System vs manual totals by business"
 msgstr ""
 
-msgid "Cashiers"
+msgid "Notes"
+msgstr ""
+
+msgid "View session notes for"
+msgstr ""
+
+msgid "Sesiones abiertas"
+msgstr ""
+
+msgid "Click to review and edit"
+msgstr ""
+
+msgid "Review differences for"
+msgstr ""
+
+msgid "Review"
+msgstr ""
+
+msgid "Validado"
+msgstr ""
+
+msgid "Conciliacion iniciada"
+msgstr ""
+
+msgid "Click to add manual entry"
+msgstr ""
+
+msgid "Add manual entry for"
+msgstr ""
+
+msgid "Pending"
+msgstr ""
+
+msgid "Total Sales"
+msgstr ""
+
+msgid "System"
+msgstr ""
+
+msgid "Manual"
+msgstr ""
+
+msgid "Diff"
+msgstr ""
+
+msgid "Cash"
+msgstr ""
+
+msgid "Card"
+msgstr ""
+
+msgid "Credit"
+msgstr ""
+
+msgid "Click to view sessions detail"
+msgstr ""
+
+msgid "View sessions for"
+msgstr ""
+
+msgid "Sessions"
+msgstr ""
+
+msgid "No sessions"
 msgstr ""
 
 msgid "Entry Status"
@@ -328,37 +397,10 @@ msgstr ""
 msgid "Credit Sales"
 msgstr ""
 
-msgid "Total Sales"
-msgstr ""
-
 msgid "Total Difference"
 msgstr ""
 
 msgid "(System - Manual)"
-msgstr ""
-
-msgid "Sessions"
-msgstr ""
-
-msgid "Click to review and edit"
-msgstr ""
-
-msgid "Review differences for"
-msgstr ""
-
-msgid "Review"
-msgstr ""
-
-msgid "Completed"
-msgstr ""
-
-msgid "Click to add manual entry"
-msgstr ""
-
-msgid "Add manual entry for"
-msgstr ""
-
-msgid "Pending"
 msgstr ""
 
 msgid "System:"
@@ -370,13 +412,13 @@ msgstr ""
 msgid "Diff:"
 msgstr ""
 
-msgid "Click to view sessions detail"
-msgstr ""
-
-msgid "View sessions for"
-msgstr ""
-
 msgid "No businesses found"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Loading..."
 msgstr ""
 
 msgid "Difference Colors:"
@@ -412,10 +454,14 @@ msgstr ""
 msgid "Margin %"
 msgstr ""
 
-msgid "Cost Percent of Sales"
+#, python-format
+msgid "Cost percentage of Sales"
 msgstr ""
 
 msgid "Totals"
+msgstr ""
+
+msgid "Cost Percent of Sales"
 msgstr ""
 
 msgid "Margin Tips:"
@@ -430,13 +476,25 @@ msgstr ""
 msgid "User Management"
 msgstr ""
 
+msgid "Manage access, roles, and business assignments"
+msgstr ""
+
 msgid "Create User"
+msgstr ""
+
+msgid "User Directory"
+msgstr ""
+
+msgid "Search, inspect, and act on user accounts"
+msgstr ""
+
+msgid "Search users"
 msgstr ""
 
 msgid "Search by name or email..."
 msgstr ""
 
-msgid "Username"
+msgid "User"
 msgstr ""
 
 msgid "Role"
@@ -490,6 +548,9 @@ msgstr ""
 msgid "Resetting password for"
 msgstr ""
 
+msgid "Enter password..."
+msgstr ""
+
 msgid "Password Reset Successful"
 msgstr ""
 
@@ -512,6 +573,9 @@ msgid "Select Businesses"
 msgstr ""
 
 msgid "None"
+msgstr ""
+
+msgid "of"
 msgstr ""
 
 msgid "selected"
@@ -583,6 +647,12 @@ msgstr ""
 msgid "Please fill all required fields"
 msgstr ""
 
+msgid "Please enter a password or choose to generate one"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
 msgid "(You)"
 msgstr ""
 
@@ -592,28 +662,40 @@ msgstr ""
 msgid "CASHIER"
 msgstr ""
 
+msgid "Remove"
+msgstr ""
+
+msgid "more"
+msgstr ""
+
+msgid "Session"
+msgstr ""
+
+msgid "Unknown"
+msgstr ""
+
+msgid "No notes available for this date."
+msgstr ""
+
 msgid "Session #"
 msgstr ""
 
 msgid "Time"
 msgstr ""
 
-msgid "Cash"
+msgid "Envelope"
 msgstr ""
 
-msgid "Card"
+msgid "Transfer"
 msgstr ""
 
-msgid "Credit"
+msgid "Expenses"
 msgstr ""
 
 msgid "Total"
 msgstr ""
 
 msgid "View details for session"
-msgstr ""
-
-msgid "Unknown"
 msgstr ""
 
 msgid "Flagged"
@@ -683,6 +765,9 @@ msgid "Address & Phone"
 msgstr ""
 
 msgid "Optional: for reference only"
+msgstr ""
+
+msgid "Cashiers"
 msgstr ""
 
 msgid "Add cashier names after creation"
@@ -771,9 +856,6 @@ msgstr ""
 msgid "Toggle expenses section"
 msgstr ""
 
-msgid "Expenses"
-msgstr ""
-
 msgid "Click here to add your first expense"
 msgstr ""
 
@@ -825,6 +907,12 @@ msgstr ""
 msgid "Click to reconcile"
 msgstr ""
 
+msgid "Reconciliation started"
+msgstr ""
+
+msgid "Pending completion"
+msgstr ""
+
 msgid "Reconciled"
 msgstr ""
 
@@ -838,9 +926,6 @@ msgid "sessions"
 msgstr ""
 
 msgid "Open Cash Session"
-msgstr ""
-
-msgid "Use the \"Open Cash Session\" button above to create your first session."
 msgstr ""
 
 msgid "Reconciliation"
@@ -879,13 +964,7 @@ msgstr ""
 msgid "Cards"
 msgstr ""
 
-msgid "Transfer"
-msgstr ""
-
 msgid "View session"
-msgstr ""
-
-msgid "Envelope"
 msgstr ""
 
 msgid "Restore this deleted session?"
@@ -921,19 +1000,10 @@ msgstr ""
 msgid "Only admins and session creator can delete"
 msgstr ""
 
-msgid "Session"
-msgstr ""
-
 msgid "Restore"
 msgstr ""
 
-msgid "Close"
-msgstr ""
-
 msgid "Showing"
-msgstr ""
-
-msgid "of"
 msgstr ""
 
 msgid "First page"
@@ -956,7 +1026,7 @@ msgid ""
 "criteria or create a new session."
 msgstr ""
 
-msgid "Create New Session"
+msgid "Use the \"Open Cash Session\" button above to create your first session."
 msgstr ""
 
 msgid "Card Payments"
@@ -1112,13 +1182,16 @@ msgstr ""
 msgid "Best Performer"
 msgstr ""
 
-msgid "Loading..."
+msgid "Lower Volume"
 msgstr ""
 
 msgid "Most Improved"
 msgstr ""
 
-msgid "Needs Attention"
+msgid "Gross Margin %"
+msgstr ""
+
+msgid "Ranking based on total sales for the current period."
 msgstr ""
 
 msgid "Revenue Breakdown by Business"
@@ -1127,7 +1200,34 @@ msgstr ""
 msgid "Business Contribution to Total"
 msgstr ""
 
+msgid "Margin vs Cost (Current Period)"
+msgstr ""
+
+msgid "Change vs Previous Period"
+msgstr ""
+
+msgid "Sales Δ"
+msgstr ""
+
+msgid "Cost Δ"
+msgstr ""
+
+msgid "Margin Δ"
+msgstr ""
+
 msgid "By Business"
+msgstr ""
+
+msgid "Gross margin = sales − cost of goods."
+msgstr ""
+
+msgid "Rank"
+msgstr ""
+
+msgid "Tickets"
+msgstr ""
+
+msgid "Cost of Goods"
 msgstr ""
 
 msgid "TOTAL"
@@ -1181,13 +1281,19 @@ msgstr ""
 msgid "of total"
 msgstr ""
 
+msgid "Lower share of total"
+msgstr ""
+
 msgid "No comparison data"
 msgstr ""
 
-msgid "All businesses stable"
+msgid "Bank Transfer"
 msgstr ""
 
-msgid "Bank Transfer"
+msgid "Cost (Gs)"
+msgstr ""
+
+msgid "Margin (Gs)"
 msgstr ""
 
 msgid ""
@@ -1211,9 +1317,6 @@ msgid "Show 30 days ago"
 msgstr ""
 
 msgid "Loading report data..."
-msgstr ""
-
-msgid "Error"
 msgstr ""
 
 msgid "Dismiss"
@@ -1347,6 +1450,9 @@ msgid ""
 "over-month growth patterns"
 msgstr ""
 
+msgid "View Weekly"
+msgstr ""
+
 msgid "Select time period"
 msgstr ""
 
@@ -1394,19 +1500,10 @@ msgid ""
 "revenue trend."
 msgstr ""
 
-msgid "Days with data"
+msgid "Highest Revenue Week"
 msgstr ""
 
-msgid "Average daily"
-msgstr ""
-
-msgid "Highest Revenue Day"
-msgstr ""
-
-msgid "Lowest Revenue Day"
-msgstr ""
-
-msgid "Top Performing Day"
+msgid "Lowest Revenue Week"
 msgstr ""
 
 msgid "Month Total"
@@ -1415,7 +1512,13 @@ msgstr ""
 msgid "Total sales this month"
 msgstr ""
 
-msgid "Stability Score"
+msgid "Month Cost"
+msgstr ""
+
+msgid "Month Margin"
+msgstr ""
+
+msgid "Growth vs Previous"
 msgstr ""
 
 msgid "Revenue by Day Type"
@@ -1443,25 +1546,13 @@ msgstr ""
 msgid "Weekend (full price)"
 msgstr ""
 
-msgid "Month-over-Month Growth"
-msgstr ""
-
-msgid "Total Growth"
-msgstr ""
-
-msgid "Avg/day:"
-msgstr ""
-
-msgid "Projected:"
-msgstr ""
-
 msgid "Revenue Progress"
 msgstr ""
 
 msgid "Cumulative"
 msgstr ""
 
-msgid "Day-by-Day Comparison"
+msgid "Week-by-Week Comparison"
 msgstr ""
 
 msgid "Current vs Previous"
@@ -1477,6 +1568,12 @@ msgid "Week"
 msgstr ""
 
 msgid "Date Range"
+msgstr ""
+
+msgid "Cost"
+msgstr ""
+
+msgid "Margin"
 msgstr ""
 
 msgid "Growth"
@@ -1521,139 +1618,6 @@ msgstr ""
 msgid "December"
 msgstr ""
 
-msgid "Please select a month"
-msgstr ""
-
-msgid "Very Stable"
-msgstr ""
-
-msgid "Moderate"
-msgstr ""
-
-msgid "Volatile"
-msgstr ""
-
-msgid "Core"
-msgstr ""
-
-msgid "exceptional day"
-msgstr ""
-
-msgid "Insufficient data"
-msgstr ""
-
-msgid "Monday"
-msgstr ""
-
-msgid "Tuesday"
-msgstr ""
-
-msgid "Wednesday"
-msgstr ""
-
-msgid "Thursday"
-msgstr ""
-
-msgid "Friday"
-msgstr ""
-
-msgid "Sunday"
-msgstr ""
-
-msgid "Top day in"
-msgstr ""
-
-msgid "weeks"
-msgstr ""
-
-msgid "Only"
-msgstr ""
-
-msgid ""
-"days of data available. Monthly trends are more reliable after at least 7"
-" days."
-msgstr ""
-
-msgid "day"
-msgstr ""
-
-msgid "No previous data"
-msgstr ""
-
-msgid "Strong finish"
-msgstr ""
-
-msgid "Fade detected"
-msgstr ""
-
-msgid "Consistent"
-msgstr ""
-
-msgid "Through day"
-msgstr ""
-
-msgid "Day of Month"
-msgstr ""
-
-msgid "Monthly Total"
-msgstr ""
-
-msgid "Show current week"
-msgstr ""
-
-msgid "This Week"
-msgstr ""
-
-msgid "Show last week"
-msgstr ""
-
-msgid "Last Week"
-msgstr ""
-
-msgid "Show 2 weeks ago"
-msgstr ""
-
-msgid "2 Weeks Ago"
-msgstr ""
-
-msgid "Show 4 weeks ago"
-msgstr ""
-
-msgid "Any date in the week"
-msgstr ""
-
-msgid "Select a date to see its week"
-msgstr ""
-
-msgid ""
-"Line chart: current vs previous week (day-by-day). Bar chart: 5-week "
-"revenue trend."
-msgstr ""
-
-msgid "Week Total"
-msgstr ""
-
-msgid "Total sales this week"
-msgstr ""
-
-msgid "Growth vs Previous"
-msgstr ""
-
-msgid "Week-over-Week Growth"
-msgstr ""
-
-msgid "5-Week Trend"
-msgstr ""
-
-msgid "Selected Week Details"
-msgstr ""
-
-msgid "Day"
-msgstr ""
-
-msgid "WoW Growth"
-msgstr ""
-
 msgid "Jan"
 msgstr ""
 
@@ -1687,10 +1651,111 @@ msgstr ""
 msgid "Dec"
 msgstr ""
 
-msgid "Week of"
+msgid "Monday"
 msgstr ""
 
-msgid "Please select a date"
+msgid "Tuesday"
+msgstr ""
+
+msgid "Wednesday"
+msgstr ""
+
+msgid "Thursday"
+msgstr ""
+
+msgid "Friday"
+msgstr ""
+
+msgid "Sunday"
+msgstr ""
+
+msgid "Please select a month"
+msgstr ""
+
+msgid "Only"
+msgstr ""
+
+msgid ""
+"days of data available. Monthly trends are more reliable after at least 7"
+" days."
+msgstr ""
+
+msgid "Cost data missing"
+msgstr ""
+
+msgid "Cost data complete"
+msgstr ""
+
+msgid "of sales"
+msgstr ""
+
+msgid "Cost data incomplete"
+msgstr ""
+
+msgid "No previous data"
+msgstr ""
+
+msgid "Strong finish"
+msgstr ""
+
+msgid "Fade detected"
+msgstr ""
+
+msgid "Consistent"
+msgstr ""
+
+msgid "Through week"
+msgstr ""
+
+msgid "Week of Month"
+msgstr ""
+
+msgid "Monthly Total"
+msgstr ""
+
+msgid "Weekly Report"
+msgstr ""
+
+msgid "Date range"
+msgstr ""
+
+msgid "Generated at"
+msgstr ""
+
+msgid "Highest Revenue Day"
+msgstr ""
+
+msgid "Lowest Revenue Day"
+msgstr ""
+
+msgid "Week Total"
+msgstr ""
+
+msgid "Total sales this week"
+msgstr ""
+
+msgid "Week Cost"
+msgstr ""
+
+msgid "Week Margin"
+msgstr ""
+
+msgid "Day-by-Day Comparison"
+msgstr ""
+
+msgid "Selected Week Details"
+msgstr ""
+
+msgid "Day"
+msgstr ""
+
+msgid "WoW Growth"
+msgstr ""
+
+msgid "Last Week"
+msgstr ""
+
+msgid "This Week"
 msgstr ""
 
 msgid "Mon"
@@ -1714,13 +1779,63 @@ msgstr ""
 msgid "Sun"
 msgstr ""
 
+msgid "Export PDF"
+msgstr ""
+
+msgid "View Monthly"
+msgstr ""
+
+msgid "Show current week"
+msgstr ""
+
+msgid "Show last week"
+msgstr ""
+
+msgid "Show 2 weeks ago"
+msgstr ""
+
+msgid "2 Weeks Ago"
+msgstr ""
+
+msgid "Show 4 weeks ago"
+msgstr ""
+
+msgid "Any date in the week"
+msgstr ""
+
+msgid "Select a date to see its week"
+msgstr ""
+
+msgid ""
+"Line charts: revenue vs margin when cost data exists. Bar chart: 5-week "
+"revenue/margin trend."
+msgstr ""
+
+msgid "5-Week Trend"
+msgstr ""
+
+msgid "Week of"
+msgstr ""
+
+msgid "Please select a date"
+msgstr ""
+
+msgid "Margin (Last Week)"
+msgstr ""
+
+msgid "Margin (This Week)"
+msgstr ""
+
 msgid "Wk"
 msgstr ""
 
-msgid "Weekly Total"
+msgid "Now"
 msgstr ""
 
-msgid "Now"
+msgid "Generating PDF..."
+msgstr ""
+
+msgid "Could not generate PDF. Try again."
 msgstr ""
 
 msgid "Close Cash Session"
@@ -1775,9 +1890,6 @@ msgid "e.g., T-20251112-001"
 msgstr ""
 
 msgid "Optional: POS ticket number"
-msgstr ""
-
-msgid "Notes"
 msgstr ""
 
 msgid "Any discrepancies or notes..."
@@ -1882,6 +1994,12 @@ msgid ""
 msgstr ""
 
 msgid "Edit Closed Cash Session"
+msgstr ""
+
+msgid "Admin Settings"
+msgstr ""
+
+msgid "Change the business for this closed session"
 msgstr ""
 
 msgid "Amount counted from cash"
@@ -2044,21 +2162,6 @@ msgstr ""
 msgid "Credit & Debit Cards"
 msgstr ""
 
-msgid "CASH SALES & BANK TRANSFER"
-msgstr ""
-
-msgid "Initial"
-msgstr ""
-
-msgid "Cash only"
-msgstr ""
-
-msgid "Credit & Debit"
-msgstr ""
-
-msgid "All sales"
-msgstr ""
-
 msgid "Customer Credit Activity"
 msgstr ""
 
@@ -2177,4 +2280,3 @@ msgstr ""
 
 msgid "Clear"
 msgstr ""
-

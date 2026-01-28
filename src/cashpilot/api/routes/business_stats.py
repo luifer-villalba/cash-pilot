@@ -19,7 +19,7 @@ from cashpilot.api.utils import (
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
-from cashpilot.models import CashSession
+from cashpilot.models import CashSession, DailyReconciliation
 from cashpilot.models.user import User
 from cashpilot.utils.datetime import today_local
 
@@ -108,6 +108,13 @@ async def aggregate_business_metrics(
         CashSession.session_date <= to_date,
     ]
 
+    # Base filters for daily reconciliation metrics (costs/tickets)
+    recon_filters = [
+        DailyReconciliation.date >= from_date,
+        DailyReconciliation.date <= to_date,
+        DailyReconciliation.deleted_at.is_(None),
+    ]
+
     # Query 1: Financial metrics (closed sessions only)
     stmt_financial = (
         select(
@@ -162,13 +169,28 @@ async def aggregate_business_metrics(
         .group_by(CashSession.business_id)
     )
 
-    # Execute both queries concurrently for better performance
-    result_financial, result_counts = await asyncio.gather(
+    # Query 3: Daily reconciliation metrics (cost + tickets)
+    stmt_recon = (
+        select(
+            DailyReconciliation.business_id,
+            func.sum(func.coalesce(DailyReconciliation.daily_cost_total, 0)).label(
+                "daily_cost_total"
+            ),
+            func.sum(func.coalesce(DailyReconciliation.invoice_count, 0)).label("invoice_count"),
+        )
+        .where(and_(*recon_filters))
+        .group_by(DailyReconciliation.business_id)
+    )
+
+    # Execute all queries concurrently for better performance
+    result_financial, result_counts, result_recon = await asyncio.gather(
         db.execute(stmt_financial),
         db.execute(stmt_counts),
+        db.execute(stmt_recon),
     )
     financial_rows = result_financial.all()
     count_rows = result_counts.all()
+    recon_rows = result_recon.all()
 
     # Build count dict by business_id
     counts_by_business = {}
@@ -178,6 +200,15 @@ async def aggregate_business_metrics(
             "sessions_count_open": int(row.sessions_count_open or 0),
             "sessions_count_closed": int(row.sessions_count_closed or 0),
             "sessions_need_review": int(row.sessions_need_review or 0),
+        }
+
+    # Build daily reconciliation dict by business_id
+    recon_by_business = {}
+    for row in recon_rows:
+        business_id = str(row.business_id)
+        recon_by_business[business_id] = {
+            "daily_cost_total": Decimal(row.daily_cost_total or 0),
+            "invoice_count": int(row.invoice_count or 0),
         }
 
     # Build financial metrics dict
@@ -225,8 +256,12 @@ async def aggregate_business_metrics(
         }
 
     # Combine financial metrics with session counts
-    # Include all businesses that have either financial data or session counts
-    all_business_ids = set(financial_by_business.keys()) | set(counts_by_business.keys())
+    # Include all businesses that have either financial data, session counts, or recon data
+    all_business_ids = (
+        set(financial_by_business.keys())
+        | set(counts_by_business.keys())
+        | set(recon_by_business.keys())
+    )
 
     metrics_by_business = {}
     for business_id in all_business_ids:
@@ -239,6 +274,13 @@ async def aggregate_business_metrics(
                 "sessions_need_review": 0,
             },
         )
+        recon = recon_by_business.get(
+            business_id,
+            {
+                "daily_cost_total": Decimal("0"),
+                "invoice_count": 0,
+            },
+        )
 
         # Merge financial metrics with session counts
         metrics_by_business[business_id] = {
@@ -246,6 +288,8 @@ async def aggregate_business_metrics(
             "sessions_count_open": counts["sessions_count_open"],
             "sessions_count_closed": counts["sessions_count_closed"],
             "sessions_need_review": counts["sessions_need_review"],
+            "daily_cost_total": recon["daily_cost_total"],
+            "invoice_count": recon["invoice_count"],
         }
 
         # Ensure all required keys exist with defaults
@@ -258,6 +302,8 @@ async def aggregate_business_metrics(
             "bank_transfer_total": Decimal("0"),
             "cash_profit": Decimal("0"),
             "total_expenses": Decimal("0"),
+            "daily_cost_total": Decimal("0"),
+            "invoice_count": 0,
             "payment_method_mix": {
                 "cash_percent": Decimal("0"),
                 "card_percent": Decimal("0"),
@@ -384,6 +430,9 @@ async def business_stats(
         "bank_transfer_total",
         "cash_profit",
         "total_expenses",
+        "daily_cost_total",
+        "gross_margin",
+        "invoice_count",
         "sessions_count_open",
         "sessions_count_closed",
         "sessions_need_review",
@@ -413,12 +462,26 @@ async def business_stats(
         current = {}
         previous = {}
         for key in metric_keys:
-            if key.startswith("sessions_"):
+            if key.startswith("sessions_") or key == "invoice_count":
                 current[key] = current_raw.get(key, 0)
                 previous[key] = previous_raw.get(key, 0)
             else:
                 current[key] = current_raw.get(key, Decimal("0"))
                 previous[key] = previous_raw.get(key, Decimal("0"))
+
+        # Derived margin metrics
+        current["gross_margin"] = current["total_sales"] - current["daily_cost_total"]
+        previous["gross_margin"] = previous["total_sales"] - previous["daily_cost_total"]
+        current["gross_margin_percent"] = (
+            (current["gross_margin"] / current["total_sales"] * 100)
+            if current["total_sales"] > 0
+            else Decimal("0")
+        )
+        previous["gross_margin_percent"] = (
+            (previous["gross_margin"] / previous["total_sales"] * 100)
+            if previous["total_sales"] > 0
+            else Decimal("0")
+        )
 
         # Ensure payment_method_mix is always present
         current["payment_method_mix"] = current_raw.get(
@@ -448,7 +511,7 @@ async def business_stats(
             previous_val = previous[key]
             deltas[key] = calculate_delta(current_val, previous_val)
             # Add to totals (convert integers to Decimal for consistency)
-            if key.startswith("sessions_"):
+            if key.startswith("sessions_") or key == "invoice_count":
                 totals_current[key] = Decimal(str(int(totals_current[key]) + int(current_val)))
                 totals_previous[key] = Decimal(str(int(totals_previous[key]) + int(previous_val)))
             else:
@@ -463,6 +526,9 @@ async def business_stats(
                 "deltas": deltas,
             }
         )
+
+    # Sort by current total sales for ranking display
+    business_stats_list.sort(key=lambda item: item["current"]["total_sales"], reverse=True)
 
     # Calculate payment method mix for totals
     if totals_current["total_sales"] > 0:
@@ -486,6 +552,18 @@ async def business_stats(
         totals_previous["payment_method_mix"]["bank_percent"] = (
             totals_previous["bank_transfer_total"] / totals_previous["total_sales"] * 100
         )
+
+    # Calculate gross margin percent for totals
+    totals_current["gross_margin_percent"] = (
+        (totals_current["gross_margin"] / totals_current["total_sales"] * 100)
+        if totals_current["total_sales"] > 0
+        else Decimal("0")
+    )
+    totals_previous["gross_margin_percent"] = (
+        (totals_previous["gross_margin"] / totals_previous["total_sales"] * 100)
+        if totals_previous["total_sales"] > 0
+        else Decimal("0")
+    )
 
     # Calculate totals deltas
     totals_deltas = {}
