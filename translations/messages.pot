@@ -455,7 +455,7 @@ msgid "Margin %"
 msgstr ""
 
 #, python-format
-msgid "Cost %% of Sales"
+msgid "Cost percentage of Sales"
 msgstr ""
 
 msgid "Totals"

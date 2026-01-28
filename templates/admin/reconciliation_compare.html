@@ -822,7 +822,7 @@
                             </span>
                         </div>
                         <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
-                            <span>{{ _('Cost %% of Sales') }}</span>
+                            <span>{{ _('Cost percentage of Sales') }}</span>
                             <span>{% if cost_pct is not none %}{{ "{:.2f}".format(cost_pct) }}%{% else %}-{% endif %}</span>
                         </div>
                     </div>
@@ -863,7 +863,7 @@
                         </span>
                     </div>
                     <div class="flex items-center justify-between">
-                        <span class="font-semibold text-base-content/70">{{ _('Cost %% of Sales') }}</span>
+                        <span class="font-semibold text-base-content/70">{{ _('Cost percentage of Sales') }}</span>
                         <span class="text-base-content/70">{% if total_cost_pct is not none %}{{ "{:.2f}".format(total_cost_pct) }}%{% else %}-{% endif %}</span>
                     </div>
                 </div>

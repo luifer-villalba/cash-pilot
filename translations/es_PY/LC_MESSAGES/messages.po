@@ -469,8 +469,8 @@ msgstr "Margen Bruto"
 msgid "Margin %"
 msgstr "% de Margen"
 
-msgid "Cost %% of Sales"
-msgstr "Costo %% sobre Ventas"
+msgid "Cost percentage of Sales"
+msgstr "% de costo sobre ventas"
 
 msgid "Totals"
 msgstr "Totales"
