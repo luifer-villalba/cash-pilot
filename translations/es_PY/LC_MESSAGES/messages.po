@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-20 19:13+0000\n"
+"POT-Creation-Date: 2026-01-28 20:05+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -326,35 +326,12 @@ msgstr "Comparación de Conciliación de Ventas"
 msgid "System vs manual totals by business"
 msgstr "Totales del sistema vs manuales por negocio"
 
-msgid "Cashiers"
-msgstr "Cajeros"
+msgid "Notes"
+msgstr "Notas"
 
-msgid "Entry Status"
-msgstr "Estado de Entrada"
-
-msgid "Cash Sales"
-msgstr "Ventas al Contado"
-
-msgid "System vs Manual"
-msgstr "Agenda vs Farmagic"
-
-msgid "Card Sales"
-msgstr "Ventas con Tarjeta"
-
-msgid "Credit Sales"
-msgstr "Ventas a Crédito"
-
-msgid "Total Sales"
-msgstr "Ventas Totales"
-
-msgid "Total Difference"
-msgstr "Diferencia Total"
-
-msgid "(System - Manual)"
-msgstr "(Agenda - Farmagic)"
-
-msgid "Sessions"
-msgstr "Sesiones"
+#, fuzzy
+msgid "View session notes for"
+msgstr "Ver sesiones para"
 
 msgid "Sesiones abiertas"
 msgstr "Sesiones abiertas"
@@ -383,6 +360,64 @@ msgstr "Agregar entrada manual para"
 msgid "Pending"
 msgstr "Pendiente"
 
+msgid "Total Sales"
+msgstr "Ventas Totales"
+
+#, fuzzy
+msgid "System"
+msgstr "Agenda:"
+
+#, fuzzy
+msgid "Manual"
+msgstr "Farmagic:"
+
+#, fuzzy
+msgid "Diff"
+msgstr "Dif:"
+
+msgid "Cash"
+msgstr "Efectivo"
+
+msgid "Card"
+msgstr "Tarjetas"
+
+msgid "Credit"
+msgstr "Crédito"
+
+msgid "Click to view sessions detail"
+msgstr "Clic para ver detalle de sesiones"
+
+msgid "View sessions for"
+msgstr "Ver sesiones para"
+
+msgid "Sessions"
+msgstr "Sesiones"
+
+#, fuzzy
+msgid "No sessions"
+msgstr "sesiones"
+
+msgid "Entry Status"
+msgstr "Estado de Entrada"
+
+msgid "Cash Sales"
+msgstr "Ventas al Contado"
+
+msgid "System vs Manual"
+msgstr "Agenda vs Farmagic"
+
+msgid "Card Sales"
+msgstr "Ventas con Tarjeta"
+
+msgid "Credit Sales"
+msgstr "Ventas a Crédito"
+
+msgid "Total Difference"
+msgstr "Diferencia Total"
+
+msgid "(System - Manual)"
+msgstr "(Agenda - Farmagic)"
+
 msgid "System:"
 msgstr "Agenda:"
 
@@ -392,14 +427,14 @@ msgstr "Farmagic:"
 msgid "Diff:"
 msgstr "Dif:"
 
-msgid "Click to view sessions detail"
-msgstr "Clic para ver detalle de sesiones"
-
-msgid "View sessions for"
-msgstr "Ver sesiones para"
-
 msgid "No businesses found"
 msgstr "No se encontraron negocios."
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Loading..."
+msgstr "Cargando..."
 
 msgid "Difference Colors:"
 msgstr "Colores de Diferencia:"
@@ -434,11 +469,14 @@ msgstr "Margen Bruto"
 msgid "Margin %"
 msgstr "% de Margen"
 
-msgid "Cost Percent of Sales"
-msgstr "Costo sobre Ventas"
+msgid "Cost %% of Sales"
+msgstr "Costo %% sobre Ventas"
 
 msgid "Totals"
 msgstr "Totales"
+
+msgid "Cost Percent of Sales"
+msgstr "Costo sobre Ventas"
 
 msgid "Margin Tips:"
 msgstr "Consejos de Margen:"
@@ -454,14 +492,29 @@ msgstr "Gestión de Usuarios - CashPilot"
 msgid "User Management"
 msgstr "Gestión de Usuarios"
 
+#, fuzzy
+msgid "Manage access, roles, and business assignments"
+msgstr "Gestionar ubicaciones de negocios y asignaciones"
+
 msgid "Create User"
 msgstr "Crear Usuario"
+
+msgid "User Directory"
+msgstr ""
+
+msgid "Search, inspect, and act on user accounts"
+msgstr ""
+
+#, fuzzy
+msgid "Search users"
+msgstr "Buscar negocios"
 
 msgid "Search by name or email..."
 msgstr "Cambiar por nombre o email..."
 
-msgid "Username"
-msgstr "Nombre de usuario"
+#, fuzzy
+msgid "User"
+msgstr "Usuarios"
 
 msgid "Role"
 msgstr "Rol"
@@ -514,6 +567,10 @@ msgstr "Restablecer contraseña"
 msgid "Resetting password for"
 msgstr "Restableciendo contraseña para"
 
+#, fuzzy
+msgid "Enter password..."
+msgstr "Ingrese contraseña personalizada..."
+
 msgid "Password Reset Successful"
 msgstr "Restablecimiento de contraseña exitoso"
 
@@ -537,6 +594,9 @@ msgstr "Seleccionar un Negocio"
 
 msgid "None"
 msgstr "Ninguno"
+
+msgid "of"
+msgstr "de"
 
 msgid "selected"
 msgstr "seleccionado"
@@ -607,6 +667,12 @@ msgstr "Error al crear usuario"
 msgid "Please fill all required fields"
 msgstr "Por favor complete todos los campos requeridos"
 
+msgid "Please enter a password or choose to generate one"
+msgstr ""
+
+msgid "Error"
+msgstr "Error"
+
 msgid "(You)"
 msgstr "(Vos)"
 
@@ -616,29 +682,43 @@ msgstr "ADMINISTRADOR"
 msgid "CASHIER"
 msgstr "CAJERO"
 
+#, fuzzy
+msgid "Remove"
+msgstr "Revisar"
+
+msgid "more"
+msgstr ""
+
+msgid "Session"
+msgstr "Sesión"
+
+msgid "Unknown"
+msgstr "Desconocido"
+
+#, fuzzy
+msgid "No notes available for this date."
+msgstr "No se encontraron sesiones para esta fecha"
+
 msgid "Session #"
 msgstr "Sesión #"
 
 msgid "Time"
 msgstr "Hora"
 
-msgid "Cash"
-msgstr "Efectivo"
+msgid "Envelope"
+msgstr "Sobre"
 
-msgid "Card"
-msgstr "Tarjetas"
+msgid "Transfer"
+msgstr "Transferencia"
 
-msgid "Credit"
-msgstr "Crédito"
+msgid "Expenses"
+msgstr "Gastos"
 
 msgid "Total"
 msgstr "Total"
 
 msgid "View details for session"
 msgstr "Ver detalles de la sesión"
-
-msgid "Unknown"
-msgstr "Desconocido"
 
 msgid "Flagged"
 msgstr "Marcado"
@@ -708,6 +788,9 @@ msgstr "Dirección"
 
 msgid "Optional: for reference only"
 msgstr "Opcional: solo para referencia"
+
+msgid "Cashiers"
+msgstr "Cajeros"
 
 msgid "Add cashier names after creation"
 msgstr "Añada nombres de cajeros después de la creación"
@@ -794,9 +877,6 @@ msgstr "Sin entradas de gastos todavía"
 
 msgid "Toggle expenses section"
 msgstr "Alternar sección de gastos"
-
-msgid "Expenses"
-msgstr "Gastos"
 
 msgid "Click here to add your first expense"
 msgstr "Hacé clic acá para agregar tu primer gasto"
@@ -906,14 +986,8 @@ msgstr "Caja"
 msgid "Cards"
 msgstr "Tarjetas"
 
-msgid "Transfer"
-msgstr "Transferencia"
-
 msgid "View session"
 msgstr "Ver Caja"
-
-msgid "Envelope"
-msgstr "Sobre"
 
 msgid "Restore this deleted session?"
 msgstr "¿Restaurar esta sesión eliminada?"
@@ -948,20 +1022,11 @@ msgstr "No se puede modificar la sesión después de 32 horas"
 msgid "Only admins and session creator can delete"
 msgstr "Solo administradores y el creador de la sesión pueden eliminar"
 
-msgid "Session"
-msgstr "Sesión"
-
 msgid "Restore"
 msgstr "Restaurar"
 
-msgid "Close"
-msgstr "Cerrar"
-
 msgid "Showing"
 msgstr "Mostrando"
-
-msgid "of"
-msgstr "de"
 
 msgid "First page"
 msgstr "Primera página"
@@ -1144,29 +1209,14 @@ msgstr "Mejor Rendimiento"
 msgid "Lower Volume"
 msgstr "Menor volumen"
 
-msgid "Loading..."
-msgstr "Cargando..."
-
 msgid "Most Improved"
 msgstr "Mayor crecimiento"
 
-msgid "Needs Care"
-msgstr "Necesita cariño"
+msgid "Gross Margin %"
+msgstr "% de Margen Bruto"
 
 msgid "Ranking based on total sales for the current period."
 msgstr "Ranking basado en ventas totales del período actual."
-
-msgid "Lower share of total"
-msgstr "Participación menor del total"
-
-msgid "Gross margin = sales − cost of goods."
-msgstr "Margen bruto = ventas − costo de mercaderías."
-
-msgid "Cost of Goods"
-msgstr "Costo de Mercaderías"
-
-msgid "Gross Margin %"
-msgstr "% de Margen Bruto"
 
 msgid "Revenue Breakdown by Business"
 msgstr "Desglose de Ingresos por Negocio"
@@ -1174,14 +1224,56 @@ msgstr "Desglose de Ingresos por Negocio"
 msgid "Business Contribution to Total"
 msgstr "Contribución al Total por Negocio"
 
+msgid "Margin vs Cost (Current Period)"
+msgstr "Margen vs Costo (Período Actual)"
+
+msgid "Change vs Previous Period"
+msgstr "Variación vs Período Anterior"
+
+msgid "Sales Δ"
+msgstr "Ventas Δ"
+
+msgid "Cost Δ"
+msgstr "Costo Δ"
+
+msgid "Margin Δ"
+msgstr "Margen Δ"
+
 msgid "By Business"
 msgstr "Por Negocio"
 
-msgid "TOTAL"
-msgstr "TOTAL"
+msgid "Gross margin = sales − cost of goods."
+msgstr "Margen bruto = ventas − costo de mercaderías."
+
+msgid "Average Gross Margin %"
+msgstr "Margen Bruto % Promedio"
+
+msgid "Tickets (Top / Lowest)"
+msgstr "Tickets (Mayor / Menor)"
+
+msgid "Margin Range"
+msgstr "Rango de Margen"
+
+msgid "Top"
+msgstr "Mayor"
+
+msgid "Lowest"
+msgstr "Menor"
+
+msgid "businesses"
+msgstr "negocios"
 
 msgid "Rank"
 msgstr "Ranking"
+
+msgid "Tickets"
+msgstr "Tickets"
+
+msgid "Cost of Goods"
+msgstr "Costo de Mercaderías"
+
+msgid "TOTAL"
+msgstr "TOTAL"
 
 msgid "Toggle more details for"
 msgstr "Más Detalles"
@@ -1231,14 +1323,20 @@ msgstr "Caída Pronunciada"
 msgid "of total"
 msgstr "del total"
 
+msgid "Lower share of total"
+msgstr "Participación menor del total"
+
 msgid "No comparison data"
 msgstr "Sin datos de comparación"
 
-msgid "All businesses stable"
-msgstr "Todos los negocios estables"
-
 msgid "Bank Transfer"
 msgstr "Transferencia Bancaria"
+
+msgid "Cost (Gs)"
+msgstr "Costo (Gs)"
+
+msgid "Margin (Gs)"
+msgstr "Margen (Gs)"
 
 msgid ""
 "Daily reconciliation view with sales by payment method and discrepancy "
@@ -1264,9 +1362,6 @@ msgstr "Mostrar hace 30 días"
 
 msgid "Loading report data..."
 msgstr "Cargando..."
-
-msgid "Error"
-msgstr "Error"
 
 msgid "Dismiss"
 msgstr "Ignorar"
@@ -1625,9 +1720,6 @@ msgstr "Domingo"
 msgid "Please select a month"
 msgstr "Por favor seleccioná un mes"
 
-msgid "Tickets"
-msgstr "Tickets"
-
 msgid "Only"
 msgstr "Solo"
 
@@ -1671,20 +1763,84 @@ msgstr "Sem. del Mes"
 msgid "Monthly Total"
 msgstr "Total Mensual"
 
+msgid "Weekly Report"
+msgstr "Reporte semanal"
+
+msgid "Date range"
+msgstr "Rango de fechas"
+
+msgid "Generated at"
+msgstr "Generado el"
+
+msgid "Highest Revenue Day"
+msgstr "Día de Mayor Ingreso"
+
+msgid "Lowest Revenue Day"
+msgstr "Día de Menor Ingreso"
+
+msgid "Week Total"
+msgstr "Total de la Semana"
+
+msgid "Total sales this week"
+msgstr "Ventas totales de esta semana"
+
+msgid "Week Cost"
+msgstr "Costo semanal"
+
+msgid "Week Margin"
+msgstr "Margen semanal"
+
+msgid "Day-by-Day Comparison"
+msgstr "Comparación Día a Día"
+
+msgid "Selected Week Details"
+msgstr "Detalles de la Semana Seleccionada"
+
+msgid "Day"
+msgstr "Día"
+
+msgid "WoW Growth"
+msgstr "% de Crec."
+
+msgid "Last Week"
+msgstr "Semana Pasada"
+
+msgid "This Week"
+msgstr "Esta Semana"
+
+msgid "Mon"
+msgstr "Lun"
+
+msgid "Tue"
+msgstr "Mar"
+
+msgid "Wed"
+msgstr "Mié"
+
+msgid "Thu"
+msgstr "Jue"
+
+msgid "Fri"
+msgstr "Vie"
+
+msgid "Sat"
+msgstr "Sáb"
+
+msgid "Sun"
+msgstr "Dom"
+
+#, fuzzy
+msgid "Export PDF"
+msgstr "Exportar"
+
 msgid "View Monthly"
 msgstr "Ver mensual"
 
 msgid "Show current week"
 msgstr "Mostrar semana actual"
 
-msgid "This Week"
-msgstr "Esta Semana"
-
 msgid "Show last week"
 msgstr "Mostrar semana pasada"
-
-msgid "Last Week"
-msgstr "Semana Pasada"
 
 msgid "Show 2 weeks ago"
 msgstr "Mostrar hace 2 semanas"
@@ -1708,59 +1864,8 @@ msgstr ""
 "Gráficos de líneas: ingresos vs margen cuando hay costos. Gráfico de "
 "barras: tendencia de 5 semanas de ingresos/margen."
 
-msgid "Highest Revenue Day"
-msgstr "Día de Mayor Ingreso"
-
-msgid "Lowest Revenue Day"
-msgstr "Día de Menor Ingreso"
-
-msgid "Week Total"
-msgstr "Total de la Semana"
-
-msgid "Total sales this week"
-msgstr "Ventas totales de esta semana"
-
-msgid "Week Cost"
-msgstr "Costo semanal"
-
-msgid "Week Margin"
-msgstr "Margen semanal"
-
-msgid "Day-by-Day Comparison"
-msgstr "Comparación Día a Día"
-
 msgid "5-Week Trend"
 msgstr "Tendencia de 5 Semanas"
-
-msgid "Selected Week Details"
-msgstr "Detalles de la Semana Seleccionada"
-
-msgid "Day"
-msgstr "Día"
-
-msgid "WoW Growth"
-msgstr "% de Crec."
-
-msgid "Mon"
-msgstr "Lun"
-
-msgid "Tue"
-msgstr "Mar"
-
-msgid "Wed"
-msgstr "Mié"
-
-msgid "Thu"
-msgstr "Jue"
-
-msgid "Fri"
-msgstr "Vie"
-
-msgid "Sat"
-msgstr "Sáb"
-
-msgid "Sun"
-msgstr "Dom"
 
 msgid "Week of"
 msgstr "Semana del"
@@ -1779,6 +1884,12 @@ msgstr "Sem"
 
 msgid "Now"
 msgstr "Ahora"
+
+msgid "Generating PDF..."
+msgstr ""
+
+msgid "Could not generate PDF. Try again."
+msgstr ""
 
 msgid "Close Cash Session"
 msgstr "Cerrar caja"
@@ -1833,9 +1944,6 @@ msgstr "p.ej., nro 20452"
 
 msgid "Optional: POS ticket number"
 msgstr "Opcional: número de ticket POS"
-
-msgid "Notes"
-msgstr "Notas"
 
 msgid "Any discrepancies or notes..."
 msgstr "Cualquier discrepancia o notas..."
@@ -2117,21 +2225,6 @@ msgstr "Gastos del negocio durante el turno"
 msgid "Credit & Debit Cards"
 msgstr "Tarjeta de Crédito y Débito"
 
-msgid "CASH SALES & BANK TRANSFER"
-msgstr "VENTAS EFECTIVO & TRANSFERENCIAS"
-
-msgid "Initial"
-msgstr "Inicial"
-
-msgid "Cash only"
-msgstr "Solo efectivo"
-
-msgid "Credit & Debit"
-msgstr "Crédito y Débito"
-
-msgid "All sales"
-msgstr "Todas las ventas"
-
 msgid "Customer Credit Activity"
 msgstr "Actividad de Crédito"
 
@@ -2262,15 +2355,6 @@ msgstr "¿Remover marca de esta sesión?"
 
 msgid "Clear"
 msgstr "Limpiar"
-
-msgid "Weekly Report"
-msgstr "Reporte semanal"
-
-msgid "Date range"
-msgstr "Rango de fechas"
-
-msgid "Generated at"
-msgstr "Generado el"
 
 #~ msgid "Received"
 #~ msgstr "Recibido"
@@ -2490,3 +2574,42 @@ msgstr "Generado el"
 
 #~ msgid "Weekly Total"
 #~ msgstr "Total Semanal"
+
+#~ msgid "Username"
+#~ msgstr "Nombre de usuario"
+
+#~ msgid "Operational Status"
+#~ msgstr "Estado operativo"
+
+#~ msgid "Solid operation"
+#~ msgstr "Operación sólida"
+
+#~ msgid "Stable operation"
+#~ msgstr "Operación estable"
+
+#~ msgid "Review needed"
+#~ msgstr "Revisión necesaria"
+
+#~ msgid "Urgent intervention"
+#~ msgstr "Intervención urgente"
+
+#~ msgid "Coverage ratio"
+#~ msgstr "Ratio de cobertura"
+
+#~ msgid "All businesses stable"
+#~ msgstr "Todos los negocios estables"
+
+#~ msgid "CASH SALES & BANK TRANSFER"
+#~ msgstr "VENTAS EFECTIVO & TRANSFERENCIAS"
+
+#~ msgid "Initial"
+#~ msgstr "Inicial"
+
+#~ msgid "Cash only"
+#~ msgstr "Solo efectivo"
+
+#~ msgid "Credit & Debit"
+#~ msgstr "Crédito y Débito"
+
+#~ msgid "All sales"
+#~ msgstr "Todas las ventas"
