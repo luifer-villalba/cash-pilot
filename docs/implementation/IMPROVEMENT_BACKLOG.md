@@ -101,6 +101,20 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 
 ---
 
+## 🟠 EPIC 5 — API Robustness & Error Handling (MEDIUM)
+
+**Risk:** Unhandled input can cause 500s and noisy error reporting
+
+### CP-ROBUST-01 — Guard UUID parsing across API routes
+
+* **Severity:** Medium
+* **Problem:** Invalid UUIDs can raise uncaught errors and return 500s
+* **Evidence:** Multiple API routes with direct UUID parsing
+* **Acceptance impact:** Reliability / error hygiene
+* **Status:** Completed (2026-01-29)
+
+---
+
 ## 🟠 EPIC 4 — Data Model Alignment (DECISION REQUIRED)
 
 **Risk:** Auditability and reporting correctness degradation

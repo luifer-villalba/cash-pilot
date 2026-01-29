@@ -418,10 +418,15 @@ async def login_page(request: Request):
 
 async def get_session_or_redirect(session_id: str, db: AsyncSession):
     """Fetch session or return None (caller handles redirect)."""
+    try:
+        session_uuid = UUID(session_id)
+    except (ValueError, TypeError):
+        return None
+
     stmt = (
         select(CashSession)
         .options(joinedload(CashSession.business))
-        .where(CashSession.id == UUID(session_id))
+        .where(CashSession.id == session_uuid)
     )
     result = await db.execute(stmt)
     return result.scalar_one_or_none()

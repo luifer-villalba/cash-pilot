@@ -107,10 +107,13 @@ async def edit_business_form(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
+    try:
+        business_uuid = UUID(business_id)
+    except (ValueError, TypeError):
+        return RedirectResponse(url="/businesses", status_code=302)
+
     stmt = (
-        select(Business)
-        .options(selectinload(Business.users))
-        .where(Business.id == UUID(business_id))
+        select(Business).options(selectinload(Business.users)).where(Business.id == business_uuid)
     )
     result = await db.execute(stmt)
     business = result.scalar_one_or_none()
@@ -142,7 +145,12 @@ async def update_business_put(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle business update via form. Admin only."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
+    try:
+        business_uuid = UUID(business_id)
+    except (ValueError, TypeError):
+        return RedirectResponse(url="/businesses", status_code=302)
+
+    stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business = result.scalar_one_or_none()
 
