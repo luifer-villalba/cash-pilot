@@ -17,6 +17,13 @@ from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions-audit"])
 
 
+def _parse_session_uuid(session_id: str) -> UUID:
+    try:
+        return UUID(session_id)
+    except ValueError:
+        raise NotFoundError("CashSession", session_id) from None
+
+
 @router.post("/{session_id}/flag", response_model=CashSessionRead)
 async def flag_session(
     session_id: str,
@@ -26,7 +33,8 @@ async def flag_session(
     db: AsyncSession = Depends(get_db),
 ):
     """Toggle session flag status with reason."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    session_uuid = _parse_session_uuid(session_id)
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
 
@@ -89,8 +97,10 @@ async def get_session_audit_logs(
     db: AsyncSession = Depends(get_db),
 ):
     """Get audit log history for a cash session."""
+    session_uuid = _parse_session_uuid(session_id)
+
     # Verify session exists
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
 
@@ -100,7 +110,7 @@ async def get_session_audit_logs(
     # Get audit logs for this session
     audit_stmt = (
         select(CashSessionAuditLog)
-        .where(CashSessionAuditLog.session_id == UUID(session_id))
+        .where(CashSessionAuditLog.session_id == session_uuid)
         .order_by(CashSessionAuditLog.changed_at.desc())
         .offset(skip)
         .limit(limit)

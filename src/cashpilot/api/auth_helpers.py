@@ -45,7 +45,12 @@ async def require_view_session(
     Admins can view any session (including deleted).
     Cashiers can view their own sessions (but not deleted ones).
     """
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    try:
+        session_uuid = UUID(session_id)
+    except ValueError:
+        raise NotFoundError("CashSession", session_id) from None
+
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
 
@@ -82,7 +87,12 @@ async def require_own_session(
     db: AsyncSession = Depends(get_db),
 ) -> CashSession:
     """Check if user owns the session OR is admin. Cashiers have 32-hour EDIT window."""
-    stmt = select(CashSession).where(CashSession.id == UUID(session_id))
+    try:
+        session_uuid = UUID(session_id)
+    except ValueError:
+        raise NotFoundError("CashSession", session_id) from None
+
+    stmt = select(CashSession).where(CashSession.id == session_uuid)
     result = await db.execute(stmt)
     session = result.scalar_one_or_none()
 

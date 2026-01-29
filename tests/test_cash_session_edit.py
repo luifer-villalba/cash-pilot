@@ -1,9 +1,8 @@
 # File: tests/test_cash_session_edit.py
 """Tests for CashSession edit endpoints."""
 
-from datetime import date, time
+from datetime import timedelta
 from decimal import Decimal
-from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
@@ -11,7 +10,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models import CashSessionAuditLog
-from .factories import BusinessFactory, CashSessionFactory
+from cashpilot.utils.datetime import now_utc, utc_to_business
+from .factories import BusinessFactory, CashSessionFactory, UserFactory
 
 
 @pytest.mark.asyncio
@@ -21,7 +21,10 @@ async def test_edit_open_session_cannot_edit_closed(
     """Test that edit-open endpoint rejects closed sessions."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
-        db_session, business_id=business.id, status="CLOSED"
+        db_session,
+        business_id=business.id,
+        cashier_id=client.test_user.id,
+        status="CLOSED",
     )
 
     response = await client.patch(
@@ -36,12 +39,33 @@ async def test_edit_open_session_cannot_edit_closed(
 
 
 @pytest.mark.asyncio
+async def test_edit_open_requires_auth(
+    unauthenticated_client: AsyncClient, db_session: AsyncSession
+):
+    """Test unauthenticated requests are rejected."""
+    business = await BusinessFactory.create(db_session)
+    session = await CashSessionFactory.create(
+        db_session,
+        business_id=business.id,
+        status="OPEN",
+    )
+
+    response = await unauthenticated_client.patch(
+        f"/cash-sessions/{session.id}/edit-open",
+        json={"initial_cash": "1500.00"},
+    )
+
+    assert response.status_code in {401, 403, 303}
+
+
+@pytest.mark.asyncio
 async def test_edit_closed_session_final_cash(client: AsyncClient, db_session: AsyncSession):
     """Test editing final_cash on a closed session."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
         db_session,
         business_id=business.id,
+        cashier_id=client.test_user.id,
         status="CLOSED",
         final_cash=Decimal("5000.00"),
     )
@@ -73,6 +97,7 @@ async def test_edit_closed_session_payment_totals(
     session = await CashSessionFactory.create(
         db_session,
         business_id=business.id,
+        cashier_id=client.test_user.id,
         status="CLOSED",
         card_total=Decimal("1500.00"),
     )
@@ -97,7 +122,10 @@ async def test_edit_closed_session_cannot_edit_open(
     """Test that edit-closed endpoint rejects open sessions."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
-        db_session, business_id=business.id, status="OPEN"
+        db_session,
+        business_id=business.id,
+        cashier_id=client.test_user.id,
+        status="OPEN",
     )
 
     response = await client.patch(
@@ -118,6 +146,7 @@ async def test_audit_log_serializes_decimals(client: AsyncClient, db_session: As
     session = await CashSessionFactory.create(
         db_session,
         business_id=business.id,
+        cashier_id=client.test_user.id,
         status="CLOSED",
         final_cash=Decimal("1234.56"),
     )
@@ -138,3 +167,98 @@ async def test_audit_log_serializes_decimals(client: AsyncClient, db_session: As
     assert audit_log.old_values["final_cash"] == "1234.56"
     assert audit_log.new_values["final_cash"] == "1999.99"
     assert isinstance(audit_log.old_values["final_cash"], str)
+
+
+@pytest.mark.asyncio
+async def test_cashier_can_edit_own_session(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """AC-02/AC-05: Cashier can edit their own session."""
+    business = await BusinessFactory.create(db_session)
+    session = await CashSessionFactory.create(
+        db_session,
+        business_id=business.id,
+        cashier_id=client.test_user.id,
+        status="OPEN",
+    )
+
+    response = await client.patch(
+        f"/cash-sessions/{session.id}/edit-open",
+        json={"initial_cash": "1500.00"},
+    )
+
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_cashier_cannot_edit_other_cashier_session(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """AC-02/AC-05: Cashier cannot edit another cashier's session."""
+    business = await BusinessFactory.create(db_session)
+    other_cashier = await UserFactory.create(
+        db_session,
+        email="other_cashier_edit@test.com",
+    )
+    session = await CashSessionFactory.create(
+        db_session,
+        business_id=business.id,
+        cashier_id=other_cashier.id,
+        status="OPEN",
+    )
+
+    response = await client.patch(
+        f"/cash-sessions/{session.id}/edit-open",
+        json={"initial_cash": "1500.00"},
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_cashier_cannot_edit_closed_session_after_32h(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """AC-02/AC-05: Cashier cannot edit CLOSED session after 32 hours."""
+    business = await BusinessFactory.create(db_session)
+    closed_dt = utc_to_business(now_utc() - timedelta(hours=33))
+    session = await CashSessionFactory.create(
+        db_session,
+        business_id=business.id,
+        cashier_id=client.test_user.id,
+        status="CLOSED",
+        session_date=closed_dt.date(),
+        closed_time=closed_dt.time(),
+    )
+
+    response = await client.patch(
+        f"/cash-sessions/{session.id}/edit-closed",
+        json={"final_cash": "5500.00", "reason": "Late correction"},
+    )
+
+    assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_admin_can_edit_any_session(
+    admin_client: AsyncClient, db_session: AsyncSession
+):
+    """AC-02/AC-05: Admin can edit any session."""
+    business = await BusinessFactory.create(db_session)
+    other_cashier = await UserFactory.create(
+        db_session,
+        email="admin_any_session@test.com",
+    )
+    session = await CashSessionFactory.create(
+        db_session,
+        business_id=business.id,
+        cashier_id=other_cashier.id,
+        status="OPEN",
+    )
+
+    response = await admin_client.patch(
+        f"/cash-sessions/{session.id}/edit-open",
+        json={"initial_cash": "1500.00"},
+    )
+
+    assert response.status_code == 200

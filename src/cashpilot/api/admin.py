@@ -267,7 +267,12 @@ async def reset_user_password(
     admin_user: User = Depends(require_admin),
 ):
     """Reset a user's password (admin-only). Returns generated password if requested."""
-    result = await db.execute(select(User).where(User.id == UUID(user_id)))
+    try:
+        user_uuid = UUID(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid user_id format")
+
+    result = await db.execute(select(User).where(User.id == user_uuid))
     user = result.scalar_one_or_none()
 
     if not user:
@@ -312,7 +317,12 @@ async def toggle_user_active(
     admin_user: User = Depends(require_admin),
 ):
     """Toggle user active status (admin-only)."""
-    result = await db.execute(select(User).where(User.id == UUID(user_id)))
+    try:
+        user_uuid = UUID(user_id)
+    except (ValueError, TypeError):
+        raise HTTPException(status_code=400, detail="Invalid user_id format")
+
+    result = await db.execute(select(User).where(User.id == user_uuid))
     user = result.scalar_one_or_none()
 
     if not user:

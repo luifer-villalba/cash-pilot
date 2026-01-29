@@ -128,7 +128,15 @@ async def delete_business(
     db: AsyncSession = Depends(get_db),
 ):
     """Soft-delete business (sets is_active=False). Admin only."""
-    stmt = select(Business).where(Business.id == UUID(business_id))
+    try:
+        business_uuid = UUID(business_id)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid business_id format",
+        )
+
+    stmt = select(Business).where(Business.id == business_uuid)
     result = await db.execute(stmt)
     business_obj = result.scalar_one_or_none()
 

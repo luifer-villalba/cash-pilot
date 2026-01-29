@@ -118,9 +118,14 @@ async def delete_transfer_item(
     db: AsyncSession = Depends(get_db),
 ):
     """Soft delete a transfer item."""
-    item = await db.get(TransferItem, UUID(item_id))
+    try:
+        item_uuid = UUID(item_id)
+    except (ValueError, TypeError):
+        raise NotFoundError("TransferItem", item_id) from None
 
-    if not item or item.session_id != UUID(session_id):
+    item = await db.get(TransferItem, item_uuid)
+
+    if not item or item.session_id != session.id:
         raise NotFoundError("TransferItem", item_id)
 
     # Soft delete
@@ -254,9 +259,14 @@ async def delete_expense_item(
     db: AsyncSession = Depends(get_db),
 ):
     """Soft delete an expense item."""
-    item = await db.get(ExpenseItem, UUID(item_id))
+    try:
+        item_uuid = UUID(item_id)
+    except (ValueError, TypeError):
+        raise NotFoundError("ExpenseItem", item_id) from None
 
-    if not item or item.session_id != UUID(session_id):
+    item = await db.get(ExpenseItem, item_uuid)
+
+    if not item or item.session_id != session.id:
         raise NotFoundError("ExpenseItem", item_id)
 
     # Soft delete

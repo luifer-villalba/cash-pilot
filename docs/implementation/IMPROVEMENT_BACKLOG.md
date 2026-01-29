@@ -30,7 +30,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Any authenticated user can edit any session
 * **Evidence:** `src/cashpilot/api/cash_session_edit.py`
 * **Acceptance impact:** AC-02, AC-05
-* **Status:** Not started
+* **Status:** Completed (2026-01-29)
 
 ### CP-RBAC-02 — Restrict audit / flag endpoints to Admin
 
@@ -97,6 +97,34 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** `classList.toggle(force)` unsupported
 * **Evidence:** `static/js/dashboard.js`
 * **Acceptance impact:** AC-08
+* **Status:** Not started
+
+---
+
+## 🟠 EPIC 5 — API Robustness & Error Handling (MEDIUM)
+
+**Risk:** Unhandled input can cause 500s and noisy error reporting
+
+### CP-ROBUST-01 — Guard UUID parsing across API routes
+
+* **Severity:** Medium
+* **Problem:** Invalid UUIDs can raise uncaught errors and return 500s
+* **Evidence:** Multiple API routes with direct UUID parsing
+* **Acceptance impact:** Reliability / error hygiene
+* **Status:** Completed (2026-01-29)
+
+---
+
+## 🟠 EPIC 6 — Reporting UX & Comparisons (MEDIUM)
+
+**Risk:** Misleading comparisons reduce trust in reporting insights
+
+### CP-REPORTS-01 — Business stats filter ordering + week-over-week comparisons
+
+* **Severity:** Medium
+* **Problem:** Filter order and comparison logic do not match expected business workflow
+* **Evidence:** `templates/reports/business-stats.html`, `src/cashpilot/api/routes/business_stats.py`
+* **Acceptance impact:** AC-06, AC-04
 * **Status:** Not started
 
 ---

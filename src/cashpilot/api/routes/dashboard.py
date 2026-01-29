@@ -137,9 +137,15 @@ async def dashboard(
 
     current_user = None
     if user_id:
-        stmt_user = select(User).where(User.id == UUID(user_id))
-        result_user = await db.execute(stmt_user)
-        current_user = result_user.scalar_one_or_none()
+        try:
+            user_uuid = UUID(user_id)
+        except (ValueError, TypeError):
+            user_uuid = None
+
+        if user_uuid:
+            stmt_user = select(User).where(User.id == user_uuid)
+            result_user = await db.execute(stmt_user)
+            current_user = result_user.scalar_one_or_none()
 
     # ✅ Add can_edit_closed for each session
     for session in sessions:
