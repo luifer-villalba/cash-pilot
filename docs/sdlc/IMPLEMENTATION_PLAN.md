@@ -155,3 +155,10 @@ Any deviation from this plan must:
 
 * Be documented
 * Be explicitly approved
+
+---
+
+## Ticket Status Updates
+
+When work is completed, update the corresponding backlog item status
+in `docs/implementation/IMPROVEMENT_BACKLOG.md` with the completion date.

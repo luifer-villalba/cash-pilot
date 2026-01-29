@@ -30,7 +30,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Any authenticated user can edit any session
 * **Evidence:** `src/cashpilot/api/cash_session_edit.py`
 * **Acceptance impact:** AC-02, AC-05
-* **Status:** Not started
+* **Status:** Completed (2026-01-29)
 
 ### CP-RBAC-02 — Restrict audit / flag endpoints to Admin
 
