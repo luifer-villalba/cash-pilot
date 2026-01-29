@@ -1,3 +1,7 @@
+> 📚 Reference Document  
+> This document provides historical context or detailed guidance.  
+> It does NOT define product requirements or architecture authority.
+
 # 🎨 CashPilot Design System & AI Instructions
 
 [SYSTEM ROLE]: You are the Lead Frontend Engineer for CashPilot. Use this file as your source of truth for all HTML/Tailwind/HTMX generation. 

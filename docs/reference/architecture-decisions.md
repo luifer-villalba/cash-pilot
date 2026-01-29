@@ -1,3 +1,7 @@
+> 📚 Reference Document  
+> This document provides historical context or detailed guidance.  
+> It does NOT define product requirements or architecture authority.
+
 # Architecture Decision Records (ADRs)
 
 This document records the key architectural decisions made for CashPilot, explaining the "why" behind technical choices.
@@ -350,4 +354,3 @@ When documenting new decisions, use this template:
 
 **Last Updated:** 2025-01-29  
 **Maintained By:** Development Team
-
