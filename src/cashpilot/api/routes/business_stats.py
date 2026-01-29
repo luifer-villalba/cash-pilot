@@ -2,6 +2,7 @@
 """Business statistics report route."""
 
 import asyncio
+from calendar import monthrange
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -31,6 +32,38 @@ NEUTRAL_DELTA_THRESHOLD_PERCENT = 3
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
+def start_of_week(day: date, week_start: int = 0) -> date:
+    """Get week start for a date (default Monday=0)."""
+    return day - timedelta(days=(day.weekday() - week_start) % 7)
+
+
+def start_of_month(day: date) -> date:
+    """Get first day of month for a date."""
+    return day.replace(day=1)
+
+
+def end_of_month(day: date) -> date:
+    """Get last day of month for a date."""
+    last_day = monthrange(day.year, day.month)[1]
+    return day.replace(day=last_day)
+
+
+def previous_month_anchor(day: date) -> tuple[int, int]:
+    """Return (year, month) for the month prior to the given date."""
+    if day.month == 1:
+        return day.year - 1, 12
+    return day.year, day.month - 1
+
+
+def mtd_previous_month_range(today: date) -> tuple[date, date]:
+    """Get previous month MTD range aligned to today's day-of-month."""
+    prev_year, prev_month = previous_month_anchor(today)
+    last_day_prev = monthrange(prev_year, prev_month)[1]
+    prev_to = date(prev_year, prev_month, min(today.day, last_day_prev))
+    prev_from = date(prev_year, prev_month, 1)
+    return prev_from, prev_to
+
+
 def calculate_date_range(
     view: str, from_date: str | None = None, to_date: str | None = None
 ) -> tuple[date, date]:
@@ -39,18 +72,22 @@ def calculate_date_range(
 
     if view == "today":
         return today, today
-    elif view == "yesterday":
+    if view == "yesterday":
         yesterday = today - timedelta(days=1)
         return yesterday, yesterday
-    elif view == "week":
-        # Last 7 days: today - 6 days to today (7 days total)
-        week_start = today - timedelta(days=6)
+    if view == "this_week":
+        week_start = start_of_week(today)
         return week_start, today
-    elif view == "month":
-        # Last 30 days: today - 29 days to today (30 days total)
-        month_start = today - timedelta(days=29)
-        return month_start, today
-    elif view == "custom" and from_date and to_date:
+    if view == "last_week":
+        week_start = start_of_week(today) - timedelta(days=7)
+        return week_start, week_start + timedelta(days=6)
+    if view == "this_month":
+        return start_of_month(today), today
+    if view == "last_month":
+        prev_year, prev_month = previous_month_anchor(today)
+        month_start = date(prev_year, prev_month, 1)
+        return month_start, end_of_month(month_start)
+    if view == "custom" and from_date and to_date:
         # Custom range
         try:
             from_dt = date.fromisoformat(from_date)
@@ -73,9 +110,9 @@ def calculate_date_range(
             raise ValueError("Date range cannot exceed 365 days. Please select a smaller range.")
 
         return from_dt, to_dt
-    else:
-        # Default to today
-        return today, today
+
+    # Default to today
+    return today, today
 
 
 def calculate_previous_period(from_date: date, to_date: date) -> tuple[date, date]:
@@ -84,6 +121,27 @@ def calculate_previous_period(from_date: date, to_date: date) -> tuple[date, dat
     prev_to = from_date - timedelta(days=1)
     prev_from = prev_to - timedelta(days=duration)
     return prev_from, prev_to
+
+
+def calculate_comparison_range(
+    view: str, current_from: date, current_to: date
+) -> tuple[date, date]:
+    """Calculate comparison range based on view type."""
+    if view in {"today", "yesterday"}:
+        prev_day = current_from - timedelta(days=7)
+        return prev_day, prev_day
+    if view == "this_week":
+        return current_from - timedelta(days=7), current_to - timedelta(days=7)
+    if view == "last_week":
+        return current_from - timedelta(days=7), current_to - timedelta(days=7)
+    if view == "this_month":
+        return mtd_previous_month_range(current_to)
+    if view == "last_month":
+        prev_year, prev_month = previous_month_anchor(current_from)
+        prev_start = date(prev_year, prev_month, 1)
+        return prev_start, end_of_month(prev_start)
+    # Custom or fallback: previous period same duration
+    return calculate_previous_period(current_from, current_to)
 
 
 async def aggregate_business_metrics(
@@ -371,7 +429,10 @@ def calculate_delta(current: Decimal | int, previous: Decimal | int) -> dict:
 @router.get("/business-stats", response_class=HTMLResponse)
 async def business_stats(
     request: Request,
-    view: str = Query("today", pattern="^(today|yesterday|week|month|custom)$"),
+    view: str = Query(
+        "this_month",
+        pattern="^(today|yesterday|this_week|last_week|this_month|last_month|custom|week|month)$",
+    ),
     from_date: str | None = Query(None),
     to_date: str | None = Query(None),
     current_user: User = Depends(require_admin),
@@ -380,6 +441,12 @@ async def business_stats(
     """Multi-business statistics dashboard. Admin only."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
+
+    # Normalize legacy view names
+    if view == "week":
+        view = "this_week"
+    elif view == "month":
+        view = "this_month"
 
     # Calculate current period date range
     date_error = None
@@ -406,7 +473,7 @@ async def business_stats(
         current_from, current_to = today, today
 
     # Calculate previous period for comparison
-    prev_from, prev_to = calculate_previous_period(current_from, current_to)
+    prev_from, prev_to = calculate_comparison_range(view, current_from, current_to)
 
     # Aggregate metrics for current and previous periods concurrently
     current_metrics, previous_metrics = await asyncio.gather(
@@ -588,6 +655,18 @@ async def business_stats(
     current_period_label = format_date_range(current_from, current_to)
     previous_period_label = format_date_range(prev_from, prev_to)
 
+    comparison_label_map = {
+        "today": _("Compared to the same weekday last week"),
+        "yesterday": _("Compared to the same weekday last week"),
+        "this_week": _("Compared to last week (same weekday range)"),
+        "last_week": _("Compared to the week prior"),
+        "this_month": _("Compared to last month MTD"),
+        "last_month": _("Compared to the month prior"),
+        "custom": _("Compared to the previous period"),
+    }
+
+    comparison_label = comparison_label_map.get(view, _("Compared to the previous period"))
+
     return templates.TemplateResponse(
         "reports/business-stats.html",
         {
@@ -602,6 +681,7 @@ async def business_stats(
             "prev_to": prev_to,
             "current_period_label": current_period_label,
             "previous_period_label": previous_period_label,
+            "comparison_label": comparison_label,
             "businesses": business_stats_list,
             "totals_current": totals_current,
             "totals_previous": totals_previous,

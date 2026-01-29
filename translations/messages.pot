@@ -130,6 +130,9 @@ msgstr ""
 msgid "Last 30 Days"
 msgstr ""
 
+msgid "This Month (MTD)"
+msgstr ""
+
 msgid "Status"
 msgstr ""
 
@@ -1188,10 +1191,43 @@ msgstr ""
 msgid "Most Improved"
 msgstr ""
 
+msgid "Smallest Decline"
+msgstr ""
+
 msgid "Gross Margin %"
 msgstr ""
 
 msgid "Ranking based on total sales for the current period."
+msgstr ""
+
+msgid "Compared to the same weekday last week"
+msgstr ""
+
+msgid "Compared to last week (same weekday range)"
+msgstr ""
+
+msgid "Compared to the week prior"
+msgstr ""
+
+msgid "Compared to last month MTD"
+msgstr ""
+
+msgid "Compared to the month prior"
+msgstr ""
+
+msgid "Compared to the previous period"
+msgstr ""
+
+msgid "There are %(open_count)s open cash sessions. Totals reflect closed sessions only."
+msgstr ""
+
+msgid "There is 1 open cash session. Totals reflect closed sessions only."
+msgstr ""
+
+msgid "Today is still in progress. Totals reflect closed sessions only."
+msgstr ""
+
+msgid "MTD means month-to-date (from the 1st to today)."
 msgstr ""
 
 msgid "Revenue Breakdown by Business"

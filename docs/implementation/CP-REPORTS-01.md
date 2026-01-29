@@ -6,6 +6,12 @@ Improve the business stats report filters so default and quick ranges match expe
 
 ---
 
+## Status
+
+Completed (2026-01-29)
+
+---
+
 ## Acceptance Criteria
 
 - AC-06 Reporting (Admin Only)
