@@ -1,3 +1,7 @@
+> 📚 Reference Document  
+> This document provides historical context or detailed guidance.  
+> It does NOT define product requirements or architecture authority.
+
 # Windows 7 Compatibility Standards
 
 ## Overview
@@ -451,4 +455,3 @@ autoprefixer: {
 **Last Updated:** 2025-01-29  
 **Maintained By:** Development Team  
 **Review Frequency:** Quarterly or when compatibility issues reported
-

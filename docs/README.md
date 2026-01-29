@@ -304,4 +304,3 @@ Welcome to the CashPilot documentation. This index helps you find the right docu
 ---
 
 **Last Index Update:** 2025-01-29
-
