@@ -1,9 +1,7 @@
 # File: tests/test_cash_session_edit.py
 """Tests for CashSession edit endpoints."""
 
-from datetime import date, time
 from decimal import Decimal
-from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
@@ -21,7 +19,9 @@ async def test_edit_open_session_cannot_edit_closed(
     """Test that edit-open endpoint rejects closed sessions."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
-        db_session, business_id=business.id, status="CLOSED"
+        db_session,
+        business_id=business.id,
+        status="CLOSED",
     )
 
     response = await client.patch(
@@ -33,6 +33,26 @@ async def test_edit_open_session_cannot_edit_closed(
     data = response.json()
     error_text = data.get("detail") or data.get("message") or str(data)
     assert "OPEN" in error_text
+
+
+@pytest.mark.asyncio
+async def test_edit_open_requires_auth(
+    unauthenticated_client: AsyncClient, db_session: AsyncSession
+):
+    """Test unauthenticated requests are rejected."""
+    business = await BusinessFactory.create(db_session)
+    session = await CashSessionFactory.create(
+        db_session,
+        business_id=business.id,
+        status="OPEN",
+    )
+
+    response = await unauthenticated_client.patch(
+        f"/cash-sessions/{session.id}/edit-open",
+        json={"initial_cash": "1500.00"},
+    )
+
+    assert response.status_code in {401, 403, 303}
 
 
 @pytest.mark.asyncio
@@ -97,7 +117,9 @@ async def test_edit_closed_session_cannot_edit_open(
     """Test that edit-closed endpoint rejects open sessions."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
-        db_session, business_id=business.id, status="OPEN"
+        db_session,
+        business_id=business.id,
+        status="OPEN",
     )
 
     response = await client.patch(
@@ -138,3 +160,4 @@ async def test_audit_log_serializes_decimals(client: AsyncClient, db_session: As
     assert audit_log.old_values["final_cash"] == "1234.56"
     assert audit_log.new_values["final_cash"] == "1999.99"
     assert isinstance(audit_log.old_values["final_cash"], str)
+

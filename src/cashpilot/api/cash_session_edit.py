@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.core.audit import log_session_edit
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import InvalidStateError, NotFoundError
@@ -14,6 +15,7 @@ from cashpilot.models import (
     CashSessionPatchClosed,
     CashSessionPatchOpen,
     CashSessionRead,
+    User,
 )
 from cashpilot.utils.datetime import now_utc
 
@@ -26,7 +28,7 @@ router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions-edit"])
 async def edit_open_session(
     session_id: str,
     patch: CashSessionPatchOpen,
-    changed_by: str = "system",
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Edit an OPEN session (initial_cash, opened_time, expenses, credit fields)."""
@@ -47,6 +49,8 @@ async def edit_open_session(
             f"Session must be OPEN to edit with this endpoint "
             f"(current: {session.status or 'unknown'})"
         )
+
+    changed_by = current_user.email
 
     # Capture old values
     old_values = {
@@ -142,7 +146,7 @@ def _apply_patch_updates(session: CashSession, patch: CashSessionPatchClosed) ->
 async def edit_closed_session(
     session_id: str,
     patch: CashSessionPatchClosed,
-    changed_by: str = "system",
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Edit a CLOSED session (manager/admin only)."""
@@ -163,6 +167,8 @@ async def edit_closed_session(
             f"Session must be CLOSED to edit with this endpoint "
             f"(current: {session.status or 'unknown'})"
         )
+
+    changed_by = current_user.email
 
     # Validate: reason is required when editing closed sessions
     if not patch.reason or not patch.reason.strip():
