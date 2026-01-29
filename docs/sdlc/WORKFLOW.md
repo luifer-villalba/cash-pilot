@@ -6,6 +6,13 @@ Define **how work is done** in CashPilot: branching, commits, PRs, reviews, and 
 
 ---
 
+## UI / Design Constraints
+
+- Server-rendered templates only
+- No client-side state ownership
+- Favor clarity over density
+- Avoid animations or transitions that affect usability
+
 ## Branching Strategy
 
 ### Main Branch
