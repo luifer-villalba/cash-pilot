@@ -125,7 +125,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Filter order and comparison logic do not match expected business workflow
 * **Evidence:** `templates/reports/business-stats.html`, `src/cashpilot/api/routes/business_stats.py`
 * **Acceptance impact:** AC-06, AC-04
-* **Status:** Not started
+* **Status:** Completed (2026-01-29)
 
 ---
 

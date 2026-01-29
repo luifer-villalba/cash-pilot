@@ -140,6 +140,9 @@ msgstr "Últimos 7 días"
 msgid "Last 30 Days"
 msgstr "Últimos 30 días"
 
+msgid "This Month (MTD)"
+msgstr "Este Mes (MTD)"
+
 msgid "Status"
 msgstr "Estado"
 
@@ -1204,7 +1207,7 @@ msgid "Collections"
 msgstr "Cobranzas"
 
 msgid "Best Performer"
-msgstr "Mejor Rendimiento"
+msgstr "Mayor Volumen"
 
 msgid "Lower Volume"
 msgstr "Menor volumen"
@@ -1212,11 +1215,44 @@ msgstr "Menor volumen"
 msgid "Most Improved"
 msgstr "Mayor crecimiento"
 
+msgid "Smallest Decline"
+msgstr "Menor caída"
+
 msgid "Gross Margin %"
-msgstr "% de Margen Bruto"
+msgstr "% de Margen"
 
 msgid "Ranking based on total sales for the current period."
 msgstr "Ranking basado en ventas totales del período actual."
+
+msgid "Compared to the same weekday last week"
+msgstr "Comparado con el mismo día de la semana pasada"
+
+msgid "Compared to last week (same weekday range)"
+msgstr "Comparado con la semana pasada (mismo rango de días)"
+
+msgid "Compared to the week prior"
+msgstr "Comparado con la semana anterior"
+
+msgid "Compared to last month MTD"
+msgstr "Comparado con el MTD del mes pasado"
+
+msgid "Compared to the month prior"
+msgstr "Comparado con el mes anterior"
+
+msgid "Compared to the previous period"
+msgstr "Comparado con el período anterior"
+
+msgid "There are %(open_count)s open cash sessions. Totals reflect closed sessions only."
+msgstr "Hay %(open_count)s sesiones de caja abiertas. Los totales reflejan solo sesiones cerradas."
+
+msgid "There is 1 open cash session. Totals reflect closed sessions only."
+msgstr "Hay 1 sesión de caja abierta. Los totales reflejan solo sesiones cerradas."
+
+msgid "Today is still in progress. Totals reflect closed sessions only."
+msgstr "Hoy todavía está en curso. Los totales reflejan solo sesiones cerradas."
+
+msgid "MTD means month-to-date (from the 1st to today)."
+msgstr "MTD significa mes a la fecha (desde el día 1 hasta hoy)."
 
 msgid "Revenue Breakdown by Business"
 msgstr "Desglose de Ingresos por Negocio"
