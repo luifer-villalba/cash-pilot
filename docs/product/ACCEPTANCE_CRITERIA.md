@@ -30,16 +30,18 @@ Each criterion must be:
 
 ### Admin
 
-* Can access all assigned businesses
+* Can access all businesses
 * Can view reports
 * Can view audit information
 * Can manage users and assignments
+* Can flag cash sessions and remove the flag
 
 ### Cashier
 
 * Can only access assigned businesses
 * Cannot access admin pages or reports
 * Can open and close sessions
+* Can see flags and comments
 
 ---
 

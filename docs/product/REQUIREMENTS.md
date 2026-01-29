@@ -19,6 +19,13 @@ Define **what CashPilot must do** in clear, testable terms. This document is **a
 * Actions are denied by default unless explicitly allowed.
 * UI must hide actions the role cannot perform.
 
+- Admin is a **superadmin**:
+  - Can access all businesses without assignment
+  - Can view/edit sessions across businesses (subject to business rules)
+- Cashier is restricted:
+  - Can only access assigned businesses (UserBusiness membership)
+  - Can only mutate sessions they own (unless explicitly allowed)
+
 ---
 
 ## Functional Requirements
