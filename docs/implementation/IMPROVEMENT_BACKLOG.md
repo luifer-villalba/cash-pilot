@@ -115,6 +115,20 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 
 ---
 
+## 🟠 EPIC 6 — Reporting UX & Comparisons (MEDIUM)
+
+**Risk:** Misleading comparisons reduce trust in reporting insights
+
+### CP-REPORTS-01 — Business stats filter ordering + week-over-week comparisons
+
+* **Severity:** Medium
+* **Problem:** Filter order and comparison logic do not match expected business workflow
+* **Evidence:** `templates/reports/business-stats.html`, `src/cashpilot/api/routes/business_stats.py`
+* **Acceptance impact:** AC-06, AC-04
+* **Status:** Not started
+
+---
+
 ## 🟠 EPIC 4 — Data Model Alignment (DECISION REQUIRED)
 
 **Risk:** Auditability and reporting correctness degradation
