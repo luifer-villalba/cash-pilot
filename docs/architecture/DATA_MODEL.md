@@ -29,6 +29,7 @@ Represents an authenticated person.
 * `password_hash`
 * `is_active`
 * `created_at`, `updated_at`
+* `role` (Admin | Cashier)  ← global role
 
 **Rules**
 
@@ -57,21 +58,19 @@ Represents a business/location.
 ---
 
 ### UserBusiness (Assignment)
-
-Associative entity linking users to businesses with a role.
+Associative entity linking users to businesses (membership / access boundary).
 
 **Key Fields**
-
-* `id`
-* `user_id` → User
-* `business_id` → Business
-* `role` (Admin | Cashier)
-* `created_at`
+- `id`
+- `user_id` → User
+- `business_id` → Business
+- `created_at`
 
 **Rules**
-
-* A user may have different roles across businesses.
-* RBAC enforcement relies on this table.
+- Roles are **global** (stored on `User`).
+- **Admins are superadmins**: they can access all businesses without assignment.
+- **Cashiers require assignment**: UserBusiness defines which businesses a cashier can access.
+- Cashiers must also respect **ownership** for session mutation unless explicitly allowed.
 
 ---
 
