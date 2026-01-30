@@ -13,7 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from cashpilot.api.auth_helpers import require_admin
-from cashpilot.api.utils import get_active_businesses, get_locale, get_translation_function, templates
+from cashpilot.api.utils import (
+    get_active_businesses,
+    get_locale,
+    get_translation_function,
+    templates,
+)
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import Business, CashSession, User
