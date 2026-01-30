@@ -1,0 +1,187 @@
+<!-- File: templates/reports/flagged-sessions.html -->
+{% extends "reports/base.html" %}
+
+{% block report_title %}{{ _('Flagged Cash Sessions') }}{% endblock %}
+
+{% block report_header %}{{ _('Flagged Cash Sessions') }}{% endblock %}
+{% block report_description %}{{ _('Review flagged sessions by business, cashier, and date') }}{% endblock %}
+
+{% block report_content %}
+{% macro delta_badge(delta) %}
+    {% if delta.direction == 'up' %}
+        <span class="text-success text-xs font-medium">↑ +{{ delta.value }}{{ delta.unit }}</span>
+    {% elif delta.direction == 'down' %}
+        <span class="text-error text-xs font-medium">↓ {{ delta.value }}{{ delta.unit }}</span>
+    {% else %}
+        <span class="text-base-content/50 text-xs">± {{ delta.value }}{{ delta.unit }}</span>
+    {% endif %}
+{% endmacro %}
+
+<div class="space-y-4">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-3">
+        {% if date_error %}
+        <div role="alert" class="alert alert-error mb-3 shadow-lg rounded-xl border-none">
+            <svg class="stroke-current shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-medium">{{ date_error }}</span>
+        </div>
+        {% endif %}
+        <div class="flex flex-wrap gap-2 items-center">
+            <a href="/reports/flagged-sessions?range=this_week{{ filter_query }}" 
+               class="btn btn-sm {% if range_key == 'this_week' %}btn-primary{% else %}btn-outline{% endif %}">
+                {{ _('This Week') }}
+            </a>
+            <a href="/reports/flagged-sessions?range=last_week{{ filter_query }}" 
+               class="btn btn-sm {% if range_key == 'last_week' %}btn-primary{% else %}btn-outline{% endif %}">
+                {{ _('Last Week') }}
+            </a>
+            <a href="/reports/flagged-sessions?range=this_month{{ filter_query }}" 
+               class="btn btn-sm {% if range_key == 'this_month' %}btn-primary{% else %}btn-outline{% endif %}">
+                {{ _('This Month') }}
+            </a>
+            <a href="/reports/flagged-sessions?range=last_month{{ filter_query }}" 
+               class="btn btn-sm {% if range_key == 'last_month' %}btn-primary{% else %}btn-outline{% endif %}">
+                {{ _('Last Month') }}
+            </a>
+        </div>
+
+        <form method="GET" action="/reports/flagged-sessions" class="mt-3 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+            <input type="hidden" name="range" value="{{ range_key }}">
+            <label for="business_id" class="sr-only">{{ _('Select Business') }}</label>
+            <select id="business_id" name="business_id" class="select select-sm select-bordered min-w-[220px]">
+                <option value="">{{ _('All Businesses') }}</option>
+                {% for business in businesses %}
+                <option value="{{ business.id|string }}" {% if business_id == business.id|string %}selected{% endif %}>
+                    {{ business.name }}
+                </option>
+                {% endfor %}
+            </select>
+            <label for="cashier_name" class="sr-only">{{ _('Cashier name') }}</label>
+            <input id="cashier_name" name="cashier_name" value="{{ cashier_name or '' }}" placeholder="{{ _('Cashier name') }}"
+                   class="input input-sm input-bordered w-full sm:w-64">
+            <button type="submit" class="btn btn-sm btn-primary">{{ _('Apply') }}</button>
+            {% if business_id or cashier_name %}
+            <a href="/reports/flagged-sessions?range={{ range_key }}" class="btn btn-sm btn-ghost">{{ _('Clear') }}</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="bg-gradient-to-br from-warning/10 via-base-100 to-base-100 border-2 border-warning/30 rounded-xl shadow-lg p-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 bg-warning/20 rounded-md text-warning font-semibold text-xs uppercase tracking-wider">{{ _('Current') }}</span>
+                <span class="text-sm font-bold text-base-content">{{ current_period_label }}</span>
+                <span class="text-base-content/40">vs</span>
+                <span class="px-2.5 py-1 bg-base-200 rounded-md text-base-content/70 font-semibold text-xs uppercase tracking-wider">{{ _('Previous') }}</span>
+                <span class="text-sm font-bold text-base-content/70">{{ previous_period_label }}</span>
+            </div>
+            <div class="text-xs text-base-content/60 uppercase tracking-wider">{{ _('Date Range') }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div class="bg-base-100 border border-warning/30 rounded-lg p-3 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Total Flagged Sessions') }}</h3>
+            <p class="text-xl font-bold tabular-nums">{{ stats_current.total_flagged }}</p>
+            <div class="mt-1 flex items-center justify-between">
+                <span class="text-xs text-base-content/60">{{ _('Previous') }}: {{ stats_previous.total_flagged }}</span>
+                {{ delta_badge(stats_delta.total_flagged) }}
+            </div>
+        </div>
+
+        <div class="bg-base-100 border border-warning/30 rounded-lg p-3 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Flag Rate') }}</h3>
+            <p class="text-xl font-bold tabular-nums">{{ "%.1f"|format(stats_current.flag_rate_percent) }}%</p>
+            <div class="mt-1 flex items-center justify-between">
+                <span class="text-xs text-base-content/60">{{ _('Previous') }}: {{ "%.1f"|format(stats_previous.flag_rate_percent) }}%</span>
+                {{ delta_badge(stats_delta.flag_rate_percent) }}
+            </div>
+        </div>
+
+        <div class="bg-base-100 border border-warning/30 rounded-lg p-3 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Days with Flags') }}</h3>
+            <p class="text-xl font-bold tabular-nums">{{ stats_current.days_with_flags }}</p>
+            <div class="mt-1 flex items-center justify-between">
+                <span class="text-xs text-base-content/60">{{ _('Previous') }}: {{ stats_previous.days_with_flags }}</span>
+                {{ delta_badge(stats_delta.days_with_flags) }}
+            </div>
+        </div>
+
+        <div class="bg-base-100 border border-warning/30 rounded-lg p-3 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Cashiers with Flags') }}</h3>
+            <p class="text-xl font-bold tabular-nums">{{ stats_current.cashiers_with_flags }}</p>
+            <div class="mt-1 flex items-center justify-between">
+                <span class="text-xs text-base-content/60">{{ _('Previous') }}: {{ stats_previous.cashiers_with_flags }}</span>
+                {{ delta_badge(stats_delta.cashiers_with_flags) }}
+            </div>
+        </div>
+
+        <div class="bg-base-100 border border-warning/30 rounded-lg p-3 shadow-sm">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/70 mb-2">{{ _('Total Sessions') }}</h3>
+            <p class="text-xl font-bold tabular-nums">{{ stats_current.total_sessions }}</p>
+            <div class="mt-1 flex items-center justify-between">
+                <span class="text-xs text-base-content/60">{{ _('Previous') }}: {{ stats_previous.total_sessions }}</span>
+                {{ delta_badge(stats_delta.total_sessions) }}
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between p-4 border-b border-base-200">
+            <div>
+                <h3 class="text-lg font-bold text-base-content">{{ _('Flagged Sessions') }}</h3>
+                <p class="text-xs text-base-content/60">{{ _('Business & Cashier') }}</p>
+            </div>
+            <span class="badge badge-warning badge-sm">{{ flagged_sessions | length }}</span>
+        </div>
+        {% if flagged_sessions %}
+        <div class="overflow-x-auto">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ _('Business') }}</th>
+                        <th>{{ _('Cashier') }}</th>
+                        <th>{{ _('Date') }}</th>
+                        <th>{{ _('Flag Reason') }}</th>
+                        <th>{{ _('Session Details') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in flagged_sessions %}
+                    <tr class="hover:bg-base-200/50">
+                        <td class="font-medium">{{ session.business.name if session.business else '' }}</td>
+                        <td>{{ session.cashier.display_name if session.cashier else '' }}</td>
+                        <td class="whitespace-nowrap">{{ session.session_date.strftime('%d/%m/%Y') }}</td>
+                        <td class="max-w-xs">
+                            <div class="text-sm text-base-content">
+                                {{ session.flag_reason | default(_('No reason provided'), true) | truncate(80, True, '...') }}
+                            </div>
+                        </td>
+                        <td class="min-w-[240px]">
+                            <div class="text-sm font-semibold">#{{ session.session_number }}</div>
+                            <div class="text-xs text-base-content/70">
+                                {{ _('Status') }}: {{ session.status }}
+                                • {{ _('Total Sales') }}: Gs {{ session.total_sales | format_currency_py }}
+                            </div>
+                            <div class="text-xs text-base-content/60">
+                                {{ _('Opened') }} {{ session.opened_time.strftime('%H:%M') }}
+                                {% if session.closed_time %}
+                                    • {{ _('Closed') }} {{ session.closed_time.strftime('%H:%M') }}
+                                {% endif %}
+                            </div>
+                            <a href="/sessions/{{ session.id|string }}" class="text-xs text-primary hover:underline">{{ _('View session') }}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-6 text-center text-sm text-base-content/60">
+            {{ _('No flagged sessions found for this range.') }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

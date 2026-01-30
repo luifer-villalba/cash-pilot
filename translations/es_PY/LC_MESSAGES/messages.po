@@ -62,6 +62,42 @@ msgstr "Comparación de Negocios"
 msgid "Compare performance across multiple business locations"
 msgstr "Comparar rendimiento entre múltiples sucursales"
 
+msgid "Flagged Cash Sessions"
+msgstr "Sesiones de caja marcadas"
+
+msgid "Review flagged sessions by business, cashier, and date"
+msgstr "Revisá sesiones marcadas por negocio, cajero y fecha"
+
+msgid "Total Flagged Sessions"
+msgstr "Total de sesiones marcadas"
+
+msgid "Flag Rate"
+msgstr "Tasa de marcado"
+
+msgid "Days with Flags"
+msgstr "Días con marcas"
+
+msgid "Cashiers with Flags"
+msgstr "Cajeros con marcas"
+
+msgid "Total Sessions"
+msgstr "Total de sesiones"
+
+msgid "Flagged Sessions"
+msgstr "Sesiones marcadas"
+
+msgid "Flag Reason"
+msgstr "Motivo de marca"
+
+msgid "Session Details"
+msgstr "Detalles de la sesión"
+
+msgid "No reason provided"
+msgstr "Sin motivo especificado"
+
+msgid "No flagged sessions found for this range."
+msgstr "No se encontraron sesiones marcadas para este rango."
+
 msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
 msgstr "Valor de moneda demasiado grande. Máximo permitido: 9.999.999.999,99"
 
