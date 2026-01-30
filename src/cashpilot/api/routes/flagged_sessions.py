@@ -8,7 +8,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import HTMLResponse
-from sqlalchemy import and_, case, func, select
+from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -99,6 +99,35 @@ def _build_delta(current: float, previous: float, unit: str = "") -> dict:
     }
 
 
+def _cashier_name_filters(cashier_name: str):
+    full_name = func.concat(User.first_name, " ", User.last_name)
+    tokens = [token for token in cashier_name.split() if token]
+    if not tokens:
+        return None
+
+    if len(tokens) == 1:
+        ilike = f"%{tokens[0]}%"
+        return or_(
+            User.first_name.ilike(ilike),
+            User.last_name.ilike(ilike),
+            User.email.ilike(ilike),
+            full_name.ilike(ilike),
+        )
+
+    token_filters = []
+    for token in tokens:
+        ilike = f"%{token}%"
+        token_filters.append(
+            or_(
+                User.first_name.ilike(ilike),
+                User.last_name.ilike(ilike),
+                User.email.ilike(ilike),
+                full_name.ilike(ilike),
+            )
+        )
+    return and_(*token_filters)
+
+
 async def _fetch_flagged_stats(
     db: AsyncSession,
     from_date: date,
@@ -126,12 +155,9 @@ async def _fetch_flagged_stats(
     ).select_from(CashSession)
 
     if cashier_name:
-        ilike = f"%{cashier_name}%"
-        stmt = stmt.join(CashSession.cashier).where(
-            (User.first_name.ilike(ilike))
-            | (User.last_name.ilike(ilike))
-            | (User.email.ilike(ilike))
-        )
+        name_filter = _cashier_name_filters(cashier_name)
+        if name_filter is not None:
+            stmt = stmt.join(CashSession.cashier).where(name_filter)
 
     stmt = stmt.where(and_(*filters))
 
@@ -225,12 +251,9 @@ async def flagged_sessions_report(
     if selected_business_id:
         stmt_sessions = stmt_sessions.where(CashSession.business_id == selected_business_id)
     if cashier_name_clean:
-        ilike = f"%{cashier_name_clean}%"
-        stmt_sessions = stmt_sessions.where(
-            (User.first_name.ilike(ilike))
-            | (User.last_name.ilike(ilike))
-            | (User.email.ilike(ilike))
-        )
+        name_filter = _cashier_name_filters(cashier_name_clean)
+        if name_filter is not None:
+            stmt_sessions = stmt_sessions.where(name_filter)
 
     stmt_sessions = stmt_sessions.order_by(
         Business.name.asc(),

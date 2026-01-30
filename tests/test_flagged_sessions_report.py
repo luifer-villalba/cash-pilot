@@ -134,3 +134,14 @@ async def test_fetch_flagged_stats_filters(db_session: AsyncSession):
     assert cashier_stats["days_with_flags"] == 2
     assert cashier_stats["cashiers_with_flags"] == 1
     assert cashier_stats["flag_rate_percent"] == 66.7
+
+    token_stats = await _fetch_flagged_stats(
+        db_session,
+        date(2026, 1, 12),
+        date(2026, 1, 18),
+        business_a.id,
+        "Cashier  One",
+    )
+
+    assert token_stats["total_sessions"] == 3
+    assert token_stats["total_flagged"] == 2
