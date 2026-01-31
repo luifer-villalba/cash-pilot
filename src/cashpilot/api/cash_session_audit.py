@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cashpilot.api.auth import get_current_user
+from cashpilot.api.auth_helpers import require_admin
 from cashpilot.core.audit import log_session_edit
 from cashpilot.core.db import get_db
 from cashpilot.core.errors import NotFoundError, ValidationError
@@ -29,7 +29,7 @@ async def flag_session(
     session_id: str,
     flagged: bool = Form(...),
     flag_reason: str | None = Form(None),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Toggle session flag status with reason."""
@@ -94,6 +94,7 @@ async def get_session_audit_logs(
     session_id: str,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=250),
+    current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Get audit log history for a cash session."""
