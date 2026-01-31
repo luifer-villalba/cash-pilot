@@ -259,6 +259,7 @@ def _register_routers(app: FastAPI) -> None:
     from cashpilot.api.daily_revenue import router as daily_revenue_router
     from cashpilot.api.monthly_trend import router as monthly_trend_router
     from cashpilot.api.routes.business_stats import router as business_stats_router
+    from cashpilot.api.routes.flagged_sessions import router as flagged_sessions_router
     from cashpilot.api.routes.reports import router as reports_router
     from cashpilot.api.weekly_trend import router as weekly_trend_router
 
@@ -266,6 +267,7 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(weekly_trend_router)
     app.include_router(monthly_trend_router)
     app.include_router(reports_router)
+    app.include_router(flagged_sessions_router)
     app.include_router(business_stats_router)
 
     # Admin (UI + API)

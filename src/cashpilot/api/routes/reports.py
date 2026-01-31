@@ -63,6 +63,17 @@ async def reports_dashboard(
             ),
         },
         {
+            "id": "flagged-sessions",
+            "title": _("Flagged Cash Sessions"),
+            "description": _("Review flagged sessions by business, cashier, and date"),
+            "enabled": True,
+            "icon": (
+                "M12 9v3m0 4h.01M5.07 20h13.86c1.54 0 2.5-1.67 1.73-3"
+                "L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 17c-.77 1.33.19 3 "
+                "1.73 3z"
+            ),
+        },
+        {
             "id": "weekly-trend",
             "title": _("Weekly Revenue Trend"),
             "description": _(
