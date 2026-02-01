@@ -38,7 +38,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Audit data visible and mutable by any user
 * **Evidence:** `src/cashpilot/api/cash_session_audit.py`
 * **Acceptance impact:** AC-02, AC-07
-* **Status:** Not started
+* **Status:** In progress (2026-02-01)
 
 ### CP-RBAC-03 — Enforce business assignment on all session flows
 
