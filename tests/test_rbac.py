@@ -242,3 +242,155 @@ class TestRBACBusinessFrontendAccess:
         # Edit button should be disabled (contains disabled attribute)
         assert "disabled" in html
         assert "Only admins" in html or "only admins" in html.lower()
+
+
+class TestRBACBusinessAssignmentOnSessionCreate:
+    """Test business assignment enforcement on session creation (CP-RBAC-03, AC-01, AC-02).
+    
+    Verifies cashiers can only create sessions for assigned businesses.
+    Admins can create sessions for any business.
+    """
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_create_session_for_unassigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+        test_user: User,
+    ) -> None:
+        """Test cashier gets 403 when creating session for unassigned business (AC-01, AC-02)."""
+        # Create a business NOT assigned to test_user (cashier)
+        unassigned_business = await BusinessFactory.create(
+            db_session, name="Unassigned Business"
+        )
+
+        # Try to create session for unassigned business
+        response = await client.post(
+            "/sessions",
+            data={
+                "business_id": str(unassigned_business.id),
+                "initial_cash": "1000000",
+                "session_date": "2026-02-02",
+                "opened_time": "09:00",
+            },
+            follow_redirects=False,
+        )
+
+        # Should be denied (403 from require_business_assignment)
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_cashier_can_create_session_for_assigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+        test_user: User,
+    ) -> None:
+        """Test cashier can create session for assigned business (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        # Create a business and assign it to test_user
+        assigned_business = await BusinessFactory.create(
+            db_session, name="Assigned Business"
+        )
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create session for assigned business should succeed
+        response = await client.post(
+            "/sessions",
+            data={
+                "business_id": str(assigned_business.id),
+                "initial_cash": "1000000",
+                "session_date": "2026-02-02",
+                "opened_time": "09:00",
+            },
+            follow_redirects=False,
+        )
+
+        # Should redirect to session detail (302 or 303)
+        assert response.status_code in [302, 303]
+        assert "/sessions/" in response.headers.get("location", "")
+
+    @pytest.mark.asyncio
+    async def test_admin_can_create_session_for_any_business(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Test admin can create session for any business without assignment (AC-02)."""
+        # Create a business (admin not explicitly assigned)
+        any_business = await BusinessFactory.create(db_session, name="Any Business")
+
+        # Admin should be able to create session
+        response = await admin_client.post(
+            "/sessions",
+            data={
+                "business_id": str(any_business.id),
+                "initial_cash": "1000000",
+                "session_date": "2026-02-02",
+                "opened_time": "09:00",
+            },
+            follow_redirects=False,
+        )
+
+        # Should redirect to session detail (admin has superadmin access)
+        assert response.status_code in [302, 303]
+        assert "/sessions/" in response.headers.get("location", "")
+
+    @pytest.mark.asyncio
+    async def test_create_session_form_shows_only_assigned_businesses_for_cashier(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+        test_user: User,
+    ) -> None:
+        """Test create session form shows only assigned businesses for cashier (AC-01)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        # Create two businesses
+        assigned_biz = await BusinessFactory.create(db_session, name="Assigned Biz")
+        unassigned_biz = await BusinessFactory.create(db_session, name="Unassigned Biz")
+
+        # Assign only one to test_user
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_biz.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # GET create form
+        response = await client.get("/sessions/create")
+        assert response.status_code == 200
+        html = response.text
+
+        # Should show assigned business
+        assert "Assigned Biz" in html
+        # Should NOT show unassigned business
+        assert "Unassigned Biz" not in html
+
+    @pytest.mark.asyncio
+    async def test_create_session_form_shows_all_businesses_for_admin(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Test create session form shows all active businesses for admin (superadmin)."""
+        # Create multiple businesses
+        biz1 = await BusinessFactory.create(db_session, name="Business One")
+        biz2 = await BusinessFactory.create(db_session, name="Business Two")
+
+        # GET create form as admin
+        response = await admin_client.get("/sessions/create")
+        assert response.status_code == 200
+        html = response.text
+
+        # Admin should see all businesses
+        assert "Business One" in html
+        assert "Business Two" in html
+
