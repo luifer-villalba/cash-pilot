@@ -38,7 +38,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Audit data visible and mutable by any user
 * **Evidence:** `src/cashpilot/api/cash_session_audit.py`
 * **Acceptance impact:** AC-02, AC-07
-* **Status:** In progress (2026-02-01)
+* **Status:** Completed (2026-02-01)
 
 ### CP-RBAC-03 — Enforce business assignment on all session flows
 
@@ -46,7 +46,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Cashiers can act on unassigned businesses
 * **Evidence:** `routes/sessions.py` (HTML flow)
 * **Acceptance impact:** AC-01, AC-02
-* **Status:** Not started
+* **Status:** In Progress (PR 1 implemented)
 
 ### CP-RBAC-04 — Confirm Superadmin access across all businesses
 

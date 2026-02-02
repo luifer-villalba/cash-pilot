@@ -14,6 +14,7 @@ from cashpilot.core.errors import NotFoundError
 from cashpilot.core.logging import get_logger
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.user import User, UserRole
+from cashpilot.models.user_business import UserBusiness
 from cashpilot.utils.datetime import now_utc
 
 logger = get_logger(__name__)
@@ -140,3 +141,52 @@ async def require_own_session(
                 raise HTTPException(status_code=403, detail="Edit window expired (32 hours)")
 
     return session
+
+
+async def require_business_assignment(
+    business_id: str | UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> UUID:
+    """Verify user is assigned to the business (AC-01, AC-02).
+
+    Admins (superadmin) bypass this check.
+    Cashiers must have a UserBusiness record.
+
+    Returns the validated business UUID.
+    Raises 403 if cashier is not assigned.
+    Raises NotFoundError if business_id format is invalid.
+    """
+    # Parse business_id to UUID
+    try:
+        if isinstance(business_id, str):
+            business_uuid = UUID(business_id)
+        else:
+            business_uuid = business_id
+    except ValueError:
+        raise NotFoundError("Business", str(business_id)) from None
+
+    # Admin (superadmin) can access any business without assignment
+    if current_user.role == UserRole.ADMIN:
+        return business_uuid
+
+    # Cashier must have explicit UserBusiness assignment
+    stmt = select(UserBusiness).where(
+        (UserBusiness.user_id == current_user.id) & (UserBusiness.business_id == business_uuid)
+    )
+    result = await db.execute(stmt)
+    assignment = result.scalar_one_or_none()
+
+    if not assignment:
+        logger.warning(
+            "auth.business_assignment_denied",
+            user_id=str(current_user.id),
+            business_id=str(business_uuid),
+            user_role=current_user.role,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to access this business",
+        )
+
+    return business_uuid

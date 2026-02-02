@@ -3,17 +3,16 @@
 
 from datetime import datetime, timedelta
 from decimal import Decimal
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_own_session
+from cashpilot.api.auth_helpers import require_business_assignment, require_own_session
 from cashpilot.api.utils import (
     _get_session_calculations,
-    get_active_businesses,
+    get_assigned_businesses,
     get_locale,
     get_translation_function,
     parse_currency,
@@ -39,10 +38,11 @@ async def create_session_form(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Form to create new cash session."""
+    """Form to create new cash session (AC-01, AC-02)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
-    businesses = await get_active_businesses(db)
+    # Filter businesses: admin sees all, cashier sees only assigned (AC-01)
+    businesses = await get_assigned_businesses(current_user, db)
 
     # Load user's businesses relationship (needed for template logic)
     # For cashiers: shows assigned businesses
@@ -72,11 +72,18 @@ async def create_session_post(
     opened_time: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle session creation form submission."""
+    """Handle session creation form submission (AC-01, AC-02).
+
+    Enforces business assignment check: cashiers can only create sessions
+    for assigned businesses. Admins can create for any business.
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
+        # Enforce business assignment (AC-01, AC-02)
+        business_uuid = await require_business_assignment(business_id, current_user, db)
+
         # Business logic: parse currency format (es-PY specific)
         initial_cash_val = parse_currency(initial_cash)
         if initial_cash_val is None:
@@ -100,12 +107,6 @@ async def create_session_post(
                 raise ValueError("Invalid opened_time format (expected HH:MM)")
         else:
             opened_time_val = current_time_local()
-
-        # Business logic: validate UUID format
-        try:
-            business_uuid = UUID(business_id)
-        except (ValueError, TypeError):
-            raise ValueError("Invalid business_id format")
 
         session = CashSession(
             business_id=business_uuid,
@@ -139,7 +140,7 @@ async def create_session_post(
         logger.warning(
             "session.create_validation_failed", error=str(e), user_id=str(current_user.id)
         )
-        businesses = await get_active_businesses(db)
+        businesses = await get_assigned_businesses(current_user, db)
         return templates.TemplateResponse(
             request,
             "sessions/create_session.html",
@@ -152,9 +153,12 @@ async def create_session_post(
             },
             status_code=400,
         )
+    except HTTPException:
+        # Re-raise HTTP exceptions (403, NotFoundError, etc.)
+        raise
     except Exception as e:
         logger.error("session.create_failed", error=str(e), user_id=str(current_user.id))
-        businesses = await get_active_businesses(db)
+        businesses = await get_assigned_businesses(current_user, db)
         return templates.TemplateResponse(
             request,
             "sessions/create_session.html",

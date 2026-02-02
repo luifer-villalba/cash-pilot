@@ -463,6 +463,34 @@ async def get_active_businesses(db: AsyncSession) -> list:
     return list(result.scalars().all())
 
 
+async def get_assigned_businesses(
+    current_user: User,
+    db: AsyncSession,
+) -> list[Business]:
+    """Fetch businesses assigned to the user (AC-01, AC-02).
+
+    For Admins (superadmin): returns all active businesses.
+    For Cashiers: returns only assigned businesses via UserBusiness.
+
+    Sorted by business name.
+    """
+    # Admin sees all active businesses
+    if current_user.role == UserRole.ADMIN:
+        return await get_active_businesses(db)
+
+    # Cashier sees only assigned businesses
+    from cashpilot.models.user_business import UserBusiness
+
+    stmt = (
+        select(Business)
+        .join(UserBusiness)
+        .where((UserBusiness.user_id == current_user.id) & (Business.is_active))
+        .order_by(Business.name)
+    )
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
+
+
 async def update_open_session_fields(
     session: CashSession,
     initial_cash: str | None,
