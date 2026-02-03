@@ -325,10 +325,18 @@ async def edit_session_form(
     session_id: str,
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
+    db: AsyncSession = Depends(get_db),
 ):
-    """Form to close/edit cash session (with permission check)."""
+    """Form to close/edit cash session (with permission check, AC-01, AC-02)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
+
+    try:
+        # Enforce business assignment before rendering form (AC-01, AC-02)
+        await require_business_assignment(str(session.business_id), current_user, db)
+    except HTTPException:
+        # Re-raise 403/404 exceptions (already handled by require_business_assignment)
+        raise
 
     return templates.TemplateResponse(
         request,
@@ -359,11 +367,14 @@ async def close_session_post(
     notes: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle session close form submission (with permission check)."""
+    """Handle session close form submission (with permission check, AC-01, AC-02, AC-05)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
+        # Enforce business assignment before any state changes (AC-01, AC-02)
+        await require_business_assignment(str(session.business_id), current_user, db)
+
         # Business logic: parse currency formats (es-PY specific)
         # Note: envelope_amount and card_total have Form("0") defaults,
         # so parse_currency will receive "0" if not provided. parse_currency handles "0" correctly
@@ -418,6 +429,9 @@ async def close_session_post(
         )
 
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+    except HTTPException:
+        # Re-raise HTTP exceptions (403, 404, etc.) without catching them
+        raise
     except ValueError as e:
         # Handle validation errors (like currency format or max value exceeded)
         error_message = str(e)

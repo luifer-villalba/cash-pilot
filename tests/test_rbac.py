@@ -397,3 +397,232 @@ class TestRBACBusinessAssignmentOnSessionCreate:
         assert "Business One" in html
         assert "Business Two" in html
 
+
+class TestRBACSessionCloseAccess:
+    """Test authorization for session close flow (CP-RBAC-03 PR2, AC-01, AC-02, AC-05).
+    
+    Verifies:
+    - Cashiers can only close sessions for assigned businesses
+    - Admins can close any session
+    - Authorization is checked before any state mutations
+    """
+
+    @pytest.mark.asyncio
+    async def test_cashier_can_close_own_assigned_session(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier assigned to business can close their own session (AC-01, AC-02, AC-05)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        # Use the test user from client fixture
+        test_user = client.test_user
+
+        # Create and assign business
+        business = await BusinessFactory.create(db_session, name="Test Business")
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create an OPEN session owned by test_user
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=test_user.id,
+            created_by=test_user.id,
+            status="OPEN",
+        )
+
+        # POST to close the session
+        response = await client.post(
+            f"/sessions/{session.id}",
+            data={
+                "final_cash": "50000",
+                "envelope_amount": "25000",
+                "card_total": "25000",
+                "credit_sales_total": "0",
+                "credit_payments_collected": "0",
+                "closed_time": "17:00",
+                "closing_ticket": "TCK-123",
+                "notes": "End of day",
+            },
+            follow_redirects=False,
+        )
+
+        # Should succeed (200 OK or redirect)
+        assert response.status_code in [200, 302, 303]
+        # Verify session was actually closed
+        await db_session.refresh(session)
+        assert session.status == "CLOSED"
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_close_unassigned_session(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier not assigned to business cannot close session (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        # Use the test user from client fixture
+        test_user = client.test_user
+
+        # Create TWO businesses - assign one, leave other unassigned
+        assigned_business = await BusinessFactory.create(db_session, name="Assigned Business")
+        unassigned_business = await BusinessFactory.create(db_session, name="Unassigned Business")
+
+        # Assign only the first
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create an OPEN session in the UNASSIGNED business owned by test_user
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            created_by=test_user.id,
+            status="OPEN",
+        )
+
+        # Try to close the session for unassigned business
+        response = await client.post(
+            f"/sessions/{session.id}",
+            data={
+                "final_cash": "50000",
+                "envelope_amount": "25000",
+                "card_total": "25000",
+                "credit_sales_total": "0",
+                "credit_payments_collected": "0",
+                "closed_time": "17:00",
+                "closing_ticket": "TCK-123",
+                "notes": "End of day",
+            },
+            follow_redirects=False,
+        )
+
+        # Should be denied (403 Forbidden from require_business_assignment)
+        assert response.status_code == 403
+        
+        # Verify session was NOT closed (state unchanged)
+        await db_session.refresh(session)
+        assert session.status == "OPEN"
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_get_close_form_for_unassigned_session(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier cannot GET close form for unassigned business session (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        # Use the test user from client fixture
+        test_user = client.test_user
+
+        # Create two businesses
+        assigned_business = await BusinessFactory.create(db_session, name="Assigned Business")
+        unassigned_business = await BusinessFactory.create(db_session, name="Unassigned Business")
+
+        # Assign only the first
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create an OPEN session in the UNASSIGNED business
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            created_by=test_user.id,
+            status="OPEN",
+        )
+
+        # Try to GET the close form for unassigned session
+        response = await client.get(
+            f"/sessions/{session.id}/edit",
+            follow_redirects=False,
+        )
+
+        # Should be denied (403 Forbidden from require_business_assignment)
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_admin_can_close_any_session(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Admin can close any session regardless of business assignment (AC-02, AC-05)."""
+        # Create a business (admin not explicitly assigned)
+        business = await BusinessFactory.create(db_session, name="Test Business")
+
+        # Create an OPEN session
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            status="OPEN",
+        )
+
+        # Admin should be able to close it
+        response = await admin_client.post(
+            f"/sessions/{session.id}",
+            data={
+                "final_cash": "50000",
+                "envelope_amount": "25000",
+                "card_total": "25000",
+                "credit_sales_total": "0",
+                "credit_payments_collected": "0",
+                "closed_time": "17:00",
+                "closing_ticket": "TCK-123",
+                "notes": "Closed by admin",
+            },
+            follow_redirects=False,
+        )
+
+        # Should succeed
+        assert response.status_code in [200, 302, 303]
+        
+        # Verify session was closed
+        await db_session.refresh(session)
+        assert session.status == "CLOSED"
+
+    @pytest.mark.asyncio
+    async def test_admin_can_get_close_form_for_any_session(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Admin can GET close form for any session (AC-02)."""
+        # Create a business
+        business = await BusinessFactory.create(db_session, name="Test Business")
+
+        # Create an OPEN session
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            status="OPEN",
+        )
+
+        # Admin should be able to get the close form
+        response = await admin_client.get(
+            f"/sessions/{session.id}/edit",
+            follow_redirects=False,
+        )
+
+        # Should succeed
+        assert response.status_code == 200
+        html = response.text
+        assert "close" in html.lower() or "reconcil" in html.lower()
+
+
