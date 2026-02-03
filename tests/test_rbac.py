@@ -256,7 +256,6 @@ class TestRBACBusinessAssignmentOnSessionCreate:
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: User,
     ) -> None:
         """Test cashier gets 403 when creating session for unassigned business (AC-01, AC-02)."""
         # Create a business NOT assigned to test_user (cashier)
@@ -284,10 +283,12 @@ class TestRBACBusinessAssignmentOnSessionCreate:
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: User,
     ) -> None:
         """Test cashier can create session for assigned business (AC-01, AC-02)."""
         from cashpilot.models.user_business import UserBusiness
+
+        # Use the test user from client fixture
+        test_user = client.test_user
 
         # Create a business and assign it to test_user
         assigned_business = await BusinessFactory.create(
@@ -347,10 +348,12 @@ class TestRBACBusinessAssignmentOnSessionCreate:
         self,
         client: AsyncClient,
         db_session: AsyncSession,
-        test_user: User,
     ) -> None:
         """Test create session form shows only assigned businesses for cashier (AC-01)."""
         from cashpilot.models.user_business import UserBusiness
+
+        # Use the test user from client fixture
+        test_user = client.test_user
 
         # Create two businesses
         assigned_biz = await BusinessFactory.create(db_session, name="Assigned Biz")

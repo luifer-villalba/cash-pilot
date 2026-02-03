@@ -6,6 +6,7 @@ from decimal import Decimal
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.models.user_business import UserBusiness
 from tests.factories import BusinessFactory, CashSessionFactory
 
 
@@ -54,6 +55,14 @@ class TestSessionConflicts:
     ):
         """Test that overlapping sessions at same time conflict."""
         business = await BusinessFactory.create(db_session)
+        
+        # Assign business to test user (CP-RBAC-03)
+        assignment = UserBusiness(
+            user_id=client.test_user.id,
+            business_id=business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
 
         # Create first session at 9:00
         session1 = await CashSessionFactory.create(
@@ -86,6 +95,14 @@ class TestSessionConflicts:
     ):
         """Test allow_overlap checkbox bypasses conflict."""
         business = await BusinessFactory.create(db_session)
+        
+        # Assign business to test user (CP-RBAC-03)
+        assignment = UserBusiness(
+            user_id=client.test_user.id,
+            business_id=business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
 
         # Create first session
         session1 = await CashSessionFactory.create(
