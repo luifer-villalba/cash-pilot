@@ -1,6 +1,10 @@
 # PR 3: Business Assignment Enforcement on Session Edit Form Endpoints
 ## Ticket: CP-RBAC-03 (Phase 3 of 4)
 
+**Status:** ✅ **COMPLETED** (February 3, 2026)  
+**Branch:** `feature/cp-rbac-03-pr3-session-edit`  
+**Commit:** `5b111b2`
+
 **Goal:** No cashier can edit (open or closed) cash sessions for businesses they are not assigned to. Admins can edit sessions for any business.
 
 ---
