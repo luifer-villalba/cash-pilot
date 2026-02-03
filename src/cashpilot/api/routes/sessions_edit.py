@@ -4,13 +4,17 @@
 from datetime import timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_admin, require_own_session
+from cashpilot.api.auth_helpers import (
+    require_admin,
+    require_business_assignment,
+    require_own_session,
+)
 from cashpilot.api.utils import (
     get_active_businesses,
     get_locale,
@@ -53,10 +57,17 @@ async def edit_open_session_form(
     session_id: str,
     current_user: User = Depends(get_current_user),
     session: CashSession = Depends(require_own_session),
+    db: AsyncSession = Depends(get_db),
 ):
-    """Form to edit an OPEN cash session (with permission check)."""
+    """Form to edit an OPEN cash session (with permission check, AC-01, AC-02)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
+
+    # Enforce business assignment (AC-01, AC-02)
+    try:
+        await require_business_assignment(session.business_id, current_user, db)
+    except HTTPException:
+        raise
 
     if session.status != "OPEN":
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
@@ -88,11 +99,14 @@ async def edit_open_session_post(
     reason: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle edit open session form submission (with permission check)."""
+    """Handle edit open session form submission (with permission check, AC-01, AC-02)."""
     locale = get_locale(request)
     _ = get_translation_function(request)
 
     try:
+        # Enforce business assignment before any state changes (AC-01, AC-02)
+        await require_business_assignment(session.business_id, current_user, db)
+
         if session.status != "OPEN":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
@@ -176,9 +190,15 @@ async def edit_closed_session_form(
     session: CashSession = Depends(require_own_session),
     db: AsyncSession = Depends(get_db),
 ):
-    """Form to edit a CLOSED cash session (with permission check)."""
+    """Form to edit a CLOSED cash session (with permission check, AC-01, AC-02)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
+
+    # Enforce business assignment before rendering form (AC-01, AC-02)
+    try:
+        await require_business_assignment(session.business_id, current_user, db)
+    except HTTPException:
+        raise
 
     if session.status != "CLOSED":
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
@@ -231,11 +251,14 @@ async def edit_closed_session_post(
     reason: str | None = Form(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Handle edit closed session form submission (with permission check)."""
+    """Handle edit closed session form submission (with permission check, AC-01, AC-02, AC-05)."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     try:
+        # Enforce business assignment before any state changes (AC-01, AC-02)
+        await require_business_assignment(session.business_id, current_user, db)
+
         if session.status != "CLOSED":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
