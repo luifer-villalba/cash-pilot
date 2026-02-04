@@ -46,7 +46,11 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Cashiers can act on unassigned businesses
 * **Evidence:** `routes/sessions.py` (HTML flow)
 * **Acceptance impact:** AC-01, AC-02
-* **Status:** In Progress (PR 1 implemented)
+* **Status:** Completed (2026-02-04) - All 4 PRs implemented:
+  * PR 1: Session create ✓
+  * PR 2: Session close/reconciliation ✓
+  * PR 3: Session edit forms ✓
+  * PR 4: Admin dashboard/list visibility ✓
 
 ### CP-RBAC-04 — Confirm Superadmin access across all businesses
 
