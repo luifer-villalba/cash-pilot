@@ -11,9 +11,9 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cashpilot.api.auth_helpers import require_admin
+from cashpilot.api.auth import get_current_user
 from cashpilot.api.utils import (
-    get_active_businesses,
+    get_assigned_businesses,
     get_locale,
     get_translation_function,
     templates,
@@ -435,10 +435,14 @@ async def business_stats(
     ),
     from_date: str | None = Query(None),
     to_date: str | None = Query(None),
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Multi-business statistics dashboard. Admin only."""
+    """Multi-business statistics dashboard (AC-01, AC-02).
+
+    Admin sees stats for all businesses.
+    Cashier sees stats only for assigned businesses.
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -481,8 +485,8 @@ async def business_stats(
         aggregate_business_metrics(db, prev_from, prev_to),
     )
 
-    # Get all businesses
-    businesses = await get_active_businesses(db)
+    # Filter businesses by user role (AC-01, AC-02)
+    businesses = await get_assigned_businesses(current_user, db)
 
     # Build business stats with deltas
     business_stats_list = []

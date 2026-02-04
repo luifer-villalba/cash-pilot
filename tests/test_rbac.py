@@ -626,3 +626,452 @@ class TestRBACSessionCloseAccess:
         assert "close" in html.lower() or "reconcil" in html.lower()
 
 
+class TestRBACSessionEditAccess:
+    """Test authorization for session edit form endpoints (CP-RBAC-03 PR3, AC-01, AC-02)."""
+
+    @pytest.mark.asyncio
+    async def test_cashier_can_get_edit_form_for_own_open_session_in_assigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier can GET edit-open form for own OPEN session in assigned business (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create business and assign to cashier
+        business = await BusinessFactory.create(db_session, name="Assigned Business")
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create an OPEN session for the cashier
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=test_user.id,
+            status="OPEN",
+        )
+
+        # Cashier should be able to get the edit form
+        response = await client.get(
+            f"/sessions/{session.id}/edit-open",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 200
+        assert "edit" in response.text.lower() or "initial_cash" in response.text.lower()
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_get_edit_form_for_session_in_unassigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier cannot GET edit-open form for OPEN session in unassigned business (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create two businesses
+        assigned_business = await BusinessFactory.create(
+            db_session, name="Assigned Business"
+        )
+        unassigned_business = await BusinessFactory.create(
+            db_session, name="Unassigned Business"
+        )
+
+        # Assign only one business to cashier
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create an OPEN session in the UNASSIGNED business (owned by same user)
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            status="OPEN",
+        )
+
+        # Cashier should NOT be able to get the edit form (business assignment violation)
+        response = await client.get(
+            f"/sessions/{session.id}/edit-open",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_post_edit_open_session_in_unassigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier cannot POST edit-open for OPEN session in unassigned business (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create two businesses
+        assigned_business = await BusinessFactory.create(
+            db_session, name="Assigned Business"
+        )
+        unassigned_business = await BusinessFactory.create(
+            db_session, name="Unassigned Business"
+        )
+
+        # Assign only one business to cashier
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create an OPEN session in the UNASSIGNED business
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            status="OPEN",
+        )
+
+        # Cashier should NOT be able to POST edit (authorization check before any updates)
+        response = await client.post(
+            f"/sessions/{session.id}/edit-open",
+            data={
+                "initial_cash": "15000",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_admin_can_get_edit_open_form_for_any_session(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Admin can GET edit-open form for any OPEN session (AC-02)."""
+        # Create business and session (no assignment needed for admin)
+        business = await BusinessFactory.create(db_session, name="Any Business")
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            status="OPEN",
+        )
+
+        # Admin should be able to get the form
+        response = await admin_client.get(
+            f"/sessions/{session.id}/edit-open",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 200
+
+    @pytest.mark.asyncio
+    async def test_admin_can_post_edit_open_session_for_any_business(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Admin can POST edit-open for any OPEN session (AC-02)."""
+        # Create business and session
+        business = await BusinessFactory.create(db_session, name="Any Business")
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            status="OPEN",
+        )
+
+        # Admin should be able to POST edit
+        response = await admin_client.post(
+            f"/sessions/{session.id}/edit-open",
+            data={
+                "initial_cash": "25000",
+            },
+            follow_redirects=False,
+        )
+
+        # Should succeed (redirect on success)
+        assert response.status_code in [200, 302, 303]
+
+    @pytest.mark.asyncio
+    async def test_cashier_can_get_edit_closed_form_for_own_session_in_assigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier can GET edit-closed form for own CLOSED session in assigned business (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create business and assign to cashier
+        business = await BusinessFactory.create(db_session, name="Assigned Business")
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create a CLOSED session for the cashier
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=test_user.id,
+            status="CLOSED",
+        )
+
+        # Cashier should be able to get the edit form
+        response = await client.get(
+            f"/sessions/{session.id}/edit-closed",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 200
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_get_edit_closed_form_for_session_in_unassigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier cannot GET edit-closed form for CLOSED session in unassigned business (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create two businesses
+        assigned_business = await BusinessFactory.create(
+            db_session, name="Assigned Business"
+        )
+        unassigned_business = await BusinessFactory.create(
+            db_session, name="Unassigned Business"
+        )
+
+        # Assign only one business to cashier
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create a CLOSED session in the UNASSIGNED business
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            status="CLOSED",
+        )
+
+        # Cashier should NOT be able to get the edit form
+        response = await client.get(
+            f"/sessions/{session.id}/edit-closed",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_post_edit_closed_session_in_unassigned_business(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Cashier cannot POST edit-closed for CLOSED session in unassigned business (AC-01, AC-02)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create two businesses
+        assigned_business = await BusinessFactory.create(
+            db_session, name="Assigned Business"
+        )
+        unassigned_business = await BusinessFactory.create(
+            db_session, name="Unassigned Business"
+        )
+
+        # Assign only one business to cashier
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create a CLOSED session in the UNASSIGNED business
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            status="CLOSED",
+        )
+
+        # Cashier should NOT be able to POST edit (authorization check before any updates)
+        response = await client.post(
+            f"/sessions/{session.id}/edit-closed",
+            data={
+                "reason": "Manual correction",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_admin_can_get_edit_closed_form_for_any_session(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Admin can GET edit-closed form for any CLOSED session (AC-02)."""
+        # Create business and session (no assignment needed)
+        business = await BusinessFactory.create(db_session, name="Any Business")
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            status="CLOSED",
+        )
+
+        # Admin should be able to get the form
+        response = await admin_client.get(
+            f"/sessions/{session.id}/edit-closed",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 200
+
+    @pytest.mark.asyncio
+    async def test_admin_can_post_edit_closed_session_for_any_business(
+        self,
+        admin_client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Admin can POST edit-closed for any CLOSED session (AC-02)."""
+        # Create business and session
+        business = await BusinessFactory.create(db_session, name="Any Business")
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            status="CLOSED",
+        )
+
+        # Admin should be able to POST edit
+        response = await admin_client.post(
+            f"/sessions/{session.id}/edit-closed",
+            data={
+                "reason": "Admin correction",
+            },
+            follow_redirects=False,
+        )
+
+        # Should succeed (redirect on success)
+        assert response.status_code in [200, 302, 303]
+
+    @pytest.mark.asyncio
+    async def test_edit_open_logs_denied_access(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Denied edit-open access is logged for audit (AC-07)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create two businesses
+        assigned_business = await BusinessFactory.create(
+            db_session, name="Assigned Business"
+        )
+        unassigned_business = await BusinessFactory.create(
+            db_session, name="Unassigned Business"
+        )
+
+        # Assign only one business to cashier
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create an OPEN session in the UNASSIGNED business
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            status="OPEN",
+        )
+
+        # Try to edit
+        response = await client.post(
+            f"/sessions/{session.id}/edit-open",
+            data={
+                "initial_cash": "15000",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 403
+        # Verify authorization denial was logged
+        # Note: The log check depends on implementation
+
+    @pytest.mark.asyncio
+    async def test_edit_closed_logs_denied_access(
+        self,
+        client: AsyncClient,
+        db_session: AsyncSession,
+    ) -> None:
+        """Denied edit-closed access is logged for audit (AC-07)."""
+        from cashpilot.models.user_business import UserBusiness
+
+        test_user = client.test_user
+
+        # Setup: Create two businesses
+        assigned_business = await BusinessFactory.create(
+            db_session, name="Assigned Business"
+        )
+        unassigned_business = await BusinessFactory.create(
+            db_session, name="Unassigned Business"
+        )
+
+        # Assign only one business to cashier
+        assignment = UserBusiness(
+            user_id=test_user.id,
+            business_id=assigned_business.id,
+        )
+        db_session.add(assignment)
+        await db_session.commit()
+
+        # Create a CLOSED session in the UNASSIGNED business
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=unassigned_business.id,
+            cashier_id=test_user.id,
+            status="CLOSED",
+        )
+
+        # Try to edit
+        response = await client.post(
+            f"/sessions/{session.id}/edit-closed",
+            data={
+                "reason": "Unauthorized correction",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 403
+
+

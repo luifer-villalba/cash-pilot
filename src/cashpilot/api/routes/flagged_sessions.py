@@ -12,9 +12,9 @@ from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from cashpilot.api.auth_helpers import require_admin
+from cashpilot.api.auth import get_current_user
 from cashpilot.api.utils import (
-    get_active_businesses,
+    get_assigned_businesses,
     get_locale,
     get_translation_function,
     templates,
@@ -184,10 +184,14 @@ async def flagged_sessions_report(
     range_key: str = Query("this_week", alias="range"),
     business_id: str | None = Query(None),
     cashier_name: str | None = Query(None),
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Flagged cash sessions report page. Admin only."""
+    """Flagged cash sessions report page (AC-01, AC-02).
+
+    Admin sees flagged sessions for all businesses.
+    Cashier sees flagged sessions only for assigned businesses.
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -209,6 +213,15 @@ async def flagged_sessions_report(
             date_error = _("Invalid business selection.")
 
     cashier_name_clean = cashier_name.strip() if cashier_name else None
+
+    # Filter businesses by user role (AC-01, AC-02)
+    authorized_businesses = await get_assigned_businesses(current_user, db)
+    authorized_business_ids = [b.id for b in authorized_businesses]
+
+    # If a business_id is specified, ensure user is authorized to view it
+    if selected_business_id and selected_business_id not in authorized_business_ids:
+        selected_business_id = None
+        date_error = _("You are not authorized to view this business.")
 
     stats_current = await _fetch_flagged_stats(
         db, from_date, to_date, selected_business_id, cashier_name_clean
@@ -234,7 +247,8 @@ async def flagged_sessions_report(
         ),
     }
 
-    businesses = await get_active_businesses(db)
+    # Use filtered businesses instead of all active businesses
+    businesses = authorized_businesses
 
     stmt_sessions = (
         select(CashSession)
@@ -246,6 +260,8 @@ async def flagged_sessions_report(
             CashSession.session_date >= from_date,
             CashSession.session_date <= to_date,
             ~CashSession.is_deleted,
+            # Filter to authorized businesses (AC-01, AC-02)
+            CashSession.business_id.in_(authorized_business_ids),
         )
     )
     if selected_business_id:

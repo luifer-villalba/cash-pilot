@@ -11,8 +11,14 @@ from fastapi.responses import HTMLResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_admin
-from cashpilot.api.utils import get_locale, get_translation_function, templates
+from cashpilot.api.utils import (
+    get_assigned_businesses,
+    get_locale,
+    get_translation_function,
+    templates,
+)
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.report_pdf import get_internal_base_url, render_pdf_from_url
@@ -132,17 +138,19 @@ async def reports_dashboard(
 @router.get("/daily-revenue", response_class=HTMLResponse)
 async def daily_revenue_report(
     request: Request,
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Daily revenue summary report page. Admin only."""
+    """Daily revenue summary report page (AC-01, AC-02).
+
+    Admin sees all businesses.
+    Cashier sees only assigned businesses.
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    # Get all active businesses
-    stmt = select(Business).where(Business.is_active).order_by(Business.name)
-    result = await db.execute(stmt)
-    businesses = result.scalars().all()
+    # Filter businesses by user role (AC-01, AC-02)
+    businesses = await get_assigned_businesses(current_user, db)
 
     logger.info(
         f"Daily revenue report accessed by {current_user.display_name}, "
@@ -164,17 +172,19 @@ async def daily_revenue_report(
 @router.get("/weekly-trend", response_class=HTMLResponse)
 async def weekly_trend_report(
     request: Request,
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Weekly revenue trend report page. Admin only."""
+    """Weekly revenue trend report page (AC-01, AC-02).
+
+    Admin sees all businesses.
+    Cashier sees only assigned businesses.
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    # Get all active businesses
-    stmt = select(Business).where(Business.is_active).order_by(Business.name)
-    result = await db.execute(stmt)
-    businesses = result.scalars().all()
+    # Filter businesses by user role (AC-01, AC-02)
+    businesses = await get_assigned_businesses(current_user, db)
 
     logger.info(
         f"Weekly trend report accessed by {current_user.display_name}, "

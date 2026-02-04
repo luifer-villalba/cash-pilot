@@ -15,12 +15,13 @@ from cashpilot.api.utils import (
     _build_session_filters,
     _can_edit_closed_session,
     _get_paginated_sessions,
+    get_assigned_businesses,
     get_locale,
     get_translation_function,
     templates,
 )
 from cashpilot.core.db import get_db
-from cashpilot.models import Business, CashSession, DailyReconciliation
+from cashpilot.models import CashSession, DailyReconciliation
 from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import now_local, today_local
 
@@ -89,10 +90,9 @@ async def dashboard(
     result_active = await db.execute(stmt_active)
     active_count = result_active.scalar() or 0
 
-    stmt_businesses = select(Business).where(Business.is_active).order_by(Business.name)
-    result_businesses = await db.execute(stmt_businesses)
-    businesses = result_businesses.scalars().all()
-    businesses_count = len(list(businesses))
+    # Filter businesses based on user role (AC-01, AC-02)
+    businesses = await get_assigned_businesses(current_user, db)
+    businesses_count = len(businesses)
 
     today = today_local()
     # Calculate total_revenue to match model's total_sales property:

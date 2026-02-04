@@ -11,7 +11,12 @@ from sqlalchemy.orm import selectinload
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import require_admin
-from cashpilot.api.utils import get_locale, get_translation_function, templates
+from cashpilot.api.utils import (
+    get_assigned_businesses,
+    get_locale,
+    get_translation_function,
+    templates,
+)
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import Business
@@ -28,13 +33,16 @@ async def list_businesses(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """List all businesses with management options."""
+    """List businesses with management options (AC-01, AC-02).
+
+    Admin sees all active businesses.
+    Cashier sees only assigned businesses.
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
-    stmt = select(Business).options(selectinload(Business.users)).order_by(Business.name)
-    result = await db.execute(stmt)
-    businesses = result.scalars().all()
+    # Filter businesses by user role (AC-01, AC-02)
+    businesses = await get_assigned_businesses(current_user, db)
 
     return templates.TemplateResponse(
         request,
