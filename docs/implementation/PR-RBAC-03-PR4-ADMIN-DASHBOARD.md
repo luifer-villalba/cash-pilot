@@ -1,6 +1,10 @@
 # PR 4: Admin Dashboard and List Visibility Alignment
 ## Ticket: CP-RBAC-03 (Phase 4 of 4 - FINAL)
 
+**Status:** ✅ COMPLETE (Feb 4, 2026)  
+**Branch:** `feature/cp-rbac-03-pr4-dashboard-visibility`  
+**Test Results:** 305 passing, 4 pre-existing failures in business list tests (not caused by PR 4)
+
 **Goal:** Ensure admin dashboards and session/business lists display correct data based on user role. Admin sees all businesses/sessions; Cashier sees only assigned businesses/sessions.
 
 ---
