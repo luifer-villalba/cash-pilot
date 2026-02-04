@@ -134,12 +134,19 @@ async def _fetch_flagged_stats(
     to_date: date,
     business_id: UUID | None,
     cashier_name: str | None,
+    authorized_business_ids: list[UUID] | None = None,
 ) -> dict:
     filters = [
         CashSession.session_date >= from_date,
         CashSession.session_date <= to_date,
         ~CashSession.is_deleted,
     ]
+
+    # Filter by authorized businesses (AC-01, AC-02 - prevent stats data leakage)
+    if authorized_business_ids:
+        filters.append(CashSession.business_id.in_(authorized_business_ids))
+
+    # If a specific business_id is selected, add it as additional filter
     if business_id:
         filters.append(CashSession.business_id == business_id)
 
@@ -224,10 +231,10 @@ async def flagged_sessions_report(
         date_error = _("You are not authorized to view this business.")
 
     stats_current = await _fetch_flagged_stats(
-        db, from_date, to_date, selected_business_id, cashier_name_clean
+        db, from_date, to_date, selected_business_id, cashier_name_clean, authorized_business_ids
     )
     stats_previous = await _fetch_flagged_stats(
-        db, prev_from, prev_to, selected_business_id, cashier_name_clean
+        db, prev_from, prev_to, selected_business_id, cashier_name_clean, authorized_business_ids
     )
     stats_delta = {
         "total_flagged": _build_delta(

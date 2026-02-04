@@ -472,11 +472,20 @@ async def get_assigned_businesses(
     For Admins (superadmin): returns all active businesses.
     For Cashiers: returns only assigned businesses via UserBusiness.
 
-    Sorted by business name.
+    Sorted by business name. Eager-loads users relationship to avoid lazy loading issues.
     """
+    from sqlalchemy.orm import selectinload
+
     # Admin sees all active businesses
     if current_user.role == UserRole.ADMIN:
-        return await get_active_businesses(db)
+        stmt = (
+            select(Business)
+            .where(Business.is_active)
+            .options(selectinload(Business.users))
+            .order_by(Business.name)
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().unique().all())
 
     # Cashier sees only assigned businesses
     from cashpilot.models.user_business import UserBusiness
@@ -485,10 +494,11 @@ async def get_assigned_businesses(
         select(Business)
         .join(UserBusiness)
         .where((UserBusiness.user_id == current_user.id) & (Business.is_active))
+        .options(selectinload(Business.users))
         .order_by(Business.name)
     )
     result = await db.execute(stmt)
-    return list(result.scalars().all())
+    return list(result.scalars().unique().all())
 
 
 async def update_open_session_fields(
