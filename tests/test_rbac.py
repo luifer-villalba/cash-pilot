@@ -19,7 +19,13 @@ class TestRBACBusinessAPIReadAccess:
         db_session: AsyncSession,
     ) -> None:
         """Test cashier can access business list."""
-        await BusinessFactory.create(db_session, name="Business Test")
+        from cashpilot.models.user_business import UserBusiness
+
+        business = await BusinessFactory.create(db_session, name="Business Test")
+
+        # Assign business to test user
+        db_session.add(UserBusiness(user_id=client.test_user.id, business_id=business.id))
+        await db_session.commit()
 
         response = await client.get("/businesses")
         assert response.status_code == 200
@@ -193,7 +199,13 @@ class TestRBACBusinessFrontendAccess:
         db_session: AsyncSession,
     ) -> None:
         """Test cashier can view business list HTML page."""
-        await BusinessFactory.create(db_session, name="Business Test")
+        from cashpilot.models.user_business import UserBusiness
+
+        business = await BusinessFactory.create(db_session, name="Business Test")
+
+        # Assign business to test user
+        db_session.add(UserBusiness(user_id=client.test_user.id, business_id=business.id))
+        await db_session.commit()
 
         response = await client.get("/businesses")
         assert response.status_code == 200
@@ -231,7 +243,13 @@ class TestRBACBusinessFrontendAccess:
         db_session: AsyncSession,
     ) -> None:
         """Test business list page shows disabled buttons for cashier."""
-        await BusinessFactory.create(db_session, name="Business Test")
+        from cashpilot.models.user_business import UserBusiness
+
+        business = await BusinessFactory.create(db_session, name="Business Test")
+
+        # Assign business to test user
+        db_session.add(UserBusiness(user_id=client.test_user.id, business_id=business.id))
+        await db_session.commit()
 
         response = await client.get("/businesses")
         assert response.status_code == 200

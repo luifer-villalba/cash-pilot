@@ -15,8 +15,16 @@ class TestListBusinesses:
         self, client: AsyncClient, db_session: AsyncSession
     ):
         """Test GET /businesses returns list of businesses."""
-        await BusinessFactory.create(db_session, name="Business A")
-        await BusinessFactory.create(db_session, name="Business B")
+        from cashpilot.models.user_business import UserBusiness
+
+        # Create businesses
+        business_a = await BusinessFactory.create(db_session, name="Business A")
+        business_b = await BusinessFactory.create(db_session, name="Business B")
+
+        # Assign businesses to test user
+        db_session.add(UserBusiness(user_id=client.test_user.id, business_id=business_a.id))
+        db_session.add(UserBusiness(user_id=client.test_user.id, business_id=business_b.id))
+        await db_session.commit()
 
         response = await client.get("/businesses")
 
