@@ -137,6 +137,8 @@ async def create_session_post(
         elif "Invalid" in error_message and "format" in error_message:
             error_message = _("Invalid number format. Please enter a valid amount.")
 
+        await db.rollback()
+
         logger.warning(
             "session.create_validation_failed", error=str(e), user_id=str(current_user.id)
         )
@@ -157,6 +159,7 @@ async def create_session_post(
         # Re-raise HTTP exceptions (403, NotFoundError, etc.)
         raise
     except Exception as e:
+        await db.rollback()
         logger.error("session.create_failed", error=str(e), user_id=str(current_user.id))
         businesses = await get_assigned_businesses(current_user, db)
         return templates.TemplateResponse(
@@ -441,6 +444,9 @@ async def close_session_post(
         elif "Invalid" in error_message and "format" in error_message:
             error_message = _("Invalid number format. Please enter a valid amount.")
 
+        await db.rollback()
+        await db.refresh(session)
+
         logger.warning(
             "session.close_validation_failed",
             session_id=session_id,
@@ -457,6 +463,8 @@ async def close_session_post(
             },
         )
     except Exception as e:
+        await db.rollback()
+        await db.refresh(session)
         logger.error(
             "session.close_failed",
             session_id=session_id,
