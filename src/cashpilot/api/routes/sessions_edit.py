@@ -159,6 +159,9 @@ async def edit_open_session_post(
         elif "Business not found" in error_message:
             error_message = _("Selected business not found.")
 
+        await db.rollback()
+        await db.refresh(session)
+
         logger.warning(
             "session.edit_open_validation_failed",
             session_id=session_id,
@@ -356,6 +359,7 @@ async def edit_closed_session_post(
             user_id=str(current_user.id),
         )
         await db.rollback()
+        await db.refresh(session)
         businesses = None
         if current_user.role == UserRole.ADMIN:
             businesses = await _get_admin_businesses(db, session)

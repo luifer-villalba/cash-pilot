@@ -71,7 +71,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Invalid data may be partially saved
 * **Evidence:** `core/db.py`, `routes/sessions.py`
 * **Acceptance impact:** AC-04
-* **Status:** Not started
+* **Status:** Completed (2026-02-05)
 
 ### CP-DATA-02 — Enforce single open session per cashier/business
 
