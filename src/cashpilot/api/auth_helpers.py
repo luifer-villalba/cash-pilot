@@ -216,4 +216,4 @@ async def get_open_session_for_cashier_business(
         & (CashSession.is_deleted.is_(False))
     )
     result = await db.execute(stmt)
-    return result.scalar_one_or_none()
+    return result.scalars().first()

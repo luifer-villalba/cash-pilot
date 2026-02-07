@@ -40,7 +40,7 @@ def upgrade() -> None:
             HAVING COUNT(*) > 1
         ''')
     )
-    duplicates = result.fetchall()
+    duplicates = result.mappings().all()
     if duplicates:
         msg_lines = [
             '\n[CP-DATA-02] Migration aborted: Duplicate open sessions detected!\n',
