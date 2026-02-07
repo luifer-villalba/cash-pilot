@@ -26,6 +26,7 @@ This checklist is **mandatory** for any deployment affecting behavior.
 * Migration required? Yes / No
 * Migration reviewed and tested locally
 * Rollback strategy defined
+* **Backup created and verified** (confirm successful backup before deployment)
 
 ### Security & RBAC
 

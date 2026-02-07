@@ -190,3 +190,30 @@ async def require_business_assignment(
         )
 
     return business_uuid
+
+
+async def get_open_session_for_cashier_business(
+    cashier_id: UUID | str,
+    business_id: UUID | str,
+    db: AsyncSession,
+) -> CashSession | None:
+    """Check if cashier has an open session in the business (CP-DATA-02).
+
+    Returns the open session if one exists, None otherwise.
+    Used to detect and prevent duplicate open sessions.
+    Excludes soft-deleted sessions.
+    """
+    try:
+        cashier_uuid = cashier_id if isinstance(cashier_id, UUID) else UUID(cashier_id)
+        business_uuid = business_id if isinstance(business_id, UUID) else UUID(business_id)
+    except (ValueError, TypeError):
+        return None
+
+    stmt = select(CashSession).where(
+        (CashSession.cashier_id == cashier_uuid)
+        & (CashSession.business_id == business_uuid)
+        & (CashSession.status == "OPEN")
+        & (CashSession.is_deleted.is_(False))
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
