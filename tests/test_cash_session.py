@@ -106,7 +106,61 @@ class TestOpenCashSession:
             },
             follow_redirects=False,
         )
-        assert response2.status_code in [302, 400, 409]
+        assert response2.status_code in [400, 409]
+
+    @pytest.mark.asyncio
+    async def test_open_session_allows_different_business(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Test opening sessions in different businesses for same cashier."""
+        business_one = await BusinessFactory.create(db_session, name="Business One")
+        business_two = await BusinessFactory.create(db_session, name="Business Two")
+
+        response1 = await admin_client.post(
+            "/sessions",
+            data={
+                "business_id": str(business_one.id),
+                "cashier_name": "Cashier",
+                "initial_cash": "500000.00",
+            },
+            follow_redirects=False,
+        )
+        assert response1.status_code == 302
+
+        response2 = await admin_client.post(
+            "/sessions",
+            data={
+                "business_id": str(business_two.id),
+                "cashier_name": "Cashier",
+                "initial_cash": "500000.00",
+            },
+            follow_redirects=False,
+        )
+        assert response2.status_code == 302
+
+    @pytest.mark.asyncio
+    async def test_open_session_allows_after_closing(
+        self, admin_client: AsyncClient, db_session: AsyncSession, business_id: str
+    ):
+        """Test opening new session after closing existing one."""
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business_id,
+            cashier_id=admin_client.test_user.id,
+            status="CLOSED",
+        )
+
+        response = await admin_client.post(
+            "/sessions",
+            data={
+                "business_id": business_id,
+                "cashier_name": "Cashier",
+                "initial_cash": "500000.00",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
 
 
 class TestGetCashSession:

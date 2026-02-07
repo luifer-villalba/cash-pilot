@@ -11,6 +11,41 @@
         <p class="text-sm text-base-content/60 mt-1">{{ _('Start a new shift and track cash movements') }}</p>
     </div>
 
+    {% if existing_session %}
+        <div role="alert" class="alert alert-warning shadow-sm">
+            <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div class="space-y-2">
+                    <div class="font-semibold text-base-content">
+                        {{ _('You already have an open session for this business.') }}
+                    </div>
+                    <div class="text-xs text-base-content/70">
+                        {{ _('Opened at') }}: {{ existing_session.opened_time }}
+                    </div>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <a href="/sessions/{{ existing_session.id }}" class="btn btn-sm btn-outline">
+                            {{ _('View Session') }}
+                        </a>
+                        <a href="/sessions/{{ existing_session.id }}/edit" class="btn btn-sm btn-warning">
+                            {{ _('Close Session') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif error %}
+        <div role="alert" class="alert alert-error shadow-sm">
+            <div class="flex items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div class="text-sm text-base-content">{{ error }}</div>
+            </div>
+        </div>
+    {% endif %}
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form (Main) -->
         <div class="lg:col-span-2 space-y-6">
@@ -31,7 +66,7 @@
 
                         {% if current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
                             <!-- ADMIN: Full dropdown of ALL businesses -->
-                            <select name="business_id" id="business_id" class="select select-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all" required aria-describedby="business-help">
+                            <select name="business_id" id="business_id" class="select select-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all" required aria-describedby="business-help" {% if block_new_session %}disabled{% endif %}>
                                 <option value="">{{ _('Select a business') }}</option>
                                 {% for business in businesses %}
                                 <option value="{{ business.id }}">{{ business.name }}</option>
@@ -63,7 +98,7 @@
 
                             {% else %}
                                 <!-- Multiple businesses: Dropdown of assigned only -->
-                                <select name="business_id" id="business_id" class="select select-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all" required aria-describedby="business-help">
+                                <select name="business_id" id="business_id" class="select select-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all" required aria-describedby="business-help" {% if block_new_session %}disabled{% endif %}>
                                     <option value="">{{ _('Select a business') }}</option>
                                     {% for business in current_user.businesses %}
                                     <option value="{{ business.id }}">{{ business.name }}</option>
@@ -127,7 +162,9 @@
                                 data-currency-input
                                 autocomplete="off"
                                 aria-describedby="initial-cash-help"
-                                {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                                {% if block_new_session %}
+                                    disabled
+                                {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
                                     {% if current_user.businesses|length == 0 %}disabled{% endif %}
                                 {% endif %}
                             />
@@ -150,7 +187,9 @@
                                 class="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
                                 value="{{ today }}"
                                 aria-describedby="session-date-help"
-                                {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                                {% if block_new_session %}
+                                    disabled
+                                {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
                                     {% if current_user.businesses|length == 0 %}disabled{% endif %}
                                 {% endif %}
                             />
@@ -170,7 +209,9 @@
                                 id="opened_time"
                                 class="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
                                 aria-describedby="opened-time-help"
-                                {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                                {% if block_new_session %}
+                                    disabled
+                                {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
                                     {% if current_user.businesses|length == 0 %}disabled{% endif %}
                                 {% endif %}
                             />
@@ -187,7 +228,9 @@
                         type="submit"
                         class="btn btn-primary btn-lg flex-[2] gap-2 shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
                         aria-label="{{ _('Open new cash session') }}"
-                        {% if current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
+                        {% if block_new_session %}
+                            disabled
+                        {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
                             {% if current_user.businesses|length == 0 %}disabled{% endif %}
                         {% endif %}
                     >

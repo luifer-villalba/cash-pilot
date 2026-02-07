@@ -6,10 +6,15 @@ from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_business_assignment, require_own_session
+from cashpilot.api.auth_helpers import (
+    get_open_session_for_cashier_business,
+    require_business_assignment,
+    require_own_session,
+)
 from cashpilot.api.utils import (
     _get_session_calculations,
     get_assigned_businesses,
@@ -49,12 +54,24 @@ async def create_session_form(
     # For admins: not used, but we load it anyway to avoid template errors
     await db.refresh(current_user, ["businesses"])
 
+    existing_session = None
+    block_new_session = False
+    if current_user.role == UserRole.CASHIER and len(current_user.businesses) == 1:
+        existing_session = await get_open_session_for_cashier_business(
+            current_user.id,
+            current_user.businesses[0].id,
+            db,
+        )
+        block_new_session = existing_session is not None
+
     return templates.TemplateResponse(
         request,
         "sessions/create_session.html",
         {
             "current_user": current_user,
             "businesses": businesses,
+            "existing_session": existing_session,
+            "block_new_session": block_new_session,
             "locale": locale,
             "_": _,
             "today": today_local().isoformat(),
@@ -79,10 +96,39 @@ async def create_session_post(
     """
     locale = get_locale(request)
     _ = get_translation_function(locale)
+    # Cache user info to avoid lazy-loading issues in error handlers
+    user_id = str(current_user.id)
+    user_role = current_user.role
 
     try:
         # Enforce business assignment (AC-01, AC-02)
         business_uuid = await require_business_assignment(business_id, current_user, db)
+
+        # Prevent duplicate open sessions per cashier/business (CP-DATA-02)
+        existing_session = await get_open_session_for_cashier_business(
+            current_user.id,
+            business_uuid,
+            db,
+        )
+        if existing_session:
+            await db.refresh(current_user, ["businesses"])
+            await db.refresh(current_user, ["businesses"])
+            block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
+            businesses = await get_assigned_businesses(current_user, db)
+            return templates.TemplateResponse(
+                request,
+                "sessions/create_session.html",
+                {
+                    "current_user": current_user,
+                    "businesses": businesses,
+                    "error": _("You already have an open session for this business."),
+                    "existing_session": existing_session,
+                    "block_new_session": block_new_session,
+                    "locale": locale,
+                    "_": _,
+                },
+                status_code=400,
+            )
 
         # Business logic: parse currency format (es-PY specific)
         initial_cash_val = parse_currency(initial_cash)
@@ -117,13 +163,38 @@ async def create_session_post(
             created_by=current_user.id,
         )
         db.add(session)
-        await db.commit()
-        await db.refresh(session)
+        try:
+            await db.commit()
+            await db.refresh(session)
+        except IntegrityError:
+            await db.rollback()
+            existing_session = await get_open_session_for_cashier_business(
+                current_user.id,
+                business_uuid,
+                db,
+            )
+            await db.refresh(current_user, ["businesses"])
+            block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
+            businesses = await get_assigned_businesses(current_user, db)
+            return templates.TemplateResponse(
+                request,
+                "sessions/create_session.html",
+                {
+                    "current_user": current_user,
+                    "businesses": businesses,
+                    "error": _("You already have an open session for this business."),
+                    "existing_session": existing_session,
+                    "block_new_session": block_new_session,
+                    "locale": locale,
+                    "_": _,
+                },
+                status_code=409,
+            )
 
         logger.info(
             "session.created",
             session_id=str(session.id),
-            created_by=str(current_user.id),
+            created_by=user_id,
         )
 
         return RedirectResponse(url=f"/sessions/{session.id}", status_code=302)
@@ -139,9 +210,9 @@ async def create_session_post(
 
         await db.rollback()
 
-        logger.warning(
-            "session.create_validation_failed", error=str(e), user_id=str(current_user.id)
-        )
+        logger.warning("session.create_validation_failed", error=str(e), user_id=user_id)
+        await db.refresh(current_user, ["businesses"])
+        block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
         businesses = await get_assigned_businesses(current_user, db)
         return templates.TemplateResponse(
             request,
@@ -150,6 +221,7 @@ async def create_session_post(
                 "current_user": current_user,
                 "businesses": businesses,
                 "error": error_message,
+                "block_new_session": block_new_session,
                 "locale": locale,
                 "_": _,
             },
@@ -160,7 +232,9 @@ async def create_session_post(
         raise
     except Exception as e:
         await db.rollback()
-        logger.error("session.create_failed", error=str(e), user_id=str(current_user.id))
+        logger.error("session.create_failed", error=str(e), user_id=user_id)
+        await db.refresh(current_user, ["businesses"])
+        block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
         businesses = await get_assigned_businesses(current_user, db)
         return templates.TemplateResponse(
             request,
@@ -169,6 +243,7 @@ async def create_session_post(
                 "current_user": current_user,
                 "businesses": businesses,
                 "error": str(e),
+                "block_new_session": block_new_session,
                 "locale": locale,
                 "_": _,
             },
