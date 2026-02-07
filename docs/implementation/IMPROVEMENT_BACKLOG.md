@@ -190,7 +190,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** Medium
 * **Problem:** Backup not explicit
 * **Evidence:** `RELEASE_CHECKLIST.md`
-* **Status:** Not started
+* **Status:** Completed (2026-02-06)
 
 ### CP-REL-02 — Document Windows 7 verification evidence
 
