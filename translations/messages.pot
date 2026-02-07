@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-28 20:05+0000\n"
+"POT-Creation-Date: 2026-02-07 19:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,10 +20,40 @@ msgstr ""
 msgid "Invalid date range. Please check your dates and try again."
 msgstr ""
 
+msgid "Compared to the same weekday last week"
+msgstr ""
+
+msgid "Compared to last week (same weekday range)"
+msgstr ""
+
+msgid "Compared to the week prior"
+msgstr ""
+
+msgid "Compared to last month MTD"
+msgstr ""
+
+msgid "Compared to the month prior"
+msgstr ""
+
+msgid "Compared to the previous period"
+msgstr ""
+
+msgid "Invalid business selection."
+msgstr ""
+
+msgid "You are not authorized to view this business."
+msgstr ""
+
 msgid "Daily Revenue Summary"
 msgstr ""
 
 msgid "Total sales by payment method, net earnings, and discrepancy counts"
+msgstr ""
+
+msgid "Flagged Cash Sessions"
+msgstr ""
+
+msgid "Review flagged sessions by business, cashier, and date"
 msgstr ""
 
 msgid "Weekly Revenue Trend"
@@ -54,6 +84,9 @@ msgstr ""
 msgid "Compare performance across multiple business locations"
 msgstr ""
 
+msgid "You already have an open session for this business."
+msgstr ""
+
 msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
 msgstr ""
 
@@ -61,9 +94,6 @@ msgid "Invalid number format. Please enter a valid amount."
 msgstr ""
 
 msgid "Edit window expired (32 hours passed)"
-msgstr ""
-
-msgid "Invalid business selection."
 msgstr ""
 
 msgid "Selected business not found."
@@ -128,9 +158,6 @@ msgid "Last 7 Days"
 msgstr ""
 
 msgid "Last 30 Days"
-msgstr ""
-
-msgid "This Month (MTD)"
 msgstr ""
 
 msgid "Status"
@@ -457,7 +484,6 @@ msgstr ""
 msgid "Margin %"
 msgstr ""
 
-#, python-format
 msgid "Cost percentage of Sales"
 msgstr ""
 
@@ -1158,6 +1184,33 @@ msgstr ""
 msgid "No data"
 msgstr ""
 
+msgid "There is 1 open cash session. Totals reflect closed sessions only."
+msgstr ""
+
+#, python-format
+msgid ""
+"There are %(open_count)s open cash sessions. Totals reflect closed "
+"sessions only."
+msgstr ""
+
+msgid "Today is still in progress. Totals reflect closed sessions only."
+msgstr ""
+
+msgid "This Week"
+msgstr ""
+
+msgid "Last Week"
+msgstr ""
+
+msgid "MTD means month-to-date (from the 1st to today)."
+msgstr ""
+
+msgid "This Month (MTD)"
+msgstr ""
+
+msgid "Last Month"
+msgstr ""
+
 msgid "Custom"
 msgstr ""
 
@@ -1191,43 +1244,10 @@ msgstr ""
 msgid "Most Improved"
 msgstr ""
 
-msgid "Smallest Decline"
-msgstr ""
-
 msgid "Gross Margin %"
 msgstr ""
 
 msgid "Ranking based on total sales for the current period."
-msgstr ""
-
-msgid "Compared to the same weekday last week"
-msgstr ""
-
-msgid "Compared to last week (same weekday range)"
-msgstr ""
-
-msgid "Compared to the week prior"
-msgstr ""
-
-msgid "Compared to last month MTD"
-msgstr ""
-
-msgid "Compared to the month prior"
-msgstr ""
-
-msgid "Compared to the previous period"
-msgstr ""
-
-msgid "There are %(open_count)s open cash sessions. Totals reflect closed sessions only."
-msgstr ""
-
-msgid "There is 1 open cash session. Totals reflect closed sessions only."
-msgstr ""
-
-msgid "Today is still in progress. Totals reflect closed sessions only."
-msgstr ""
-
-msgid "MTD means month-to-date (from the 1st to today)."
 msgstr ""
 
 msgid "Revenue Breakdown by Business"
@@ -1255,6 +1275,15 @@ msgid "By Business"
 msgstr ""
 
 msgid "Gross margin = sales − cost of goods."
+msgstr ""
+
+msgid "Average Gross Margin %"
+msgstr ""
+
+msgid "Tickets (Top / Lowest)"
+msgstr ""
+
+msgid "Margin Range"
 msgstr ""
 
 msgid "Rank"
@@ -1320,10 +1349,22 @@ msgstr ""
 msgid "Lower share of total"
 msgstr ""
 
+msgid "Smallest Decline"
+msgstr ""
+
 msgid "No comparison data"
 msgstr ""
 
 msgid "Bank Transfer"
+msgstr ""
+
+msgid "businesses"
+msgstr ""
+
+msgid "Top"
+msgstr ""
+
+msgid "Lowest"
 msgstr ""
 
 msgid "Cost (Gs)"
@@ -1481,6 +1522,54 @@ msgstr ""
 msgid "Multi-Business"
 msgstr ""
 
+msgid "This Month"
+msgstr ""
+
+msgid "Cashier name"
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Date Range"
+msgstr ""
+
+msgid "Total Flagged Sessions"
+msgstr ""
+
+msgid "Flag Rate"
+msgstr ""
+
+msgid "Days with Flags"
+msgstr ""
+
+msgid "Cashiers with Flags"
+msgstr ""
+
+msgid "Total Sessions"
+msgstr ""
+
+msgid "Flagged Sessions"
+msgstr ""
+
+msgid "Business & Cashier"
+msgstr ""
+
+msgid "Flag Reason"
+msgstr ""
+
+msgid "Session Details"
+msgstr ""
+
+msgid "No reason provided"
+msgstr ""
+
+msgid "Opened"
+msgstr ""
+
+msgid "No flagged sessions found for this range."
+msgstr ""
+
 msgid ""
 "Compare daily revenue across months to identify peak/low days and month-"
 "over-month growth patterns"
@@ -1495,13 +1584,7 @@ msgstr ""
 msgid "Show current month"
 msgstr ""
 
-msgid "This Month"
-msgstr ""
-
 msgid "Show last month"
-msgstr ""
-
-msgid "Last Month"
 msgstr ""
 
 msgid "Show 2 months ago"
@@ -1601,9 +1684,6 @@ msgid "Weekly Breakdown"
 msgstr ""
 
 msgid "Week"
-msgstr ""
-
-msgid "Date Range"
 msgstr ""
 
 msgid "Cost"
@@ -1786,12 +1866,6 @@ msgid "Day"
 msgstr ""
 
 msgid "WoW Growth"
-msgstr ""
-
-msgid "Last Week"
-msgstr ""
-
-msgid "This Week"
 msgstr ""
 
 msgid "Mon"
@@ -1982,7 +2056,10 @@ msgstr ""
 msgid "Start a new shift and track cash movements"
 msgstr ""
 
-msgid "Business & Cashier"
+msgid "Opened at"
+msgstr ""
+
+msgid "View Session"
 msgstr ""
 
 msgid "Select a business"
@@ -1994,13 +2071,7 @@ msgstr ""
 msgid "Which business location?"
 msgstr ""
 
-msgid "Cashier name"
-msgstr ""
-
 msgid "Logged in as"
-msgstr ""
-
-msgid "Session Details"
 msgstr ""
 
 msgid "Starting amount in drawer"
@@ -2174,9 +2245,6 @@ msgstr ""
 msgid "Session Info"
 msgstr ""
 
-msgid "Opened"
-msgstr ""
-
 msgid "Cash Flow"
 msgstr ""
 
@@ -2314,5 +2382,3 @@ msgstr ""
 msgid "Remove flag from this session?"
 msgstr ""
 
-msgid "Clear"
-msgstr ""

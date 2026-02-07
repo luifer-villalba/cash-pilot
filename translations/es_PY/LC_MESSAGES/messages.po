@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-01-28 20:05+0000\n"
+"POT-Creation-Date: 2026-02-07 19:04+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -22,6 +22,30 @@ msgstr ""
 msgid "Invalid date range. Please check your dates and try again."
 msgstr "Rango de fechas inválido. Por favor revisá las fechas e intentá de nuevo."
 
+msgid "Compared to the same weekday last week"
+msgstr "Comparado con el mismo día de la semana pasada"
+
+msgid "Compared to last week (same weekday range)"
+msgstr "Comparado con la semana pasada (mismo rango de días)"
+
+msgid "Compared to the week prior"
+msgstr "Comparado con la semana anterior"
+
+msgid "Compared to last month MTD"
+msgstr "Comparado con el MTD del mes pasado"
+
+msgid "Compared to the month prior"
+msgstr "Comparado con el mes anterior"
+
+msgid "Compared to the previous period"
+msgstr "Comparado con el período anterior"
+
+msgid "Invalid business selection."
+msgstr "Selección de negocio inválida."
+
+msgid "You are not authorized to view this business."
+msgstr ""
+
 msgid "Daily Revenue Summary"
 msgstr "Resumen de Ventas Diarias"
 
@@ -29,6 +53,12 @@ msgid "Total sales by payment method, net earnings, and discrepancy counts"
 msgstr ""
 "Total de ventas por método de pago, ganancias netas y conteo de "
 "discrepancias"
+
+msgid "Flagged Cash Sessions"
+msgstr "Sesiones de caja marcadas"
+
+msgid "Review flagged sessions by business, cashier, and date"
+msgstr "Revisá sesiones marcadas por negocio, cajero y fecha"
 
 msgid "Weekly Revenue Trend"
 msgstr "Tendencia de Ventas Semanales"
@@ -62,41 +92,8 @@ msgstr "Comparación de Negocios"
 msgid "Compare performance across multiple business locations"
 msgstr "Comparar rendimiento entre múltiples sucursales"
 
-msgid "Flagged Cash Sessions"
-msgstr "Sesiones de caja marcadas"
-
-msgid "Review flagged sessions by business, cashier, and date"
-msgstr "Revisá sesiones marcadas por negocio, cajero y fecha"
-
-msgid "Total Flagged Sessions"
-msgstr "Total de sesiones marcadas"
-
-msgid "Flag Rate"
-msgstr "Tasa de marcado"
-
-msgid "Days with Flags"
-msgstr "Días con marcas"
-
-msgid "Cashiers with Flags"
-msgstr "Cajeros con marcas"
-
-msgid "Total Sessions"
-msgstr "Total de sesiones"
-
-msgid "Flagged Sessions"
-msgstr "Sesiones marcadas"
-
-msgid "Flag Reason"
-msgstr "Motivo de marca"
-
-msgid "Session Details"
-msgstr "Detalles de la sesión"
-
-msgid "No reason provided"
-msgstr "Sin motivo especificado"
-
-msgid "No flagged sessions found for this range."
-msgstr "No se encontraron sesiones marcadas para este rango."
+msgid "You already have an open session for this business."
+msgstr ""
 
 msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
 msgstr "Valor de moneda demasiado grande. Máximo permitido: 9.999.999.999,99"
@@ -106,9 +103,6 @@ msgstr "Formato de número inválido. Por favor ingresá un monto válido."
 
 msgid "Edit window expired (32 hours passed)"
 msgstr "No podes editar (pasaron más de 32 horas)"
-
-msgid "Invalid business selection."
-msgstr "Selección de negocio inválida."
 
 msgid "Selected business not found."
 msgstr "No se encontró el negocio seleccionado."
@@ -175,9 +169,6 @@ msgstr "Últimos 7 días"
 
 msgid "Last 30 Days"
 msgstr "Últimos 30 días"
-
-msgid "This Month (MTD)"
-msgstr "Este Mes (MTD)"
 
 msgid "Status"
 msgstr "Estado"
@@ -1218,6 +1209,35 @@ msgstr "Actual"
 msgid "No data"
 msgstr "Sin datos"
 
+msgid "There is 1 open cash session. Totals reflect closed sessions only."
+msgstr "Hay 1 sesión de caja abierta. Los totales reflejan solo sesiones cerradas."
+
+#, python-format
+msgid ""
+"There are %(open_count)s open cash sessions. Totals reflect closed "
+"sessions only."
+msgstr ""
+"Hay %(open_count)s sesiones de caja abiertas. Los totales reflejan solo "
+"sesiones cerradas."
+
+msgid "Today is still in progress. Totals reflect closed sessions only."
+msgstr "Hoy todavía está en curso. Los totales reflejan solo sesiones cerradas."
+
+msgid "This Week"
+msgstr "Esta Semana"
+
+msgid "Last Week"
+msgstr "Semana Pasada"
+
+msgid "MTD means month-to-date (from the 1st to today)."
+msgstr "MTD significa mes a la fecha (desde el día 1 hasta hoy)."
+
+msgid "This Month (MTD)"
+msgstr "Este Mes (MTD)"
+
+msgid "Last Month"
+msgstr "Mes Pasado"
+
 msgid "Custom"
 msgstr "Personalizado"
 
@@ -1251,44 +1271,11 @@ msgstr "Menor volumen"
 msgid "Most Improved"
 msgstr "Mayor crecimiento"
 
-msgid "Smallest Decline"
-msgstr "Menor caída"
-
 msgid "Gross Margin %"
 msgstr "% de Margen"
 
 msgid "Ranking based on total sales for the current period."
 msgstr "Ranking basado en ventas totales del período actual."
-
-msgid "Compared to the same weekday last week"
-msgstr "Comparado con el mismo día de la semana pasada"
-
-msgid "Compared to last week (same weekday range)"
-msgstr "Comparado con la semana pasada (mismo rango de días)"
-
-msgid "Compared to the week prior"
-msgstr "Comparado con la semana anterior"
-
-msgid "Compared to last month MTD"
-msgstr "Comparado con el MTD del mes pasado"
-
-msgid "Compared to the month prior"
-msgstr "Comparado con el mes anterior"
-
-msgid "Compared to the previous period"
-msgstr "Comparado con el período anterior"
-
-msgid "There are %(open_count)s open cash sessions. Totals reflect closed sessions only."
-msgstr "Hay %(open_count)s sesiones de caja abiertas. Los totales reflejan solo sesiones cerradas."
-
-msgid "There is 1 open cash session. Totals reflect closed sessions only."
-msgstr "Hay 1 sesión de caja abierta. Los totales reflejan solo sesiones cerradas."
-
-msgid "Today is still in progress. Totals reflect closed sessions only."
-msgstr "Hoy todavía está en curso. Los totales reflejan solo sesiones cerradas."
-
-msgid "MTD means month-to-date (from the 1st to today)."
-msgstr "MTD significa mes a la fecha (desde el día 1 hasta hoy)."
 
 msgid "Revenue Breakdown by Business"
 msgstr "Desglose de Ingresos por Negocio"
@@ -1325,15 +1312,6 @@ msgstr "Tickets (Mayor / Menor)"
 
 msgid "Margin Range"
 msgstr "Rango de Margen"
-
-msgid "Top"
-msgstr "Mayor"
-
-msgid "Lowest"
-msgstr "Menor"
-
-msgid "businesses"
-msgstr "negocios"
 
 msgid "Rank"
 msgstr "Ranking"
@@ -1398,11 +1376,23 @@ msgstr "del total"
 msgid "Lower share of total"
 msgstr "Participación menor del total"
 
+msgid "Smallest Decline"
+msgstr "Menor caída"
+
 msgid "No comparison data"
 msgstr "Sin datos de comparación"
 
 msgid "Bank Transfer"
 msgstr "Transferencia Bancaria"
+
+msgid "businesses"
+msgstr "negocios"
+
+msgid "Top"
+msgstr "Mayor"
+
+msgid "Lowest"
+msgstr "Menor"
 
 msgid "Cost (Gs)"
 msgstr "Costo (Gs)"
@@ -1561,6 +1551,54 @@ msgstr "Inteligencia de Negocios"
 msgid "Multi-Business"
 msgstr "Multi-Negocio"
 
+msgid "This Month"
+msgstr "Este Mes"
+
+msgid "Cashier name"
+msgstr "Nombre del cajero"
+
+msgid "Clear"
+msgstr "Limpiar"
+
+msgid "Date Range"
+msgstr "Rango de Fechas"
+
+msgid "Total Flagged Sessions"
+msgstr "Total de sesiones marcadas"
+
+msgid "Flag Rate"
+msgstr "Tasa de marcado"
+
+msgid "Days with Flags"
+msgstr "Días con marcas"
+
+msgid "Cashiers with Flags"
+msgstr "Cajeros con marcas"
+
+msgid "Total Sessions"
+msgstr "Total de sesiones"
+
+msgid "Flagged Sessions"
+msgstr "Sesiones marcadas"
+
+msgid "Business & Cashier"
+msgstr "Negocio y Cajero"
+
+msgid "Flag Reason"
+msgstr "Motivo de marca"
+
+msgid "Session Details"
+msgstr "Detalles de la sesión"
+
+msgid "No reason provided"
+msgstr "Sin motivo especificado"
+
+msgid "Opened"
+msgstr "Abierto"
+
+msgid "No flagged sessions found for this range."
+msgstr "No se encontraron sesiones marcadas para este rango."
+
 msgid ""
 "Compare daily revenue across months to identify peak/low days and month-"
 "over-month growth patterns"
@@ -1577,14 +1615,8 @@ msgstr "Seleccione el período de tiempo"
 msgid "Show current month"
 msgstr "Mostrar mes actual"
 
-msgid "This Month"
-msgstr "Este Mes"
-
 msgid "Show last month"
 msgstr "Mostrar mes pasado"
-
-msgid "Last Month"
-msgstr "Mes Pasado"
 
 msgid "Show 2 months ago"
 msgstr "Mostrar hace 2 meses"
@@ -1686,9 +1718,6 @@ msgstr "Desglose Semanal"
 
 msgid "Week"
 msgstr "Semana"
-
-msgid "Date Range"
-msgstr "Rango de Fechas"
 
 msgid "Cost"
 msgstr "Costo"
@@ -1873,12 +1902,6 @@ msgstr "Día"
 
 msgid "WoW Growth"
 msgstr "% de Crec."
-
-msgid "Last Week"
-msgstr "Semana Pasada"
-
-msgid "This Week"
-msgstr "Esta Semana"
 
 msgid "Mon"
 msgstr "Lun"
@@ -2071,8 +2094,13 @@ msgstr "Abrir Nueva Sesión de Caja"
 msgid "Start a new shift and track cash movements"
 msgstr "Iniciar nueva sesión de caja y empezá a tener movimientos"
 
-msgid "Business & Cashier"
-msgstr "Negocio y Cajero"
+#, fuzzy
+msgid "Opened at"
+msgstr "Abierto en"
+
+#, fuzzy
+msgid "View Session"
+msgstr "Ver Caja"
 
 msgid "Select a business"
 msgstr "Seleccionar un Negocio"
@@ -2085,14 +2113,8 @@ msgstr ""
 msgid "Which business location?"
 msgstr "¿Cuál ubicación del negocio?"
 
-msgid "Cashier name"
-msgstr "Nombre del cajero"
-
 msgid "Logged in as"
 msgstr "Sesión iniciada como"
-
-msgid "Session Details"
-msgstr "Detalles de la Sesión"
 
 msgid "Starting amount in drawer"
 msgstr "Cantidad inicial en el cajón"
@@ -2273,9 +2295,6 @@ msgstr "Esta sesión fue restaurada"
 msgid "Session Info"
 msgstr "Información de la Sesión"
 
-msgid "Opened"
-msgstr "Abierto"
-
 msgid "Cash Flow"
 msgstr "Flujo de efectivo"
 
@@ -2424,9 +2443,6 @@ msgstr "ej., Discrepancia alta, requiere revisión del gerente..."
 
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
-
-msgid "Clear"
-msgstr "Limpiar"
 
 #~ msgid "Received"
 #~ msgstr "Recibido"
@@ -2685,3 +2701,4 @@ msgstr "Limpiar"
 
 #~ msgid "All sales"
 #~ msgstr "Todas las ventas"
+
