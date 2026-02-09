@@ -9,7 +9,7 @@ Create Date: 2026-02-06 14:30:00.000000
 """
 from typing import Sequence, Union
 
-from alembic import op
+from alembic import context, op
 import sqlalchemy as sa
 
 
@@ -32,26 +32,28 @@ def upgrade() -> None:
     sessions do not block new open sessions.
     """
     # Pre-check for duplicate open sessions before creating the unique index
-    conn = op.get_bind()
-    result = conn.execute(
-        sa.text('''
-            SELECT cashier_id, business_id, array_agg(id) AS session_ids, COUNT(*) AS open_count
-            FROM cash_sessions
-            WHERE status = 'OPEN' AND is_deleted = FALSE
-            GROUP BY cashier_id, business_id
-            HAVING COUNT(*) > 1
-        ''')
-    )
-    duplicates = result.mappings().all()
-    if duplicates:
-        msg_lines = [
-            '\n[CP-DATA-02] Migration aborted: Duplicate open sessions detected!\n',
-            'The following (cashier_id, business_id) pairs have multiple open sessions (status=OPEN, is_deleted=FALSE):',
-        ]
-        for row in duplicates:
-            msg_lines.append(f"  cashier_id={row['cashier_id']}, business_id={row['business_id']}, open_session_ids={row['session_ids']}")
-        msg_lines.append('\nPlease manually close or resolve these sessions before re-running the migration.')
-        raise Exception('\n'.join(msg_lines))
+    # Skip this check in offline mode (e.g., alembic upgrade head --sql)
+    if not context.is_offline_mode():
+        conn = op.get_bind()
+        result = conn.execute(
+            sa.text('''
+                SELECT cashier_id, business_id, array_agg(id) AS session_ids, COUNT(*) AS open_count
+                FROM cash_sessions
+                WHERE status = 'OPEN' AND is_deleted = FALSE
+                GROUP BY cashier_id, business_id
+                HAVING COUNT(*) > 1
+            ''')
+        )
+        duplicates = result.mappings().all()
+        if duplicates:
+            msg_lines = [
+                '\n[CP-DATA-02] Migration aborted: Duplicate open sessions detected!\n',
+                'The following (cashier_id, business_id) pairs have multiple open sessions (status=OPEN, is_deleted=FALSE):',
+            ]
+            for row in duplicates:
+                msg_lines.append(f"  cashier_id={row['cashier_id']}, business_id={row['business_id']}, open_session_ids={row['session_ids']}")
+            msg_lines.append('\nPlease manually close or resolve these sessions before re-running the migration.')
+            raise Exception('\n'.join(msg_lines))
 
     # Create unique index (partial, PostgreSQL syntax)
     # This index will enforce that only one row with status='OPEN' and is_deleted=FALSE can exist

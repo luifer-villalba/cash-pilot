@@ -125,6 +125,7 @@ async def create_session_post(
                     "block_new_session": block_new_session,
                     "locale": locale,
                     "_": _,
+                    "today": today_local().isoformat(),
                 },
                 status_code=400,
             )
@@ -199,10 +200,7 @@ async def create_session_post(
                 cashier_id=str(current_user.id),
                 error=str(exc),
             )
-            raise HTTPException(
-                status_code=500,
-                detail=_("An unexpected error occurred while creating the session."),
-            )
+            raise
 
         logger.info(
             "session.created",
@@ -237,6 +235,7 @@ async def create_session_post(
                 "block_new_session": block_new_session,
                 "locale": locale,
                 "_": _,
+                "today": today_local().isoformat(),
             },
             status_code=400,
         )
@@ -259,6 +258,7 @@ async def create_session_post(
                 "block_new_session": block_new_session,
                 "locale": locale,
                 "_": _,
+                "today": today_local().isoformat(),
             },
             status_code=400,
         )
