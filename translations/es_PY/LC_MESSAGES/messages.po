@@ -44,7 +44,7 @@ msgid "Invalid business selection."
 msgstr "Selección de negocio inválida."
 
 msgid "You are not authorized to view this business."
-msgstr ""
+msgstr "No estás autorizado a ver este negocio."
 
 msgid "Daily Revenue Summary"
 msgstr "Resumen de Ventas Diarias"
@@ -93,7 +93,7 @@ msgid "Compare performance across multiple business locations"
 msgstr "Comparar rendimiento entre múltiples sucursales"
 
 msgid "You already have an open session for this business."
-msgstr ""
+msgstr "Ya tenés una sesión abierta para este negocio."
 
 msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
 msgstr "Valor de moneda demasiado grande. Máximo permitido: 9.999.999.999,99"
@@ -359,9 +359,8 @@ msgstr "Totales del sistema vs manuales por negocio"
 msgid "Notes"
 msgstr "Notas"
 
-#, fuzzy
 msgid "View session notes for"
-msgstr "Ver sesiones para"
+msgstr "Ver notas de sesión para"
 
 msgid "Sesiones abiertas"
 msgstr "Sesiones abiertas"
@@ -393,17 +392,14 @@ msgstr "Pendiente"
 msgid "Total Sales"
 msgstr "Ventas Totales"
 
-#, fuzzy
 msgid "System"
-msgstr "Agenda:"
+msgstr "Sistema"
 
-#, fuzzy
 msgid "Manual"
-msgstr "Farmagic:"
+msgstr "Manual"
 
-#, fuzzy
 msgid "Diff"
-msgstr "Dif:"
+msgstr "Dif"
 
 msgid "Cash"
 msgstr "Efectivo"
@@ -423,9 +419,8 @@ msgstr "Ver sesiones para"
 msgid "Sessions"
 msgstr "Sesiones"
 
-#, fuzzy
 msgid "No sessions"
-msgstr "sesiones"
+msgstr "Sin sesiones"
 
 msgid "Entry Status"
 msgstr "Estado de Entrada"
@@ -522,29 +517,26 @@ msgstr "Gestión de Usuarios - CashPilot"
 msgid "User Management"
 msgstr "Gestión de Usuarios"
 
-#, fuzzy
 msgid "Manage access, roles, and business assignments"
-msgstr "Gestionar ubicaciones de negocios y asignaciones"
+msgstr "Gestionar accesos, roles y asignaciones de negocios"
 
 msgid "Create User"
 msgstr "Crear Usuario"
 
 msgid "User Directory"
-msgstr ""
+msgstr "Directorio de Usuarios"
 
 msgid "Search, inspect, and act on user accounts"
-msgstr ""
+msgstr "Buscar, inspeccionar y actuar sobre cuentas de usuario"
 
-#, fuzzy
 msgid "Search users"
-msgstr "Buscar negocios"
+msgstr "Buscar usuarios"
 
 msgid "Search by name or email..."
-msgstr "Cambiar por nombre o email..."
+msgstr "Buscar por nombre o email..."
 
-#, fuzzy
 msgid "User"
-msgstr "Usuarios"
+msgstr "Usuario"
 
 msgid "Role"
 msgstr "Rol"
@@ -597,9 +589,8 @@ msgstr "Restablecer contraseña"
 msgid "Resetting password for"
 msgstr "Restableciendo contraseña para"
 
-#, fuzzy
 msgid "Enter password..."
-msgstr "Ingrese contraseña personalizada..."
+msgstr "Ingresar contraseña..."
 
 msgid "Password Reset Successful"
 msgstr "Restablecimiento de contraseña exitoso"
@@ -698,7 +689,7 @@ msgid "Please fill all required fields"
 msgstr "Por favor complete todos los campos requeridos"
 
 msgid "Please enter a password or choose to generate one"
-msgstr ""
+msgstr "Por favor ingresá una contraseña o elegí generar una"
 
 msgid "Error"
 msgstr "Error"
@@ -712,12 +703,11 @@ msgstr "ADMINISTRADOR"
 msgid "CASHIER"
 msgstr "CAJERO"
 
-#, fuzzy
 msgid "Remove"
-msgstr "Revisar"
+msgstr "Eliminar"
 
 msgid "more"
-msgstr ""
+msgstr "más"
 
 msgid "Session"
 msgstr "Sesión"
@@ -725,9 +715,8 @@ msgstr "Sesión"
 msgid "Unknown"
 msgstr "Desconocido"
 
-#, fuzzy
 msgid "No notes available for this date."
-msgstr "No se encontraron sesiones para esta fecha"
+msgstr "No hay notas disponibles para esta fecha."
 
 msgid "Session #"
 msgstr "Sesión #"
@@ -1924,9 +1913,8 @@ msgstr "Sáb"
 msgid "Sun"
 msgstr "Dom"
 
-#, fuzzy
 msgid "Export PDF"
-msgstr "Exportar"
+msgstr "Exportar PDF"
 
 msgid "View Monthly"
 msgstr "Ver mensual"
@@ -1981,10 +1969,10 @@ msgid "Now"
 msgstr "Ahora"
 
 msgid "Generating PDF..."
-msgstr ""
+msgstr "Generando PDF..."
 
 msgid "Could not generate PDF. Try again."
-msgstr ""
+msgstr "No se pudo generar el PDF. Intentá de nuevo."
 
 msgid "Close Cash Session"
 msgstr "Cerrar caja"
@@ -2094,13 +2082,11 @@ msgstr "Abrir Nueva Sesión de Caja"
 msgid "Start a new shift and track cash movements"
 msgstr "Iniciar nueva sesión de caja y empezá a tener movimientos"
 
-#, fuzzy
 msgid "Opened at"
 msgstr "Abierto en"
 
-#, fuzzy
 msgid "View Session"
-msgstr "Ver Caja"
+msgstr "Ver Sesión"
 
 msgid "Select a business"
 msgstr "Seleccionar un Negocio"
@@ -2443,262 +2429,3 @@ msgstr "ej., Discrepancia alta, requiere revisión del gerente..."
 
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
-
-#~ msgid "Received"
-#~ msgstr "Recibido"
-
-#~ msgid "Handed"
-#~ msgstr "Entregado"
-
-#~ msgid "Period"
-#~ msgstr "Período"
-
-#~ msgid "Credit Card"
-#~ msgstr "Tarjeta de Crédito"
-
-#~ msgid "Debit Card"
-#~ msgstr "Tarjeta de Débito"
-
-#~ msgid "Purchases"
-#~ msgstr "Compras"
-
-#~ msgid "Daily Cost"
-#~ msgstr "Costo Diario"
-
-#~ msgid "New Session"
-#~ msgstr "Abrir Caja"
-
-#~ msgid "Add Reconciliation"
-#~ msgstr "Agregar Conciliación"
-
-#~ msgid "Filter Sessions"
-#~ msgstr "Filtrar Sesiones"
-
-#~ msgid "Show Deleted"
-#~ msgstr "Mostrar Eliminadas"
-
-#~ msgid "Toggle filters"
-#~ msgstr "Alternar filtros"
-
-#~ msgid "Clear status"
-#~ msgstr "Limpiar estado"
-
-#~ msgid "Search..."
-#~ msgstr "Buscar..."
-
-#~ msgid "TOTAL SALES"
-#~ msgstr "VENTAS TOTALES"
-
-#~ msgid "Payments collected"
-#~ msgstr "Pagos cobrados"
-
-#~ msgid "Direct transfers"
-#~ msgstr "Transferencias directas"
-
-#~ msgid "Cash outflows"
-#~ msgstr "Salida de efectivo"
-
-#~ msgid "Open Sessions"
-#~ msgstr "Sesiones Abiertas"
-
-#~ msgid "Flagged Sessions"
-#~ msgstr "Sesiones Marcadas"
-
-#~ msgid "Need review"
-#~ msgstr "Necesitan revisión"
-
-#~ msgid "Less Details"
-#~ msgstr "Menos Detalles"
-
-#~ msgid "Completed"
-#~ msgstr "Completado"
-
-#~ msgid "Create New Session"
-#~ msgstr "Crear Nueva Sesión"
-
-#~ msgid "This Week vs Last Week"
-#~ msgstr "Esta semana vs semana pasada"
-
-#~ msgid "Sales vs Cost"
-#~ msgstr "Ventas vs costos"
-
-#~ msgid "Sales total"
-#~ msgstr "Ventas totales"
-
-#~ msgid "Sales"
-#~ msgstr "Ventas"
-
-#~ msgid "Cost total"
-#~ msgstr "Costo total"
-
-#~ msgid "Business Health Insights"
-#~ msgstr "Insights de salud del negocio"
-
-#~ msgid "Drivers of Change"
-#~ msgstr "Motores del cambio"
-
-#~ msgid "No negative drivers detected"
-#~ msgstr "No se detectaron caídas relevantes"
-
-#~ msgid "Top drops vs last week"
-#~ msgstr "Mayores caídas vs semana pasada"
-
-#~ msgid "of change"
-#~ msgstr "del cambio"
-
-#~ msgid "Discount Elasticity"
-#~ msgstr "Elasticidad de descuentos"
-
-#~ msgid "Avg ticket and margin by day type"
-#~ msgstr "Ticket promedio y margen por tipo de día"
-
-#~ msgid "Margin Impact"
-#~ msgstr "Impacto en margen"
-
-#~ msgid "Health Index"
-#~ msgstr "Índice de salud"
-
-#~ msgid "Very Strong"
-#~ msgstr "Muy sólido"
-
-#~ msgid "Healthy"
-#~ msgstr "Saludable"
-
-#~ msgid "Watch"
-#~ msgstr "En observación"
-
-#~ msgid "Cost coverage"
-#~ msgstr "Cobertura de costos"
-
-#~ msgid "Ticket & Efficiency"
-#~ msgstr "Tickets y eficiencia"
-
-#~ msgid "Avg Ticket"
-#~ msgstr "Ticket promedio"
-
-#~ msgid "Tickets vs Last Week"
-#~ msgstr "Tickets vs semana pasada"
-
-#~ msgid "No ticket data"
-#~ msgstr "Sin datos de tickets"
-
-#~ msgid "Weekly ticket volume and efficiency"
-#~ msgstr "Volumen semanal y eficiencia de tickets"
-
-#~ msgid "vs last week"
-#~ msgstr "vs semana pasada"
-
-#~ msgid "of week"
-#~ msgstr "de la semana"
-
-#~ msgid "Days with data"
-#~ msgstr "Días con datos"
-
-#~ msgid "Average daily"
-#~ msgstr "Promedio diario"
-
-#~ msgid "Top Performing Day"
-#~ msgstr "Día de Mejor Rendimiento"
-
-#~ msgid "Stability Score"
-#~ msgstr "Puntuación de Estabilidad"
-
-#~ msgid "Month-over-Month Growth"
-#~ msgstr "Crecimiento Mes a Mes"
-
-#~ msgid "Total Growth"
-#~ msgstr "Crecimiento Total"
-
-#~ msgid "Avg/day:"
-#~ msgstr "Prom/día:"
-
-#~ msgid "Projected:"
-#~ msgstr "Proyectado:"
-
-#~ msgid "Very Stable"
-#~ msgstr "Muy Estable"
-
-#~ msgid "Moderate"
-#~ msgstr "Moderado"
-
-#~ msgid "Volatile"
-#~ msgstr "Volátil"
-
-#~ msgid "Core"
-#~ msgstr "Principal"
-
-#~ msgid "exceptional day"
-#~ msgstr "día excepcional"
-
-#~ msgid "Insufficient data"
-#~ msgstr "Datos insuficientes"
-
-#~ msgid "Top day in"
-#~ msgstr "Mejor día en"
-
-#~ msgid "weeks"
-#~ msgstr "semanas"
-
-#~ msgid "day"
-#~ msgstr "día"
-
-#~ msgid "Through day"
-#~ msgstr "Hasta el día"
-
-#~ msgid "Day of Month"
-#~ msgstr "Día del Mes"
-
-#~ msgid ""
-#~ "Line chart: current vs previous week "
-#~ "(day-by-day). Bar chart: 5-week "
-#~ "revenue trend."
-#~ msgstr ""
-#~ "Gráfico de líneas: semana actual vs "
-#~ "anterior (día a día). Gráfico de "
-#~ "barras: tendencia de 5 semanas."
-
-#~ msgid "Week-over-Week Growth"
-#~ msgstr "Crecimiento Semanal"
-
-#~ msgid "Weekly Total"
-#~ msgstr "Total Semanal"
-
-#~ msgid "Username"
-#~ msgstr "Nombre de usuario"
-
-#~ msgid "Operational Status"
-#~ msgstr "Estado operativo"
-
-#~ msgid "Solid operation"
-#~ msgstr "Operación sólida"
-
-#~ msgid "Stable operation"
-#~ msgstr "Operación estable"
-
-#~ msgid "Review needed"
-#~ msgstr "Revisión necesaria"
-
-#~ msgid "Urgent intervention"
-#~ msgstr "Intervención urgente"
-
-#~ msgid "Coverage ratio"
-#~ msgstr "Ratio de cobertura"
-
-#~ msgid "All businesses stable"
-#~ msgstr "Todos los negocios estables"
-
-#~ msgid "CASH SALES & BANK TRANSFER"
-#~ msgstr "VENTAS EFECTIVO & TRANSFERENCIAS"
-
-#~ msgid "Initial"
-#~ msgstr "Inicial"
-
-#~ msgid "Cash only"
-#~ msgstr "Solo efectivo"
-
-#~ msgid "Credit & Debit"
-#~ msgstr "Crédito y Débito"
-
-#~ msgid "All sales"
-#~ msgstr "Todas las ventas"
-

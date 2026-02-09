@@ -183,9 +183,9 @@ Makefile                    # make test, make seed, etc.
 
 **Quick Links:**
 - [Documentation Index](docs/README.md) - Complete guide to all documentation
-- [Design System](docs/design_readme.md) - UI/UX patterns and component guidelines
-- [Windows 7 Compatibility](docs/w7-compatibility.md) - Legacy browser support guide
-- [Backup & Restore](docs/backup_restore.md) - Database backup procedures
+- [Design System](docs/reference/design_readme.md) - UI/UX patterns and component guidelines
+- [Windows 7 Compatibility](docs/reference/w7-compatibility.md) - Legacy browser support guide
+- [Backup & Restore](docs/runbooks/backup_restore.md) - Database backup procedures
 - [Security Policy](SECURITY.md) - Security practices and vulnerability tracking
 
 **For New Developers:** Start with the [Documentation Index](docs/README.md) for recommended reading paths.
@@ -220,7 +220,7 @@ SENTRY_DSN=...          # For error tracking
 - Alembic migrations tracked in git
 - Sentry error tracking (if configured)
 
-**See Also:** [Backup & Restore Guide](docs/backup_restore.md) for production database management
+**See Also:** [Backup & Restore Guide](docs/runbooks/backup_restore.md) for production database management
 
 ---
 
@@ -249,6 +249,8 @@ cp .env.backup.example .env.backup
 - Before schema migrations (`alembic upgrade`)
 - Before deploying to production
 - Weekly (recommended)
+
+**📖 Complete Guide:** See [Backup & Restore Guide](docs/runbooks/backup_restore.md) for detailed instructions.
 
 ---
 
@@ -281,8 +283,8 @@ git push origin feature/your-feature
 
 **Guidelines:**
 - Use Linear for ticket tracking (MIZ-XXX prefix). Reference in commit messages.
-- Follow [Design System Guide](docs/design_readme.md) for UI changes
-- Ensure [Windows 7 compatibility](docs/w7-compatibility.md) for frontend changes
+- Follow [Design System Guide](docs/reference/design_readme.md) for UI changes
+- Ensure [Windows 7 compatibility](docs/reference/w7-compatibility.md) for frontend changes
 - Review [Security Policy](SECURITY.md) before submitting PRs
 
 **See Also:** [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines
@@ -307,7 +309,6 @@ git push origin feature/your-feature
 ## What's Missing
 
 **Extended Analytics** — Discrepancy patterns, cashier performance metrics, predictive trends  
-**CSV Export** — Download sessions for accounting  
 **Email Alerts** — Notify admin of large discrepancies  
 **Mobile App** — Native iOS/Android for on-the-go session management
 
