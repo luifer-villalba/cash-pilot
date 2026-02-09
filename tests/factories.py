@@ -157,6 +157,7 @@ class CashSessionFactory:
             closing_ticket=closing_ticket,
             flagged=flagged,
             flag_reason=flag_reason,
+            is_deleted=kwargs.get("is_deleted", False),
         )
 
         session.add(cash_session)
