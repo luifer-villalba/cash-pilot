@@ -494,7 +494,7 @@
 
     <script>
         function initTheme() {
-            const saved = localStorage.getItem('theme') || 'light';
+            var saved = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', saved);
         }
         initTheme();
@@ -623,8 +623,8 @@
         document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
     <script>
-        document.addEventListener('click', (event) => {
-            const link = event.target.closest('a[data-back]');
+        document.addEventListener('click', function(event) {
+            var link = event.target.closest('a[data-back]');
             if (!link) {
                 return;
             }
