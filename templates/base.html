@@ -81,6 +81,26 @@
                     return str + padding;
                 };
             }
+            // Element.closest polyfill for IE11
+            if (!Element.prototype.closest) {
+                Element.prototype.closest = function(selector) {
+                    var el = this;
+                    while (el) {
+                        if (el.matches && el.matches(selector)) {
+                            return el;
+                        }
+                        el = el.parentElement;
+                    }
+                    return null;
+                };
+            }
+            
+            // Element.matches polyfill for IE11
+            if (!Element.prototype.matches) {
+                Element.prototype.matches = Element.prototype.msMatchesSelector || 
+                                           Element.prototype.webkitMatchesSelector;
+            }
+            
             // Array.includes polyfill for IE11
             if (!Array.prototype.includes) {
                 Array.prototype.includes = function(searchElement, fromIndex) {
@@ -494,7 +514,7 @@
 
     <script>
         function initTheme() {
-            const saved = localStorage.getItem('theme') || 'light';
+            var saved = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', saved);
         }
         initTheme();
@@ -623,8 +643,8 @@
         document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
     <script>
-        document.addEventListener('click', (event) => {
-            const link = event.target.closest('a[data-back]');
+        document.addEventListener('click', function(event) {
+            var link = event.target.closest('a[data-back]');
             if (!link) {
                 return;
             }

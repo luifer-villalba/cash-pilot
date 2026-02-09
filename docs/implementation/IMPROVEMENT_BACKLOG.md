@@ -93,7 +93,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** ES6 syntax breaks IE11
 * **Evidence:** `templates/base.html`
 * **Acceptance impact:** AC-08
-* **Status:** Not started
+* **Status:** Completed (2026-02-09)
 
 ### CP-LEGACY-02 — Replace unsupported DOM APIs
 
