@@ -67,20 +67,21 @@ Prevent multiple concurrent open sessions for the same cashier within the same b
 
 **Changes**
 
-* Database migration: Add unique constraint on `(cashier_id, business_id, status='OPEN')`
-  * File: `alembic/versions/<timestamp>_add_single_open_session_constraint.py`
+* Database migration: Add unique constraint on `(cashier_id, business_id)` with `WHERE status='OPEN' AND is_deleted=FALSE`
+  * File: `alembic/versions/fce9b0c2d3a4_add_single_open_session_constraint.py`
   * Constraint name: `uq_cash_sessions_one_open_per_cashier_business`
-  * Partial index: `WHERE status = 'OPEN'`
+  * Partial index: `WHERE status = 'OPEN' AND is_deleted = FALSE`
 
 * Helper function for checking open sessions
   * File: `src/cashpilot/api/auth_helpers.py`
   * New function: `async def get_open_session_for_cashier_business(cashier_id, business_id, db) -> CashSession | None`
-  * Returns existing open session or None
+  * Returns existing open (non-deleted) session or None
 
 * API validation in session creation
   * File: `src/cashpilot/api/routes/sessions.py`
-  * New custom exception: `SessionAlreadyOpenError` with session details
-  * Catch constraint violation, convert to user-friendly error with recovery options
+  * Pre-check for existing open session before save
+  * Catch `IntegrityError` and verify it's due to duplicate session (otherwise re-raise with detailed logging)
+  * Convert duplicate session error to user-friendly message with recovery options
 
 **Risks:** Medium  
 * Database migration must be tested on staging with existing data
@@ -93,6 +94,7 @@ Prevent multiple concurrent open sessions for the same cashier within the same b
 * Integration test: `test_prevent_duplicate_open_session_same_business()`
 * Integration test: `test_allow_open_session_different_business_same_cashier()`
 * Integration test: `test_allow_open_session_if_previous_closed()`
+* Integration test: `test_open_session_allows_with_soft_deleted_open()` - verifies soft-deleted OPEN sessions don't block new sessions
 
 ---
 

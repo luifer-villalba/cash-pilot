@@ -5,6 +5,7 @@
 import pytest
 from httpx import AsyncClient
 from decimal import Decimal
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests.factories import BusinessFactory, CashSessionFactory
@@ -145,9 +146,34 @@ class TestOpenCashSession:
         """Test opening new session after closing existing one."""
         await CashSessionFactory.create(
             db_session,
-            business_id=business_id,
+            business_id=UUID(business_id),
             cashier_id=admin_client.test_user.id,
             status="CLOSED",
+        )
+
+        response = await admin_client.post(
+            "/sessions",
+            data={
+                "business_id": business_id,
+                "cashier_name": "Cashier",
+                "initial_cash": "500000.00",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
+
+    @pytest.mark.asyncio
+    async def test_open_session_allows_with_soft_deleted_open(
+        self, admin_client: AsyncClient, db_session: AsyncSession, business_id: str
+    ):
+        """Test opening new session when existing OPEN session is soft-deleted."""
+        await CashSessionFactory.create(
+            db_session,
+            business_id=UUID(business_id),
+            cashier_id=admin_client.test_user.id,
+            status="OPEN",
+            is_deleted=True,
         )
 
         response = await admin_client.post(

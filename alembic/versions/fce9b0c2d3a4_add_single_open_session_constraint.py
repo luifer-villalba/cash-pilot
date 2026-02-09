@@ -21,13 +21,15 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    """Add unique constraint for single open session per cashier/business.
+    """Add unique constraint for single open (non-deleted) session per cashier/business.
     
     This constraint prevents a cashier from having multiple concurrent OPEN
-    sessions in the same business, supporting the CP-DATA-02 requirement.
+    sessions in the same business where the session is not soft-deleted,
+    supporting the CP-DATA-02 requirement.
     
-    The constraint is partial (WHERE status = 'OPEN') so it only applies to
-    open sessions. Closed sessions do not block new open sessions.
+    The constraint is partial (WHERE status = 'OPEN' AND is_deleted = FALSE) so
+    it only applies to open, non-deleted sessions. Closed or soft-deleted
+    sessions do not block new open sessions.
     """
     # Pre-check for duplicate open sessions before creating the unique index
     conn = op.get_bind()

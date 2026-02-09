@@ -112,7 +112,6 @@ async def create_session_post(
         )
         if existing_session:
             await db.refresh(current_user, ["businesses"])
-            await db.refresh(current_user, ["businesses"])
             block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
             businesses = await get_assigned_businesses(current_user, db)
             return templates.TemplateResponse(
@@ -166,29 +165,43 @@ async def create_session_post(
         try:
             await db.commit()
             await db.refresh(session)
-        except IntegrityError:
+        except IntegrityError as exc:
             await db.rollback()
             existing_session = await get_open_session_for_cashier_business(
                 current_user.id,
                 business_uuid,
                 db,
             )
-            await db.refresh(current_user, ["businesses"])
-            block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
-            businesses = await get_assigned_businesses(current_user, db)
-            return templates.TemplateResponse(
-                request,
-                "sessions/create_session.html",
-                {
-                    "current_user": current_user,
-                    "businesses": businesses,
-                    "error": _("You already have an open session for this business."),
-                    "existing_session": existing_session,
-                    "block_new_session": block_new_session,
-                    "locale": locale,
-                    "_": _,
-                },
-                status_code=409,
+            if existing_session:
+                await db.refresh(current_user, ["businesses"])
+                block_new_session = (
+                    user_role == UserRole.CASHIER and len(current_user.businesses) == 1
+                )
+                businesses = await get_assigned_businesses(current_user, db)
+                return templates.TemplateResponse(
+                    request,
+                    "sessions/create_session.html",
+                    {
+                        "current_user": current_user,
+                        "businesses": businesses,
+                        "error": _("You already have an open session for this business."),
+                        "existing_session": existing_session,
+                        "block_new_session": block_new_session,
+                        "locale": locale,
+                        "_": _,
+                    },
+                    status_code=409,
+                )
+            # If no existing session found, this is a different integrity error
+            logger.exception(
+                "session.create.integrity_error",
+                session_business_id=str(business_uuid),
+                cashier_id=str(current_user.id),
+                error=str(exc),
+            )
+            raise HTTPException(
+                status_code=500,
+                detail=_("An unexpected error occurred while creating the session."),
             )
 
         logger.info(
