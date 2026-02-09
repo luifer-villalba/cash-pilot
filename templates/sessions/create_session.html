@@ -22,7 +22,7 @@
                         {{ _('You already have an open session for this business.') }}
                     </div>
                     <div class="text-xs text-base-content/60">
-                        {{ _('Opened at') }}: {{ existing_session.opened_time }}
+                        {{ _('Opened at') }}: {{ existing_session.opened_time.strftime('%H:%M') }}
                     </div>
                     <div class="flex flex-wrap gap-2 pt-1">
                         <a href="/sessions/{{ existing_session.id }}" class="btn btn-sm btn-outline">
