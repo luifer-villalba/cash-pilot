@@ -64,8 +64,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var input = document.getElementById(field);
 
         var toggleButton = function() {
-            btn.classList.toggle('opacity-0', !input.value);
-            btn.classList.toggle('pointer-events-none', !input.value);
+            // IE11-compatible: replace classList.toggle(class, force) with conditional logic
+            if (!input.value) {
+                btn.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                btn.classList.remove('opacity-0', 'pointer-events-none');
+            }
         };
 
         toggleButton();
@@ -124,8 +128,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('[data-field="from_date"], [data-field="to_date"]').forEach(function(clearBtn) {
                 var fieldId = clearBtn.dataset.field;
                 var fieldInput = document.getElementById(fieldId);
-                clearBtn.classList.toggle('opacity-0', !fieldInput.value);
-                clearBtn.classList.toggle('pointer-events-none', !fieldInput.value);
+                // IE11-compatible: replace classList.toggle(class, force) with conditional logic
+                if (!fieldInput.value) {
+                    clearBtn.classList.add('opacity-0', 'pointer-events-none');
+                } else {
+                    clearBtn.classList.remove('opacity-0', 'pointer-events-none');
+                }
             });
 
             updateFilterBadge();
