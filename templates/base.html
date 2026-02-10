@@ -162,6 +162,16 @@
                 };
             }
             
+            // NodeList.forEach polyfill for IE11
+            if (window.NodeList && !NodeList.prototype.forEach) {
+                NodeList.prototype.forEach = Array.prototype.forEach;
+            }
+            
+            // HTMLCollection.forEach polyfill for IE11
+            if (window.HTMLCollection && !HTMLCollection.prototype.forEach) {
+                HTMLCollection.prototype.forEach = Array.prototype.forEach;
+            }
+            
             // Set polyfill for IE11 (basic implementation)
             if (typeof Set === 'undefined') {
                 window.Set = function(iterable) {

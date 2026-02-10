@@ -79,7 +79,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Multiple open sessions possible via UI
 * **Evidence:** Missing overlap check in HTML flow
 * **Acceptance impact:** AC-03
-* **Status:** Not started
+* **Status:** Completed (2026-02-08)
 
 ---
 
@@ -101,7 +101,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** `classList.toggle(force)` unsupported
 * **Evidence:** `static/js/dashboard.js`
 * **Acceptance impact:** AC-08
-* **Status:** Not started
+* **Status:** Completed (2026-02-10)
 
 ---
 
