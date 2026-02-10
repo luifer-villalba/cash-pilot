@@ -65,10 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var toggleButton = function() {
             // IE11-compatible: replace classList.toggle(class, force) with conditional logic
+            // Use single-token calls for IE11 support
             if (!input.value) {
-                btn.classList.add('opacity-0', 'pointer-events-none');
+                btn.classList.add('opacity-0');
+                btn.classList.add('pointer-events-none');
             } else {
-                btn.classList.remove('opacity-0', 'pointer-events-none');
+                btn.classList.remove('opacity-0');
+                btn.classList.remove('pointer-events-none');
             }
         };
 
@@ -129,10 +132,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 var fieldId = clearBtn.dataset.field;
                 var fieldInput = document.getElementById(fieldId);
                 // IE11-compatible: replace classList.toggle(class, force) with conditional logic
+                // Use single-token calls for IE11 support
                 if (!fieldInput.value) {
-                    clearBtn.classList.add('opacity-0', 'pointer-events-none');
+                    clearBtn.classList.add('opacity-0');
+                    clearBtn.classList.add('pointer-events-none');
                 } else {
-                    clearBtn.classList.remove('opacity-0', 'pointer-events-none');
+                    clearBtn.classList.remove('opacity-0');
+                    clearBtn.classList.remove('pointer-events-none');
                 }
             });
 
