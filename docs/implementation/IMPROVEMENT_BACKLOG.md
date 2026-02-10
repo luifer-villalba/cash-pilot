@@ -101,7 +101,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** `classList.toggle(force)` unsupported
 * **Evidence:** `static/js/dashboard.js`
 * **Acceptance impact:** AC-08
-* **Status:** Not started
+* **Status:** Completed (2026-02-10)
 
 ---
 
