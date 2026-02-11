@@ -4,10 +4,16 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
-from cashpilot.api.auth_helpers import require_admin, require_own_session, require_view_session
+from cashpilot.api.auth_helpers import (
+    get_open_session_for_cashier_business,
+    require_admin,
+    require_own_session,
+    require_view_session,
+)
 from cashpilot.api.cash_session_helpers import (
     _determine_cashier_for_session,
     _validate_restore_session_inputs,
@@ -103,6 +109,22 @@ async def open_shift(
     if not business:
         raise NotFoundError("Business", str(session.business_id))
 
+    # Prevent duplicate open sessions per cashier/business (CP-DATA-02)
+    existing_session = await get_open_session_for_cashier_business(
+        cashier_id, session.business_id, db
+    )
+    if existing_session:
+        raise ConflictError(
+            "An open session already exists for this business. "
+            "Close the existing session first.",
+            {
+                "session_id": str(existing_session.id),
+                "session_number": existing_session.session_number,
+                "cashier_id": str(cashier_id),
+                "business_id": str(session.business_id),
+            },
+        )
+
     # Check overlap
     if not session.allow_overlap:
         overlap_error = await check_session_overlap(
@@ -137,8 +159,26 @@ async def open_shift(
     )
 
     db.add(new_session)
-    await db.flush()
-    await db.refresh(new_session)
+    try:
+        await db.flush()
+        await db.refresh(new_session)
+    except IntegrityError as exc:
+        await db.rollback()
+        existing_session = await get_open_session_for_cashier_business(
+            cashier_id, session.business_id, db
+        )
+        if existing_session:
+            raise ConflictError(
+                "An open session already exists for this business. "
+                "Close the existing session first.",
+                {
+                    "session_id": str(existing_session.id),
+                    "session_number": existing_session.session_number,
+                    "cashier_id": str(cashier_id),
+                    "business_id": str(session.business_id),
+                },
+            ) from exc
+        raise
 
     logger.info(
         "session.opened",

@@ -300,16 +300,22 @@ def create_app() -> FastAPI:
     # Get root_path from environment (Railway/Cloudflare may set this)
     root_path = os.getenv("RAILWAY_STATIC_URL", "").rstrip("/") or os.getenv("ROOT_PATH", "")
 
+    environment = os.getenv("ENVIRONMENT", "development")
+    is_production = environment.lower() in {"production", "prod"}
+
     app = FastAPI(
         title="CashPilot API",
         description="Business cash register reconciliation system",
         version="0.1.0",
         lifespan=lifespan,
         root_path=root_path if root_path else None,
+        # Disable API docs in production for security
+        docs_url=None if is_production else "/docs",
+        redoc_url=None if is_production else "/redoc",
+        openapi_url=None if is_production else "/openapi.json",
     )
 
     session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
-    environment = os.getenv("ENVIRONMENT", "development")
 
     # Register static files route handler before exception handlers
     # The actual fix is in exception_handlers.py which returns plain text for /static/* paths
