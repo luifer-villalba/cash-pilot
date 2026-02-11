@@ -364,7 +364,7 @@ class TestOpenCashSessionAPI:
         assert response2.status_code == 409
         error = response2.json()
         assert error["code"] == "CONFLICT"
-        assert "sesión abierta" in error["message"].lower()
+        assert "already exists" in error["message"].lower()
         assert "session_id" in error.get("details", {})
         assert "session_number" in error.get("details", {})
 
