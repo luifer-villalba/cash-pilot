@@ -115,8 +115,8 @@ async def open_shift(
     )
     if existing_session:
         raise ConflictError(
-            "Ya existe una sesion abierta para este negocio. "
-            "Cierra la sesion existente primero.",
+            "Ya existe una sesión abierta para este negocio. "
+            "Cierra la sesión existente primero.",
             {
                 "session_id": str(existing_session.id),
                 "session_number": existing_session.session_number,
@@ -169,8 +169,8 @@ async def open_shift(
         )
         if existing_session:
             raise ConflictError(
-                "Ya existe una sesion abierta para este negocio. "
-                "Cierra la sesion existente primero.",
+                "Ya existe una sesión abierta para este negocio. "
+                "Cierra la sesión existente primero.",
                 {
                     "session_id": str(existing_session.id),
                     "session_number": existing_session.session_number,

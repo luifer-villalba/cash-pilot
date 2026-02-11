@@ -2,13 +2,15 @@
 
 """Tests for cash session endpoints."""
 
-import pytest
 from datetime import date
-from httpx import AsyncClient
 from decimal import Decimal
 from uuid import UUID
+
+import pytest
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.utils.datetime import today_local
 from tests.factories import BusinessFactory, CashSessionFactory
 
 
@@ -362,7 +364,7 @@ class TestOpenCashSessionAPI:
         assert response2.status_code == 409
         error = response2.json()
         assert error["code"] == "CONFLICT"
-        assert "sesion abierta" in error["message"].lower()
+        assert "sesión abierta" in error["message"].lower()
         assert "session_id" in error.get("details", {})
         assert "session_number" in error.get("details", {})
 
@@ -399,7 +401,7 @@ class TestOpenCashSessionAPI:
         self, admin_client: AsyncClient, db_session: AsyncSession, business_id: str
     ):
         """Test can open new session after closing existing one via API."""
-        session_date = date.today().isoformat()
+        session_date = today_local().isoformat()
 
         # Open first session
         response1 = await admin_client.post(
