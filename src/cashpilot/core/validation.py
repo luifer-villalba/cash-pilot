@@ -46,8 +46,14 @@ async def check_session_overlap(
     conflicting = result.scalar_one_or_none()
 
     if conflicting:
+        cashier_name = None
+        if conflicting.cashier:
+            cashier_name = conflicting.cashier.display_name
+        else:
+            cashier_name = str(conflicting.cashier_id)
+
         return {
-            "cashier_name": conflicting.cashier_name,
+            "cashier_name": cashier_name,
             "opened_time": conflicting.opened_time.isoformat(),
             "closed_time": conflicting.closed_time.isoformat() if conflicting.closed_time else None,
             "session_date": conflicting.session_date.isoformat(),
