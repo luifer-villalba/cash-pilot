@@ -41,15 +41,26 @@ async def test_admin_can_create_user(
     response = await admin_client.post(
         "/users",
         json={
-            "email": "newadminuser@example.com",
-            "first_name": "Admin",
-            "last_name": "Created",
-            "role": "CASHIER",
+            "user": {
+                "email": "newadminuser@example.com",
+                "first_name": "Admin",
+                "last_name": "Created",
+                "role": "CASHIER",
+            }
         },
     )
-    # Just verify admin gets access (201 or error is OK, as long as not 403)
-    # The actual creation logic is tested elsewhere
-    assert response.status_code != 403, f"Admin should have access to create users, got {response.status_code}"
+    assert response.status_code == 201, f"Expected 201, got {response.status_code}: {response.text}"
+    data = response.json()
+    assert data["email"] == "newadminuser@example.com"
+    assert data["first_name"] == "Admin"
+    assert data["last_name"] == "Created"
+    
+    # Verify user was created in DB
+    stmt = select(User).where(User.email == "newadminuser@example.com")
+    result = await db_session.execute(stmt)
+    user = result.scalar_one_or_none()
+    assert user is not None
+    assert user.role == "CASHIER"
 
 
 @pytest.mark.asyncio
