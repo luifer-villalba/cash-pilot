@@ -12,6 +12,7 @@ from cashpilot.models import Business, CashSession, User, UserRole
 
 @pytest.mark.asyncio
 async def test_resolve_date_ranges_and_previous_period():
+    """AC-06: Flagged sessions report correctly resolves date ranges."""
     from cashpilot.api.routes.flagged_sessions import _previous_period, _resolve_date_range
 
     today = date(2026, 1, 15)
@@ -34,6 +35,7 @@ async def test_resolve_date_ranges_and_previous_period():
 
 @pytest.mark.asyncio
 async def test_fetch_flagged_stats_filters(db_session: AsyncSession):
+    """AC-06/AC-07: Fetch flagged sessions with proper filtering."""
     from cashpilot.api.routes.flagged_sessions import _fetch_flagged_stats
 
     business_a = Business(

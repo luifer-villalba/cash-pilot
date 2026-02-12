@@ -18,7 +18,7 @@ from .factories import BusinessFactory, CashSessionFactory, UserFactory
 async def test_edit_open_session_cannot_edit_closed(
     client: AsyncClient, db_session: AsyncSession
 ):
-    """Test that edit-open endpoint rejects closed sessions."""
+    """AC-04/AC-05: Edit-open endpoint rejects closed sessions."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
         db_session,
@@ -42,7 +42,7 @@ async def test_edit_open_session_cannot_edit_closed(
 async def test_edit_open_requires_auth(
     unauthenticated_client: AsyncClient, db_session: AsyncSession
 ):
-    """Test unauthenticated requests are rejected."""
+    """AC-02: Unauthenticated requests are rejected."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
         db_session,
@@ -92,7 +92,7 @@ async def test_edit_closed_session_final_cash(client: AsyncClient, db_session: A
 async def test_edit_closed_session_payment_totals(
     client: AsyncClient, db_session: AsyncSession
 ):
-    """Test editing payment method totals on a closed session."""
+    """AC-04/AC-05: Can edit payment method totals on closed sessions."""
     business = await BusinessFactory.create(db_session)
     session = await CashSessionFactory.create(
         db_session,

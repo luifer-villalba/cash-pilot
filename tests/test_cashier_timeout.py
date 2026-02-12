@@ -17,6 +17,7 @@ from cashpilot.utils.datetime import now_utc
 
 @pytest.mark.asyncio
 async def test_cashier_session_not_expired_updates_last_activity(db_session):
+    """AC-02: Cashier session activity is tracked for timeout enforcement."""
     user = await UserFactory.create(
         db_session,
         email="cashier_timeout_ok@example.com",
@@ -52,6 +53,7 @@ async def test_cashier_session_not_expired_updates_last_activity(db_session):
 
 @pytest.mark.asyncio
 async def test_cashier_session_expired_redirects_to_login(db_session):
+    """AC-02: Expired cashier sessions are terminated."""
     user = await UserFactory.create(
         db_session,
         email="cashier_timeout_expired@example.com",
