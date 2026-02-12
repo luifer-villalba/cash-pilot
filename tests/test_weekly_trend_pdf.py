@@ -11,6 +11,7 @@ from cashpilot.models import Business
 
 @pytest.mark.asyncio
 async def test_weekly_trend_pdf_view_returns_html(admin_client):
+    """AC-06: Weekly trend PDF view returns HTML response for admin."""
     response = await admin_client.get("/reports/weekly-trend/pdf-view?lang=es")
     assert response.status_code == 200
     assert "Reporte semanal" in response.text
@@ -18,6 +19,7 @@ async def test_weekly_trend_pdf_view_returns_html(admin_client):
 
 @pytest.mark.asyncio
 async def test_weekly_trend_pdf_filename_includes_business_and_hash(admin_client, monkeypatch):
+    """AC-06: Weekly trend PDF filename includes business name and hash."""
     db_session = admin_client.db_session
     business = Business(
         id=uuid4(),

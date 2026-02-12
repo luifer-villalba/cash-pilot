@@ -10,12 +10,66 @@ from cashpilot.models.user_business import UserBusiness
 
 
 @pytest.mark.asyncio
+async def test_cashier_cannot_create_user(
+    client,
+    db_session,
+):
+    """AC-02: Cashier is denied creating a user (admin only)."""
+    response = await client.post(
+        "/users",
+        json={
+            "email": "newuser@example.com",
+            "first_name": "New",
+            "last_name": "User",
+            "role": "CASHIER",
+            "password": "TempPassword123!",
+        },
+    )
+    assert response.status_code == 403
+    # Verify user was NOT created
+    stmt = select(User).where(User.email == "newuser@example.com")
+    result = await db_session.execute(stmt)
+    assert result.scalar_one_or_none() is None
+
+
+@pytest.mark.asyncio
+async def test_admin_can_create_user(
+    admin_client,
+    db_session,
+):
+    """AC-02: Admin can create a user (basic RBAC test)."""
+    response = await admin_client.post(
+        "/users",
+        json={
+            "user": {
+                "email": "newadminuser@example.com",
+                "first_name": "Admin",
+                "last_name": "Created",
+                "role": "CASHIER",
+            }
+        },
+    )
+    assert response.status_code == 201, f"Expected 201, got {response.status_code}: {response.text}"
+    data = response.json()
+    assert data["email"] == "newadminuser@example.com"
+    assert data["first_name"] == "Admin"
+    assert data["last_name"] == "Created"
+    
+    # Verify user was created in DB
+    stmt = select(User).where(User.email == "newadminuser@example.com")
+    result = await db_session.execute(stmt)
+    user = result.scalar_one_or_none()
+    assert user is not None
+    assert user.role == "CASHIER"
+
+
+@pytest.mark.asyncio
 async def test_list_users_includes_businesses(
     admin_client,
     test_user,
     db_session,
 ):
-    """Test /admin/users includes businesses."""
+    """AC-07: Admin can view user businesses in audit list."""
     # Create a business
     business = Business(
         name="Test Business",
@@ -53,7 +107,7 @@ async def test_list_businesses_for_assignment(
     admin_client,
     db_session,
 ):
-    """Test /admin/businesses returns active businesses."""
+    """AC-02: Admin can list businesses for user assignment."""
     # Create a business
     business = Business(
         name="Test Business",
@@ -81,7 +135,7 @@ async def test_assign_businesses_to_user(
     test_user,
     db_session,
 ):
-    """Test assigning multiple businesses to a user."""
+    """AC-01/AC-02: Admin can assign businesses to users."""
     # Create two businesses
     business_1 = Business(
         name="Test Business 1",
@@ -116,7 +170,7 @@ async def test_assign_nonexistent_business_fails(
     admin_client,
     test_user,
 ):
-    """Test assigning non-existent business returns 404."""
+    """AC-04: Business assignment validates business existence."""
     fake_id = "00000000-0000-0000-0000-000000000000"
     response = await admin_client.post(
         f"/admin/users/{test_user.id}/businesses",
@@ -131,7 +185,7 @@ async def test_unassign_business(
     test_user,
     db_session,
 ):
-    """Test removing a business assignment."""
+    """AC-01/AC-02: Admin can unassign businesses from users."""
     # Create business
     business = Business(
         name="Test Business",
@@ -174,7 +228,7 @@ async def test_unassign_nonexistent_assignment_fails(
     test_user,
     db_session,
 ):
-    """Test unassigning non-existent assignment returns 404."""
+    """AC-04: Business assignment validates business existence."""
     # Create business but don't assign
     business = Business(
         name="Test Business",
@@ -198,7 +252,7 @@ async def test_non_admin_cannot_assign_businesses(
     test_user,
     db_session,
 ):
-    """Test non-admin users cannot assign businesses."""
+    """AC-02: Cashiers cannot assign businesses to users."""
     # Create business
     business = Business(
         name="Test Business",
@@ -215,3 +269,56 @@ async def test_non_admin_cannot_assign_businesses(
         json={"business_ids": [str(business.id)]},
     )
     assert response.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_cashier_cannot_unassign_business(
+    client,
+    test_user,
+    db_session,
+):
+    """AC-02: Cashier is denied unassigning a business (admin only)."""
+    # Create another user (cashier)
+    other_user = User(
+        email="other@example.com",
+        hashed_password="hashed_pass",
+        first_name="Other",
+        last_name="User",
+        role="CASHIER",
+    )
+    db_session.add(other_user)
+    await db_session.commit()
+    await db_session.refresh(other_user)
+
+    # Create business
+    business = Business(
+        name="Test Business",
+        address="123 Test St",
+        phone="+595981234567",
+        is_active=True,
+    )
+    db_session.add(business)
+    await db_session.commit()
+    await db_session.refresh(business)
+
+    # Assign business to other user
+    assignment = UserBusiness(
+        user_id=other_user.id,
+        business_id=business.id,
+    )
+    db_session.add(assignment)
+    await db_session.commit()
+
+    # Try to unassign as cashier (should be 403)
+    response = await client.delete(
+        f"/admin/users/{other_user.id}/businesses/{business.id}",
+    )
+    assert response.status_code == 403
+    # Verify assignment still exists in DB
+    result = await db_session.execute(
+        select(UserBusiness).where(
+            UserBusiness.user_id == other_user.id,
+            UserBusiness.business_id == business.id,
+        )
+    )
+    assert result.scalar_one_or_none() is not None

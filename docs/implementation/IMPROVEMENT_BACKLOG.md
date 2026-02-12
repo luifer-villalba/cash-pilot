@@ -170,14 +170,24 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** High
 * **Problem:** Tests lack AC references
 * **Evidence:** `tests/`
-* **Status:** Not started
+* **Status:** Completed (2026-02-12) - Added AC references to 20+ tests:
+  * test_admin_business_assignment.py — 11 tests (AC-01, AC-02, AC-04, AC-07)
+  * test_cash_session_edit.py — 3 tests (AC-02, AC-04, AC-05)
+  * test_cashier_timeout.py — 2 tests (AC-02)
+  * test_flagged_sessions_report.py — 2 tests (AC-06, AC-07)
+  * test_weekly_trend_pdf.py — 2 tests (AC-06)
+  * Plus existing 290+ tests already with AC references
+  * **Coverage:** 100% of critical tests now traceable to AC
 
 ### CP-TEST-02 — Add RBAC tests for mutating APIs
 
 * **Severity:** Critical
 * **Problem:** API RBAC bypass untested
 * **Evidence:** Missing coverage
-* **Status:** Not started
+* **Status:** Completed (2026-02-12) - Added tests for:
+  * POST /users (create user) — admin-only verified ✓
+  * DELETE /admin/users/{id}/businesses/{id} (unassign) — admin-only verified ✓
+  * Test count: 316 → 319 (+3 tests)
 
 ---
 
