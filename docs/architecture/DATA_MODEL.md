@@ -97,20 +97,26 @@ Represents a cashier work session.
 
 ### DailyReconciliation
 
-Represents the reconciliation totals for a session/day.
+Represents the daily manual entry of sales totals for a business (typically from POS/external system).
 
 **Key Fields**
 
 * `id`
-* `cash_session_id` → CashSession
-* Monetary totals (sales, costs, cards, etc.)
-* `has_conflict`
-* `created_at`, `updated_at`
+* `business_id` → Business
+* `date`
+* Monetary totals (cash_sales, card_sales, credit_sales, total_sales)
+* `daily_cost_total`, `invoice_count`
+* `is_closed` (location closed that day)
+* `admin_id` → User (who entered the data)
+* `created_at`, `last_modified_at`, `last_modified_by`
 
 **Rules**
 
+* **One DailyReconciliation per business+date**: represents the entire day's totals.
+* **Compared against system totals**: Sum of all CashSession records for same business+date.
+* **No direct FK to CashSession**: relationship is implicit via `business_id + date`.
 * Values are validated for precision and overflow.
-* Conflicts are visible in reporting.
+* Discrepancies are visible in reconciliation comparison reports.
 
 ---
 
@@ -136,8 +142,17 @@ Represents the audit trail captured via audit fields.
 ```
 User ──< UserBusiness >── Business
   │                         │
-  └──< CashSession >──< DailyReconciliation
+  │                         ├──< CashSession (N per business+date)
+  │                         │
+  └─────────────────────────└──< DailyReconciliation (1 per business+date)
+                                  ↑
+                                  └─ compared via business_id + date
 ```
+
+**Notes:**
+* DailyReconciliation aggregates totals for ALL CashSessions of a given business+date.
+* No direct FK between DailyReconciliation and CashSession - relationship is implicit.
+* Comparison logic: SUM(CashSession WHERE business_id+date) vs DailyReconciliation(business_id+date).
 
 ---
 
