@@ -1,7 +1,9 @@
-# PR 2: Business Assignment Enforcement on Session Close/Reconciliation
+# PR 2: Business Assignment Enforcement on Session Close
 ## Ticket: CP-RBAC-03 (Phase 2 of 4)
 
-**Goal:** No cashier can close or reconcile cash sessions for businesses they are not assigned to. Admins can perform these actions for any business.
+**Goal:** No cashier can close cash sessions for businesses they are not assigned to. Admins can perform these actions for any business.
+
+**Note:** This PR focuses on **session close workflow** (when cashiers close their shift). The separate **daily reconciliation entry** endpoint (`POST /reconciliation/daily`) is admin-only and already protected via `require_admin` dependency.
 
 ---
 
@@ -17,7 +19,7 @@
 - **Cashier:** Checks `UserBusiness` membership; raises `403 Forbidden` if not assigned
 - **Invalid UUID:** Raises `NotFoundError` (404)
 
-**Usage in close/reconciliation flows:**
+**Usage in session close flow:**
 ```python
 # Load session first, validate business assignment
 business_id = await require_business_assignment(
@@ -69,22 +71,24 @@ business_id = await require_business_assignment(
 
 ---
 
-### 4. Daily Reconciliation POST: Enforce Authorization
-**File:** `src/cashpilot/api/routes/reconciliation.py`
+### 4. Daily Reconciliation Entry POST: Enforce Authorization
+**File:** `src/cashpilot/api/reconciliation.py`
 
-**Endpoint:** `POST /daily-reconciliation` (or similar reconciliation submission endpoint)
+**Endpoint:** `POST /reconciliation/daily` (admin-only bulk entry for all businesses)
+
+**Note:** This is the **daily manual entry endpoint** where admins enter totals from POS/external systems for ALL businesses on a given date. This is separate from individual session close operations.
 
 **Changes:**
-- Load target session
-- Call `require_business_assignment(session.business_id, ...)`
-- If 403/404, reject before any reconciliation updates
-- Perform reconciliation only if authorized
-- Log reconciliation action
+- Already protected by `require_admin` dependency
+- Validates business assignments via `get_active_businesses()`
+- Logs all create/update operations with admin_id
+- Creates/updates DailyReconciliation records (1 per business+date)
 
 **Behavior:**
-- Only owner or admin can reconcile
-- Prevents cross-business reconciliation attempts
-- Logs denied access attempts
+- Admin-only access (superadmin across all businesses)
+- Bulk operation for multiple businesses simultaneously
+- Records audit trail with admin_id and timestamps
+- Logs reconciliation actions
 
 ---
 
@@ -129,35 +133,35 @@ class TestRBACSessionCloseAccess:
         # Expected: 403 Forbidden
 ```
 
-**New test class:** `TestRBACReconciliationAccess`
+**New test class:** `TestRBACDailyReconciliationAccess`
 
 ```python
-class TestRBACReconciliationAccess:
-    """Test authorization for reconciliation flow (AC-01, AC-02)."""
+class TestRBACDailyReconciliationAccess:
+    """Test authorization for daily reconciliation entry (admin-only bulk operation)."""
     
-    async def test_cashier_can_reconcile_own_assigned_session(self):
-        """Cashier assigned to business can reconcile session."""
-        # Setup: Cashier in Business A, closed session
-        # Action: Submit reconciliation for Business A session
-        # Expected: 200 OK, reconciliation recorded
+    async def test_admin_can_create_daily_reconciliation(self):
+        """Admin can enter daily reconciliation entries for all businesses."""
+        # Setup: Admin user
+        # Action: POST /reconciliation/daily with business entries
+        # Expected: 200 OK, DailyReconciliation records created/updated
         
-    async def test_cashier_cannot_reconcile_unassigned_session(self):
-        """Cashier not assigned to business cannot reconcile session."""
-        # Setup: Cashier in Business A, closed session in Business B
-        # Action: Try to reconcile Business B session
-        # Expected: 403 Forbidden
+    async def test_cashier_cannot_access_daily_reconciliation(self):
+        """Cashier cannot access admin-only daily reconciliation endpoint."""
+        # Setup: Cashier user
+        # Action: Try to GET/POST /reconciliation/daily
+        # Expected: 403 Forbidden (admin-only via require_admin)
         
-    async def test_admin_can_reconcile_any_session(self):
-        """Admin can reconcile any session regardless of assignment."""
-        # Setup: Admin (no business assignment required)
-        # Action: Reconcile session in any business
-        # Expected: 200 OK, reconciliation recorded
+    async def test_daily_reconciliation_creates_one_per_business_date(self):
+        """Verify one DailyReconciliation per business+date constraint."""
+        # Setup: Admin submits for multiple businesses on same date
+        # Action: POST /reconciliation/daily
+        # Expected: 1 record per business+date, updates if exists
         
-    async def test_reconciliation_logs_denied_access(self):
-        """Denied reconciliation access is logged for audit."""
-        # Setup: Unassigned cashier
-        # Action: Try to reconcile unassigned session
-        # Expected: Log contains denial event
+    async def test_daily_reconciliation_audit_trail(self):
+        """Daily reconciliation changes are logged with admin_id."""
+        # Setup: Admin updates existing reconciliation
+        # Action: POST /reconciliation/daily with changes
+        # Expected: DailyReconciliationAuditLog created with admin_id
 ```
 
 ---
@@ -166,7 +170,7 @@ class TestRBACReconciliationAccess:
 
 | Risk | Severity | Mitigation |
 |------|----------|-----------|
-| **Breaking existing close/reconciliation workflows** | Low | Admin bypass works; cashier workflows unchanged if assigned |
+| **Breaking existing session close workflows** | Low | Admin bypass works; cashier workflows unchanged if assigned |
 | **Existing tests fail** | Medium | Updated form GET/POST handlers; tests added to cover new behavior |
 | **Edge case: Session state during authorization check** | Low | Check performed before state mutations |
 | **Performance (extra DB query)** | Low | Single indexed lookup on UserBusiness(user_id, business_id) |
@@ -177,11 +181,12 @@ class TestRBACReconciliationAccess:
 ## Files Modified
 
 ```
-3 files changed, 180 insertions(+), 20 deletions(-)
+2 files changed, 180 insertions(+), 20 deletions(-)
 
  src/cashpilot/api/routes/sessions.py       |  20 ++++++++++++++------
- src/cashpilot/api/routes/reconciliation.py |  15 +++++++++++----
  tests/test_rbac.py                         | 145 ++++++++++++++++++++++
+
+Note: /reconciliation/daily endpoint already has require_admin protection
 ```
 
 ---
@@ -190,7 +195,7 @@ class TestRBACReconciliationAccess:
 
 | Criterion | Status | Evidence |
 |-----------|--------|----------|
-| **AC-01: Authentication & Access** | ✓ | `require_business_assignment()` on close/reconciliation endpoints |
+| **AC-01: Authentication & Access** | ✓ | `require_business_assignment()` on session close endpoint |
 | **AC-02: RBAC Enforcement (Admin/Cashier)** | ✓ | Admin bypass + cashier assignment check on mutations |
 | **AC-05: Editing Rules** | ✓ | Only owner or admin can close session |
 | **AC-07: Audit Trail** | ✓ | `closed_by` derived from `current_user`; access denial logged |
@@ -216,11 +221,11 @@ class TestRBACReconciliationAccess:
 ## Reviewer Checklist
 
 - [ ] `require_business_assignment()` called before form rendering and POST logic
-- [ ] Admin bypass works (non-assigned admins can still close/reconcile)
-- [ ] Cashier cannot close/reconcile unassigned business sessions
-- [ ] `closed_by` and reconciliation owner fields set from `current_user`, not client input
+- [ ] Admin bypass works (non-assigned admins can still close sessions)
+- [ ] Cashier cannot close unassigned business sessions
+- [ ] `closed_by` set from `current_user`, not client input
 - [ ] Tests cover AC-01, AC-02, AC-05, AC-07
 - [ ] Error messages are clear (403 vs 404)
 - [ ] No regression in existing tests
-- [ ] Logging captures denied close/reconciliation attempts
+- [ ] Logging captures denied session close attempts
 - [ ] Session state unchanged if authorization fails

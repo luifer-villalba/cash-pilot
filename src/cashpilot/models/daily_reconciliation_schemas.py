@@ -93,6 +93,8 @@ class DailyReconciliationRead(BaseModel):
     is_closed: bool
     admin_id: UUID
     created_at: datetime
+    last_modified_at: datetime | None
+    last_modified_by: str | None
     deleted_at: datetime | None
     deleted_by: str | None
 
