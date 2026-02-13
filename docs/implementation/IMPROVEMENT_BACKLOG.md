@@ -131,6 +131,21 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Acceptance impact:** AC-06, AC-04
 * **Status:** Completed (2026-01-29)
 
+### CP-REPORTS-02 — Auto-refresh reconciliation comparison page
+
+* **Severity:** Low
+* **Problem:** Admin must manually refresh page to see new session data during evening close
+* **Evidence:** `templates/admin/reconciliation_compare.html`
+* **User Story:** Admin enters daily reconciliation at 23:20, cashiers close sessions at 23:30-23:35, admin needs to F5 repeatedly to see updated comparison
+* **Acceptance impact:** UX improvement, no AC impact
+* **Status:** Not started
+* **Solution:** HTMX polling to auto-refresh comparison table every 30-60 seconds
+* **Implementation:**
+  - Add `hx-trigger="every 30s"` to comparison results section
+  - Optional: pause polling when user is not viewing (intersection observer)
+  - Optional: visual indicator showing "last updated" timestamp
+  - Compatible with Windows 7 / IE11 (HTMX feature)
+
 ---
 
 ## 🟠 EPIC 4 — Data Model Alignment (DECISION REQUIRED)
