@@ -460,6 +460,8 @@ async def daily_reconciliation_post(
                 existing.daily_cost_total = daily_cost_total
                 existing.invoice_count = invoice_count
                 existing.is_closed = is_closed
+                existing.last_modified_at = now_utc()
+                existing.last_modified_by = current_user.display_name_email
 
                 new_values = {
                     "cash_sales": str(cash_sales) if cash_sales else None,
@@ -881,6 +883,9 @@ async def update_daily_reconciliation(
     if is_closed is not None:
         is_closed_bool = is_closed.lower() in ("true", "1", "yes", "on")
         reconciliation.is_closed = is_closed_bool
+
+    reconciliation.last_modified_at = now_utc()
+    reconciliation.last_modified_by = current_user.display_name_email
 
     new_values = {
         "cash_sales": str(reconciliation.cash_sales) if reconciliation.cash_sales else None,
