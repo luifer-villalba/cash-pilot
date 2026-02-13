@@ -100,6 +100,35 @@ Instructions:
 
 ---
 
+## Standard Post-Commit Workflow
+
+After implementing changes, AI MUST automatically:
+
+1. **Create feature branch** with descriptive name
+   ```bash
+   git checkout -b <ticket-id>-brief-description
+   ```
+
+2. **Commit with structured message**
+   - Format: `type(ticket): summary`
+   - Include detailed bullet points of changes
+   - Reference ticket number
+
+3. **Push to remote**
+   ```bash
+   git push -u origin <branch-name>
+   ```
+
+4. **Generate PR description** using `.github/pull_request_template.md`
+   - Auto-fill based on changes made
+   - Include testing status
+   - Check relevant boxes
+   - Provide in a code block for easy copy-paste
+
+**This workflow is mandatory for all feature work.** Do not wait for the user to ask.
+
+---
+
 ## Review & Accountability
 
 * All AI-generated code is reviewed as human-written code
