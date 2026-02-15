@@ -138,12 +138,11 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `templates/admin/reconciliation_compare.html`
 * **User Story:** Admin enters daily reconciliation at 23:20, cashiers close sessions at 23:30-23:35, admin needs to F5 repeatedly to see updated comparison
 * **Acceptance impact:** UX improvement, no AC impact
-* **Status:** Not started
-* **Solution:** HTMX polling to auto-refresh comparison table every 30-60 seconds
+* **Status:** Completed (2026-02-14)
+* **Solution:** HTMX polling to auto-refresh comparison table every 45 seconds
 * **Implementation:**
-  - Add `hx-trigger="every 30s"` to comparison results section
-  - Optional: pause polling when user is not viewing (intersection observer)
-  - Optional: visual indicator showing "last updated" timestamp
+  - Added `hx-trigger="load, every 45s"` to comparison results section
+  - Shows "Last updated" timestamp indicator
   - Compatible with Windows 7 / IE11 (HTMX feature)
 
 ---
@@ -165,7 +164,8 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** High
 * **Problem:** Timezone missing from business entity
 * **Evidence:** `models/business.py`
-* **Status:** Not started
+* **Decision:** All businesses operate in Paraguay timezone (America/Asuncion). System uses UTC internally with timezone-aware datetimes.
+* **Status:** Documented (2026-02-14) - No field needed; Paraguay-only deployment
 
 ### CP-MODEL-03 — Link DailyReconciliation to CashSession
 
@@ -226,7 +226,51 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 
 * **Severity:** Medium
 * **Problem:** No proof of legacy testing
+* **Evidence:** `docs/reference/w7-compatibility.md` exists but lacks verification procedures
 * **Status:** Not started
+* **Requirements:**
+  - Document browser version matrix (IE11, Chrome 50+, Firefox 45+)
+  - Create manual test checklist for Windows 7 environment
+  - Screenshot evidence of critical workflows on legacy browsers
+  - Include in release checklist verification step
+
+---
+
+## 🟡 EPIC 7 — Communication & Notifications (LOW)
+
+**Risk:** User awareness and operational efficiency
+
+### CP-NOTIFY-01 — Email notifications for flagged sessions
+
+* **Severity:** Low
+* **Problem:** Cashiers are unaware when their sessions are flagged for review
+* **User Story:** Admin flags session at 23:45, cashier only discovers it next shift or via manual dashboard check
+* **Acceptance impact:** UX improvement, no AC impact
+* **Status:** Not started
+* **Requirements:**
+  - Opt-in feature (disabled by default)
+  - User preference toggle in settings page
+  - Email sent when admin flags their cash session
+  - Email includes: date, business, flag reason, link to session
+  - Template: simple text/HTML format
+  - Delivery: async job (no blocking on flag action)
+* **Technical Design:**
+  - Add `email_notifications_enabled` boolean to User model (default False)
+  - Settings UI: checkbox "Email me when my sessions are flagged"
+  - Email service: use SMTP configuration (environment variables)
+  - Trigger: POST `/admin/sessions/{id}/flag` endpoint
+  - Email template: `templates/emails/session_flagged.html` + `.txt`
+* **Implementation:**
+  - Migration: add `email_notifications_enabled` column
+  - Update settings page with preference toggle
+  - Create email templates (HTML + plain text)
+  - Add email sending logic to flag endpoint
+  - Test: verify opt-in/opt-out behavior
+  - Test: verify email delivery (mock SMTP in tests)
+* **Dependencies:**
+  - SMTP server configuration (prod environment)
+  - Email template infrastructure
+  - Async task queue (optional: can be sync for MVP)
 
 ---
 
