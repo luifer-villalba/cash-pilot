@@ -600,7 +600,7 @@
         // Update ARIA busy state during HTMX requests
         document.addEventListener('htmx:xhr:loadstart', function(evt) {
             const resultsDiv = document.getElementById('comparison-results');
-            if (evt.detail.xhr.readyState !== 0) {
+            if (evt.detail?.xhr && evt.detail.xhr.readyState !== 0) {
                 if (resultsDiv) resultsDiv.setAttribute('aria-busy', 'true');
             }
         });
@@ -608,6 +608,22 @@
         document.addEventListener('htmx:xhr:loadend', function(evt) {
             const resultsDiv = document.getElementById('comparison-results');
             if (resultsDiv) resultsDiv.setAttribute('aria-busy', 'false');
+        });
+
+        // Pause auto-refresh when tab is hidden (Page Visibility API)
+        // Reduces unnecessary server load when users leave tab open but hidden
+        document.addEventListener('visibilitychange', function() {
+            const resultsContainer = document.getElementById('comparison-results');
+            
+            if (!resultsContainer) return;
+            
+            if (document.hidden) {
+                // Tab is hidden - pause HTMX polling
+                htmx.trigger(resultsContainer, 'htmx:abort');
+            } else {
+                // Tab is visible again - refresh immediately and resume polling
+                htmx.trigger(resultsContainer, 'htmx:trigger');
+            }
         });
     });
 </script>
