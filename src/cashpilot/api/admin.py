@@ -24,7 +24,7 @@ from cashpilot.models.cash_session import CashSession
 from cashpilot.models.daily_reconciliation import DailyReconciliation
 from cashpilot.models.user import User
 from cashpilot.models.user_business import UserBusiness
-from cashpilot.utils.datetime import today_local
+from cashpilot.utils.datetime import APP_TIMEZONE, today_local
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = get_logger(__name__)
@@ -37,6 +37,300 @@ templates = Jinja2Templates(directory="/app/templates")
 # Flags "Needs Review" if EITHER threshold is exceeded
 ABSOLUTE_THRESHOLD = Decimal("20000.00")  # 20,000 guaraníes
 VARIANCE_THRESHOLD = Decimal("2.0")  # 2%
+
+
+# ===== HELPER FUNCTIONS =====
+async def _build_comparison_data(
+    db: AsyncSession,
+    comparison_date: datetime,
+    businesses: list[Business],
+) -> list[dict]:
+    """
+    Build comparison data for manual vs system reconciliation.
+
+    Shared logic used by both the full dashboard and the partial HTMX endpoint.
+
+    Args:
+        db: Database session
+        comparison_date: Date to compare
+        businesses: List of businesses to process
+
+    Returns:
+        List of comparison data dictionaries for each business
+    """
+    comparison_data = []
+
+    for business in businesses:
+        # Get manual entry (DailyReconciliation)
+        stmt_recon = select(DailyReconciliation).where(
+            and_(
+                DailyReconciliation.business_id == business.id,
+                DailyReconciliation.date == comparison_date,
+                DailyReconciliation.deleted_at.is_(None),
+            )
+        )
+        result_recon = await db.execute(stmt_recon)
+        manual_entry = result_recon.scalar_one_or_none()
+
+        # Calculate system totals from CashSessions
+        stmt_system = select(
+            # Cash Sales = (final_cash - initial_cash) + envelope + expenses
+            # - credit_payments_collected + bank_transfer_total
+            func.sum(
+                case(
+                    (
+                        and_(
+                            CashSession.status == "CLOSED",
+                            CashSession.final_cash.is_not(None),
+                        ),
+                        (CashSession.final_cash - CashSession.initial_cash)
+                        + func.coalesce(CashSession.envelope_amount, 0)
+                        + func.coalesce(CashSession.expenses, 0)
+                        - func.coalesce(CashSession.credit_payments_collected, 0)
+                        + func.coalesce(CashSession.bank_transfer_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("cash_sales"),
+            # Card Sales (only closed sessions)
+            func.sum(
+                case(
+                    (
+                        CashSession.status == "CLOSED",
+                        func.coalesce(CashSession.card_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("card_sales"),
+            # Credit Sales (on-account) - only closed sessions
+            func.sum(
+                case(
+                    (
+                        CashSession.status == "CLOSED",
+                        func.coalesce(CashSession.credit_sales_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("credit_sales"),
+            # Total Sales = cash + card + credit
+            func.sum(
+                case(
+                    (
+                        and_(
+                            CashSession.status == "CLOSED",
+                            CashSession.final_cash.is_not(None),
+                        ),
+                        (CashSession.final_cash - CashSession.initial_cash)
+                        + func.coalesce(CashSession.envelope_amount, 0)
+                        + func.coalesce(CashSession.expenses, 0)
+                        - func.coalesce(CashSession.credit_payments_collected, 0)
+                        + func.coalesce(CashSession.bank_transfer_total, 0)
+                        + func.coalesce(CashSession.card_total, 0)
+                        + func.coalesce(CashSession.credit_sales_total, 0),
+                    ),
+                    else_=0,
+                )
+            ).label("total_sales"),
+            # Session count
+            func.count(CashSession.id).label("session_count"),
+        ).where(
+            and_(
+                CashSession.business_id == business.id,
+                CashSession.session_date == comparison_date,
+                ~CashSession.is_deleted,
+            )
+        )
+
+        result_system = await db.execute(stmt_system)
+        system_data = result_system.one()
+
+        system_cash_sales = system_data.cash_sales or Decimal("0.00")
+        system_card_sales = system_data.card_sales or Decimal("0.00")
+        system_credit_sales = system_data.credit_sales or Decimal("0.00")
+        system_total_sales = system_data.total_sales or Decimal("0.00")
+        session_count = system_data.session_count or 0
+
+        stmt_open_sessions = select(func.count(CashSession.id)).where(
+            and_(
+                CashSession.business_id == business.id,
+                CashSession.session_date == comparison_date,
+                CashSession.status == "OPEN",
+                ~CashSession.is_deleted,
+            )
+        )
+        result_open_sessions = await db.execute(stmt_open_sessions)
+        open_sessions_count = result_open_sessions.scalar() or 0
+        has_open_sessions = open_sessions_count > 0
+
+        stmt_notes_count = select(func.count(CashSession.id)).where(
+            and_(
+                CashSession.business_id == business.id,
+                CashSession.session_date == comparison_date,
+                ~CashSession.is_deleted,
+                CashSession.notes.is_not(None),
+                CashSession.notes != "",
+            )
+        )
+        result_notes_count = await db.execute(stmt_notes_count)
+        notes_count = result_notes_count.scalar() or 0
+
+        # Get unique cashiers for this business on this date
+        stmt_cashiers = (
+            select(User.first_name, User.last_name)
+            .join(CashSession, CashSession.cashier_id == User.id)
+            .where(
+                and_(
+                    CashSession.business_id == business.id,
+                    CashSession.session_date == comparison_date,
+                    ~CashSession.is_deleted,
+                    User.first_name.is_not(None),
+                )
+            )
+            .distinct()
+            .order_by(User.first_name, User.last_name)
+        )
+        result_cashiers = await db.execute(stmt_cashiers)
+        # Format as "FirstName L." (first name + last name initial)
+        cashiers = []
+        for first_name, last_name in result_cashiers.all():
+            if first_name:
+                last_initial = f"{last_name[0]}." if last_name else ""
+                cashiers.append(f"{first_name} {last_initial}".strip())
+        cashiers_str = ", ".join(cashiers) if cashiers else ""
+
+        # Manual entry values
+        manual_cash_sales = (
+            manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
+        )
+        manual_card_sales = (
+            manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
+        )
+        manual_credit_sales = (
+            manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
+        )
+        manual_total_sales = (
+            manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
+        )
+        is_closed = manual_entry.is_closed if manual_entry else False
+        has_manual_values = False
+        is_partial_entry = False
+        if manual_entry:
+            sales_values = (
+                manual_entry.cash_sales,
+                manual_entry.card_sales,
+                manual_entry.credit_sales,
+                manual_entry.total_sales,
+            )
+
+            def is_zero_or_none(value: Decimal | int | None) -> bool:
+                if value is None:
+                    return True
+                return value == 0
+
+            all_sales_present = all(value is not None for value in sales_values)
+            any_sales_nonzero = any(not is_zero_or_none(value) for value in sales_values)
+            total_sales_nonzero = (
+                manual_entry.total_sales is not None and manual_entry.total_sales != 0
+            )
+
+            if is_closed:
+                has_manual_values = True
+            else:
+                has_manual_values = total_sales_nonzero or (all_sales_present and any_sales_nonzero)
+                is_partial_entry = not has_manual_values
+
+        # Calculate differences and variance
+        def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
+            """Calculate difference and variance percentage."""
+            if manual is None:
+                return {
+                    "difference": None,
+                    "variance_percent": None,
+                }
+            diff = calculated - manual
+            # When both are 0, difference is 0.0 (not None)
+            calculated_float = float(calculated)
+            manual_float = float(manual)
+            if calculated_float == 0.0:
+                if manual_float == 0.0:
+                    return {
+                        "difference": Decimal("0.00"),
+                        "variance_percent": None,
+                    }
+                else:
+                    return {
+                        "difference": diff,
+                        "variance_percent": None,
+                    }
+            variance_pct = (diff / calculated) * 100
+            return {
+                "difference": diff,
+                "variance_percent": variance_pct,
+            }
+
+        cash_variance = calc_variance(manual_cash_sales, system_cash_sales)
+        card_variance = calc_variance(manual_card_sales, system_card_sales)
+        credit_variance = calc_variance(manual_credit_sales, system_credit_sales)
+        total_variance = calc_variance(manual_total_sales, system_total_sales)
+
+        # Determine status using dual threshold (OR logic):
+        # "Needs Review" if absolute difference > 20,000 Gs OR variance % > 2%
+        status = "Match"
+        if total_variance["difference"] is not None:
+            abs_diff = abs(total_variance["difference"])
+            exceeds_absolute = abs_diff > ABSOLUTE_THRESHOLD
+        else:
+            exceeds_absolute = False
+
+        if total_variance["variance_percent"] is not None:
+            exceeds_percentage = abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD
+        else:
+            exceeds_percentage = False
+
+        if exceeds_absolute or exceeds_percentage:
+            status = "Needs Review"
+
+        comparison_data.append(
+            {
+                "business": business,
+                "cashiers": cashiers_str,
+                "manual_entry": manual_entry,
+                "has_manual_values": has_manual_values,
+                "is_partial_entry": is_partial_entry,
+                "is_closed": is_closed,
+                "manual": {
+                    "cash_sales": manual_cash_sales,
+                    "card_sales": manual_card_sales,
+                    "credit_sales": manual_credit_sales,
+                    "total_sales": manual_total_sales,
+                },
+                "system": {
+                    "cash_sales": system_cash_sales,
+                    "card_sales": system_card_sales,
+                    "credit_sales": system_credit_sales,
+                    "total_sales": system_total_sales,
+                    "session_count": session_count,
+                },
+                "differences": {
+                    "cash_sales": cash_variance["difference"],
+                    "card_sales": card_variance["difference"],
+                    "credit_sales": credit_variance["difference"],
+                    "total_sales": total_variance["difference"],
+                },
+                "variance": {
+                    "cash_sales": cash_variance["variance_percent"],
+                    "card_sales": card_variance["variance_percent"],
+                    "credit_sales": credit_variance["variance_percent"],
+                    "total_sales": total_variance["variance_percent"],
+                },
+                "status": status,
+                "has_open_sessions": has_open_sessions,
+                "open_sessions_count": open_sessions_count,
+                "notes_count": notes_count,
+            }
+        )
+
+    return comparison_data
 
 
 # ===== SCHEMAS =====
@@ -380,281 +674,16 @@ async def reconciliation_compare_dashboard(
     result_businesses = await db.execute(stmt_businesses)
     businesses = result_businesses.scalars().all()
 
-    # Build comparison data for each business
-    comparison_data = []
-
-    for business in businesses:
-        # Get manual entry (DailyReconciliation)
-        stmt_recon = select(DailyReconciliation).where(
-            and_(
-                DailyReconciliation.business_id == business.id,
-                DailyReconciliation.date == comparison_date,
-                DailyReconciliation.deleted_at.is_(None),
-            )
-        )
-        result_recon = await db.execute(stmt_recon)
-        manual_entry = result_recon.scalar_one_or_none()
-
-        # Calculate system totals from CashSessions
-        stmt_system = select(
-            # Cash Sales = (final_cash - initial_cash) + envelope + expenses
-            # - credit_payments_collected + bank_transfer_total
-            func.sum(
-                case(
-                    (
-                        and_(
-                            CashSession.status == "CLOSED",
-                            CashSession.final_cash.is_not(None),
-                        ),
-                        (CashSession.final_cash - CashSession.initial_cash)
-                        + func.coalesce(CashSession.envelope_amount, 0)
-                        + func.coalesce(CashSession.expenses, 0)
-                        - func.coalesce(CashSession.credit_payments_collected, 0)
-                        + func.coalesce(CashSession.bank_transfer_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("cash_sales"),
-            # Card Sales (only closed sessions)
-            func.sum(
-                case(
-                    (
-                        CashSession.status == "CLOSED",
-                        func.coalesce(CashSession.card_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("card_sales"),
-            # Credit Sales (on-account) - only closed sessions
-            func.sum(
-                case(
-                    (
-                        CashSession.status == "CLOSED",
-                        func.coalesce(CashSession.credit_sales_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("credit_sales"),
-            # Total Sales = cash + card + credit
-            func.sum(
-                case(
-                    (
-                        and_(
-                            CashSession.status == "CLOSED",
-                            CashSession.final_cash.is_not(None),
-                        ),
-                        (CashSession.final_cash - CashSession.initial_cash)
-                        + func.coalesce(CashSession.envelope_amount, 0)
-                        + func.coalesce(CashSession.expenses, 0)
-                        - func.coalesce(CashSession.credit_payments_collected, 0)
-                        + func.coalesce(CashSession.bank_transfer_total, 0)
-                        + func.coalesce(CashSession.card_total, 0)
-                        + func.coalesce(CashSession.credit_sales_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("total_sales"),
-            # Session count
-            func.count(CashSession.id).label("session_count"),
-        ).where(
-            and_(
-                CashSession.business_id == business.id,
-                CashSession.session_date == comparison_date,
-                ~CashSession.is_deleted,
-            )
-        )
-
-        result_system = await db.execute(stmt_system)
-        system_data = result_system.one()
-
-        system_cash_sales = system_data.cash_sales or Decimal("0.00")
-        system_card_sales = system_data.card_sales or Decimal("0.00")
-        system_credit_sales = system_data.credit_sales or Decimal("0.00")
-        system_total_sales = system_data.total_sales or Decimal("0.00")
-        session_count = system_data.session_count or 0
-
-        stmt_open_sessions = select(func.count(CashSession.id)).where(
-            and_(
-                CashSession.business_id == business.id,
-                CashSession.session_date == comparison_date,
-                CashSession.status == "OPEN",
-                ~CashSession.is_deleted,
-            )
-        )
-        result_open_sessions = await db.execute(stmt_open_sessions)
-        open_sessions_count = result_open_sessions.scalar() or 0
-        has_open_sessions = open_sessions_count > 0
-
-        stmt_notes_count = select(func.count(CashSession.id)).where(
-            and_(
-                CashSession.business_id == business.id,
-                CashSession.session_date == comparison_date,
-                ~CashSession.is_deleted,
-                CashSession.notes.is_not(None),
-                CashSession.notes != "",
-            )
-        )
-        result_notes_count = await db.execute(stmt_notes_count)
-        notes_count = result_notes_count.scalar() or 0
-
-        # Get unique cashiers for this business on this date
-        stmt_cashiers = (
-            select(User.first_name, User.last_name)
-            .join(CashSession, CashSession.cashier_id == User.id)
-            .where(
-                and_(
-                    CashSession.business_id == business.id,
-                    CashSession.session_date == comparison_date,
-                    ~CashSession.is_deleted,
-                    User.first_name.is_not(None),
-                )
-            )
-            .distinct()
-            .order_by(User.first_name, User.last_name)
-        )
-        result_cashiers = await db.execute(stmt_cashiers)
-        # Format as "FirstName L." (first name + last name initial)
-        cashiers = []
-        for first_name, last_name in result_cashiers.all():
-            if first_name:
-                last_initial = f"{last_name[0]}." if last_name else ""
-                cashiers.append(f"{first_name} {last_initial}".strip())
-        cashiers_str = ", ".join(cashiers) if cashiers else ""
-
-        # Manual entry values
-        manual_cash_sales = (
-            manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
-        )
-        manual_card_sales = (
-            manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
-        )
-        manual_credit_sales = (
-            manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
-        )
-        manual_total_sales = (
-            manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
-        )
-        is_closed = manual_entry.is_closed if manual_entry else False
-        has_manual_values = False
-        is_partial_entry = False
-        if manual_entry:
-            sales_values = (
-                manual_entry.cash_sales,
-                manual_entry.card_sales,
-                manual_entry.credit_sales,
-                manual_entry.total_sales,
-            )
-
-            def is_zero_or_none(value: Decimal | int | None) -> bool:
-                if value is None:
-                    return True
-                return value == 0
-
-            all_sales_present = all(value is not None for value in sales_values)
-            any_sales_nonzero = any(not is_zero_or_none(value) for value in sales_values)
-            total_sales_nonzero = (
-                manual_entry.total_sales is not None and manual_entry.total_sales != 0
-            )
-
-            if is_closed:
-                has_manual_values = True
-            else:
-                has_manual_values = total_sales_nonzero or (all_sales_present and any_sales_nonzero)
-                is_partial_entry = not has_manual_values
-
-        # Calculate differences and variance
-        def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
-            """Calculate difference and variance percentage."""
-            if manual is None:
-                return {
-                    "difference": None,
-                    "variance_percent": None,
-                }
-            diff = calculated - manual
-            # When both are 0, difference is 0.0 (not None)
-            calculated_float = float(calculated)
-            manual_float = float(manual)
-            if calculated_float == 0.0:
-                if manual_float == 0.0:
-                    return {
-                        "difference": Decimal("0.00"),
-                        "variance_percent": None,
-                    }
-                else:
-                    return {
-                        "difference": diff,
-                        "variance_percent": None,
-                    }
-            variance_pct = (diff / calculated) * 100
-            return {
-                "difference": diff,
-                "variance_percent": variance_pct,
-            }
-
-        cash_variance = calc_variance(manual_cash_sales, system_cash_sales)
-        card_variance = calc_variance(manual_card_sales, system_card_sales)
-        credit_variance = calc_variance(manual_credit_sales, system_credit_sales)
-        total_variance = calc_variance(manual_total_sales, system_total_sales)
-
-        # Determine status using dual threshold (OR logic):
-        # "Needs Review" if absolute difference > 20,000 Gs OR variance % > 2%
-        status = "Match"
-        if total_variance["difference"] is not None:
-            abs_diff = abs(total_variance["difference"])
-            exceeds_absolute = abs_diff > ABSOLUTE_THRESHOLD
-        else:
-            exceeds_absolute = False
-
-        if total_variance["variance_percent"] is not None:
-            exceeds_percentage = abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD
-        else:
-            exceeds_percentage = False
-
-        if exceeds_absolute or exceeds_percentage:
-            status = "Needs Review"
-
-        comparison_data.append(
-            {
-                "business": business,
-                "cashiers": cashiers_str,
-                "manual_entry": manual_entry,
-                "has_manual_values": has_manual_values,
-                "is_partial_entry": is_partial_entry,
-                "is_closed": is_closed,
-                "manual": {
-                    "cash_sales": manual_cash_sales,
-                    "card_sales": manual_card_sales,
-                    "credit_sales": manual_credit_sales,
-                    "total_sales": manual_total_sales,
-                },
-                "system": {
-                    "cash_sales": system_cash_sales,
-                    "card_sales": system_card_sales,
-                    "credit_sales": system_credit_sales,
-                    "total_sales": system_total_sales,
-                    "session_count": session_count,
-                },
-                "differences": {
-                    "cash_sales": cash_variance["difference"],
-                    "card_sales": card_variance["difference"],
-                    "credit_sales": credit_variance["difference"],
-                    "total_sales": total_variance["difference"],
-                },
-                "variance": {
-                    "cash_sales": cash_variance["variance_percent"],
-                    "card_sales": card_variance["variance_percent"],
-                    "credit_sales": credit_variance["variance_percent"],
-                    "total_sales": total_variance["variance_percent"],
-                },
-                "status": status,
-                "has_open_sessions": has_open_sessions,
-                "open_sessions_count": open_sessions_count,
-                "notes_count": notes_count,
-            }
-        )
+    # Build comparison data using shared helper function
+    comparison_data = await _build_comparison_data(db, comparison_date, businesses)
 
     # Get all businesses for the selector
     all_businesses = await get_active_businesses(db)
+
+    # Get current time for last_updated display (used by partial template)
+    now = datetime.now(ZoneInfo(APP_TIMEZONE))
+    last_updated = now.isoformat()
+    last_updated_display = now.strftime("%H:%M:%S")
 
     return templates.TemplateResponse(
         request,
@@ -665,6 +694,8 @@ async def reconciliation_compare_dashboard(
             "selected_business_id": str(selected_business_id) if selected_business_id else None,
             "businesses": all_businesses,
             "comparison_data": comparison_data,
+            "last_updated": last_updated,
+            "last_updated_display": last_updated_display,
             "locale": locale,
             "_": _,
         },
@@ -684,8 +715,6 @@ async def reconciliation_compare_results_partial(
     _ = get_translation_function(locale)
 
     # Parse date or use today
-    from cashpilot.utils.datetime import today_local
-
     if date:
         try:
             comparison_date = datetime.fromisoformat(date).date()
@@ -706,276 +735,11 @@ async def reconciliation_compare_results_partial(
     result_businesses = await db.execute(stmt_businesses)
     businesses = result_businesses.scalars().all()
 
-    # Build comparison data for each business (same logic as main endpoint)
-    comparison_data = []
-
-    for business in businesses:
-        # Get manual entry (DailyReconciliation)
-        stmt_recon = select(DailyReconciliation).where(
-            and_(
-                DailyReconciliation.business_id == business.id,
-                DailyReconciliation.date == comparison_date,
-                DailyReconciliation.deleted_at.is_(None),
-            )
-        )
-        result_recon = await db.execute(stmt_recon)
-        manual_entry = result_recon.scalar_one_or_none()
-
-        # Calculate system totals from CashSessions
-        stmt_system = select(
-            func.sum(
-                case(
-                    (
-                        and_(
-                            CashSession.status == "CLOSED",
-                            CashSession.final_cash.is_not(None),
-                        ),
-                        (CashSession.final_cash - CashSession.initial_cash)
-                        + func.coalesce(CashSession.envelope_amount, 0)
-                        + func.coalesce(CashSession.expenses, 0)
-                        - func.coalesce(CashSession.credit_payments_collected, 0)
-                        + func.coalesce(CashSession.bank_transfer_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("cash_sales"),
-            func.sum(
-                case(
-                    (
-                        CashSession.status == "CLOSED",
-                        func.coalesce(CashSession.card_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("card_sales"),
-            func.sum(
-                case(
-                    (
-                        CashSession.status == "CLOSED",
-                        func.coalesce(CashSession.credit_sales_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("credit_sales"),
-            func.sum(
-                case(
-                    (
-                        and_(
-                            CashSession.status == "CLOSED",
-                            CashSession.final_cash.is_not(None),
-                        ),
-                        (CashSession.final_cash - CashSession.initial_cash)
-                        + func.coalesce(CashSession.envelope_amount, 0)
-                        + func.coalesce(CashSession.expenses, 0)
-                        - func.coalesce(CashSession.credit_payments_collected, 0)
-                        + func.coalesce(CashSession.bank_transfer_total, 0)
-                        + func.coalesce(CashSession.card_total, 0)
-                        + func.coalesce(CashSession.credit_sales_total, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("total_sales"),
-            func.count(CashSession.id).label("session_count"),
-        ).where(
-            and_(
-                CashSession.business_id == business.id,
-                CashSession.session_date == comparison_date,
-                ~CashSession.is_deleted,
-            )
-        )
-
-        result_system = await db.execute(stmt_system)
-        system_data = result_system.one()
-
-        system_cash_sales = system_data.cash_sales or Decimal("0.00")
-        system_card_sales = system_data.card_sales or Decimal("0.00")
-        system_credit_sales = system_data.credit_sales or Decimal("0.00")
-        system_total_sales = system_data.total_sales or Decimal("0.00")
-        session_count = system_data.session_count or 0
-
-        stmt_open_sessions = select(func.count(CashSession.id)).where(
-            and_(
-                CashSession.business_id == business.id,
-                CashSession.session_date == comparison_date,
-                CashSession.status == "OPEN",
-                ~CashSession.is_deleted,
-            )
-        )
-        result_open_sessions = await db.execute(stmt_open_sessions)
-        open_sessions_count = result_open_sessions.scalar() or 0
-        has_open_sessions = open_sessions_count > 0
-
-        stmt_notes_count = select(func.count(CashSession.id)).where(
-            and_(
-                CashSession.business_id == business.id,
-                CashSession.session_date == comparison_date,
-                ~CashSession.is_deleted,
-                CashSession.notes.is_not(None),
-                CashSession.notes != "",
-            )
-        )
-        result_notes_count = await db.execute(stmt_notes_count)
-        notes_count = result_notes_count.scalar() or 0
-
-        # Get unique cashiers for this business on this date
-        stmt_cashiers = (
-            select(User.first_name, User.last_name)
-            .join(CashSession, CashSession.cashier_id == User.id)
-            .where(
-                and_(
-                    CashSession.business_id == business.id,
-                    CashSession.session_date == comparison_date,
-                    ~CashSession.is_deleted,
-                    User.first_name.is_not(None),
-                )
-            )
-            .distinct()
-            .order_by(User.first_name, User.last_name)
-        )
-        result_cashiers = await db.execute(stmt_cashiers)
-        cashiers = []
-        for first_name, last_name in result_cashiers.all():
-            if first_name:
-                last_initial = f"{last_name[0]}." if last_name else ""
-                cashiers.append(f"{first_name} {last_initial}".strip())
-        cashiers_str = ", ".join(cashiers) if cashiers else ""
-
-        # Manual entry values
-        manual_cash_sales = (
-            manual_entry.cash_sales if manual_entry and manual_entry.cash_sales else None
-        )
-        manual_card_sales = (
-            manual_entry.card_sales if manual_entry and manual_entry.card_sales else None
-        )
-        manual_credit_sales = (
-            manual_entry.credit_sales if manual_entry and manual_entry.credit_sales else None
-        )
-        manual_total_sales = (
-            manual_entry.total_sales if manual_entry and manual_entry.total_sales else None
-        )
-        is_closed = manual_entry.is_closed if manual_entry else False
-        has_manual_values = False
-        is_partial_entry = False
-        if manual_entry:
-            sales_values = (
-                manual_entry.cash_sales,
-                manual_entry.card_sales,
-                manual_entry.credit_sales,
-                manual_entry.total_sales,
-            )
-
-            def is_zero_or_none(value: Decimal | int | None) -> bool:
-                if value is None:
-                    return True
-                return value == 0
-
-            all_sales_present = all(value is not None for value in sales_values)
-            any_sales_nonzero = any(not is_zero_or_none(value) for value in sales_values)
-            total_sales_nonzero = (
-                manual_entry.total_sales is not None and manual_entry.total_sales != 0
-            )
-
-            if is_closed:
-                has_manual_values = True
-            else:
-                has_manual_values = total_sales_nonzero or (all_sales_present and any_sales_nonzero)
-                is_partial_entry = not has_manual_values
-
-        # Calculate differences and variance
-        def calc_variance(manual: Decimal | None, calculated: Decimal) -> dict:
-            """Calculate difference and variance percentage."""
-            if manual is None:
-                return {
-                    "difference": None,
-                    "variance_percent": None,
-                }
-            diff = calculated - manual
-            calculated_float = float(calculated)
-            manual_float = float(manual)
-            if calculated_float == 0.0:
-                if manual_float == 0.0:
-                    return {
-                        "difference": Decimal("0.00"),
-                        "variance_percent": None,
-                    }
-                else:
-                    return {
-                        "difference": diff,
-                        "variance_percent": None,
-                    }
-            variance_pct = (diff / calculated) * 100
-            return {
-                "difference": diff,
-                "variance_percent": variance_pct,
-            }
-
-        cash_variance = calc_variance(manual_cash_sales, system_cash_sales)
-        card_variance = calc_variance(manual_card_sales, system_card_sales)
-        credit_variance = calc_variance(manual_credit_sales, system_credit_sales)
-        total_variance = calc_variance(manual_total_sales, system_total_sales)
-
-        # Determine status using dual threshold (OR logic)
-        status = "Match"
-        if total_variance["difference"] is not None:
-            abs_diff = abs(total_variance["difference"])
-            exceeds_absolute = abs_diff > ABSOLUTE_THRESHOLD
-        else:
-            exceeds_absolute = False
-
-        if total_variance["variance_percent"] is not None:
-            exceeds_percentage = abs(total_variance["variance_percent"]) > VARIANCE_THRESHOLD
-        else:
-            exceeds_percentage = False
-
-        if exceeds_absolute or exceeds_percentage:
-            status = "Needs Review"
-
-        comparison_data.append(
-            {
-                "business": business,
-                "cashiers": cashiers_str,
-                "manual_entry": manual_entry,
-                "has_manual_values": has_manual_values,
-                "is_partial_entry": is_partial_entry,
-                "is_closed": is_closed,
-                "manual": {
-                    "cash_sales": manual_cash_sales,
-                    "card_sales": manual_card_sales,
-                    "credit_sales": manual_credit_sales,
-                    "total_sales": manual_total_sales,
-                },
-                "system": {
-                    "cash_sales": system_cash_sales,
-                    "card_sales": system_card_sales,
-                    "credit_sales": system_credit_sales,
-                    "total_sales": system_total_sales,
-                    "session_count": session_count,
-                },
-                "differences": {
-                    "cash_sales": cash_variance["difference"],
-                    "card_sales": card_variance["difference"],
-                    "credit_sales": credit_variance["difference"],
-                    "total_sales": total_variance["difference"],
-                },
-                "variance": {
-                    "cash_sales": cash_variance["variance_percent"],
-                    "card_sales": card_variance["variance_percent"],
-                    "credit_sales": credit_variance["variance_percent"],
-                    "total_sales": total_variance["variance_percent"],
-                },
-                "status": status,
-                "has_open_sessions": has_open_sessions,
-                "open_sessions_count": open_sessions_count,
-                "notes_count": notes_count,
-            }
-        )
+    # Build comparison data using shared helper function
+    comparison_data = await _build_comparison_data(db, comparison_date, businesses)
 
     # Get current time for last_updated display
-    from datetime import datetime as dt
-
-    from cashpilot.utils.datetime import APP_TIMEZONE
-
-    now = dt.now(ZoneInfo(APP_TIMEZONE))
+    now = datetime.now(ZoneInfo(APP_TIMEZONE))
     last_updated = now.isoformat()
     last_updated_display = now.strftime("%H:%M:%S")
 

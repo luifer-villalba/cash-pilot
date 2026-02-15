@@ -160,19 +160,14 @@
     <div
         id="comparison-results"
         hx-get="/admin/reconciliation/compare-results?date={{ comparison_date.isoformat() }}{% if selected_business_id %}&business_id={{ selected_business_id }}{% endif %}"
-        hx-trigger="load, every 45s"
+        hx-trigger="every 45s"
         hx-swap="innerHTML"
         aria-live="polite"
         aria-busy="false"
         class="space-y-8 htmx-settling"
     >
-        <!-- Content will be loaded via HTMX -->
-        <div class="text-center py-12">
-            <div class="flex flex-col items-center justify-center gap-3">
-                <span class="loading loading-spinner loading-lg"></span>
-                <span class="text-sm text-base-content/60">{{ _('Loading comparison data') }}...</span>
-            </div>
-        </div>
+        <!-- Initial content (rendered server-side, updated every 45s via HTMX) -->
+        {% include 'admin/partials/reconciliation_compare_results.html' %}
     </div>
     <!-- Margin Comparison Table -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm">
@@ -616,4 +611,27 @@
         });
     });
 </script>
+
+<!-- Session Notes Modals (Outside HTMX refresh target to prevent closing on update) -->
+{% for item in comparison_data %}
+{% if item.notes_count and item.notes_count > 0 %}
+<dialog id="notes-modal-{{ item.business.id }}" class="modal">
+    <div class="modal-box w-11/12 max-w-2xl">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+        <h3 class="font-bold text-lg mb-4">{{ _('Session Notes') }} - {{ item.business.name }}</h3>
+        <div id="notes-content-{{ item.business.id }}" class="py-4">
+            <div class="flex justify-center">
+                <span class="loading loading-spinner loading-lg" id="notes-loading-{{ item.business.id }}"></span>
+            </div>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+{% endif %}
+{% endfor %}
+
 {% endblock %}
