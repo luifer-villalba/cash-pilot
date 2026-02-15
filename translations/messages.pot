@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-07 19:04+0000\n"
+"POT-Creation-Date: 2026-02-14 23:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -340,130 +340,7 @@ msgstr ""
 msgid "Select a date to compare reconciliation data"
 msgstr ""
 
-msgid "Sales Reconciliation Comparison"
-msgstr ""
-
-msgid "System vs manual totals by business"
-msgstr ""
-
-msgid "Notes"
-msgstr ""
-
-msgid "View session notes for"
-msgstr ""
-
-msgid "Sesiones abiertas"
-msgstr ""
-
-msgid "Click to review and edit"
-msgstr ""
-
-msgid "Review differences for"
-msgstr ""
-
-msgid "Review"
-msgstr ""
-
-msgid "Validado"
-msgstr ""
-
-msgid "Conciliacion iniciada"
-msgstr ""
-
-msgid "Click to add manual entry"
-msgstr ""
-
-msgid "Add manual entry for"
-msgstr ""
-
-msgid "Pending"
-msgstr ""
-
-msgid "Total Sales"
-msgstr ""
-
-msgid "System"
-msgstr ""
-
-msgid "Manual"
-msgstr ""
-
-msgid "Diff"
-msgstr ""
-
-msgid "Cash"
-msgstr ""
-
-msgid "Card"
-msgstr ""
-
-msgid "Credit"
-msgstr ""
-
-msgid "Click to view sessions detail"
-msgstr ""
-
-msgid "View sessions for"
-msgstr ""
-
-msgid "Sessions"
-msgstr ""
-
-msgid "No sessions"
-msgstr ""
-
-msgid "Entry Status"
-msgstr ""
-
-msgid "Cash Sales"
-msgstr ""
-
-msgid "System vs Manual"
-msgstr ""
-
-msgid "Card Sales"
-msgstr ""
-
-msgid "Credit Sales"
-msgstr ""
-
-msgid "Total Difference"
-msgstr ""
-
-msgid "(System - Manual)"
-msgstr ""
-
-msgid "System:"
-msgstr ""
-
-msgid "Manual:"
-msgstr ""
-
-msgid "Diff:"
-msgstr ""
-
-msgid "No businesses found"
-msgstr ""
-
-msgid "Close"
-msgstr ""
-
-msgid "Loading..."
-msgstr ""
-
-msgid "Difference Colors:"
-msgstr ""
-
-msgid "Green (Surplus)"
-msgstr ""
-
-msgid "Manual has MORE than System (positive difference)"
-msgstr ""
-
-msgid "Red (Deficit)"
-msgstr ""
-
-msgid "Manual has LESS than System (negative difference)"
+msgid "Loading comparison data"
 msgstr ""
 
 msgid "Margin Comparison"
@@ -473,6 +350,9 @@ msgid "Sales vs daily cost totals by business"
 msgstr ""
 
 msgid "Sales Total"
+msgstr ""
+
+msgid "System"
 msgstr ""
 
 msgid "Daily Cost Total"
@@ -485,6 +365,9 @@ msgid "Margin %"
 msgstr ""
 
 msgid "Cost percentage of Sales"
+msgstr ""
+
+msgid "No businesses found"
 msgstr ""
 
 msgid "Totals"
@@ -695,6 +578,111 @@ msgid "Remove"
 msgstr ""
 
 msgid "more"
+msgstr ""
+
+msgid "Sales Reconciliation Comparison"
+msgstr ""
+
+msgid "System vs manual totals by business"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Notes"
+msgstr ""
+
+msgid "View session notes for"
+msgstr ""
+
+msgid "Open Sessions"
+msgstr ""
+
+msgid "Click to review and edit"
+msgstr ""
+
+msgid "Review differences for"
+msgstr ""
+
+msgid "Review"
+msgstr ""
+
+msgid "Validated"
+msgstr ""
+
+msgid "Reconciliation Started"
+msgstr ""
+
+msgid "Click to add manual entry"
+msgstr ""
+
+msgid "Add manual entry for"
+msgstr ""
+
+msgid "Pending"
+msgstr ""
+
+msgid "Total Sales"
+msgstr ""
+
+msgid "Manual"
+msgstr ""
+
+msgid "Diff"
+msgstr ""
+
+msgid "Cash"
+msgstr ""
+
+msgid "Card"
+msgstr ""
+
+msgid "Credit"
+msgstr ""
+
+msgid "Click to view sessions detail"
+msgstr ""
+
+msgid "View sessions for"
+msgstr ""
+
+msgid "Sessions"
+msgstr ""
+
+msgid "No sessions"
+msgstr ""
+
+msgid "Difference"
+msgstr ""
+
+msgid "System:"
+msgstr ""
+
+msgid "Manual:"
+msgstr ""
+
+msgid "Diff:"
+msgstr ""
+
+msgid "Select a business to view reconciliation data"
+msgstr ""
+
+msgid "Difference Colors:"
+msgstr ""
+
+msgid "Green (Surplus)"
+msgstr ""
+
+msgid "Manual has MORE than System (positive difference)"
+msgstr ""
+
+msgid "Red (Deficit)"
+msgstr ""
+
+msgid "Manual has LESS than System (negative difference)"
+msgstr ""
+
+msgid "Session Notes"
 msgstr ""
 
 msgid "Session"
@@ -990,6 +978,9 @@ msgstr ""
 msgid "Register"
 msgstr ""
 
+msgid "Cash Sales"
+msgstr ""
+
 msgid "Cards"
 msgstr ""
 
@@ -1032,6 +1023,9 @@ msgstr ""
 msgid "Restore"
 msgstr ""
 
+msgid "Close"
+msgstr ""
+
 msgid "Showing"
 msgstr ""
 
@@ -1062,6 +1056,9 @@ msgid "Card Payments"
 msgstr ""
 
 msgid "Debit"
+msgstr ""
+
+msgid "Credit Sales"
 msgstr ""
 
 msgid "Pending payments"
@@ -1143,6 +1140,9 @@ msgid "Date for reconciliation entry"
 msgstr ""
 
 msgid "Business Locations"
+msgstr ""
+
+msgid "Card Sales"
 msgstr ""
 
 msgid "Number of Invoices"
@@ -1236,6 +1236,9 @@ msgid "Collections"
 msgstr ""
 
 msgid "Best Performer"
+msgstr ""
+
+msgid "Loading..."
 msgstr ""
 
 msgid "Lower Volume"
@@ -2381,4 +2384,3 @@ msgstr ""
 
 msgid "Remove flag from this session?"
 msgstr ""
-

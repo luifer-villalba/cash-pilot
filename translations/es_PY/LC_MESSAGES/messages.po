@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-07 19:04+0000\n"
+"POT-Creation-Date: 2026-02-14 23:55+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -350,131 +350,8 @@ msgstr "Fecha"
 msgid "Select a date to compare reconciliation data"
 msgstr "Seleccioná una fecha para comparar datos de conciliación"
 
-msgid "Sales Reconciliation Comparison"
-msgstr "Comparación de Conciliación de Ventas"
-
-msgid "System vs manual totals by business"
-msgstr "Totales del sistema vs manuales por negocio"
-
-msgid "Notes"
-msgstr "Notas"
-
-msgid "View session notes for"
-msgstr "Ver notas de sesión para"
-
-msgid "Sesiones abiertas"
-msgstr "Sesiones abiertas"
-
-msgid "Click to review and edit"
-msgstr "Clic para revisar y editar"
-
-msgid "Review differences for"
-msgstr "Revisar diferencias para"
-
-msgid "Review"
-msgstr "Revisar"
-
-msgid "Validado"
-msgstr "Validado"
-
-msgid "Conciliacion iniciada"
-msgstr "Conciliación iniciada"
-
-msgid "Click to add manual entry"
-msgstr "Clic para agregar entrada manual"
-
-msgid "Add manual entry for"
-msgstr "Agregar entrada manual para"
-
-msgid "Pending"
-msgstr "Pendiente"
-
-msgid "Total Sales"
-msgstr "Ventas Totales"
-
-msgid "System"
-msgstr "Sistema"
-
-msgid "Manual"
-msgstr "Manual"
-
-msgid "Diff"
-msgstr "Dif"
-
-msgid "Cash"
-msgstr "Efectivo"
-
-msgid "Card"
-msgstr "Tarjetas"
-
-msgid "Credit"
-msgstr "Crédito"
-
-msgid "Click to view sessions detail"
-msgstr "Clic para ver detalle de sesiones"
-
-msgid "View sessions for"
-msgstr "Ver sesiones para"
-
-msgid "Sessions"
-msgstr "Sesiones"
-
-msgid "No sessions"
-msgstr "Sin sesiones"
-
-msgid "Entry Status"
-msgstr "Estado de Entrada"
-
-msgid "Cash Sales"
-msgstr "Ventas al Contado"
-
-msgid "System vs Manual"
-msgstr "Agenda vs Farmagic"
-
-msgid "Card Sales"
-msgstr "Ventas con Tarjeta"
-
-msgid "Credit Sales"
-msgstr "Ventas a Crédito"
-
-msgid "Total Difference"
-msgstr "Diferencia Total"
-
-msgid "(System - Manual)"
-msgstr "(Agenda - Farmagic)"
-
-msgid "System:"
-msgstr "Agenda:"
-
-msgid "Manual:"
-msgstr "Farmagic:"
-
-msgid "Diff:"
-msgstr "Dif:"
-
-msgid "No businesses found"
-msgstr "No se encontraron negocios."
-
-msgid "Close"
-msgstr "Cerrar"
-
-msgid "Loading..."
-msgstr "Cargando..."
-
-msgid "Difference Colors:"
-msgstr "Colores de Diferencia:"
-
-msgid "Green (Surplus)"
-msgstr "Verde (Superávit)"
-
-msgid "Manual has MORE than System (positive difference)"
-msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
-
-msgid "Red (Deficit)"
-msgstr "Rojo (Déficit)"
-
-msgid "Manual has LESS than System (negative difference)"
-msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
+msgid "Loading comparison data"
+msgstr "Cargando datos de comparación"
 
 msgid "Margin Comparison"
 msgstr "Comparación de Margen"
@@ -484,6 +361,9 @@ msgstr "Ventas vs total de costo diario por negocio"
 
 msgid "Sales Total"
 msgstr "Total de Ventas"
+
+msgid "System"
+msgstr "Sistema"
 
 msgid "Daily Cost Total"
 msgstr "Total de Costo Diario"
@@ -496,6 +376,9 @@ msgstr "% de Margen"
 
 msgid "Cost percentage of Sales"
 msgstr "% de costo sobre ventas"
+
+msgid "No businesses found"
+msgstr "No se encontraron negocios."
 
 msgid "Totals"
 msgstr "Totales"
@@ -708,6 +591,111 @@ msgstr "Eliminar"
 
 msgid "more"
 msgstr "más"
+
+msgid "Sales Reconciliation Comparison"
+msgstr "Comparación de Conciliación de Ventas"
+
+msgid "System vs manual totals by business"
+msgstr "Totales del sistema vs manuales por negocio"
+
+msgid "Last updated"
+msgstr "Última actualización"
+
+msgid "Notes"
+msgstr "Notas"
+
+msgid "View session notes for"
+msgstr "Ver notas de sesión para"
+
+msgid "Open Sessions"
+msgstr "Sesiones Abiertas"
+
+msgid "Click to review and edit"
+msgstr "Clic para revisar y editar"
+
+msgid "Review differences for"
+msgstr "Revisar diferencias para"
+
+msgid "Review"
+msgstr "Revisar"
+
+msgid "Validated"
+msgstr "Validado"
+
+msgid "Reconciliation Started"
+msgstr "Conciliación iniciada"
+
+msgid "Click to add manual entry"
+msgstr "Clic para agregar entrada manual"
+
+msgid "Add manual entry for"
+msgstr "Agregar entrada manual para"
+
+msgid "Pending"
+msgstr "Pendiente"
+
+msgid "Total Sales"
+msgstr "Ventas Totales"
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Diff"
+msgstr "Dif"
+
+msgid "Cash"
+msgstr "Efectivo"
+
+msgid "Card"
+msgstr "Tarjetas"
+
+msgid "Credit"
+msgstr "Crédito"
+
+msgid "Click to view sessions detail"
+msgstr "Clic para ver detalle de sesiones"
+
+msgid "View sessions for"
+msgstr "Ver sesiones para"
+
+msgid "Sessions"
+msgstr "Sesiones"
+
+msgid "No sessions"
+msgstr "Sin sesiones"
+
+msgid "Difference"
+msgstr "Diferencia"
+
+msgid "System:"
+msgstr "Agenda:"
+
+msgid "Manual:"
+msgstr "Farmagic:"
+
+msgid "Diff:"
+msgstr "Dif:"
+
+msgid "Select a business to view reconciliation data"
+msgstr "Seleccioná un negocio para ver datos de conciliación"
+
+msgid "Difference Colors:"
+msgstr "Colores de Diferencia:"
+
+msgid "Green (Surplus)"
+msgstr "Verde (Superávit)"
+
+msgid "Manual has MORE than System (positive difference)"
+msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
+
+msgid "Red (Deficit)"
+msgstr "Rojo (Déficit)"
+
+msgid "Manual has LESS than System (negative difference)"
+msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
+
+msgid "Session Notes"
+msgstr "Notas de Sesión"
 
 msgid "Session"
 msgstr "Sesión"
@@ -1002,6 +990,9 @@ msgstr "Fecha y Hora"
 msgid "Register"
 msgstr "Caja"
 
+msgid "Cash Sales"
+msgstr "Ventas al Contado"
+
 msgid "Cards"
 msgstr "Tarjetas"
 
@@ -1044,6 +1035,9 @@ msgstr "Solo administradores y el creador de la sesión pueden eliminar"
 msgid "Restore"
 msgstr "Restaurar"
 
+msgid "Close"
+msgstr "Cerrar"
+
 msgid "Showing"
 msgstr "Mostrando"
 
@@ -1077,6 +1071,9 @@ msgstr "Ventas con Tarjeta"
 
 msgid "Debit"
 msgstr "Débito"
+
+msgid "Credit Sales"
+msgstr "Ventas a Crédito"
 
 msgid "Pending payments"
 msgstr "Pagos pendientes"
@@ -1158,6 +1155,9 @@ msgstr "Fecha para la entrada de conciliación"
 
 msgid "Business Locations"
 msgstr "Ubicaciones del Negocio"
+
+msgid "Card Sales"
+msgstr "Ventas con Tarjeta"
 
 msgid "Number of Invoices"
 msgstr "Cantidad de Facturas"
@@ -1253,6 +1253,9 @@ msgstr "Cobranzas"
 
 msgid "Best Performer"
 msgstr "Mayor Volumen"
+
+msgid "Loading..."
+msgstr "Cargando..."
 
 msgid "Lower Volume"
 msgstr "Menor volumen"
