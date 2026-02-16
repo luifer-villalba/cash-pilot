@@ -70,10 +70,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 Using the Makefile (recommended):
 
 ```bash
-# Build containers
-make build
-
-# Start services (PostgreSQL + FastAPI)
+# Start services (builds images if needed, starts PostgreSQL + FastAPI)
 make up
 
 # Run database migrations
@@ -83,7 +80,7 @@ make migrate
 make seed
 ```
 
-**Without Make:**
+**Alternative: Build and Start with Docker Compose Directly**
 ```bash
 docker compose build
 docker compose up -d
