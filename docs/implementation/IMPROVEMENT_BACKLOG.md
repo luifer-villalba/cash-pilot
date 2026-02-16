@@ -145,6 +145,81 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - Shows "Last updated" timestamp indicator
   - Compatible with Windows 7 / IE11 (HTMX feature)
 
+### CP-REPORTS-03 — Display bank transfers in reconciliation (Phase 1)
+
+* **Severity:** High
+* **Problem:** Cannot see transfer line items in reconciliation page to cross-check against bank account
+* **Evidence:** `templates/admin/reconciliation_compare.html`
+* **User Story:** Admin reviews daily reconciliation and needs to see all bank transfers (from `transfer_items` table) in one place to cross-check against bank statement
+* **Acceptance impact:** AC-06 (reporting accuracy)
+* **Status:** Not started - **HIGH PRIORITY / ASAP**
+* **Requirements:**
+  - Display all transfer line items from cash sessions for the business+date
+  - Show: transfer description, amount, session ID, cashier name, timestamp
+  - Group by session or show in chronological order
+  - Total summary: count and sum of all transfers for the day
+  - Read-only view (no editing/verification yet)
+* **Technical Design:**
+  - Reconciliation page queries all `transfer_items` joined with `cash_sessions`
+  - Filter: `session.business_id = X AND date(session.opened_at) = Y`
+  - Display in simple table format
+  - Show monetary totals with monospace font
+  - Compatible with Windows 7 / IE11 (no fancy features)
+* **Implementation Steps:**
+  - Update reconciliation_compare.html template:
+    - Add "Bank Transfers Detail" section
+    - Query and display all transfer_items for date
+    - Show summary: total count and total amount
+  - Update backend route to fetch transfer_items
+  - Add basic tests for data display
+  - Verify RBAC (admin only)
+* **Dependencies:**
+  - Admin access to reconciliation page (already exists)
+  - `transfer_items` table exists (already exists)
+* **Acceptance Criteria:**
+  - Admin can see all bank transfers for a business+date
+  - Each transfer shows: description, amount, cashier, time
+  - Summary shows total transfers and total amount
+  - List is sortable (chronological by default)
+  - Works on Windows 7 / IE11
+
+### CP-REPORTS-04 — Add transfer verification workflow (Phase 2)
+
+* **Severity:** Medium
+* **Problem:** Need to track which transfers have been confirmed in bank account
+* **Evidence:** User workflow requirement after CP-REPORTS-03
+* **User Story:** After seeing all transfers (CP-REPORTS-03), admin checks bank statement and marks each transfer as verified to track reconciliation progress
+* **Acceptance impact:** AC-07 (audit trail)
+* **Status:** Not started - **Blocked by CP-REPORTS-03**
+* **Requirements:**
+  - Add checkbox/toggle per transfer to mark as "verified"
+  - Persist verification status (new fields: `is_verified`, `verified_by`, `verified_at`)
+  - Visual indicators: ✓ verified, ⚠️ pending verification
+  - Filter options: show all / show only unverified / show only verified
+  - Update summary: X of Y verified
+* **Technical Design:**
+  - Add columns to `transfer_items` table:
+    - `is_verified` (boolean, default false)
+    - `verified_by` (FK to users, nullable)
+    - `verified_at` (timestamp, nullable)
+  - New API endpoint: `POST /api/transfer-items/{id}/verify`
+  - HTMX interaction: click checkbox → AJAX call → update UI
+* **Implementation Steps:**
+  - Migration: add verification fields to `transfer_items`
+  - API endpoint: verify/unverify transfer item (admin only)
+  - Update template with verification checkboxes
+  - HTMX/JavaScript for checkbox interaction
+  - Tests: verify RBAC, persistence, audit trail
+* **Dependencies:**
+  - CP-REPORTS-03 must be completed first
+  - HTMX support (already in use)
+* **Acceptance Criteria:**
+  - Admin can mark transfers as verified with one click
+  - Verification is persisted with timestamp and user
+  - Unverified transfers are clearly highlighted
+  - Summary shows verification progress
+  - Action is logged in audit trail
+
 ---
 
 ## 🟠 EPIC 4 — Data Model Alignment (DECISION REQUIRED)

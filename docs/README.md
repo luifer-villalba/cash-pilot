@@ -47,6 +47,12 @@ Non-authoritative background and guidance.
 
 - `reference/design_readme.md`
 - `reference/w7-compatibility.md`
+- `reference/architecture-decisions.md` (historical ADRs)
+- `reference/API.md` — API endpoint reference
+- `reference/GETTING_STARTED.md` — Developer setup guide
+- `reference/TROUBLESHOOTING.md` — Common issues and solutions
+- `reference/features/WEEKLY_TREND_REPORT.md` — Weekly report feature docs
+- `reference/features/DAILY_RECONCILIATION.md` — Reconciliation feature docs
 
 ---
 
@@ -54,6 +60,29 @@ Non-authoritative background and guidance.
 Operational procedures and maintenance.
 
 - `runbooks/backup_restore.md`
+
+---
+
+## 📖 Getting Started as a New Developer
+
+**Recommended Reading Path:**
+
+1. **Start Here** → [Getting Started Guide](reference/GETTING_STARTED.md) - Setup your development environment
+2. **Understand Product** → [Product Vision](product/PRODUCT_VISION.md) and [Requirements](product/REQUIREMENTS.md)
+3. **Learn Architecture** → [Architecture](architecture/ARCHITECTURE.md) and [Code Map](architecture/CODE_MAP.md)
+4. **Follow Process** → [Workflow](sdlc/WORKFLOW.md) and [Definition of Ready](sdlc/DEFINITION_OF_READY.md)
+5. **Reference as Needed** → [API Docs](reference/API.md), [Troubleshooting](reference/TROUBLESHOOTING.md)
+
+---
+
+## 🛠️ Quick Reference for Common Tasks
+
+- **Setting up locally?** → [Getting Started Guide](reference/GETTING_STARTED.md)
+- **API endpoints?** → [API Reference](reference/API.md)
+- **Something not working?** → [Troubleshooting Guide](reference/TROUBLESHOOTING.md)
+- **Working with Windows 7?** → [W7 Compatibility](reference/w7-compatibility.md)
+- **Understanding reports?** → [Weekly Trend](reference/features/WEEKLY_TREND_REPORT.md), [Daily Reconciliation](reference/features/DAILY_RECONCILIATION.md)
+- **Database backups?** → [Backup & Restore](runbooks/backup_restore.md)
 
 ---
 

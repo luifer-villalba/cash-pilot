@@ -29,7 +29,7 @@ Business cash register reconciliation system built for multi-location operations
 **Testing:** pytest 8.3.2 • 262+ async tests • RBAC coverage  
 **i18n:** Spanish/English (Babel 2.14.0)
 
-**Compatibility:** Windows 7+ (IE11, Chrome 50+, Firefox 45+) - See [Windows 7 Compatibility Guide](docs/w7-compatibility.md)
+**Compatibility:** Windows 7+ (IE11, Chrome 50+, Firefox 45+) - See [Windows 7 Compatibility Guide](docs/reference/w7-compatibility.md)
 
 ---
 
@@ -183,12 +183,20 @@ Makefile                    # make test, make seed, etc.
 
 **Quick Links:**
 - [Documentation Index](docs/README.md) - Complete guide to all documentation
+- [Getting Started Guide](docs/reference/GETTING_STARTED.md) - Developer setup and first steps
+- [API Reference](docs/reference/API.md) - Complete API endpoint documentation
+- [Troubleshooting Guide](docs/reference/TROUBLESHOOTING.md) - Common issues and solutions
 - [Design System](docs/reference/design_readme.md) - UI/UX patterns and component guidelines
 - [Windows 7 Compatibility](docs/reference/w7-compatibility.md) - Legacy browser support guide
 - [Backup & Restore](docs/runbooks/backup_restore.md) - Database backup procedures
 - [Security Policy](SECURITY.md) - Security practices and vulnerability tracking
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute to the project
 
-**For New Developers:** Start with the [Documentation Index](docs/README.md) for recommended reading paths.
+**Feature Documentation:**
+- [Weekly Trend Report](docs/reference/features/WEEKLY_TREND_REPORT.md) - Week-over-week revenue analysis
+- [Daily Reconciliation](docs/reference/features/DAILY_RECONCILIATION.md) - System vs manual entry comparison
+
+**For New Developers:** Start with the [Getting Started Guide](docs/reference/GETTING_STARTED.md) and [Documentation Index](docs/README.md) for recommended reading paths.
 
 ---
 
@@ -230,7 +238,7 @@ SENTRY_DSN=...          # For error tracking
 
 Railway's Hobby plan doesn't include automated backups. The `scripts/` directory includes optional backup/restore tooling for production safety.
 
-**📖 Complete Guide:** See [Backup & Restore Guide](docs/backup_restore.md) for detailed instructions.
+**📖 Complete Guide:** See [Backup & Restore Guide](docs/runbooks/backup_restore.md) for detailed instructions.
 
 **Quick Start:**
 ```bash

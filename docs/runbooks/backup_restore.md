@@ -1,4 +1,3 @@
-# File: docs/backup_restore.md
 # CashPilot Database Backup & Restore
 
 > **Note:** This guide is for Railway deployments. Adapt for your hosting provider.
