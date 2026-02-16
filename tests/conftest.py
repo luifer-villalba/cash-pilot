@@ -45,7 +45,8 @@ from cashpilot.main import create_app
 from cashpilot.models.business import Business  # noqa: F401
 from cashpilot.models.cash_session import CashSession  # noqa: F401
 from cashpilot.models.user import User  # noqa: F401
-from tests.factories import UserFactory
+from tests.factories import BusinessFactory, CashSessionFactory, UserFactory
+from cashpilot.models.user_business import UserBusiness
 
 TEST_DATABASE_URL = (
     "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_test"
@@ -153,6 +154,40 @@ async def client(db_session):
         )
         assert login_response.status_code in [302, 303, 200], f"Login failed: {login_response.status_code}"
         yield ac
+
+
+@pytest_asyncio.fixture
+async def factories(db_session: AsyncSession):
+    """Factory helper fixture with convenience methods for test data."""
+
+    class Factories:
+        def __init__(self, session: AsyncSession) -> None:
+            self._session = session
+
+        async def user(self, **kwargs):
+            return await UserFactory.create(self._session, **kwargs)
+
+        async def business(self, **kwargs):
+            return await BusinessFactory.create(self._session, **kwargs)
+
+        async def cash_session(self, **kwargs):
+            business = kwargs.pop("business", None)
+            cashier = kwargs.pop("cashier", None)
+            if business is not None:
+                kwargs["business_id"] = business.id
+            if cashier is not None:
+                kwargs["cashier_id"] = cashier.id
+                kwargs.setdefault("created_by", cashier.id)
+            return await CashSessionFactory.create(self._session, **kwargs)
+
+        async def user_business(self, *, business, user):
+            assignment = UserBusiness(user_id=user.id, business_id=business.id)
+            self._session.add(assignment)
+            await self._session.commit()
+            await self._session.refresh(assignment)
+            return assignment
+
+    return Factories(db_session)
 
 
 @pytest.fixture

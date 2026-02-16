@@ -23,7 +23,7 @@ Create bidirectional mapping: test → AC → requirement.
 ### In scope
 - Add AC references to test docstrings
 - Create mapping table: Test → AC → Feature
-- Update main test suite (319 tests)
+- Update main test suite (330 tests)
 - Ensure all tests reference at least one AC
 
 ### Out of scope
@@ -66,7 +66,7 @@ Add AC references to test docstrings across the entire test suite.
 - Low (docstring updates only, no code logic changes)
 
 **Tests**
-- All 319 tests remain passing
+- All 330 tests remain passing
 - No regressions detected
 
 ---
@@ -100,7 +100,7 @@ Add AC references to test docstrings across the entire test suite.
 ## Completion Checklist
 - ✅ Identified tests without AC references
 - ✅ Added AC references to docstrings
-- ✅ All tests still pass (319/319)
+- ✅ All tests still pass (330/330)
 - ✅ No regressions
 - ✅ Mapping is bidirectional (test ↔ AC)
 - ✅ All critical safety tests marked
@@ -165,7 +165,7 @@ Add AC references to test docstrings across the entire test suite.
 - **Bidirectional**: Each test clearly maps to AC; each AC traceable to tests
 - **Compliance**: Enables audit proof that requirements are tested
 - **Maintenance**: Future tests should follow same convention (AC in docstring)
-- **Test Count**: 319 tests, 20+ updated with AC references
+- **Test Count**: 330 tests, 20+ updated with AC references
 
 ---
 

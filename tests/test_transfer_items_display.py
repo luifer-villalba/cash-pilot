@@ -1,7 +1,7 @@
 """Tests for CP-REPORTS-03 — Bank Transfers Display in Reconciliation."""
 
 import pytest
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from decimal import Decimal
 from uuid import UUID
 
@@ -86,13 +86,13 @@ class TestTransferItemsDisplay:
         assert transfers[0]["session_id"] == session1.id
         assert transfers[0]["description"] == "Customer John Perez - Invoice 123"
         assert transfers[0]["amount"] == Decimal("50000.00")
-        assert transfers[0]["created_at"] == transfer1_time
+        assert transfers[0]["created_at"] == transfer1_time.replace(tzinfo=timezone.utc)
         assert transfers[0]["cashier_name"] == "John D."
 
         assert transfers[1]["session_id"] == session2.id
         assert transfers[1]["description"] == "Payment to Supplier ABC"
         assert transfers[1]["amount"] == Decimal("75000.50")
-        assert transfers[1]["created_at"] == transfer2_time
+        assert transfers[1]["created_at"] == transfer2_time.replace(tzinfo=timezone.utc)
         assert transfers[1]["cashier_name"] == "John D."
 
     # ─────── AC-3: Chronological ordering ────────
@@ -139,9 +139,9 @@ class TestTransferItemsDisplay:
         )
 
         # Verify chronological order (earliest first)
-        assert transfers[0]["created_at"] == datetime(2026, 2, 16, 14, 0, 0)
-        assert transfers[1]["created_at"] == datetime(2026, 2, 16, 15, 0, 0)
-        assert transfers[2]["created_at"] == datetime(2026, 2, 16, 16, 30, 0)
+        assert transfers[0]["created_at"] == datetime(2026, 2, 16, 14, 0, 0, tzinfo=timezone.utc)
+        assert transfers[1]["created_at"] == datetime(2026, 2, 16, 15, 0, 0, tzinfo=timezone.utc)
+        assert transfers[2]["created_at"] == datetime(2026, 2, 16, 16, 30, 0, tzinfo=timezone.utc)
 
     # ─────── AC-4: Summary calculation ────────
 
@@ -219,7 +219,7 @@ class TestTransferItemsDisplay:
 
     @pytest.mark.asyncio
     async def test_transfer_items_read_only_no_edit_endpoints(
-        self, db_session: AsyncSession, factories, client
+        self, db_session: AsyncSession, factories, admin_client
     ):
         """
         AC-5: Transfer section is read-only in Phase 1.
@@ -228,14 +228,11 @@ class TestTransferItemsDisplay:
         # This is a behavioral test: the template should not have edit buttons
         # Actual edit functionality exists in individual sessions, not in reconciliation view
         business = await factories.business(name="Test Business")
-        admin = await factories.user(role=UserRole.ADMIN, email="admin@test.com")
-
         session_date = date(2026, 2, 16)
 
         # Load the reconciliation page
-        response = client.get(
-            f"/admin/reconciliation/compare?date={session_date.isoformat()}",
-            headers={"Authorization": f"Bearer {admin.id}"},
+        response = await admin_client.get(
+            f"/admin/reconciliation/compare?date={session_date.isoformat()}"
         )
 
         assert response.status_code == 200
@@ -260,7 +257,7 @@ class TestTransferItemsDisplay:
         session_date = date(2026, 2, 16)
 
         # Try to access as cashier
-        response = client.get(
+        response = await client.get(
             f"/admin/reconciliation/compare?date={session_date.isoformat()}",
             headers={"Authorization": f"Bearer {cashier.id}"},
         )

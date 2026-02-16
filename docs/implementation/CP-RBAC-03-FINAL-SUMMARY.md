@@ -165,7 +165,7 @@ async def get_assigned_businesses(
 
 ## Test Results
 
-**Final Test Suite:** `305 passed, 4 failed`
+**Final Test Suite:** `330 passed, 0 failed`
 
 ### New Tests (test_rbac_dashboard_visibility.py)
 - ✅ test_dashboard_endpoint_accessible
