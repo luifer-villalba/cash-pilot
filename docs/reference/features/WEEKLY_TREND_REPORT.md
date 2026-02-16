@@ -129,7 +129,7 @@ week_end = week_start + timedelta(days=6)
 ### Get Weekly Trend Data (JSON)
 
 ```
-GET /api/reports/weekly-trend
+GET /reports/weekly-trend
 ```
 
 **Query Parameters:**
@@ -169,7 +169,7 @@ GET /api/reports/weekly-trend
 ### Export Weekly Trend PDF
 
 ```
-GET /api/reports/weekly-trend/pdf
+GET /reports/weekly-trend/pdf
 ```
 
 **Query Parameters:** Same as JSON endpoint
@@ -280,12 +280,12 @@ change_percent = ((current - previous) / previous) * 100 if previous > 0 else 0
 **Database Index:**
 ```sql
 CREATE INDEX idx_sessions_business_date_status 
-ON cash_sessions(business_id, opened_at, status) 
+ON cash_sessions(business_id, session_date, status) 
 WHERE is_deleted = false;
 ```
 
 **Query Strategy:**
-- Use date range filter (`opened_at BETWEEN start AND end`)
+- Use date range filter (`session_date BETWEEN start AND end`)
 - Filter by `status = 'closed'` and `is_deleted = false`
 - Aggregate in database (not Python)
 - Use `GROUP BY` for daily totals
@@ -375,10 +375,10 @@ WHERE is_deleted = false;
 
 ## Related Documentation
 
-- [API.md](API.md) - API endpoint details
+- [API.md](../API.md) - API endpoint details
 - [ACCEPTANCE_CRITERIA.md](../product/ACCEPTANCE_CRITERIA.md) - AC-06
 - [ARCHITECTURE.md](../architecture/ARCHITECTURE.md) - System design
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues
+- [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) - Common issues
 
 ---
 

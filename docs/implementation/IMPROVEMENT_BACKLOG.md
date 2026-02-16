@@ -202,7 +202,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
     - `is_verified` (boolean, default false)
     - `verified_by` (FK to users, nullable)
     - `verified_at` (timestamp, nullable)
-  - New API endpoint: `POST /api/transfer-items/{id}/verify`
+  - New API endpoint: `POST /cash-sessions/{session_id}/transfer-items/{id}/verify`
   - HTMX interaction: click checkbox → AJAX call → update UI
 * **Implementation Steps:**
   - Migration: add verification fields to `transfer_items`

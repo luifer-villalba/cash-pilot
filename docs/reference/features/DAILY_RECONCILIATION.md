@@ -43,7 +43,7 @@ system_totals = SUM(
     cash_sales + card_sales + credit_sales 
     FROM cash_sessions 
     WHERE business_id = X 
-      AND date(opened_at) = Y 
+      AND session_date = Y 
       AND status = 'closed'
       AND is_deleted = false
 )
@@ -200,7 +200,7 @@ INSERT INTO daily_reconciliations (business_id, date, ...)
 VALUES ('same-business', 'same-date', ...) -- ❌ Error
 ```
 
-**Edit Instead:** Use `PUT /api/reconciliations/{id}` to update existing record
+**Edit Instead:** Use `PUT /reconciliation/daily/{reconciliation_id}` to update existing record
 
 ### Implicit Relationship with Cash Sessions
 
@@ -218,23 +218,26 @@ CashSession WHERE business_id = X AND date(opened_at) = Y
 
 **Comparison Logic:**
 ```python
-# Get system totals
-system_totals = db.query(
-    func.sum(CashSession.cash_sales),
-    func.sum(CashSession.card_sales),
-    func.sum(CashSession.credit_sales)
-).filter(
+# Get all closed sessions for that business/date
+sessions = db.query(CashSession).filter(
     CashSession.business_id == reconciliation.business_id,
-    func.date(CashSession.opened_at) == reconciliation.date,
+    CashSession.session_date == reconciliation.date,
     CashSession.status == 'closed',
-    CashSession.is_deleted == false
-).first()
+    CashSession.is_deleted == False,
+).all()
 
-# Compare
+# Calculate system totals in Python using computed properties
+system_totals = {
+    'cash': sum(session.cash_sales for session in sessions),
+    'card': sum(session.card_sales for session in sessions),
+    'credit': sum(session.credit_sales for session in sessions),
+}
+
+# Compare manual entries against system totals
 discrepancy = {
-    'cash': reconciliation.cash_sales - system_totals.cash,
-    'card': reconciliation.card_sales - system_totals.card,
-    'credit': reconciliation.credit_sales - system_totals.credit
+    'cash': reconciliation.cash_sales - system_totals['cash'],
+    'card': reconciliation.card_sales - system_totals['card'],
+    'credit': reconciliation.credit_sales - system_totals['credit'],
 }
 ```
 
@@ -258,7 +261,7 @@ discrepancy = {
 ### Create Daily Reconciliation
 
 ```
-POST /api/reconciliations
+POST /reconciliation/daily
 ```
 
 **Request Body:**
@@ -281,20 +284,20 @@ POST /api/reconciliations
 ### Update Daily Reconciliation
 
 ```
-PUT /api/reconciliations/{id}
+PUT /reconciliation/daily/{reconciliation_id}
 ```
 
 **Request Body:** Same as create (partial updates allowed)  
 **Response:** Updated reconciliation object  
 **RBAC:** Admin only
 
-### Get Reconciliation for Date
+### Get Daily Reconciliations
 
 ```
-GET /api/reconciliations?business_id={uuid}&date={YYYY-MM-DD}
+GET /reconciliation/daily/?business_id={uuid}&date={YYYY-MM-DD}
 ```
 
-**Response:** Reconciliation object or 404 if not found  
+**Response:** List of reconciliation objects or empty list if not found  
 **RBAC:** Admin only
 
 ### View Comparison
@@ -372,7 +375,7 @@ GET /admin/reconciliation/{business_id}/{date}
 **Index:**
 ```sql
 CREATE INDEX idx_sessions_reconciliation 
-ON cash_sessions(business_id, opened_at, status, is_deleted);
+ON cash_sessions(business_id, session_date, status, is_deleted);
 ```
 
 **Query Strategy:**
@@ -441,7 +444,7 @@ if abs(discrepancy) <= 1:
 - [DATA_MODEL.md](../architecture/DATA_MODEL.md) - DailyReconciliation entity
 - [IMPROVEMENT_BACKLOG.md](../implementation/IMPROVEMENT_BACKLOG.md) - CP-MODEL-03
 - [ACCEPTANCE_CRITERIA.md](../product/ACCEPTANCE_CRITERIA.md) - AC-06, AC-07
-- [API.md](API.md) - API endpoint details
+- [API.md](../API.md) - API endpoint details
 
 ---
 

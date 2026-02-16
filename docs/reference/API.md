@@ -45,7 +45,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 
 ### Cash Sessions
 
-#### `GET /api/sessions`
+#### `GET /cash-sessions`
 **Purpose:** List cash sessions with filters  
 **Query Parameters:**
 - `business_id` (optional): Filter by business UUID
@@ -80,7 +80,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 - Admin: View all sessions across all businesses
 - Cashier: View only own sessions in assigned businesses
 
-#### `POST /api/sessions`
+#### `POST /cash-sessions`
 **Purpose:** Create a new cash session  
 **Request Body:**
 ```json
@@ -101,7 +101,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 - Admin: Can create for any business
 - Cashier: Can create only for assigned businesses
 
-#### `PUT /api/sessions/{id}/close`
+#### `PUT /cash-sessions/{id}/close`
 **Purpose:** Close an open cash session with reconciliation  
 **Request Body:**
 ```json
@@ -124,14 +124,14 @@ All API endpoints require authentication via session-based auth (cookies). Users
 - Admin: Can close any session
 - Cashier: Can close only own sessions
 
-#### `GET /api/sessions/{id}`
+#### `GET /cash-sessions/{id}`
 **Purpose:** Get details of a specific session  
 **Response:** Returns full session object with related data  
 **RBAC:**
 - Admin: Can view any session
 - Cashier: Can view only own sessions in assigned businesses
 
-#### `PUT /api/sessions/{id}`
+#### `PUT /cash-sessions/{id}`
 **Purpose:** Edit a cash session (within time window or admin)  
 **Request Body:** Same as create/close endpoints (fields vary by status)  
 **Response:** Returns updated session  
@@ -139,12 +139,12 @@ All API endpoints require authentication via session-based auth (cookies). Users
 - Admin: Can edit any session anytime
 - Cashier: Can edit own open sessions; closed sessions within 12 hours only
 
-#### `DELETE /api/sessions/{id}`
+#### `DELETE /cash-sessions/{id}`
 **Purpose:** Soft delete a cash session  
 **Response:** Success message  
 **RBAC:** Admin only
 
-#### `POST /api/sessions/{id}/restore`
+#### `POST /cash-sessions/{id}/restore`
 **Purpose:** Restore a soft-deleted session  
 **Response:** Returns restored session  
 **RBAC:** Admin only
@@ -153,7 +153,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 
 ### Businesses
 
-#### `GET /api/businesses`
+#### `GET /businesses`
 **Purpose:** List all businesses  
 **Response:**
 ```json
@@ -173,7 +173,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 - Admin: View all businesses
 - Cashier: View only assigned businesses
 
-#### `POST /api/businesses`
+#### `POST /businesses`
 **Purpose:** Create a new business  
 **Request Body:**
 ```json
@@ -186,12 +186,12 @@ All API endpoints require authentication via session-based auth (cookies). Users
 **Response:** Returns created business  
 **RBAC:** Admin only
 
-#### `PUT /api/businesses/{id}`
+#### `PUT /businesses/{id}`
 **Purpose:** Update business details  
 **Response:** Returns updated business  
 **RBAC:** Admin only
 
-#### `DELETE /api/businesses/{id}`
+#### `DELETE /businesses/{id}`
 **Purpose:** Soft delete (deactivate) a business  
 **Response:** Success message  
 **RBAC:** Admin only
@@ -200,7 +200,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 
 ### Users
 
-#### `GET /api/users`
+#### `GET /users`
 **Purpose:** List all users  
 **Response:**
 ```json
@@ -218,7 +218,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 ```
 **RBAC:** Admin only
 
-#### `POST /api/users`
+#### `POST /users`
 **Purpose:** Create a new user (auto-generates password)  
 **Request Body:**
 ```json
@@ -232,23 +232,23 @@ All API endpoints require authentication via session-based auth (cookies). Users
 **Response:** Returns created user with auto-generated password (shown once)  
 **RBAC:** Admin only
 
-#### `PUT /api/users/{id}`
+#### `PUT /users/{id}`
 **Purpose:** Update user details  
 **Request Body:** Fields to update (email, role, is_active, etc.)  
 **Response:** Returns updated user  
 **RBAC:** Admin only
 
-#### `POST /api/users/{id}/reset-password`
+#### `POST /users/{id}/reset-password`
 **Purpose:** Reset user password (generates new random password)  
 **Response:** Returns new password (shown once)  
 **RBAC:** Admin only
 
-#### `POST /api/users/{user_id}/businesses/{business_id}`
+#### `POST /users/{user_id}/businesses/{business_id}`
 **Purpose:** Assign a user to a business  
 **Response:** Success message  
 **RBAC:** Admin only
 
-#### `DELETE /api/users/{user_id}/businesses/{business_id}`
+#### `DELETE /users/{user_id}/businesses/{business_id}`
 **Purpose:** Remove user's access to a business  
 **Response:** Success message  
 **RBAC:** Admin only
@@ -257,7 +257,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 
 ### Reports
 
-#### `GET /api/reports/weekly-trend`
+#### `GET /reports/weekly-trend`
 **Purpose:** Get weekly revenue trend report  
 **Query Parameters:**
 - `business_id` (optional): Filter by business
@@ -288,13 +288,13 @@ All API endpoints require authentication via session-based auth (cookies). Users
 ```
 **RBAC:** Admin only
 
-#### `GET /api/reports/weekly-trend/pdf`
+#### `GET /reports/weekly-trend/pdf`
 **Purpose:** Export weekly trend report as PDF  
 **Query Parameters:** Same as weekly-trend endpoint  
 **Response:** PDF file download  
 **RBAC:** Admin only
 
-#### `GET /api/reports/daily-reconciliation`
+#### `GET /reports/daily-reconciliation`
 **Purpose:** View daily reconciliation comparison (system vs manual entry)  
 **Query Parameters:**
 - `business_id`: Required business UUID
@@ -332,7 +332,7 @@ All API endpoints require authentication via session-based auth (cookies). Users
 
 ### Audit
 
-#### `POST /api/sessions/{id}/flag`
+#### `POST /cash-sessions/{id}/flag`
 **Purpose:** Flag a session for review  
 **Request Body:**
 ```json
@@ -343,12 +343,12 @@ All API endpoints require authentication via session-based auth (cookies). Users
 **Response:** Success message  
 **RBAC:** Admin only
 
-#### `DELETE /api/sessions/{id}/flag`
+#### `DELETE /cash-sessions/{id}/flag`
 **Purpose:** Remove flag from a session  
 **Response:** Success message  
 **RBAC:** Admin only
 
-#### `GET /api/sessions/{id}/audit`
+#### `GET /cash-sessions/{id}/audit`
 **Purpose:** View audit log for a session  
 **Response:**
 ```json

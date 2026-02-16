@@ -400,7 +400,7 @@ Provide solutions to common problems encountered during development, deployment,
 2. **Verify template rendering:**
    ```bash
    # Test HTML generation first
-   curl http://localhost:8000/api/reports/weekly-trend?business_id=...
+   curl http://localhost:8000/reports/weekly-trend?business_id=...
    ```
 
 3. **Check logs for CSS/font errors:**
