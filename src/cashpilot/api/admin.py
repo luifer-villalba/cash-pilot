@@ -22,9 +22,10 @@ from cashpilot.core.security import hash_password
 from cashpilot.models.business import Business
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.daily_reconciliation import DailyReconciliation
+from cashpilot.models.transfer_item import TransferItem
 from cashpilot.models.user import User
 from cashpilot.models.user_business import UserBusiness
-from cashpilot.utils.datetime import APP_TIMEZONE, today_local
+from cashpilot.utils.datetime import APP_TIMEZONE, now_utc, today_local
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = get_logger(__name__)
@@ -331,6 +332,94 @@ async def _build_comparison_data(
         )
 
     return comparison_data
+
+
+async def _fetch_transfer_items_for_reconciliation(
+    db: AsyncSession,
+    business_id: UUID,
+    reconciliation_date: datetime,
+) -> list[dict]:
+    """
+    Fetch all bank transfer items for a business on a given date.
+
+    Returns transfer items from all sessions for that business+date,
+    ordered chronologically (earliest first), with cashier names and session IDs.
+
+    Args:
+        db: Database session
+        business_id: Business ID to filter by
+        reconciliation_date: Date to filter by (as date object)
+
+    Returns:
+        List of transfer item dictionaries with fields:
+        - id: UUID
+        - session_id: UUID
+        - description: str
+        - amount: Decimal
+        - created_at: datetime
+        - cashier_name: str
+        - cashier_id: UUID
+    """
+    # Convert datetime to date if needed
+    if isinstance(reconciliation_date, datetime):
+        target_date = reconciliation_date.date()
+    else:
+        target_date = reconciliation_date
+
+    # Query: transfer items joined with sessions and cashiers
+    stmt = (
+        select(
+            TransferItem.id,
+            TransferItem.session_id,
+            TransferItem.description,
+            TransferItem.amount,
+            TransferItem.created_at,
+            TransferItem.is_verified,
+            User.id.label("cashier_id"),
+            User.first_name,
+            User.last_name,
+            CashSession.session_number,
+        )
+        .join(CashSession, TransferItem.session_id == CashSession.id)
+        .join(User, CashSession.cashier_id == User.id)
+        .where(
+            and_(
+                CashSession.business_id == business_id,
+                CashSession.session_date == target_date,
+                ~TransferItem.is_deleted,
+                ~CashSession.is_deleted,
+            )
+        )
+        .order_by(TransferItem.created_at.asc())
+    )
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    # Format results
+    transfer_items = []
+    for row in rows:
+        # Build cashier name (FirstName L.)
+        cashier_name = row.first_name or ""
+        if row.last_name:
+            cashier_name += f" {row.last_name[0]}."
+        cashier_name = cashier_name.strip()
+
+        transfer_items.append(
+            {
+                "id": row.id,
+                "session_id": row.session_id,
+                "session_number": row.session_number,
+                "description": row.description,
+                "amount": row.amount,
+                "created_at": row.created_at,
+                "cashier_id": row.cashier_id,
+                "cashier_name": cashier_name,
+                "is_verified": row.is_verified,
+            }
+        )
+
+    return transfer_items
 
 
 # ===== SCHEMAS =====
@@ -677,6 +766,30 @@ async def reconciliation_compare_dashboard(
     # Build comparison data using shared helper function
     comparison_data = await _build_comparison_data(db, comparison_date, businesses)
 
+    # Fetch transfer items for each business and consolidate into single sorted list
+    all_transfer_items = []
+    transfer_items_by_business = {}  # Keep for backwards compatibility
+    business_names_by_id = {}  # For template display
+
+    for business in businesses:
+        business_names_by_id[str(business.id)] = business.name
+        transfer_items = await _fetch_transfer_items_for_reconciliation(
+            db, business.id, comparison_date
+        )
+        transfer_items_by_business[str(business.id)] = transfer_items
+        # Add business_id to each transfer for consolidated display
+        for item in transfer_items:
+            item["business_id"] = str(business.id)
+        all_transfer_items.extend(transfer_items)
+
+    # Sort by time first (ascending - chronological within each business)
+    all_transfer_items.sort(key=lambda x: x.get("created_at") or "")
+    # Then sort by business name (ascending - A to Z)
+    # Stable sort preserves chronological order within each business group
+    all_transfer_items.sort(
+        key=lambda x: business_names_by_id.get(x.get("business_id"), "").lower()
+    )
+
     # Get all businesses for the selector
     all_businesses = await get_active_businesses(db)
 
@@ -694,6 +807,9 @@ async def reconciliation_compare_dashboard(
             "selected_business_id": str(selected_business_id) if selected_business_id else None,
             "businesses": all_businesses,
             "comparison_data": comparison_data,
+            "transfer_items_by_business": transfer_items_by_business,
+            "all_transfer_items": all_transfer_items,
+            "businesses_by_id": business_names_by_id,
             "last_updated": last_updated,
             "last_updated_display": last_updated_display,
             "locale": locale,
@@ -738,6 +854,14 @@ async def reconciliation_compare_results_partial(
     # Build comparison data using shared helper function
     comparison_data = await _build_comparison_data(db, comparison_date, businesses)
 
+    # Fetch transfer items for each business on the selected date
+    transfer_items_by_business = {}
+    for business in businesses:
+        transfer_items = await _fetch_transfer_items_for_reconciliation(
+            db, business.id, comparison_date
+        )
+        transfer_items_by_business[str(business.id)] = transfer_items
+
     # Get current time for last_updated display
     now = datetime.now(ZoneInfo(APP_TIMEZONE))
     last_updated = now.isoformat()
@@ -749,12 +873,74 @@ async def reconciliation_compare_results_partial(
         {
             "comparison_date": comparison_date,
             "comparison_data": comparison_data,
+            "selected_business_id": str(selected_business_id) if selected_business_id else None,
+            "transfer_items_by_business": transfer_items_by_business,
             "last_updated": last_updated,
             "last_updated_display": last_updated_display,
             "locale": locale,
             "_": _,
         },
     )
+
+
+@router.post("/transfer-items/{transfer_id}/verify")
+async def verify_transfer_item(
+    transfer_id: UUID,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark a transfer item as verified by the current user."""
+    # Get the transfer item
+    stmt = select(TransferItem).where(TransferItem.id == transfer_id)
+    result = await db.execute(stmt)
+    transfer = result.scalar_one_or_none()
+
+    if not transfer:
+        raise HTTPException(status_code=404, detail="Transfer item not found")
+
+    # Update verification fields
+    transfer.is_verified = True
+    transfer.verified_by = current_user.id
+    transfer.verified_at = now_utc()
+
+    await db.commit()
+    await db.refresh(transfer)
+
+    return {
+        "id": str(transfer.id),
+        "is_verified": transfer.is_verified,
+        "verified_at": transfer.verified_at.isoformat() if transfer.verified_at else None,
+    }
+
+
+@router.post("/transfer-items/{transfer_id}/unverify")
+async def unverify_transfer_item(
+    transfer_id: UUID,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Mark a transfer item as unverified."""
+    # Get the transfer item
+    stmt = select(TransferItem).where(TransferItem.id == transfer_id)
+    result = await db.execute(stmt)
+    transfer = result.scalar_one_or_none()
+
+    if not transfer:
+        raise HTTPException(status_code=404, detail="Transfer item not found")
+
+    # Update verification fields
+    transfer.is_verified = False
+    transfer.verified_by = None
+    transfer.verified_at = None
+
+    await db.commit()
+    await db.refresh(transfer)
+
+    return {
+        "id": str(transfer.id),
+        "is_verified": transfer.is_verified,
+        "verified_at": transfer.verified_at.isoformat() if transfer.verified_at else None,
+    }
 
 
 @router.get("/reconciliation/sessions", response_class=HTMLResponse)

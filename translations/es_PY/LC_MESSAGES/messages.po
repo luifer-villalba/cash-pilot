@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-14 23:55+0000\n"
+"POT-Creation-Date: 2026-02-16 16:10+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -350,8 +350,11 @@ msgstr "Fecha"
 msgid "Select a date to compare reconciliation data"
 msgstr "Seleccioná una fecha para comparar datos de conciliación"
 
-msgid "Loading comparison data"
-msgstr "Cargando datos de comparación"
+msgid "Sales Comparison"
+msgstr "Comparación de Ventas"
+
+msgid "Bank Transfers"
+msgstr "Transferencias"
 
 msgid "Margin Comparison"
 msgstr "Comparación de Margen"
@@ -393,6 +396,9 @@ msgid "Gross margin uses manual sales minus daily cost total when available."
 msgstr ""
 "El margen bruto usa ventas manuales menos el total de costo diario cuando"
 " está disponible."
+
+msgid "Session Notes"
+msgstr "Notas de Sesión"
 
 msgid "User Management - CashPilot"
 msgstr "Gestión de Usuarios - CashPilot"
@@ -694,9 +700,6 @@ msgstr "Rojo (Déficit)"
 msgid "Manual has LESS than System (negative difference)"
 msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
 
-msgid "Session Notes"
-msgstr "Notas de Sesión"
-
 msgid "Session"
 msgstr "Sesión"
 
@@ -738,6 +741,36 @@ msgstr "No se encontraron sesiones para esta fecha"
 
 msgid "Sessions will appear here once created"
 msgstr "Las sesiones aparecerán aquí una vez creadas"
+
+msgid "All transfers for"
+msgstr "Todas las transferencias para"
+
+msgid "Transfers"
+msgstr "Transferencias"
+
+msgid "Amount"
+msgstr "Monto"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Verified"
+msgstr "Verificado"
+
+msgid "Mark as unverified"
+msgstr "Marcar como no verificado"
+
+msgid "Mark as verified"
+msgstr "Marcar como verificado"
+
+msgid "transfer"
+msgstr "Transferencia"
+
+msgid "No bank transfers recorded"
+msgstr "No hay transferencias bancarias registradas"
+
+msgid "for this date"
+msgstr "para esta fecha"
 
 msgid "New Business"
 msgstr "Nuevo Negocio"
@@ -1084,9 +1117,6 @@ msgstr "Sin entradas de transferencias todavía"
 msgid "Toggle bank transfers section"
 msgstr "Alternar sección de transferencias bancarias"
 
-msgid "Bank Transfers"
-msgstr "Transferencias"
-
 msgid "Click here to add your first transfer"
 msgstr "Hacé clic acá para agregar tu primera transferencia"
 
@@ -1113,9 +1143,6 @@ msgstr "Eliminar transferencia"
 
 msgid "Delete this transfer?"
 msgstr "¿Borrar esta transferencia?"
-
-msgid "No bank transfers recorded"
-msgstr "No hay transferencias bancarias registradas"
 
 msgid "Add transfers to track bank deposits"
 msgstr "Agregá transferencias para rastrear depósitos bancarios"
@@ -2375,9 +2402,6 @@ msgstr "Panel Lateral"
 msgid "FLAGGED"
 msgstr "MARCADO"
 
-msgid "Transfers"
-msgstr "Transferencias"
-
 msgid "Direct account transfers this shift"
 msgstr "Transferencias directas a cuenta durante este turno"
 
@@ -2432,3 +2456,7 @@ msgstr "ej., Discrepancia alta, requiere revisión del gerente..."
 
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
+
+#~ msgid "Loading comparison data"
+#~ msgstr "Cargando datos de comparación"
+
