@@ -66,7 +66,7 @@ tests/test_admin_business_assignment.py::test_cashier_cannot_create_user PASSED
 tests/test_admin_business_assignment.py::test_admin_can_create_user PASSED
 tests/test_admin_business_assignment.py::test_cashier_cannot_unassign_business PASSED
 
-319 passed in 86.17s
+330 passed in 99.39s
 ```
 
 ---
@@ -97,7 +97,7 @@ tests/test_admin_business_assignment.py::test_cashier_cannot_unassign_business P
 ## Completion Checklist
 - ✅ Identified endpoints without RBAC test coverage
 - ✅ Added tests to `test_admin_business_assignment.py`
-- ✅ All tests pass (319/319)
+- ✅ All tests pass (330/330)
 - ✅ No regressions in existing tests
 - ✅ AC-02 coverage documented
 - ✅ Tests follow project conventions (async, fixtures, docstrings)
@@ -128,7 +128,7 @@ tests/test_admin_business_assignment.py
 - **POST /users** was already protected with `require_admin` in code; tests were simply missing
 - **DELETE /admin/users/.../businesses/...** was already protected with `require_admin` in code; tests were simply missing
 - All endpoints covered by this task were already properly secured; tests add compliance verification only
-- Test count increased from 316 to 319 (+3 tests)
+- Test count increased from 316 to 330 (+14 tests)
 
 ---
 

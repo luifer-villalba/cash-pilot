@@ -301,7 +301,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Status:** Completed (2026-02-12) - Added tests for:
   * POST /users (create user) — admin-only verified ✓
   * DELETE /admin/users/{id}/businesses/{id} (unassign) — admin-only verified ✓
-  * Test count: 316 → 319 (+3 tests)
+  * Test count: 316 → 330 (+14 tests)
 
 ---
 

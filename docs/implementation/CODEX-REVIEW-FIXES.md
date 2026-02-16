@@ -101,7 +101,7 @@ stmt = (
 
 ## Testing
 
-**Test Results:** ✅ 305 passed, 4 pre-existing failures
+**Test Results:** ✅ 330 passed, 0 failures
 
 All new tests in `test_rbac_dashboard_visibility.py` passing. The 4 failures are pre-existing issues in other test files unrelated to these fixes.
 
