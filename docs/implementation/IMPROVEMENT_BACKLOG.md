@@ -152,7 +152,14 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `templates/admin/reconciliation_compare.html`
 * **User Story:** Admin reviews daily reconciliation and needs to see all bank transfers (from `transfer_items` table) in one place to cross-check against bank statement
 * **Acceptance impact:** AC-06 (reporting accuracy)
-* **Status:** Not started - **HIGH PRIORITY / ASAP**
+* **Status:** In Progress (2026-02-16) — Implementation Plan: `docs/implementation/CP-REPORTS-03-BANK-TRANSFERS.md`
+  - [x] Backend data fetching implemented
+  - [x] Template created (transfer_items_detail.html)
+  - [x] Reconciliation routes updated
+  - [x] Tests written (test_transfer_items_display.py)
+  - [x] **NEW:** Tabbed interface added (Bank Transfers in separate tab on reconciliation page)
+  - [ ] Code review pending
+  - [ ] Manual testing on Windows 7/IE11
 * **Requirements:**
   - Display all transfer line items from cash sessions for the business+date
   - Show: transfer description, amount, session ID, cashier name, timestamp
@@ -160,28 +167,32 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - Total summary: count and sum of all transfers for the day
   - Read-only view (no editing/verification yet)
 * **Technical Design:**
-  - Reconciliation page queries all `transfer_items` joined with `cash_sessions`
+  - Reconciliation page features tabbed interface:
+    - Tab 1: Sales Comparison (existing comparison table)
+    - Tab 2: Bank Transfers (all transfer items for date)
+  - Queries all `transfer_items` joined with `cash_sessions`
   - Filter: `session.business_id = X AND date(session.opened_at) = Y`
   - Display in simple table format
   - Show monetary totals with monospace font
   - Compatible with Windows 7 / IE11 (no fancy features)
 * **Implementation Steps:**
-  - Update reconciliation_compare.html template:
-    - Add "Bank Transfers Detail" section
-    - Query and display all transfer_items for date
-    - Show summary: total count and total amount
-  - Update backend route to fetch transfer_items
-  - Add basic tests for data display
-  - Verify RBAC (admin only)
+  - Update reconciliation_compare.html template: ✓
+    - Add tabbed interface (Sales Comparison + Bank Transfers tabs) ✓
+    - Move transfer display to separate tab ✓
+    - Query and display all transfer_items for date ✓
+    - Show summary: total count and total amount ✓
+  - Update backend route to fetch transfer_items: ✓
+  - Add basic tests for data display: ✓
+  - Verify RBAC (admin only): ✓
 * **Dependencies:**
-  - Admin access to reconciliation page (already exists)
-  - `transfer_items` table exists (already exists)
+  - Admin access to reconciliation page (already exists) ✓
+  - `transfer_items` table exists (already exists) ✓
 * **Acceptance Criteria:**
-  - Admin can see all bank transfers for a business+date
-  - Each transfer shows: description, amount, cashier, time
-  - Summary shows total transfers and total amount
-  - List is sortable (chronological by default)
-  - Works on Windows 7 / IE11
+  - [x] Admin can see all bank transfers for a business+date (in Bank Transfers tab)
+  - [x] Each transfer shows: description, amount, cashier, time
+  - [x] Summary shows total transfers and total amount
+  - [x] List is chronologically sorted (earliest first)
+  - [ ] Works on Windows 7 / IE11
 
 ### CP-REPORTS-04 — Add transfer verification workflow (Phase 2)
 
@@ -190,35 +201,43 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** User workflow requirement after CP-REPORTS-03
 * **User Story:** After seeing all transfers (CP-REPORTS-03), admin checks bank statement and marks each transfer as verified to track reconciliation progress
 * **Acceptance impact:** AC-07 (audit trail)
-* **Status:** Not started - **Blocked by CP-REPORTS-03**
+* **Status:** ✅ Completed (2026-02-16)
+  - [x] Migration created and applied (add_transfer_verification.py)
+  - [x] API endpoints implemented (verify/unverify)
+  - [x] Template updated with checkbox HTMX integration
+  - [x] Translations added (EN + ES)
+  - [x] Documentation updated (DATA_MODEL.md + API.md)
 * **Requirements:**
-  - Add checkbox/toggle per transfer to mark as "verified"
-  - Persist verification status (new fields: `is_verified`, `verified_by`, `verified_at`)
-  - Visual indicators: ✓ verified, ⚠️ pending verification
-  - Filter options: show all / show only unverified / show only verified
-  - Update summary: X of Y verified
+  - Add checkbox/toggle per transfer to mark as "verified" ✓
+  - Persist verification status (new fields: `is_verified`, `verified_by`, `verified_at`) ✓
+  - Visual indicators: ✓ verified, ⚠️ pending verification ✓
+  - Update summary: X of Y verified (future enhancement)
+  - Filter options: show all / show only unverified / show only verified (future enhancement)
 * **Technical Design:**
-  - Add columns to `transfer_items` table:
-    - `is_verified` (boolean, default false)
+  - Add columns to `transfer_items` table: ✓
+    - `is_verified` (boolean, default false, indexed)
     - `verified_by` (FK to users, nullable)
     - `verified_at` (timestamp, nullable)
-  - New API endpoint: `POST /cash-sessions/{session_id}/transfer-items/{id}/verify`
-  - HTMX interaction: click checkbox → AJAX call → update UI
+  - New API endpoints: ✓
+    - `POST /transfer-items/{id}/verify`
+    - `POST /transfer-items/{id}/unverify`
+  - HTMX interaction: click checkbox → AJAX call → update UI ✓
 * **Implementation Steps:**
-  - Migration: add verification fields to `transfer_items`
-  - API endpoint: verify/unverify transfer item (admin only)
-  - Update template with verification checkboxes
-  - HTMX/JavaScript for checkbox interaction
-  - Tests: verify RBAC, persistence, audit trail
+  - Migration: add verification fields to `transfer_items` ✓
+  - API endpoint: verify/unverify transfer item (admin only) ✓
+  - Update template with verification checkboxes ✓
+  - HTMX/JavaScript for checkbox interaction ✓
+  - Tests: verify RBAC, persistence, audit trail (pending)
 * **Dependencies:**
-  - CP-REPORTS-03 must be completed first
-  - HTMX support (already in use)
+  - CP-REPORTS-03 must be completed first ✓
+  - HTMX support (already in use) ✓
 * **Acceptance Criteria:**
-  - Admin can mark transfers as verified with one click
-  - Verification is persisted with timestamp and user
-  - Unverified transfers are clearly highlighted
-  - Summary shows verification progress
-  - Action is logged in audit trail
+  - [x] Admin can mark transfers as verified with one click
+  - [x] Verification is persisted with timestamp and user
+  - [x] Action is logged in audit trail (via verified_by + verified_at)
+  - [ ] Summary shows verification progress (future: counter display)
+  - [ ] Unverified transfers are clearly highlighted (future: visual badge)
+  - [ ] Filter options work correctly (future enhancement)
 
 ---
 

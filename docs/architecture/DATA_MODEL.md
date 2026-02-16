@@ -95,6 +95,51 @@ Represents a cashier work session.
 
 ---
 
+### TransferItem
+
+Represents a bank transfer line item associated with a cash session.
+
+**Key Fields**
+
+* `id`
+* `session_id` → CashSession
+* `description` (transfer details, e.g., customer name, invoice number)
+* `amount` (transfer amount in currency)
+* `created_at`
+* `is_deleted` (soft delete)
+* `is_verified` (boolean, default false) — verification status for reconciliation
+* `verified_by` → User (nullable) — admin who verified the transfer
+* `verified_at` (timestamp, nullable) — when the transfer was verified
+
+**Rules**
+
+* Transfer items belong to a cash session.
+* Verification is tracked for audit and reconciliation workflow.
+* Only admins can verify/unverify transfers.
+* Verification captures user and timestamp for audit trail.
+
+---
+
+### ExpenseItem
+
+Represents a business expense line item associated with a cash session.
+
+**Key Fields**
+
+* `id`
+* `session_id` → CashSession
+* `description` (expense details)
+* `amount` (expense amount in currency)
+* `created_at`
+* `is_deleted` (soft delete)
+
+**Rules**
+
+* Expense items belong to a cash session.
+* Used to track cash outflows during shifts.
+
+---
+
 ### DailyReconciliation
 
 Represents the daily manual entry of sales totals for a business (typically from POS/external system).
@@ -143,6 +188,8 @@ Represents the audit trail captured via audit fields.
 User ──< UserBusiness >── Business
   │                         │
   │                         ├──< CashSession (N per business+date)
+  │                         │       ├──< TransferItem (N per session)
+  │                         │       └──< ExpenseItem (N per session)
   │                         │
   └─────────────────────────└──< DailyReconciliation (1 per business+date)
                                   ↑
@@ -153,6 +200,7 @@ User ──< UserBusiness >── Business
 * DailyReconciliation aggregates totals for ALL CashSessions of a given business+date.
 * No direct FK between DailyReconciliation and CashSession - relationship is implicit.
 * Comparison logic: SUM(CashSession WHERE business_id+date) vs DailyReconciliation(business_id+date).
+* TransferItem and ExpenseItem are line-item details of CashSession transactions.
 
 ---
 

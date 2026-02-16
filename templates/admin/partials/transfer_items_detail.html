@@ -1,0 +1,150 @@
+<!-- File: templates/admin/partials/transfer_items_detail.html -->
+<!-- Unified bank transfers table - consolidated and sorted by business + date -->
+<!-- Context required: all_transfer_items (list), comparison_date (date), businesses_by_id (dict) -->
+
+{% set all_transfer_items = all_transfer_items | default([]) %}
+{% set total_amount = all_transfer_items | map(attribute='amount') | sum %}
+{% set total_count = all_transfer_items | length %}
+
+<!-- Header with count -->
+<div class="px-4 pt-4 pb-4 border-b border-base-300 bg-base-200/30">
+    <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+            <div class="p-2 bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-lg border border-secondary/20 shadow-sm">
+                <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-base md:text-lg font-semibold text-base-content">{{ _('Bank Transfers') }}</h2>
+                <p class="text-xs text-base-content/60">{{ _('All transfers for') }} {% if comparison_date %}{{ comparison_date.strftime('%b %d, %Y') }}{% endif %}</p>
+            </div>
+        </div>
+        {% if total_count > 0 %}
+        <div class="flex items-center gap-1 rounded-lg bg-secondary/10 px-3 py-1.5 border border-secondary/20 flex-shrink-0">
+            <span class="text-xs font-bold text-secondary uppercase tracking-wider hidden sm:inline">{{ _('Transfers') }}</span>
+            <span class="badge badge-ghost badge-sm font-mono font-bold text-secondary">{{ total_count }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if total_count > 0 %}
+<!-- Mobile Cards View (hidden on lg+) -->
+<div class="lg:hidden px-4 py-4">
+    <div class="space-y-3">
+        {% for item in all_transfer_items %}
+        <div class="border border-base-300 rounded-lg p-3 bg-base-100 hover:shadow-md transition-all duration-200">
+            <!-- Business, Description -->
+            <div class="mb-2">
+                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-0.5">
+                    {{ businesses_by_id.get(item.business_id, item.business_id) if businesses_by_id else item.business_id }}
+                </p>
+                <p class="text-sm font-semibold text-base-content truncate">{{ item.description }}</p>
+            </div>
+
+            <!-- Amount & Cashier -->
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs text-base-content/60">{{ _('Cashier') }}</p>
+                    <p class="text-xs font-medium text-base-content truncate">{{ item.cashier_name }}</p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                    <p class="text-xs text-base-content/60">{{ _('Amount') }}</p>
+                    <p class="text-sm font-bold font-mono text-base-content tabular-nums">
+                        Gs {{ "{:,.0f}".format(item.amount) }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Session ID & Time -->
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-base-300 text-xs">
+                <a href="/cash-sessions/{{ item.session_id }}" 
+                   class="font-mono text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 rounded transition-all duration-150">
+                    {{ item.session_id | string | truncate(8, true) }}
+                </a>
+                <time datetime="{{ item.created_at.isoformat() if item.created_at else '' }}" 
+                      class="text-base-content/60 font-mono">
+                    {{ item.created_at.strftime('%H:%M:%S') if item.created_at else '—' }}
+                </time>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Desktop Table View (hidden on lg-) -->
+<div class="hidden lg:block overflow-x-auto">
+    <table class="table table-sm w-full">
+        <thead>
+            <tr class="bg-base-200/50">
+                <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('Session') }}</th>
+                <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
+                <th class="text-xs font-bold uppercase tracking-wider">{{ _('Cashier') }}</th>
+                <th class="text-xs font-bold uppercase tracking-wider">{{ _('Description') }}</th>
+                <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Amount') }}</th>
+                <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Time') }}</th>
+                <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('Verified') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in all_transfer_items %}
+            <tr class="hover:bg-base-200/30 transition-colors duration-150">
+                <td class="text-center">
+                    <a href="/cash-sessions/{{ item.session_id }}" 
+                       class="badge badge-outline badge-sm font-mono text-primary hover:badge-primary transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2">
+                        #{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}
+                    </a>
+                </td>
+                <td class="font-medium text-sm">{{ businesses_by_id.get(item.business_id, item.business_id) if businesses_by_id else item.business_id }}</td>
+                <td class="text-sm">{{ item.cashier_name }}</td>
+                <td class="text-sm" title="{{ item.description }}">{{ item.description | truncate(40) }}</td>
+                <td class="text-right font-mono tabular-nums font-semibold">Gs {{ "{:,.0f}".format(item.amount) }}</td>
+                <td class="text-right font-mono text-xs text-base-content/70">
+                    {{ item.created_at.strftime('%H:%M:%S') if item.created_at else '—' }}
+                </td>
+                <td class="text-center">
+                    <input 
+                        type="checkbox" 
+                        class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                        data-transfer-id="{{ item.id }}"
+                        {% if item.is_verified %}checked{% endif %}
+                        hx-post="/transfer-items/{{ item.id }}/{% if item.is_verified %}unverify{% else %}verify{% endif %}"
+                        hx-trigger="change"
+                        hx-swap="none"
+                        hx-indicator=".htmx-request .spinner"
+                        title="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                        aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                    />
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Summary Footer -->
+<div class="bg-base-200/70 border-t border-base-300 px-4 py-3">
+    <div class="flex items-center justify-between gap-4">
+        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Total') }}</span>
+        <div class="text-right">
+            <p class="text-xs text-base-content/60 font-mono">{{ total_count }} {{ _('transfer') }}{{ 's' if total_count != 1 else '' }}</p>
+            <p class="text-sm font-bold font-mono text-base-content tabular-nums">
+                Gs {{ "{:,.0f}".format(total_amount) }}
+            </p>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="px-4 py-12">
+    <div class="bg-gradient-to-br from-base-100 to-base-100 border-2 border-dashed border-base-300 rounded-lg p-8 text-center">
+        <svg class="w-12 h-12 mx-auto text-base-content/30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+        </svg>
+        <p class="text-sm font-medium text-base-content/70">{{ _('No bank transfers recorded') }}</p>
+        <p class="text-xs text-base-content/50 mt-1">{{ _('for this date') }}</p>
+    </div>
+</div>
+{% endif %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-14 23:55+0000\n"
+"POT-Creation-Date: 2026-02-16 16:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -340,7 +340,10 @@ msgstr ""
 msgid "Select a date to compare reconciliation data"
 msgstr ""
 
-msgid "Loading comparison data"
+msgid "Sales Comparison"
+msgstr ""
+
+msgid "Bank Transfers"
 msgstr ""
 
 msgid "Margin Comparison"
@@ -380,6 +383,9 @@ msgid "Margin Tips:"
 msgstr ""
 
 msgid "Gross margin uses manual sales minus daily cost total when available."
+msgstr ""
+
+msgid "Session Notes"
 msgstr ""
 
 msgid "User Management - CashPilot"
@@ -682,9 +688,6 @@ msgstr ""
 msgid "Manual has LESS than System (negative difference)"
 msgstr ""
 
-msgid "Session Notes"
-msgstr ""
-
 msgid "Session"
 msgstr ""
 
@@ -725,6 +728,36 @@ msgid "No sessions found for this date"
 msgstr ""
 
 msgid "Sessions will appear here once created"
+msgstr ""
+
+msgid "All transfers for"
+msgstr ""
+
+msgid "Transfers"
+msgstr ""
+
+msgid "Amount"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Verified"
+msgstr ""
+
+msgid "Mark as unverified"
+msgstr ""
+
+msgid "Mark as verified"
+msgstr ""
+
+msgid "transfer"
+msgstr ""
+
+msgid "No bank transfers recorded"
+msgstr ""
+
+msgid "for this date"
 msgstr ""
 
 msgid "New Business"
@@ -1070,9 +1103,6 @@ msgstr ""
 msgid "Toggle bank transfers section"
 msgstr ""
 
-msgid "Bank Transfers"
-msgstr ""
-
 msgid "Click here to add your first transfer"
 msgstr ""
 
@@ -1098,9 +1128,6 @@ msgid "Delete transfer"
 msgstr ""
 
 msgid "Delete this transfer?"
-msgstr ""
-
-msgid "No bank transfers recorded"
 msgstr ""
 
 msgid "Add transfers to track bank deposits"
@@ -2337,9 +2364,6 @@ msgstr ""
 msgid "FLAGGED"
 msgstr ""
 
-msgid "Transfers"
-msgstr ""
-
 msgid "Direct account transfers this shift"
 msgstr ""
 
@@ -2384,3 +2408,4 @@ msgstr ""
 
 msgid "Remove flag from this session?"
 msgstr ""
+

@@ -404,6 +404,62 @@ These routes return HTML pages (Jinja2 templates) for the web interface.
 - `GET /admin/users/{id}/edit` - Edit user form
 - `GET /admin/users/{id}/assign-businesses` - Assign businesses to user
 
+### Transfer Items (Admin Only)
+
+#### `POST /transfer-items/{transfer_id}/verify`
+**Purpose:** Mark a bank transfer as verified  
+**Path Parameters:**
+- `transfer_id` (UUID): ID of the transfer item to verify
+
+**Request Body:** None
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "is_verified": true,
+  "verified_at": "2026-02-16T14:30:00-04:00"
+}
+```
+
+**Side Effects:**
+- Sets `is_verified = true`
+- Sets `verified_by = current_user.id`
+- Sets `verified_at = now_utc()`
+
+**RBAC:** Admin only
+
+**Use Case:** Admin reviews transfer against bank statement and marks as confirmed
+
+---
+
+#### `POST /transfer-items/{transfer_id}/unverify`
+**Purpose:** Remove verification status from a bank transfer  
+**Path Parameters:**
+- `transfer_id` (UUID): ID of the transfer item to unverify
+
+**Request Body:** None
+
+**Response:**
+```json
+{
+  "id": "uuid",
+  "is_verified": false,
+  "verified_at": null
+}
+```
+
+**Side Effects:**
+- Sets `is_verified = false`
+- Sets `verified_by = null`
+- Sets `verified_at = null`
+
+**RBAC:** Admin only
+
+**Use Case:** Admin needs to revert verification status (e.g., bank transfer was incorrect or reversed)
+
+---
+
 ### Reports (Admin Only)
 
 - `GET /reports/weekly-trend` - Weekly trend report page

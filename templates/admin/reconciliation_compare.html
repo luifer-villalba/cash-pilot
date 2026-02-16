@@ -4,13 +4,16 @@
 {% block title %}{{ _('Daily Reconciliation Comparison') }} - CashPilot{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
+<!-- Skip to main content for keyboard navigation -->
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-content focus:rounded-lg focus:shadow-lg">{{ _('Skip to main content') }}</a>
+
+<div class="space-y-6" id="main-content">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6">
         <div class="flex-1">
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 shadow-sm">
-                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                 </div>
@@ -21,14 +24,14 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}" class="btn btn-outline btn-sm gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}" class="btn btn-outline btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
                 {{ _('Edit Entries') }}
             </a>
-            <a href="/" class="btn btn-outline btn-sm gap-2" data-back>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="/" class="btn btn-outline btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]" data-back>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
                 {{ _('Back to Dashboard') }}
@@ -47,7 +50,7 @@
                 <select
                     id="business_id"
                     name="business_id"
-                    class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                    class="select select-bordered w-full focus:select-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200"
                     aria-label="{{ _('Select business to analyze') }}"
                 >
                     <option value="">{{ _('All Businesses') }}</option>
@@ -59,10 +62,10 @@
                 </select>
             </div>
 
-            <div class="divider my-3 text-xs text-base-content/50">{{ _('Select date') }}</div>
+            <div class="divider my-4 text-xs font-medium text-base-content/60">{{ _('Select date') }}</div>
 
             <!-- Selected Period Banner -->
-            <div id="selectedPeriodBanner" class="mb-3 p-3 bg-info/10 border border-info/30 rounded-lg">
+            <div id="selectedPeriodBanner" class="mb-3 p-3 bg-info/10 border border-info/30 rounded-lg" role="status" aria-live="polite">
                 <div class="flex items-center gap-2 text-sm">
                     <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -76,46 +79,50 @@
             <div class="flex flex-wrap gap-2 mb-4">
                 <button 
                     type="button"
-                    class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
                     data-days="0" 
                     aria-label="{{ _('Select today') }}"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
-                    {{ _('Today') }}
+                    <span class="hidden sm:inline">{{ _('Today') }}</span>
                 </button>
                 <button 
                     type="button"
-                    class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
                     data-days="1" 
                     aria-label="{{ _('Select yesterday') }}"
                 >
-                    {{ _('Yesterday') }}
+                    <span class="hidden sm:inline">{{ _('Yesterday') }}</span>
+                    <span class="sm:hidden">{{ _('Ayer') }}</span>
                 </button>
                 <button 
                     type="button"
-                    class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
                     data-days="2" 
                     aria-label="{{ _('Select 2 days ago') }}"
                 >
-                    {{ _('2 Days Ago') }}
+                    <span class="hidden sm:inline">{{ _('2 Days Ago') }}</span>
+                    <span class="sm:hidden">2d</span>
                 </button>
                 <button 
                     type="button"
-                    class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
                     data-days="7" 
                     aria-label="{{ _('Select 7 days ago') }}"
                 >
-                    {{ _('7 Days Ago') }}
+                    <span class="hidden sm:inline">{{ _('7 Days Ago') }}</span>
+                    <span class="sm:hidden">7d</span>
                 </button>
                 <button 
                     type="button"
-                    class="btn btn-sm btn-outline quick-date-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
                     data-days="30" 
                     aria-label="{{ _('Select 30 days ago') }}"
                 >
-                    {{ _('30 Days Ago') }}
+                    <span class="hidden sm:inline">{{ _('30 Days Ago') }}</span>
+                    <span class="sm:hidden">30d</span>
                 </button>
             </div>
 
@@ -139,7 +146,7 @@
                             name="date"
                             id="date"
                             value="{{ comparison_date.isoformat() }}"
-                            class="input input-bordered w-full focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                            class="input input-bordered w-full focus:input-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200"
                             aria-describedby="date-help"
                         />
                         <label class="label pt-2" id="date-help-container">
@@ -156,22 +163,51 @@
         </form>
     </div>
 
-    <!-- Comparison Results (Auto-refreshed via HTMX) -->
-    <div
-        id="comparison-results"
-        hx-get="/admin/reconciliation/compare-results?date={{ comparison_date.isoformat() }}{% if selected_business_id %}&business_id={{ selected_business_id }}{% endif %}"
-        hx-trigger="every 45s"
-        hx-swap="innerHTML"
-        aria-live="polite"
-        aria-busy="false"
-        class="space-y-8 htmx-settling"
-    >
-        <!-- Initial content (rendered server-side, updated every 45s via HTMX) -->
-        {% include 'admin/partials/reconciliation_compare_results.html' %}
+    <!-- Comparison Results & Transfers - TABBED INTERFACE -->
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-hidden">
+        <!-- Tab Headers -->
+        <div class="flex border-b border-base-300 bg-base-200/50" role="tablist" aria-label="{{ _('Reconciliation data views') }}">
+            <button type="button" id="sales-tab-button" class="tab-button active inline-flex items-center justify-center gap-2 flex-1 px-6 py-4 font-semibold text-base-content bg-base-100 border-b-2 border-primary transition-all duration-200 hover:bg-base-200/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-inset" role="tab" data-tab="sales" aria-selected="true" aria-controls="sales-tab">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span>{{ _('Sales Comparison') }}</span>
+            </button>
+            <button type="button" id="transfers-tab-button" class="tab-button inline-flex items-center justify-center gap-2 flex-1 px-6 py-4 font-semibold text-base-content/70 bg-base-200/50 border-b-2 border-transparent transition-all duration-200 hover:text-base-content hover:bg-base-200/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-inset" role="tab" data-tab="transfers" aria-selected="false" aria-controls="transfers-tab">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                <span>{{ _('Bank Transfers') }}</span>
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content-wrapper">
+            <!-- Sales Comparison Tab Content -->
+            <div id="sales-tab" class="tab-content active p-6" role="tabpanel" aria-labelledby="sales-tab-button" tabindex="0">
+                <!-- Comparison Results (Auto-refreshed via HTMX) -->
+                <div
+                    id="comparison-results"
+                    hx-get="/admin/reconciliation/compare-results?date={{ comparison_date.isoformat() }}{% if selected_business_id %}&business_id={{ selected_business_id }}{% endif %}"
+                    hx-trigger="every 45s"
+                    hx-swap="innerHTML"
+                    aria-live="polite"
+                    aria-busy="false"
+                    class="space-y-8 htmx-settling"
+                >
+                    <!-- Initial content (rendered server-side, updated every 45s via HTMX) -->
+                    {% include 'admin/partials/reconciliation_compare_results.html' %}
+                </div>
+            </div>
+
+            <!-- Bank Transfers Tab Content -->
+            <div id="transfers-tab" class="tab-content hidden p-6" role="tabpanel" aria-labelledby="transfers-tab-button" tabindex="0">
+                <!-- Transfer Items Detail (CP-REPORTS-03) -->
+                <div id="transfers-content">
+                    {% include 'admin/partials/transfer_items_detail.html' %}
+                </div>
+            </div>
+        </div>
     </div>
     <!-- Margin Comparison Table -->
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm">
-        <div class="px-4 pt-4">
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm mt-8">
+        <div class="px-4 pt-4 pb-4 border-b border-base-300 bg-base-200/30">
             <div class="flex items-center gap-2">
                 <div class="p-2 bg-gradient-to-br from-info/10 to-info/5 rounded-lg border border-info/20 shadow-sm">
                     <svg class="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -185,7 +221,7 @@
             </div>
         </div>
         <!-- Mobile Cards (visible on mobile only) -->
-        <div class="lg:hidden px-4 pb-4 space-y-4">
+        <div class="lg:hidden px-4 py-4 space-y-4">
             {% set totals = namespace(system_sales=0, manual_sales=0, cost=0, gross_margin=0, has_any=false) %}
             {% for item in comparison_data %}
             {% set manual_sales = item.manual.total_sales if item.manual and item.manual.total_sales is not none else none %}
@@ -259,8 +295,11 @@
             </div>
             {% endfor %}
             {% if not comparison_data %}
-            <div class="bg-base-200/50 border border-dashed border-base-300 rounded-lg p-6 text-center text-sm text-base-content/60 italic">
-                {{ _('No businesses found') }}
+            <div class="bg-base-200/50 border border-dashed border-base-300 rounded-lg p-8 text-center">
+                <svg class="w-12 h-12 mx-auto mb-3 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+                <p class="text-sm text-base-content/60 font-medium">{{ _('No businesses found') }}</p>
             </div>
             {% elif totals.has_any %}
             {% if totals.manual_sales != 0 %}
@@ -300,7 +339,7 @@
             {% endif %}
         </div>
         <div class="overflow-x-auto hidden lg:block">
-        <table class="table table-sm w-full mt-2">
+        <table class="table table-sm w-full">
             <thead>
                 <tr class="bg-base-200">
                     <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
@@ -389,8 +428,11 @@
                 {% endfor %}
                 {% if not comparison_data %}
                 <tr>
-                    <td colspan="7" class="text-center py-6 text-sm text-base-content/60 italic">
-                        {{ _('No businesses found') }}
+                    <td colspan="7" class="text-center py-8">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        <p class="text-sm text-base-content/60 font-medium">{{ _('No businesses found') }}</p>
                     </td>
                 </tr>
                 {% elif totals.has_any %}
@@ -435,22 +477,54 @@
             </tbody>
         </table>
         </div>
-        <div class="bg-base-200/50 border-t border-base-300 px-4 py-3">
-            <div class="flex items-center gap-2 text-xs text-base-content/70">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span class="font-medium text-base-content">{{ _('Margin Tips:') }}</span>
-                <span>{{ _('Gross margin uses manual sales minus daily cost total when available.') }}</span>
+        <div class="bg-base-200/70 border-t border-base-300 px-4 py-3 flex items-center gap-2">
+            <svg class="w-4 h-4 flex-shrink-0 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="text-xs text-base-content/80">
+                <span class="font-medium">{{ _('Margin Tips:') }}</span>
+                <span class="text-base-content/70 ml-1">{{ _('Gross margin uses manual sales minus daily cost total when available.') }}</span>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Session Notes Modals (Outside HTMX refresh target to prevent closing on update) -->
+{% for item in comparison_data %}
+{% if item.notes_count and item.notes_count > 0 %}
+<dialog id="notes-modal-{{ item.business.id }}" class="modal">
+    <div class="modal-box w-11/12 max-w-2xl">
+        <form method="dialog">
+            <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="{{ _('Close') }}">✕</button>
+        </form>
+        <h3 class="font-bold text-lg mb-4">{{ _('Session Notes') }} - {{ item.business.name }}</h3>
+        <div id="notes-content-{{ item.business.id }}" class="py-4">
+            <div class="flex justify-center">
+                <span class="loading loading-spinner loading-lg" id="notes-loading-{{ item.business.id }}" role="status" aria-label="{{ _('Loading notes...') }}"></span>
+            </div>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button type="button" aria-label="{{ _('Close modal') }}">close</button>
+    </form>
+</dialog>
+{% endif %}
+{% endfor %}
+
 <style>
+    /* Tab visibility management */
+    .tab-content.hidden {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
     /* HTMX loading animation */
     #comparison-results.htmx-swapping {
         opacity: 0.5;
+        transition: opacity 0.2s ease-out;
     }
     
     #comparison-results.htmx-settling {
@@ -465,9 +539,55 @@
             background-color: transparent;
         }
     }
+    
+    /* Tabular numbers with font-feature-settings */
+    .tabular-nums {
+        font-feature-settings: "tnum";
+        font-variant-numeric: tabular-nums;
+    }
 </style>
 
 <script>
+    // Helper function to activate a tab (defined first to avoid hoisting issues)
+    function activateTab(tabName) {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Remove active class from all buttons and contents
+        tabButtons.forEach(btn => {
+            btn.classList.remove('active', 'text-base-content', 'border-primary', 'bg-base-100');
+            btn.classList.add('text-base-content/70', 'border-transparent', 'bg-base-200/50');
+            btn.setAttribute('aria-selected', 'false');
+        });
+        
+        tabContents.forEach(content => {
+            content.classList.add('hidden');
+            content.classList.remove('active');
+        });
+        
+        // Add active class to button and corresponding content
+        const button = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
+        if (button) {
+            button.classList.add('active', 'text-base-content', 'border-primary', 'bg-base-100');
+            button.classList.remove('text-base-content/70', 'border-transparent', 'bg-base-200/50');
+            button.setAttribute('aria-selected', 'true');
+        }
+        
+        const contentId = tabName + '-tab';
+        const contentElement = document.getElementById(contentId);
+        if (contentElement) {
+            contentElement.classList.remove('hidden');
+            contentElement.classList.add('active');
+        }
+    }
+    
+    // Helper function to update URL with tab parameter
+    function updateUrlWithTab(tabName) {
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tabName);
+        window.history.pushState({}, '', url.toString());
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('filter-form');
         const businessSelect = document.getElementById('business_id');
@@ -609,6 +729,23 @@
             const resultsDiv = document.getElementById('comparison-results');
             if (resultsDiv) resultsDiv.setAttribute('aria-busy', 'false');
         });
+        
+        // Handle tab switching with URL management
+        const tabButtons = document.querySelectorAll('.tab-button');
+        
+        // Check URL for tab parameter on page load
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || 'sales';
+        activateTab(activeTab);
+        
+        // Add click handlers to buttons
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+                activateTab(tabName);
+                updateUrlWithTab(tabName);
+            });
+        });
 
         // Pause auto-refresh when tab is hidden (Page Visibility API)
         // Reduces unnecessary server load when users leave tab open but hidden
@@ -616,6 +753,9 @@
             const resultsContainer = document.getElementById('comparison-results');
             
             if (!resultsContainer) return;
+            
+            // Check if htmx is available
+            if (typeof htmx === 'undefined') return;
             
             if (document.hidden) {
                 // Tab is hidden - pause HTMX polling
@@ -634,17 +774,17 @@
 <dialog id="notes-modal-{{ item.business.id }}" class="modal">
     <div class="modal-box w-11/12 max-w-2xl">
         <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="{{ _('Close') }}">✕</button>
         </form>
         <h3 class="font-bold text-lg mb-4">{{ _('Session Notes') }} - {{ item.business.name }}</h3>
         <div id="notes-content-{{ item.business.id }}" class="py-4">
             <div class="flex justify-center">
-                <span class="loading loading-spinner loading-lg" id="notes-loading-{{ item.business.id }}"></span>
+                <span class="loading loading-spinner loading-lg" id="notes-loading-{{ item.business.id }}" role="status" aria-label="{{ _('Loading notes...') }}"></span>
             </div>
         </div>
     </div>
     <form method="dialog" class="modal-backdrop">
-        <button>close</button>
+        <button type="button" aria-label="{{ _('Close modal') }}">close</button>
     </form>
 </dialog>
 {% endif %}

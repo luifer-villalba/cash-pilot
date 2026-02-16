@@ -58,6 +58,24 @@ class TransferItem(Base):
         index=True,
     )
 
+    # Verification tracking (CP-REPORTS-04)
+    is_verified: Mapped[bool] = mapped_column(
+        default=False,
+        nullable=False,
+        index=True,
+    )
+
+    verified_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=True,
+    )
+
+    verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     # Relationships
     session: Mapped["CashSession"] = relationship(
         "CashSession",
