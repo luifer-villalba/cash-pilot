@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-16 16:10+0000\n"
+"POT-Creation-Date: 2026-02-17 00:27+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -302,6 +302,9 @@ msgstr "Volver al Panel"
 msgid "Daily Reconciliation Comparison"
 msgstr "Comparación de Conciliación Diaria"
 
+msgid "Skip to main content"
+msgstr "Saltar al contenido principal"
+
 msgid "Compare system entries vs manual records"
 msgstr "Comparar registros automáticos vs manuales"
 
@@ -350,6 +353,9 @@ msgstr "Fecha"
 msgid "Select a date to compare reconciliation data"
 msgstr "Seleccioná una fecha para comparar datos de conciliación"
 
+msgid "Reconciliation data views"
+msgstr "Vistas de conciliación"
+
 msgid "Sales Comparison"
 msgstr "Comparación de Ventas"
 
@@ -397,8 +403,17 @@ msgstr ""
 "El margen bruto usa ventas manuales menos el total de costo diario cuando"
 " está disponible."
 
+msgid "Close"
+msgstr "Cerrar"
+
 msgid "Session Notes"
 msgstr "Notas de Sesión"
+
+msgid "Loading notes..."
+msgstr "Cargando notas..."
+
+msgid "Close modal"
+msgstr "Cerrar modal"
 
 msgid "User Management - CashPilot"
 msgstr "Gestión de Usuarios - CashPilot"
@@ -684,21 +699,6 @@ msgstr "Dif:"
 
 msgid "Select a business to view reconciliation data"
 msgstr "Seleccioná un negocio para ver datos de conciliación"
-
-msgid "Difference Colors:"
-msgstr "Colores de Diferencia:"
-
-msgid "Green (Surplus)"
-msgstr "Verde (Superávit)"
-
-msgid "Manual has MORE than System (positive difference)"
-msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
-
-msgid "Red (Deficit)"
-msgstr "Rojo (Déficit)"
-
-msgid "Manual has LESS than System (negative difference)"
-msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
 
 msgid "Session"
 msgstr "Sesión"
@@ -1067,9 +1067,6 @@ msgstr "Solo administradores y el creador de la sesión pueden eliminar"
 
 msgid "Restore"
 msgstr "Restaurar"
-
-msgid "Close"
-msgstr "Cerrar"
 
 msgid "Showing"
 msgstr "Mostrando"
@@ -2459,4 +2456,19 @@ msgstr "¿Remover marca de esta sesión?"
 
 #~ msgid "Loading comparison data"
 #~ msgstr "Cargando datos de comparación"
+
+#~ msgid "Difference Colors:"
+#~ msgstr "Colores de Diferencia:"
+
+#~ msgid "Green (Surplus)"
+#~ msgstr "Verde (Superávit)"
+
+#~ msgid "Manual has MORE than System (positive difference)"
+#~ msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
+
+#~ msgid "Red (Deficit)"
+#~ msgstr "Rojo (Déficit)"
+
+#~ msgid "Manual has LESS than System (negative difference)"
+#~ msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
 

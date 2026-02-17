@@ -52,7 +52,7 @@
                 <div class="text-right flex-shrink-0">
                     <p class="text-xs text-base-content/60">{{ _('Amount') }}</p>
                     <p class="text-sm font-bold font-mono text-base-content tabular-nums">
-                        Gs {{ "{:,.0f}".format(item.amount) }}
+                        Gs {{ item.amount | format_currency_py }}
                     </p>
                 </div>
             </div>
@@ -99,7 +99,7 @@
                 <td class="font-medium text-sm">{{ businesses_by_id.get(item.business_id, item.business_id) if businesses_by_id else item.business_id }}</td>
                 <td class="text-sm">{{ item.cashier_name }}</td>
                 <td class="text-sm" title="{{ item.description }}">{{ item.description | truncate(40) }}</td>
-                <td class="text-right font-mono tabular-nums font-semibold">Gs {{ "{:,.0f}".format(item.amount) }}</td>
+                <td class="text-right font-mono tabular-nums font-semibold">Gs {{ item.amount | format_currency_py }}</td>
                 <td class="text-right font-mono text-xs text-base-content/70">
                     {{ item.created_at.strftime('%H:%M:%S') if item.created_at else '—' }}
                 </td>
@@ -109,9 +109,7 @@
                         class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
                         data-transfer-id="{{ item.id }}"
                         {% if item.is_verified %}checked{% endif %}
-                        hx-post="/transfer-items/{{ item.id }}/{% if item.is_verified %}unverify{% else %}verify{% endif %}"
-                        hx-trigger="change"
-                        hx-swap="none"
+                        hx-on:change="htmx.ajax('POST', this.checked ? '/admin/transfer-items/{{ item.id }}/verify' : '/admin/transfer-items/{{ item.id }}/unverify', {target: this, swap: 'none'})"
                         hx-indicator=".htmx-request .spinner"
                         title="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
                         aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
@@ -130,7 +128,7 @@
         <div class="text-right">
             <p class="text-xs text-base-content/60 font-mono">{{ total_count }} {{ _('transfer') }}{{ 's' if total_count != 1 else '' }}</p>
             <p class="text-sm font-bold font-mono text-base-content tabular-nums">
-                Gs {{ "{:,.0f}".format(total_amount) }}
+                Gs {{ total_amount | format_currency_py }}
             </p>
         </div>
     </div>

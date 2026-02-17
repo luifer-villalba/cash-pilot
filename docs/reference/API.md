@@ -406,7 +406,7 @@ These routes return HTML pages (Jinja2 templates) for the web interface.
 
 ### Transfer Items (Admin Only)
 
-#### `POST /transfer-items/{transfer_id}/verify`
+#### `POST /admin/transfer-items/{transfer_id}/verify`
 **Purpose:** Mark a bank transfer as verified  
 **Path Parameters:**
 - `transfer_id` (UUID): ID of the transfer item to verify
@@ -433,7 +433,7 @@ These routes return HTML pages (Jinja2 templates) for the web interface.
 
 ---
 
-#### `POST /transfer-items/{transfer_id}/unverify`
+#### `POST /admin/transfer-items/{transfer_id}/unverify`
 **Purpose:** Remove verification status from a bank transfer  
 **Path Parameters:**
 - `transfer_id` (UUID): ID of the transfer item to unverify
