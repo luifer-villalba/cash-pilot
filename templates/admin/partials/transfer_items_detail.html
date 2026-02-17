@@ -59,7 +59,7 @@
 
             <!-- Session Number & Time -->
             <div class="flex items-center justify-between gap-2 pt-2 border-t border-base-300 text-xs">
-                <a href="/cash-sessions/{{ item.session_id }}" 
+                <a href="/sessions/{{ item.session_id }}" 
                    class="badge badge-outline badge-sm font-mono text-primary hover:badge-primary transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2">
                     #{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}
                 </a>
@@ -91,7 +91,7 @@
             {% for item in all_transfer_items %}
             <tr class="hover:bg-base-200/30 transition-colors duration-150">
                 <td class="text-center">
-                    <a href="/cash-sessions/{{ item.session_id }}" 
+                    <a href="/sessions/{{ item.session_id }}" 
                        class="badge badge-outline badge-sm font-mono text-primary hover:badge-primary transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2">
                         #{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}
                     </a>
