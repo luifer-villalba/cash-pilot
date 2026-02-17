@@ -8,14 +8,18 @@ from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, case, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from cashpilot.api.auth_helpers import require_admin
-from cashpilot.api.utils import get_active_businesses, get_locale, get_translation_function
+from cashpilot.api.utils import (
+    get_active_businesses,
+    get_locale,
+    get_translation_function,
+    templates,
+)
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import hash_password
@@ -29,8 +33,6 @@ from cashpilot.utils.datetime import APP_TIMEZONE, now_utc, today_local
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = get_logger(__name__)
-templates = Jinja2Templates(directory="/app/templates")
-
 # Variance thresholds for flagging discrepancies
 # Uses dual threshold approach (OR logic):
 # - Absolute: 20,000 Gs (based on local practice in Paraguay)
@@ -783,7 +785,13 @@ async def reconciliation_compare_dashboard(
         all_transfer_items.extend(transfer_items)
 
     # Sort by time first (ascending - chronological within each business)
-    all_transfer_items.sort(key=lambda x: x.get("created_at") or "")
+    def transfer_time_key(item: dict) -> datetime:
+        created_at = item.get("created_at")
+        if created_at is None:
+            return datetime.min.replace(tzinfo=ZoneInfo(APP_TIMEZONE))
+        return created_at
+
+    all_transfer_items.sort(key=transfer_time_key)
     # Then sort by business name (ascending - A to Z)
     # Stable sort preserves chronological order within each business group
     all_transfer_items.sort(
@@ -854,14 +862,6 @@ async def reconciliation_compare_results_partial(
     # Build comparison data using shared helper function
     comparison_data = await _build_comparison_data(db, comparison_date, businesses)
 
-    # Fetch transfer items for each business on the selected date
-    transfer_items_by_business = {}
-    for business in businesses:
-        transfer_items = await _fetch_transfer_items_for_reconciliation(
-            db, business.id, comparison_date
-        )
-        transfer_items_by_business[str(business.id)] = transfer_items
-
     # Get current time for last_updated display
     now = datetime.now(ZoneInfo(APP_TIMEZONE))
     last_updated = now.isoformat()
@@ -874,7 +874,6 @@ async def reconciliation_compare_results_partial(
             "comparison_date": comparison_date,
             "comparison_data": comparison_data,
             "selected_business_id": str(selected_business_id) if selected_business_id else None,
-            "transfer_items_by_business": transfer_items_by_business,
             "last_updated": last_updated,
             "last_updated_display": last_updated_display,
             "locale": locale,
@@ -891,7 +890,9 @@ async def verify_transfer_item(
 ):
     """Mark a transfer item as verified by the current user."""
     # Get the transfer item
-    stmt = select(TransferItem).where(TransferItem.id == transfer_id)
+    stmt = select(TransferItem).where(
+        and_(TransferItem.id == transfer_id, ~TransferItem.is_deleted)
+    )
     result = await db.execute(stmt)
     transfer = result.scalar_one_or_none()
 
@@ -921,7 +922,9 @@ async def unverify_transfer_item(
 ):
     """Mark a transfer item as unverified."""
     # Get the transfer item
-    stmt = select(TransferItem).where(TransferItem.id == transfer_id)
+    stmt = select(TransferItem).where(
+        and_(TransferItem.id == transfer_id, ~TransferItem.is_deleted)
+    )
     result = await db.execute(stmt)
     transfer = result.scalar_one_or_none()
 

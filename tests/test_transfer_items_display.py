@@ -3,15 +3,11 @@
 import pytest
 from datetime import datetime, date, timezone
 from decimal import Decimal
-from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cashpilot.models.business import Business
-from cashpilot.models.cash_session import CashSession
 from cashpilot.models.transfer_item import TransferItem
-from cashpilot.models.user import User, UserRole
-from cashpilot.models.user_business import UserBusiness
+from cashpilot.models.user import UserRole
 
 
 class TestTransferItemsDisplay:
@@ -222,12 +218,26 @@ class TestTransferItemsDisplay:
         self, db_session: AsyncSession, factories, admin_client
     ):
         """
-        AC-5: Transfer section is read-only in Phase 1.
-        No editing/verification endpoints should modify transfers in reconciliation view.
+        AC-5: Transfer section renders verification controls without edit actions.
         """
-        # This is a behavioral test: the template should not have edit buttons
-        # Actual edit functionality exists in individual sessions, not in reconciliation view
         business = await factories.business(name="Test Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier@test.com")
+        await factories.user_business(business=business, user=cashier)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=date(2026, 2, 16),
+            status="CLOSED",
+        )
+        db_session.add(
+            TransferItem(
+                session_id=session.id,
+                description="Sample transfer",
+                amount=Decimal("50000.00"),
+                created_at=datetime(2026, 2, 16, 14, 0, 0, tzinfo=timezone.utc),
+            )
+        )
+        await db_session.commit()
         session_date = date(2026, 2, 16)
 
         # Load the reconciliation page
@@ -236,8 +246,7 @@ class TestTransferItemsDisplay:
         )
 
         assert response.status_code == 200
-        # The HTML should not contain edit/delete buttons for transfers in the reconciliation section
-        # (but they should exist in individual session views)
+        assert "transfer-verify-checkbox" in response.text
 
     # ─────── AC-6: RBAC enforcement ────────
 

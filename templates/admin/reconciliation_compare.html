@@ -492,7 +492,7 @@
 <dialog id="notes-modal-{{ item.business.id }}" class="modal">
     <div class="modal-box w-11/12 max-w-2xl">
         <form method="dialog">
-            <button type="button" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="{{ _('Close') }}">✕</button>
+            <button type="submit" class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" aria-label="{{ _('Close') }}">✕</button>
         </form>
         <h3 class="font-bold text-lg mb-4">{{ _('Session Notes') }} - {{ item.business.name }}</h3>
         <div id="notes-content-{{ item.business.id }}" class="py-4">
@@ -502,7 +502,7 @@
         </div>
     </div>
     <form method="dialog" class="modal-backdrop">
-        <button type="button" aria-label="{{ _('Close modal') }}">close</button>
+        <button type="submit" aria-label="{{ _('Close modal') }}">close</button>
     </form>
 </dialog>
 {% endif %}
@@ -545,224 +545,248 @@
 </style>
 
 <script>
-    // Helper function to activate a tab (defined first to avoid hoisting issues)
-    function activateTab(tabName) {
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        // Remove active class from all buttons and contents
-        tabButtons.forEach(btn => {
-            btn.classList.remove('active', 'text-base-content', 'border-primary', 'bg-base-100');
-            btn.classList.add('text-base-content/70', 'border-transparent', 'bg-base-200/50');
-            btn.setAttribute('aria-selected', 'false');
-        });
-        
-        tabContents.forEach(content => {
-            content.classList.add('hidden');
-            content.classList.remove('active');
-        });
-        
-        // Add active class to button and corresponding content
-        const button = document.querySelector(`.tab-button[data-tab="${tabName}"]`);
-        if (button) {
-            button.classList.add('active', 'text-base-content', 'border-primary', 'bg-base-100');
-            button.classList.remove('text-base-content/70', 'border-transparent', 'bg-base-200/50');
-            button.setAttribute('aria-selected', 'true');
-        }
-        
-        const contentId = tabName + '-tab';
-        const contentElement = document.getElementById(contentId);
-        if (contentElement) {
-            contentElement.classList.remove('hidden');
-            contentElement.classList.add('active');
-        }
-    }
-    
-    // Helper function to update URL with tab parameter
-    function updateUrlWithTab(tabName) {
-        const url = new URL(window.location);
-        url.searchParams.set('tab', tabName);
-        window.history.pushState({}, '', url.toString());
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('filter-form');
-        const businessSelect = document.getElementById('business_id');
-        const dateInput = document.getElementById('date');
-        
-        // Auto-submit form when business or date changes
-        function autoSubmit() {
-            if (form) {
-                form.submit();
+    (function() {
+        function forEachNode(nodes, fn) {
+            for (var i = 0; i < nodes.length; i += 1) {
+                fn(nodes[i]);
             }
         }
-        
-        // Auto-generate when business changes
-        if (businessSelect) {
-            businessSelect.addEventListener('change', autoSubmit);
+
+        function addClasses(el, classes) {
+            for (var i = 0; i < classes.length; i += 1) {
+                el.classList.add(classes[i]);
+            }
         }
-        
-        // Auto-generate when date changes (from custom date picker)
-        if (dateInput) {
-            dateInput.addEventListener('change', function() {
-                // Clear quick button highlights when custom date is used
-                document.querySelectorAll('.quick-date-btn').forEach(b => {
-                    b.classList.remove('btn-primary');
-                    b.classList.add('btn-outline');
-                });
-                autoSubmit();
-            });
+
+        function removeClasses(el, classes) {
+            for (var i = 0; i < classes.length; i += 1) {
+                el.classList.remove(classes[i]);
+            }
         }
-        
-        // Quick date buttons
-        document.querySelectorAll('.quick-date-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const daysAgo = parseInt(this.getAttribute('data-days'));
-                // Use local date to avoid timezone issues
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = today.getMonth();
-                const day = today.getDate();
-                const targetDate = new Date(year, month, day - daysAgo);
-                // Format as YYYY-MM-DD for input[type="date"]
-                const yearStr = targetDate.getFullYear();
-                const monthStr = String(targetDate.getMonth() + 1).padStart(2, '0');
-                const dayStr = String(targetDate.getDate()).padStart(2, '0');
-                const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
-                
-                // Update the date input
-                if (dateInput) {
-                    dateInput.value = dateStr;
+
+        function pad2(num) {
+            return (num < 10 ? "0" : "") + num;
+        }
+
+        function formatLocalDate(d) {
+            return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+        }
+
+        function getQueryParam(name) {
+            var search = window.location.search.substring(1);
+            if (!search) return null;
+            var parts = search.split("&");
+            for (var i = 0; i < parts.length; i += 1) {
+                var kv = parts[i].split("=");
+                if (decodeURIComponent(kv[0]) === name) {
+                    return decodeURIComponent(kv[1] || "");
                 }
-                
-                // Highlight active button
-                document.querySelectorAll('.quick-date-btn').forEach(b => {
-                    b.classList.remove('btn-primary');
-                    b.classList.add('btn-outline');
-                });
-                this.classList.remove('btn-outline');
-                this.classList.add('btn-primary');
-                
-                // Auto-submit form
-                autoSubmit();
-            });
-        });
+            }
+            return null;
+        }
 
-        // Highlight active button based on current date
-        if (dateInput) {
-            const currentDate = dateInput.value;
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth();
-            const day = today.getDate();
-            
-            function formatLocalDate(d) {
-                const yearStr = d.getFullYear();
-                const monthStr = String(d.getMonth() + 1).padStart(2, '0');
-                const dayStr = String(d.getDate()).padStart(2, '0');
-                return `${yearStr}-${monthStr}-${dayStr}`;
+        function setQueryParam(name, value) {
+            var search = window.location.search.substring(1);
+            var parts = search ? search.split("&") : [];
+            var found = false;
+            for (var i = 0; i < parts.length; i += 1) {
+                var kv = parts[i].split("=");
+                if (decodeURIComponent(kv[0]) === name) {
+                    parts[i] = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+                    found = true;
+                    break;
+                }
             }
-            
-            const todayStr = formatLocalDate(today);
-            const yesterday = new Date(year, month, day - 1);
-            const yesterdayStr = formatLocalDate(yesterday);
-            const twoDaysAgo = new Date(year, month, day - 2);
-            const twoDaysAgoStr = formatLocalDate(twoDaysAgo);
-            const sevenDaysAgo = new Date(year, month, day - 7);
-            const sevenDaysAgoStr = formatLocalDate(sevenDaysAgo);
-            const thirtyDaysAgo = new Date(year, month, day - 30);
-            const thirtyDaysAgoStr = formatLocalDate(thirtyDaysAgo);
-            
-            let activeBtn = null;
-            if (currentDate === todayStr) {
-                activeBtn = document.querySelector('.quick-date-btn[data-days="0"]');
-            } else if (currentDate === yesterdayStr) {
-                activeBtn = document.querySelector('.quick-date-btn[data-days="1"]');
-            } else if (currentDate === twoDaysAgoStr) {
-                activeBtn = document.querySelector('.quick-date-btn[data-days="2"]');
-            } else if (currentDate === sevenDaysAgoStr) {
-                activeBtn = document.querySelector('.quick-date-btn[data-days="7"]');
-            } else if (currentDate === thirtyDaysAgoStr) {
-                activeBtn = document.querySelector('.quick-date-btn[data-days="30"]');
+            if (!found) {
+                parts.push(encodeURIComponent(name) + "=" + encodeURIComponent(value));
             }
-            
-            if (activeBtn) {
-                activeBtn.classList.remove('btn-outline');
-                activeBtn.classList.add('btn-primary');
+            var newQuery = parts.join("&");
+            var newUrl = window.location.pathname + (newQuery ? "?" + newQuery : "");
+            if (window.location.hash) {
+                newUrl += window.location.hash;
+            }
+            window.history.pushState({}, "", newUrl);
+        }
+
+        function findClosest(el, className) {
+            var node = el;
+            while (node && node !== document) {
+                if (node.classList && node.classList.contains(className)) {
+                    return node;
+                }
+                node = node.parentNode;
+            }
+            return null;
+        }
+
+        // Helper function to activate a tab (defined first to avoid hoisting issues)
+        function activateTab(tabName) {
+            var tabButtons = document.querySelectorAll('.tab-button');
+            var tabContents = document.querySelectorAll('.tab-content');
+
+            forEachNode(tabButtons, function(btn) {
+                removeClasses(btn, ['active', 'text-base-content', 'border-primary', 'bg-base-100']);
+                addClasses(btn, ['text-base-content/70', 'border-transparent', 'bg-base-200/50']);
+                btn.setAttribute('aria-selected', 'false');
+            });
+
+            forEachNode(tabContents, function(content) {
+                content.classList.add('hidden');
+                content.classList.remove('active');
+            });
+
+            var button = document.querySelector('.tab-button[data-tab="' + tabName + '"]');
+            if (button) {
+                addClasses(button, ['active', 'text-base-content', 'border-primary', 'bg-base-100']);
+                removeClasses(button, ['text-base-content/70', 'border-transparent', 'bg-base-200/50']);
+                button.setAttribute('aria-selected', 'true');
+            }
+
+            var contentElement = document.getElementById(tabName + '-tab');
+            if (contentElement) {
+                contentElement.classList.remove('hidden');
+                contentElement.classList.add('active');
             }
         }
 
-        // Handle session expansion/collapse
-        document.addEventListener('click', function(e) {
-            const expandBtn = e.target.closest('.expand-sessions-btn');
-            if (expandBtn) {
-                const businessId = expandBtn.getAttribute('data-business-id');
-                const detailRow = document.getElementById(`sessions-row-${businessId}`);
-                const chevron = expandBtn.querySelector('.chevron-icon');
-                
-                if (detailRow) {
-                    if (detailRow.classList.contains('hidden')) {
-                        // Expand
-                        detailRow.classList.remove('hidden');
-                        chevron.style.transform = 'rotate(180deg)';
-                    } else {
-                        // Collapse
-                        detailRow.classList.add('hidden');
-                        chevron.style.transform = 'rotate(0deg)';
+        // Helper function to update URL with tab parameter
+        function updateUrlWithTab(tabName) {
+            setQueryParam('tab', tabName);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.getElementById('filter-form');
+            var businessSelect = document.getElementById('business_id');
+            var dateInput = document.getElementById('date');
+
+            function autoSubmit() {
+                if (form) {
+                    form.submit();
+                }
+            }
+
+            if (businessSelect) {
+                businessSelect.addEventListener('change', autoSubmit);
+            }
+
+            if (dateInput) {
+                dateInput.addEventListener('change', function() {
+                    var quickButtons = document.querySelectorAll('.quick-date-btn');
+                    forEachNode(quickButtons, function(btn) {
+                        removeClasses(btn, ['btn-primary']);
+                        addClasses(btn, ['btn-outline']);
+                    });
+                    autoSubmit();
+                });
+            }
+
+            var quickButtons = document.querySelectorAll('.quick-date-btn');
+            forEachNode(quickButtons, function(btn) {
+                btn.addEventListener('click', function() {
+                    var daysAgo = parseInt(this.getAttribute('data-days'), 10);
+                    var today = new Date();
+                    var targetDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - daysAgo);
+                    var dateStr = formatLocalDate(targetDate);
+
+                    if (dateInput) {
+                        dateInput.value = dateStr;
+                    }
+
+                    forEachNode(quickButtons, function(button) {
+                        removeClasses(button, ['btn-primary']);
+                        addClasses(button, ['btn-outline']);
+                    });
+                    removeClasses(this, ['btn-outline']);
+                    addClasses(this, ['btn-primary']);
+                    autoSubmit();
+                });
+            });
+
+            if (dateInput) {
+                var currentDate = dateInput.value;
+                var today = new Date();
+                var todayStr = formatLocalDate(today);
+                var yesterdayStr = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1));
+                var twoDaysAgoStr = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2));
+                var sevenDaysAgoStr = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7));
+                var thirtyDaysAgoStr = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30));
+
+                var activeBtn = null;
+                if (currentDate === todayStr) {
+                    activeBtn = document.querySelector('.quick-date-btn[data-days="0"]');
+                } else if (currentDate === yesterdayStr) {
+                    activeBtn = document.querySelector('.quick-date-btn[data-days="1"]');
+                } else if (currentDate === twoDaysAgoStr) {
+                    activeBtn = document.querySelector('.quick-date-btn[data-days="2"]');
+                } else if (currentDate === sevenDaysAgoStr) {
+                    activeBtn = document.querySelector('.quick-date-btn[data-days="7"]');
+                } else if (currentDate === thirtyDaysAgoStr) {
+                    activeBtn = document.querySelector('.quick-date-btn[data-days="30"]');
+                }
+
+                if (activeBtn) {
+                    removeClasses(activeBtn, ['btn-outline']);
+                    addClasses(activeBtn, ['btn-primary']);
+                }
+            }
+
+            document.addEventListener('click', function(e) {
+                var target = e.target || e.srcElement;
+                var expandBtn = findClosest(target, 'expand-sessions-btn');
+                if (expandBtn) {
+                    var businessId = expandBtn.getAttribute('data-business-id');
+                    var detailRow = document.getElementById('sessions-row-' + businessId);
+                    var chevron = expandBtn.querySelector('.chevron-icon');
+
+                    if (detailRow) {
+                        if (detailRow.classList.contains('hidden')) {
+                            detailRow.classList.remove('hidden');
+                            if (chevron) chevron.style.transform = 'rotate(180deg)';
+                        } else {
+                            detailRow.classList.add('hidden');
+                            if (chevron) chevron.style.transform = 'rotate(0deg)';
+                        }
                     }
                 }
-            }
-        });
-        
-        // Update ARIA busy state during HTMX requests
-        document.addEventListener('htmx:xhr:loadstart', function(evt) {
-            const resultsDiv = document.getElementById('comparison-results');
-            if (evt.detail?.xhr && evt.detail.xhr.readyState !== 0) {
-                if (resultsDiv) resultsDiv.setAttribute('aria-busy', 'true');
-            }
-        });
-        
-        document.addEventListener('htmx:xhr:loadend', function(evt) {
-            const resultsDiv = document.getElementById('comparison-results');
-            if (resultsDiv) resultsDiv.setAttribute('aria-busy', 'false');
-        });
-        
-        // Handle tab switching with URL management
-        const tabButtons = document.querySelectorAll('.tab-button');
-        
-        // Check URL for tab parameter on page load
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab') || 'sales';
-        activateTab(activeTab);
-        
-        // Add click handlers to buttons
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tabName = this.getAttribute('data-tab');
-                activateTab(tabName);
-                updateUrlWithTab(tabName);
+            });
+
+            document.addEventListener('htmx:xhr:loadstart', function(evt) {
+                var resultsDiv = document.getElementById('comparison-results');
+                if (evt.detail && evt.detail.xhr && evt.detail.xhr.readyState !== 0) {
+                    if (resultsDiv) resultsDiv.setAttribute('aria-busy', 'true');
+                }
+            });
+
+            document.addEventListener('htmx:xhr:loadend', function() {
+                var resultsDiv = document.getElementById('comparison-results');
+                if (resultsDiv) resultsDiv.setAttribute('aria-busy', 'false');
+            });
+
+            var tabButtons = document.querySelectorAll('.tab-button');
+            var activeTab = getQueryParam('tab') || 'sales';
+            activateTab(activeTab);
+
+            forEachNode(tabButtons, function(button) {
+                button.addEventListener('click', function() {
+                    var tabName = this.getAttribute('data-tab');
+                    activateTab(tabName);
+                    updateUrlWithTab(tabName);
+                });
+            });
+
+            document.addEventListener('visibilitychange', function() {
+                var resultsContainer = document.getElementById('comparison-results');
+                if (!resultsContainer) return;
+                if (typeof htmx === 'undefined') return;
+
+                if (document.hidden) {
+                    htmx.trigger(resultsContainer, 'htmx:abort');
+                } else {
+                    htmx.trigger(resultsContainer, 'htmx:trigger');
+                }
             });
         });
-
-        // Pause auto-refresh when tab is hidden (Page Visibility API)
-        // Reduces unnecessary server load when users leave tab open but hidden
-        document.addEventListener('visibilitychange', function() {
-            const resultsContainer = document.getElementById('comparison-results');
-            
-            if (!resultsContainer) return;
-            
-            // Check if htmx is available
-            if (typeof htmx === 'undefined') return;
-            
-            if (document.hidden) {
-                // Tab is hidden - pause HTMX polling
-                htmx.trigger(resultsContainer, 'htmx:abort');
-            } else {
-                // Tab is visible again - refresh immediately and resume polling
-                htmx.trigger(resultsContainer, 'htmx:trigger');
-            }
-        });
-    });
+    })();
 </script>
 
 {% endblock %}

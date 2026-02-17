@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-16 16:10+0000\n"
+"POT-Creation-Date: 2026-02-17 00:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -292,6 +292,9 @@ msgstr ""
 msgid "Daily Reconciliation Comparison"
 msgstr ""
 
+msgid "Skip to main content"
+msgstr ""
+
 msgid "Compare system entries vs manual records"
 msgstr ""
 
@@ -340,6 +343,9 @@ msgstr ""
 msgid "Select a date to compare reconciliation data"
 msgstr ""
 
+msgid "Reconciliation data views"
+msgstr ""
+
 msgid "Sales Comparison"
 msgstr ""
 
@@ -385,7 +391,16 @@ msgstr ""
 msgid "Gross margin uses manual sales minus daily cost total when available."
 msgstr ""
 
+msgid "Close"
+msgstr ""
+
 msgid "Session Notes"
+msgstr ""
+
+msgid "Loading notes..."
+msgstr ""
+
+msgid "Close modal"
 msgstr ""
 
 msgid "User Management - CashPilot"
@@ -671,21 +686,6 @@ msgid "Diff:"
 msgstr ""
 
 msgid "Select a business to view reconciliation data"
-msgstr ""
-
-msgid "Difference Colors:"
-msgstr ""
-
-msgid "Green (Surplus)"
-msgstr ""
-
-msgid "Manual has MORE than System (positive difference)"
-msgstr ""
-
-msgid "Red (Deficit)"
-msgstr ""
-
-msgid "Manual has LESS than System (negative difference)"
 msgstr ""
 
 msgid "Session"
@@ -1054,9 +1054,6 @@ msgid "Only admins and session creator can delete"
 msgstr ""
 
 msgid "Restore"
-msgstr ""
-
-msgid "Close"
 msgstr ""
 
 msgid "Showing"
