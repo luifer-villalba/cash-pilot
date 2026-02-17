@@ -57,11 +57,11 @@
                 </div>
             </div>
 
-            <!-- Session ID & Time -->
+            <!-- Session Number & Time -->
             <div class="flex items-center justify-between gap-2 pt-2 border-t border-base-300 text-xs">
                 <a href="/cash-sessions/{{ item.session_id }}" 
-                   class="font-mono text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 rounded transition-all duration-150">
-                    {{ item.session_id | string | truncate(8, true) }}
+                   class="badge badge-outline badge-sm font-mono text-primary hover:badge-primary transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2">
+                    #{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}
                 </a>
                 <time datetime="{{ item.created_at.isoformat() if item.created_at else '' }}" 
                       class="text-base-content/60 font-mono">
