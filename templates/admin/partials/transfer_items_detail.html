@@ -53,6 +53,7 @@
                 name="filter_business"
                 class="select select-sm select-bordered bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
+                autocomplete="off"
                 aria-label="{{ _('Filter by business') }}"
             >
                 <option value="">{{ _('All Businesses') }}</option>
@@ -70,6 +71,7 @@
                 name="filter_verified"
                 class="select select-sm select-bordered bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
+                autocomplete="off"
                 aria-label="{{ _('Filter by verification status') }}"
             >
                 <option value="all" {% if filter_verified == 'all' %}selected{% endif %}>{{ _('All Transfers') }}</option>
@@ -86,6 +88,7 @@
                 name="sort_by"
                 class="select select-sm select-bordered bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
+                autocomplete="off"
                 aria-label="{{ _('Sort by field') }}"
             >
                 <option value="business,time" {% if sort_by == 'business,time' %}selected{% endif %}>{{ _('Business, Time') }}</option>
@@ -103,6 +106,7 @@
                 name="sort_order"
                 class="select select-sm select-bordered bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
+                autocomplete="off"
                 aria-label="{{ _('Sort order') }}"
             >
                 <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>{{ _('Ascending') }}</option>
@@ -118,6 +122,7 @@
                 name="page_size"
                 class="select select-sm select-bordered bg-base-100 text-base-content"
                 onchange="updateTransferPageSize()"
+                autocomplete="off"
                 aria-label="{{ _('Items per page') }}"
             >
                 <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
@@ -336,6 +341,32 @@
 </div>
 
 <script>
+// Explicitly set filter values on page load to prevent browser autocomplete interference
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Transfer filters: Setting initial values from server');
+    
+    const filterBusinessElem = document.getElementById('filter-business');
+    const filterVerifiedElem = document.getElementById('filter-verified');
+    const sortByElem = document.getElementById('sort-by');
+    const sortOrderElem = document.getElementById('sort-order');
+    const pageSizeElem = document.getElementById('page-size');
+    
+    // Set values from server context (prevents browser autocomplete override)
+    if (filterBusinessElem) filterBusinessElem.value = '{{ filter_business }}';
+    if (filterVerifiedElem) filterVerifiedElem.value = '{{ filter_verified }}';
+    if (sortByElem) sortByElem.value = '{{ sort_by }}';
+    if (sortOrderElem) sortOrderElem.value = '{{ sort_order }}';
+    if (pageSizeElem) pageSizeElem.value = '{{ page_size }}';
+    
+    console.log('Transfer filters set to:', {
+        filter_business: '{{ filter_business }}',
+        filter_verified: '{{ filter_verified }}',
+        sort_by: '{{ sort_by }}',
+        sort_order: '{{ sort_order }}',
+        page_size: {{ page_size }}
+    });
+});
+
 function updateTransferFilters() {
     console.log('updateTransferFilters called');
     
