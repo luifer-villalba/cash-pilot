@@ -1,10 +1,23 @@
 <!-- File: templates/admin/partials/transfer_items_detail.html -->
 <!-- Unified bank transfers table - consolidated and sorted by business + date -->
 <!-- Context required: all_transfer_items (list), comparison_date (date), businesses_by_id (dict) -->
+<!-- CP-REPORTS-05: Added pagination, filtering, and sorting -->
 
 {% set all_transfer_items = all_transfer_items | default([]) %}
+{% set transfer_items_total_count = transfer_items_total_count | default(all_transfer_items | length) %}
+{% set current_page = current_page | default(1) %}
+{% set page_size = page_size | default(20) %}
+{% set total_pages = total_pages | default(1) %}
+{% set start_index = start_index | default(1) %}
+{% set filter_business = filter_business | default('') %}
+{% set filter_verified = filter_verified | default('all') %}
+{% set filter_cashier = filter_cashier | default('') %}
+{% set sort_by = sort_by | default('business,time') %}
+{% set sort_order = sort_order | default('asc') %}
+{% set businesses = businesses | default([]) %}
+
+{% set visible_count = all_transfer_items | length %}
 {% set total_amount = all_transfer_items | map(attribute='amount') | sum %}
-{% set total_count = all_transfer_items | length %}
 
 <!-- Header with count -->
 <div class="px-4 pt-4 pb-4 border-b border-base-300 bg-base-200/30">
@@ -20,26 +33,119 @@
                 <p class="text-xs text-base-content/60">{{ _('All transfers for') }} {% if comparison_date %}{{ comparison_date.strftime('%b %d, %Y') }}{% endif %}</p>
             </div>
         </div>
-        {% if total_count > 0 %}
+        {% if transfer_items_total_count > 0 %}
         <div class="flex items-center gap-1 rounded-lg bg-secondary/10 px-3 py-1.5 border border-secondary/20 flex-shrink-0">
             <span class="text-xs font-bold text-secondary uppercase tracking-wider hidden sm:inline">{{ _('Transfers') }}</span>
-            <span class="badge badge-ghost badge-sm font-mono font-bold text-secondary">{{ total_count }}</span>
+            <span class="badge badge-ghost badge-sm font-mono font-bold text-secondary">{{ transfer_items_total_count }}</span>
         </div>
         {% endif %}
     </div>
 </div>
 
-{% if total_count > 0 %}
+{% if transfer_items_total_count > 0 %}
+
+<!-- Filter and Sort Controls (CP-REPORTS-05) -->
+<div class="px-4 py-3 bg-base-100 border-b border-base-300 space-y-3">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+        <!-- Filter by Business -->
+        <div class="flex flex-col gap-1">
+            <label for="filter-business" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</label>
+            <select
+                id="filter-business"
+                name="filter_business"
+                class="select select-sm select-bordered bg-base-100 text-base-content"
+                onchange="updateTransferFilters()"
+                aria-label="{{ _('Filter by business') }}"
+            >
+                <option value="">{{ _('All Businesses') }}</option>
+                {% for business in businesses %}
+                <option value="{{ business.id }}" {% if filter_business == business.id | string %}selected{% endif %}>{{ business.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Filter by Verification Status -->
+        <div class="flex flex-col gap-1">
+            <label for="filter-verified" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Status') }}</label>
+            <select
+                id="filter-verified"
+                name="filter_verified"
+                class="select select-sm select-bordered bg-base-100 text-base-content"
+                onchange="updateTransferFilters()"
+                aria-label="{{ _('Filter by verification status') }}"
+            >
+                <option value="all" {% if filter_verified == 'all' %}selected{% endif %}>{{ _('All Transfers') }}</option>
+                <option value="unverified" {% if filter_verified == 'unverified' %}selected{% endif %}>{{ _('Unverified Only') }}</option>
+                <option value="verified" {% if filter_verified == 'verified' %}selected{% endif %}>{{ _('Verified Only') }}</option>
+            </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="flex flex-col gap-1">
+            <label for="sort-by" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Sort By') }}</label>
+            <select
+                id="sort-by"
+                name="sort_by"
+                class="select select-sm select-bordered bg-base-100 text-base-content"
+                onchange="updateTransferFilters()"
+                aria-label="{{ _('Sort by field') }}"
+            >
+                <option value="business,time" {% if sort_by == 'business,time' %}selected{% endif %}>{{ _('Business, Time') }}</option>
+                <option value="time" {% if sort_by == 'time' %}selected{% endif %}>{{ _('Time') }}</option>
+                <option value="amount" {% if sort_by == 'amount' %}selected{% endif %}>{{ _('Amount') }}</option>
+                <option value="business" {% if sort_by == 'business' %}selected{% endif %}>{{ _('Business') }}</option>
+            </select>
+        </div>
+
+        <!-- Sort Order -->
+        <div class="flex flex-col gap-1">
+            <label for="sort-order" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Order') }}</label>
+            <select
+                id="sort-order"
+                name="sort_order"
+                class="select select-sm select-bordered bg-base-100 text-base-content"
+                onchange="updateTransferFilters()"
+                aria-label="{{ _('Sort order') }}"
+            >
+                <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>{{ _('Ascending') }}</option>
+                <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>{{ _('Descending') }}</option>
+            </select>
+        </div>
+
+        <!-- Page Size -->
+        <div class="flex flex-col gap-1">
+            <label for="page-size" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Per Page') }}</label>
+            <select
+                id="page-size"
+                name="page_size"
+                class="select select-sm select-bordered bg-base-100 text-base-content"
+                onchange="updateTransferPageSize()"
+                aria-label="{{ _('Items per page') }}"
+            >
+                <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+                <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
+                <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+            </select>
+        </div>
+    </div>
+</div>
+
 <!-- Mobile Cards View (hidden on lg+) -->
 <div class="lg:hidden px-4 py-4">
     <div class="space-y-3">
         {% for item in all_transfer_items %}
+        {% set row_index = loop.index + (current_page - 1) * page_size %}
         <div class="border border-base-300 rounded-lg p-3 bg-base-100 hover:shadow-md transition-all duration-200">
-            <!-- Business, Description -->
-            <div class="mb-2">
-                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-0.5">
+            <!-- Row Number & Business -->
+            <div class="mb-2 flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-base-content bg-base-200 rounded-full flex-shrink-0">{{ row_index }}</span>
+                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-0">
                     {{ businesses_by_id.get(item.business_id, item.business_id) if businesses_by_id else item.business_id }}
                 </p>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-2">
                 <p class="text-sm font-semibold text-base-content truncate">{{ item.description }}</p>
             </div>
 
@@ -68,6 +174,23 @@
                     {{ item.created_at.strftime('%H:%M:%S') if item.created_at else '—' }}
                 </time>
             </div>
+
+            <!-- Verification Status -->
+            <div class="flex items-center gap-2 pt-2 border-t border-base-300">
+                <input 
+                    type="checkbox" 
+                    class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                    data-transfer-id="{{ item.id }}"
+                    {% if item.is_verified %}checked{% endif %}
+                    hx-on:change="htmx.ajax('POST', this.checked ? '/admin/transfer-items/{{ item.id }}/verify' : '/admin/transfer-items/{{ item.id }}/unverify', {target: this, swap: 'none'})"
+                    hx-indicator=".htmx-request .spinner"
+                    title="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                    aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                />
+                <span class="text-xs font-medium {% if item.is_verified %}text-success{% else %}text-warning{% endif %}">
+                    {% if item.is_verified %}✓ {{ _('Verified') }}{% else %}⚠ {{ _('Pending') }}{% endif %}
+                </span>
+            </div>
         </div>
         {% endfor %}
     </div>
@@ -78,6 +201,7 @@
     <table class="table table-sm w-full">
         <thead>
             <tr class="bg-base-200/50">
+                <th class="text-xs font-bold uppercase tracking-wider text-center w-12">{{ _('#') }}</th>
                 <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('Session') }}</th>
                 <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
                 <th class="text-xs font-bold uppercase tracking-wider">{{ _('Cashier') }}</th>
@@ -89,7 +213,9 @@
         </thead>
         <tbody>
             {% for item in all_transfer_items %}
+            {% set row_index = loop.index + (current_page - 1) * page_size %}
             <tr class="hover:bg-base-200/30 transition-colors duration-150">
+                <td class="text-center font-mono text-xs font-semibold text-base-content/60">{{ row_index }}</td>
                 <td class="text-center">
                     <a href="/sessions/{{ item.session_id }}" 
                        class="badge badge-outline badge-sm font-mono text-primary hover:bg-primary hover:text-primary-content transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2">
@@ -121,18 +247,122 @@
     </table>
 </div>
 
+<!-- Pagination Controls (CP-REPORTS-05) -->
+<div class="bg-base-200/70 border-t border-base-300 px-4 py-4">
+    <div class="flex items-center justify-between gap-4">
+        <!-- Page Info -->
+        <div class="text-xs text-base-content/70 font-medium">
+            {{ start_index }}-{{ [start_index + page_size - 1, transfer_items_total_count] | min }} {{ _('of') }} {{ transfer_items_total_count }} {{ _('transfers') }}
+        </div>
+
+        <!-- Pagination Buttons -->
+        <div class="flex items-center gap-2">
+            {% if current_page > 1 %}
+            <a
+                href="?date={{ comparison_date.isoformat() }}&page=1&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                class="btn btn-sm btn-outline gap-1"
+                aria-label="{{ _('First page') }}"
+                title="{{ _('First page') }}"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </a>
+            {% else %}
+            <button class="btn btn-sm btn-outline btn-disabled gap-1" disabled aria-label="{{ _('First page') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            {% endif %}
+
+            {% if current_page > 1 %}
+            <a
+                href="?date={{ comparison_date.isoformat() }}&page={{ current_page - 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                class="btn btn-sm btn-outline gap-1"
+                aria-label="{{ _('Previous page') }}"
+                title="{{ _('Previous page') }}"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m7 4l4-4-4-4"/></svg>
+            </a>
+            {% else %}
+            <button class="btn btn-sm btn-outline btn-disabled gap-1" disabled aria-label="{{ _('Previous page') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m7 4l4-4-4-4"/></svg>
+            </button>
+            {% endif %}
+
+            <!-- Page Number -->
+            <span class="px-3 py-1 text-xs font-semibold text-base-content">{{ current_page }} / {{ total_pages }}</span>
+
+            {% if current_page < total_pages %}
+            <a
+                href="?date={{ comparison_date.isoformat() }}&page={{ current_page + 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                class="btn btn-sm btn-outline gap-1"
+                aria-label="{{ _('Next page') }}"
+                title="{{ _('Next page') }}"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-4l4 4-4 4"/></svg>
+            </a>
+            {% else %}
+            <button class="btn btn-sm btn-outline btn-disabled gap-1" disabled aria-label="{{ _('Next page') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7-4l4 4-4 4"/></svg>
+            </button>
+            {% endif %}
+
+            {% if current_page < total_pages %}
+            <a
+                href="?date={{ comparison_date.isoformat() }}&page={{ total_pages }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                class="btn btn-sm btn-outline gap-1"
+                aria-label="{{ _('Last page') }}"
+                title="{{ _('Last page') }}"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+            {% else %}
+            <button class="btn btn-sm btn-outline btn-disabled gap-1" disabled aria-label="{{ _('Last page') }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
 <!-- Summary Footer -->
 <div class="bg-base-200/70 border-t border-base-300 px-4 py-3">
     <div class="flex items-center justify-between gap-4">
-        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Total') }}</span>
+        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Page Total') }}</span>
         <div class="text-right">
-            <p class="text-xs text-base-content/60 font-mono">{{ total_count }} {{ _('transfer') }}{{ 's' if total_count != 1 else '' }}</p>
+            <p class="text-xs text-base-content/60 font-mono">{{ visible_count }} {{ _('transfer') }}{{ 's' if visible_count != 1 else '' }}</p>
             <p class="text-sm font-bold font-mono text-base-content tabular-nums">
                 Gs {{ total_amount | format_currency_py }}
             </p>
         </div>
     </div>
 </div>
+
+<script>
+function updateTransferFilters() {
+    const filterVerified = document.getElementById('filter-verified').value;
+    const sortBy = document.getElementById('sort-by').value;
+    const sortOrder = document.getElementById('sort-order').value;
+    const pageSize = document.getElementById('page-size').value;
+    
+    let url = new URL(window.location);
+    url.searchParams.set('page', '1');  // Reset to page 1 when filtering
+    url.searchParams.set('filter_verified', filterVerified);
+    url.searchParams.set('sort_by', sortBy);
+    url.searchParams.set('sort_order', sortOrder);
+    url.searchParams.set('page_size', pageSize);
+    
+    window.location.href = url.toString();
+}
+
+function updateTransferPageSize() {
+    const pageSize = document.getElementById('page-size').value;
+    
+    let url = new URL(window.location);
+    url.searchParams.set('page', '1');  // Reset to page 1
+    url.searchParams.set('page_size', pageSize);
+    
+    window.location.href = url.toString();
+}
+</script>
 
 {% else %}
 <!-- Empty State -->
