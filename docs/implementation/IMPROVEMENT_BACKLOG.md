@@ -239,6 +239,38 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - [ ] Unverified transfers are clearly highlighted (future: visual badge)
   - [ ] Filter options work correctly (future enhancement)
 
+### CP-REPORTS-05 — Transfer list review UX (pagination + filters + sorting)
+
+* **Severity:** Medium
+* **Problem:** Transfer list is hard to review when volume grows; missing filters, pagination, and ordering controls
+* **Evidence:** `templates/admin/partials/transfer_items_detail.html`
+* **User Story:** Admin needs faster verification by filtering and sorting transfer items without losing context
+* **Acceptance impact:** UX improvement, no AC impact
+* **Status:** Not started (ASAP)
+* **Requirements:**
+  - Add pagination to transfers list (server-side)
+  - Page size selector with at least 20 and 50 items
+  - Filters: business, cashier, verified/unverified
+  - Default view should allow “only unverified” focus
+  - Sortable headers with default order: business, time, amount
+  - Add a first column with row order number
+* **Implementation Steps:**
+  - Update reconciliation compare route to accept filter + pagination + sort params
+  - Update transfer query with filters, sorting, and pagination
+  - Add pagination controls and page size selector to the transfers tab
+  - Add filter controls (business, cashier, verified state)
+  - Add row order number column in table and mobile cards
+  - Ensure query params persist across tabs
+* **Dependencies:**
+  - CP-REPORTS-03 completed ✓
+  - CP-REPORTS-04 completed ✓
+* **Acceptance Criteria:**
+  - [ ] Admin can page through transfers with 20 or 50 items per page
+  - [ ] Filters work for business, cashier, and verified state
+  - [ ] Default view can show only unverified items
+  - [ ] Headers are clickable and sort by business, time, amount
+  - [ ] Row order number is visible and consistent per page
+
 ---
 
 ## 🟠 EPIC 4 — Data Model Alignment (DECISION REQUIRED)
