@@ -42,9 +42,7 @@
     </div>
 </div>
 
-{% if transfer_items_total_count > 0 %}
-
-<!-- Filter and Sort Controls (CP-REPORTS-05) -->
+<!-- Filter and Sort Controls (CP-REPORTS-05) - Always visible -->
 <div class="px-4 py-3 bg-base-100 border-b border-base-300 space-y-3">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
         <!-- Filter by Business -->
@@ -130,6 +128,7 @@
     </div>
 </div>
 
+{% if visible_count > 0 %}
 <!-- Mobile Cards View (hidden on lg+) -->
 <div class="lg:hidden px-4 py-4">
     <div class="space-y-3">
@@ -371,8 +370,13 @@ function updateTransferPageSize() {
         <svg class="w-12 h-12 mx-auto text-base-content/30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
         </svg>
+        {% if transfer_items_total_count > 0 %}
+        <p class="text-sm font-medium text-base-content/70">{{ _('No transfers match the current filters') }}</p>
+        <p class="text-xs text-base-content/50 mt-1">{{ _('Try adjusting your filter settings above') }}</p>
+        {% else %}
         <p class="text-sm font-medium text-base-content/70">{{ _('No bank transfers recorded') }}</p>
         <p class="text-xs text-base-content/50 mt-1">{{ _('for this date') }}</p>
+        {% endif %}
     </div>
 </div>
 {% endif %}
