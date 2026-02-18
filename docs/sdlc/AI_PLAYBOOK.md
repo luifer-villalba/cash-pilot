@@ -163,6 +163,58 @@ AI MUST pause and ask for clarification when encountering:
 
 ---
 
+## Development Environment: Docker & Make
+
+**CRITICAL:** This project uses **Docker Compose** and **Makefile** commands. Do NOT try to run Python commands directly.
+
+### Key Commands (via Makefile)
+
+**Testing:**
+```bash
+make test                      # Run all tests
+make test-watch               # Run tests in watch mode
+```
+
+**Development:**
+```bash
+make run                       # Start server (production mode)
+make dev                       # Start server with auto-reload
+make up                        # Start all Docker services
+make down                      # Stop all Docker services
+```
+
+**Code Quality:**
+```bash
+make fmt                       # Format code (Black, isort, Ruff)
+make lint                      # Run linters
+make audit                     # Security audit
+```
+
+**Database:**
+```bash
+make migrate                   # Run pending migrations
+make migration                 # Create new migration (prompts for name)
+```
+
+### Important Notes for AI
+
+1. **No Direct Python:** Do NOT run `python -m pytest`, `python -c`, or similar
+2. **Always Use Make:** Use `make test` instead of pytest, `make fmt` instead of black
+3. **Docker Containers:** All commands run inside Docker containers via docker compose
+4. **Dependencies Installed:** Tests, linters, and dev tools are pre-installed in Docker
+5. **Environment Variables:** `.env` file is already configured for Docker
+
+### File Structure Reference
+
+* `Makefile` — All available development commands
+* `docker-compose.yml` — Service definitions (app, db, redis, etc.)
+* `Dockerfile` — Application container image
+* `pyproject.toml` — Python dependencies and project config
+
+**When needing to run commands:** Always reference `make <target>` not direct Python invocation.
+
+---
+
 ## Standard Prompt Template
 
 Use this template when working with AI:

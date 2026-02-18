@@ -424,6 +424,109 @@ async def _fetch_transfer_items_for_reconciliation(
     return transfer_items
 
 
+async def _apply_transfer_filters(
+    items: list[dict],
+    filter_business: str | None = None,
+    filter_verified: str = "all",
+    filter_cashier: str | None = None,
+) -> list[dict]:
+    """Apply filters to transfer items list (CP-REPORTS-05).
+
+    Args:
+        items: List of transfer item dictionaries
+        filter_business: Business UUID (as string) to filter by, or None for all
+        filter_verified: "all", "verified", or "unverified"
+        filter_cashier: Cashier UUID (as string) to filter by, or None for all
+
+    Returns:
+        Filtered list of transfer items
+    """
+    filtered = items
+
+    # Filter by business
+    if filter_business:
+        filtered = [item for item in filtered if item.get("business_id") == filter_business]
+
+    # Filter by verification status
+    if filter_verified == "verified":
+        filtered = [item for item in filtered if item.get("is_verified", False)]
+    elif filter_verified == "unverified":
+        filtered = [item for item in filtered if not item.get("is_verified", False)]
+
+    # Filter by cashier
+    if filter_cashier:
+        try:
+            cashier_uuid = UUID(filter_cashier)
+            filtered = [item for item in filtered if item.get("cashier_id") == cashier_uuid]
+        except (ValueError, TypeError):
+            pass  # Invalid UUID, return unfiltered
+
+    return filtered
+
+
+async def _apply_transfer_sorting_and_pagination(
+    items: list[dict],
+    business_names_by_id: dict[str, str],
+    sort_by: str = "business,time",
+    sort_order: str = "asc",
+    page: int = 1,
+    page_size: int = 20,
+) -> tuple[list[dict], int]:
+    """Apply sorting and pagination to transfer items (CP-REPORTS-05).
+
+    Args:
+        items: List of transfer item dictionaries
+        business_names_by_id: Mapping of business IDs to names
+        sort_by: Comma-separated sort fields (business, time, amount)
+        sort_order: "asc" or "desc"
+        page: Page number (1-indexed)
+        page_size: Items per page
+
+    Returns:
+        Tuple of (paginated_items, total_count)
+    """
+    total_count = len(items)
+
+    # Parse sort fields
+    sort_fields = [f.strip() for f in sort_by.split(",") if f.strip()]
+    if not sort_fields:
+        sort_fields = ["business", "time"]
+
+    # Build sort key function
+    def sort_key(item: dict):
+        keys = []
+        for field in sort_fields:
+            if field == "business":
+                # Business name
+                business_id = item.get("business_id", "")
+                business_name = business_names_by_id.get(business_id, "").lower()
+                keys.append(business_name)
+            elif field == "time":
+                # Chronological order
+                created_at = item.get("created_at")
+                if created_at is None:
+                    created_at = datetime.min.replace(tzinfo=ZoneInfo(APP_TIMEZONE))
+                keys.append(created_at)
+            elif field == "amount":
+                # Amount in smallest unit (for proper numeric sorting)
+                amount = item.get("amount", 0)
+                if isinstance(amount, Decimal):
+                    amount = float(amount)
+                keys.append(amount)
+        return tuple(keys)
+
+    # Apply sorting
+    reverse = sort_order.lower() == "desc"
+    sorted_items = sorted(items, key=sort_key, reverse=reverse)
+
+    # Apply pagination
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    paginated_items = sorted_items[start_idx:end_idx]
+
+    return paginated_items, total_count
+
+
 # ===== SCHEMAS =====
 class PasswordResetRequest(BaseModel):
     new_password: str | None = Field(None, min_length=8, max_length=128)
@@ -737,10 +840,21 @@ async def reconciliation_compare_dashboard(
     request: Request,
     date: str | None = Query(None, description="Date in YYYY-MM-DD format"),
     business_id: str | None = Query(None, description="Filter by business ID"),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(20, ge=10, le=100, description="Items per page"),
+    sort_by: str = Query("business,time", description="Sort fields: business|time|amount"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
+    filter_verified: str = Query(
+        "all", pattern="^(all|verified|unverified)$", description="Filter by verification status"
+    ),
+    filter_business: str | None = Query(None, description="Filter transfer items by business ID"),
+    filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """Comparison dashboard: manual entries vs system records with variance calculation."""
+    """Comparison dashboard: manual entries vs system records with variance calculation.
+    CP-REPORTS-05: Added pagination, filtering, and sorting support.
+    """
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
@@ -784,19 +898,27 @@ async def reconciliation_compare_dashboard(
             item["business_id"] = str(business.id)
         all_transfer_items.extend(transfer_items)
 
-    # Sort by time first (ascending - chronological within each business)
-    def transfer_time_key(item: dict) -> datetime:
-        created_at = item.get("created_at")
-        if created_at is None:
-            return datetime.min.replace(tzinfo=ZoneInfo(APP_TIMEZONE))
-        return created_at
-
-    all_transfer_items.sort(key=transfer_time_key)
-    # Then sort by business name (ascending - A to Z)
-    # Stable sort preserves chronological order within each business group
-    all_transfer_items.sort(
-        key=lambda x: business_names_by_id.get(x.get("business_id"), "").lower()
+    # Apply filtering (CP-REPORTS-05)
+    filtered_items = await _apply_transfer_filters(
+        all_transfer_items,
+        filter_business=filter_business,
+        filter_verified=filter_verified,
+        filter_cashier=filter_cashier,
     )
+
+    # Apply sorting and pagination (CP-REPORTS-05)
+    sorted_items, total_count = await _apply_transfer_sorting_and_pagination(
+        filtered_items,
+        business_names_by_id=business_names_by_id,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=page,
+        page_size=page_size,
+    )
+
+    # Calculate pagination info
+    total_pages = (total_count + page_size - 1) // page_size
+    start_index = (page - 1) * page_size + 1
 
     # Get all businesses for the selector
     all_businesses = await get_active_businesses(db)
@@ -816,12 +938,24 @@ async def reconciliation_compare_dashboard(
             "businesses": all_businesses,
             "comparison_data": comparison_data,
             "transfer_items_by_business": transfer_items_by_business,
-            "all_transfer_items": all_transfer_items,
+            "all_transfer_items": sorted_items,
+            "transfer_items_total_count": total_count,
             "businesses_by_id": business_names_by_id,
             "last_updated": last_updated,
             "last_updated_display": last_updated_display,
             "locale": locale,
             "_": _,
+            # Pagination (CP-REPORTS-05)
+            "current_page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "start_index": start_index,
+            # Filter values (for form state)
+            "filter_business": filter_business,
+            "filter_verified": filter_verified,
+            "filter_cashier": filter_cashier,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
         },
     )
 
