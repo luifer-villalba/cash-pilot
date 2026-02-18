@@ -519,6 +519,17 @@
         display: block;
     }
     
+    /* HTMX swap/settle transition for auto-refreshed content */
+    .htmx-swapping {
+        opacity: 0;
+        transition: opacity 150ms ease-out;
+    }
+    
+    .htmx-settling {
+        opacity: 1;
+        transition: opacity 150ms ease-in;
+    }
+    
     /* Tabular numbers with font-feature-settings */
     .tabular-nums {
         font-feature-settings: "tnum";

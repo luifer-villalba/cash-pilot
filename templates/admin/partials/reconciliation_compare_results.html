@@ -21,7 +21,11 @@
                 <circle cx="10" cy="10" r="8"></circle>
             </svg>
             <span class="hidden sm:inline">{{ _('Last updated') }}</span>
-            <time datetime="{{ last_updated }}" class="font-mono font-semibold text-base-content">{{ last_updated_display }}</time>
+            <time
+                datetime="{{ last_updated }}"
+                class="font-mono font-semibold text-base-content"
+                aria-label="{{ _('Last updated at') }} {{ last_updated_display }} ({{ _('Paraguay Time') }})"
+            >{{ last_updated_display }}</time>
         </div>
     </div>
 </div>
