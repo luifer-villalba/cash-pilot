@@ -337,6 +337,7 @@
 
 <script>
 function updateTransferFilters() {
+    const filterBusiness = document.getElementById('filter-business').value;
     const filterVerified = document.getElementById('filter-verified').value;
     const sortBy = document.getElementById('sort-by').value;
     const sortOrder = document.getElementById('sort-order').value;
@@ -344,6 +345,7 @@ function updateTransferFilters() {
     
     let url = new URL(window.location);
     url.searchParams.set('page', '1');  // Reset to page 1 when filtering
+    url.searchParams.set('filter_business', filterBusiness);
     url.searchParams.set('filter_verified', filterVerified);
     url.searchParams.set('sort_by', sortBy);
     url.searchParams.set('sort_order', sortOrder);
@@ -353,10 +355,18 @@ function updateTransferFilters() {
 }
 
 function updateTransferPageSize() {
+    const filterBusiness = document.getElementById('filter-business').value;
+    const filterVerified = document.getElementById('filter-verified').value;
+    const sortBy = document.getElementById('sort-by').value;
+    const sortOrder = document.getElementById('sort-order').value;
     const pageSize = document.getElementById('page-size').value;
     
     let url = new URL(window.location);
     url.searchParams.set('page', '1');  // Reset to page 1
+    url.searchParams.set('filter_business', filterBusiness);
+    url.searchParams.set('filter_verified', filterVerified);
+    url.searchParams.set('sort_by', sortBy);
+    url.searchParams.set('sort_order', sortOrder);
     url.searchParams.set('page_size', pageSize);
     
     window.location.href = url.toString();
