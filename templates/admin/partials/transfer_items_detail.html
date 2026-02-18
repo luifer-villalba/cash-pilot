@@ -337,20 +337,45 @@
 
 <script>
 function updateTransferFilters() {
-    const filterBusiness = document.getElementById('filter-business').value;
-    const filterVerified = document.getElementById('filter-verified').value;
-    const sortBy = document.getElementById('sort-by').value;
-    const sortOrder = document.getElementById('sort-order').value;
-    const pageSize = document.getElementById('page-size').value;
+    console.log('updateTransferFilters called');
+    
+    const filterBusinessElem = document.getElementById('filter-business');
+    const filterVerifiedElem = document.getElementById('filter-verified');
+    const sortByElem = document.getElementById('sort-by');
+    const sortOrderElem = document.getElementById('sort-order');
+    const pageSizeElem = document.getElementById('page-size');
+    
+    if (!filterBusinessElem || !filterVerifiedElem || !sortByElem || !sortOrderElem || !pageSizeElem) {
+        console.error('One or more filter elements not found');
+        return;
+    }
+    
+    const filterBusiness = filterBusinessElem.value;
+    const filterVerified = filterVerifiedElem.value;
+    const sortBy = sortByElem.value;
+    const sortOrder = sortOrderElem.value;
+    const pageSize = pageSizeElem.value;
+    
+    console.log('Filter values:', { filterBusiness, filterVerified, sortBy, sortOrder, pageSize });
     
     let url = new URL(window.location);
-    url.searchParams.set('page', '1');  // Reset to page 1 when filtering
-    url.searchParams.set('filter_business', filterBusiness);
+    url.searchParams.set('page', '1');
+    
+    // Set or remove filter_business
+    if (filterBusiness) {
+        url.searchParams.set('filter_business', filterBusiness);
+    } else {
+        url.searchParams.delete('filter_business');
+    }
+    
+    // Always set filter_verified (backend expects it)
     url.searchParams.set('filter_verified', filterVerified);
+    
     url.searchParams.set('sort_by', sortBy);
     url.searchParams.set('sort_order', sortOrder);
     url.searchParams.set('page_size', pageSize);
     
+    console.log('Navigating to:', url.toString());
     window.location.href = url.toString();
 }
 
