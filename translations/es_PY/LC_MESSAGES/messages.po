@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-17 00:27+0000\n"
+"POT-Creation-Date: 2026-02-19 12:37+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -267,7 +267,7 @@ msgid "Current Password"
 msgstr "Contraseña actual"
 
 msgid "Enter your current password"
-msgstr "Ingresá tu nueva contraseña"
+msgstr "Ingresá tu contraseña actual"
 
 msgid "Your existing password"
 msgstr "Tu contraseña actual"
@@ -622,6 +622,12 @@ msgstr "Totales del sistema vs manuales por negocio"
 msgid "Last updated"
 msgstr "Última actualización"
 
+msgid "Last updated at"
+msgstr "Última actualización a las"
+
+msgid "Paraguay Time"
+msgstr "Hora de Paraguay"
+
 msgid "Notes"
 msgstr "Notas"
 
@@ -748,14 +754,59 @@ msgstr "Todas las transferencias para"
 msgid "Transfers"
 msgstr "Transferencias"
 
+msgid "Filter by business"
+msgstr "Filtrar por negocio"
+
+msgid "Filter by verification status"
+msgstr "Filtrar por estado de verificación"
+
+msgid "All Transfers"
+msgstr "Todas las transferencias"
+
+msgid "Unverified Only"
+msgstr "Solo no verificadas"
+
+msgid "Verified Only"
+msgstr "Solo verificadas"
+
+msgid "Sort"
+msgstr "Orden"
+
+msgid "Sort transfer list"
+msgstr "Ordenar lista de transferencias"
+
+msgid "Business, Time (A-Z)"
+msgstr "Negocio, Hora (A-Z)"
+
+msgid "Business, Time (Z-A)"
+msgstr "Negocio, Hora (Z-A)"
+
+msgid "Time (Newest first)"
+msgstr "Hora (más recientes primero)"
+
+msgid "Time (Oldest first)"
+msgstr "Hora (más antiguas primero)"
+
+msgid "Amount (High to low)"
+msgstr "Monto (de mayor a menor)"
+
+msgid "Amount (Low to high)"
+msgstr "Monto (de menor a mayor)"
+
+msgid "Business (A-Z)"
+msgstr "Negocio (A-Z)"
+
+msgid "Business (Z-A)"
+msgstr "Negocio (Z-A)"
+
+msgid "Per Page"
+msgstr "Por página"
+
+msgid "Items per page"
+msgstr "Elementos por página"
+
 msgid "Amount"
 msgstr "Monto"
-
-msgid "Description"
-msgstr "Descripción"
-
-msgid "Verified"
-msgstr "Verificado"
 
 msgid "Mark as unverified"
 msgstr "Marcar como no verificado"
@@ -763,8 +814,41 @@ msgstr "Marcar como no verificado"
 msgid "Mark as verified"
 msgstr "Marcar como verificado"
 
+msgid "Verified"
+msgstr "Verificado"
+
+msgid "#"
+msgstr "#"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "transfers"
+msgstr "transferencias"
+
+msgid "First page"
+msgstr "Primera página"
+
+msgid "Previous page"
+msgstr "Página anterior"
+
+msgid "Next page"
+msgstr "Siguiente página"
+
+msgid "Last page"
+msgstr "Última página"
+
+msgid "Page Total"
+msgstr "Total de la página"
+
 msgid "transfer"
 msgstr "Transferencia"
+
+msgid "No transfers match the current filters"
+msgstr "No hay transferencias que coincidan con los filtros actuales"
+
+msgid "Try adjusting your filter settings above"
+msgstr "Intentá ajustar los filtros de arriba"
 
 msgid "No bank transfers recorded"
 msgstr "No hay transferencias bancarias registradas"
@@ -1071,18 +1155,6 @@ msgstr "Restaurar"
 msgid "Showing"
 msgstr "Mostrando"
 
-msgid "First page"
-msgstr "Primera página"
-
-msgid "Previous page"
-msgstr "Página anterior"
-
-msgid "Next page"
-msgstr "Siguiente página"
-
-msgid "Last page"
-msgstr "Última página"
-
 msgid "No sessions found"
 msgstr "No se encontraron sesiones"
 
@@ -1261,7 +1333,7 @@ msgid "to"
 msgstr "a"
 
 msgid "End date for custom range"
-msgstr "Ingrese contraseña personalizada"
+msgstr "Fecha de fin para rango personalizado"
 
 msgid "Apply"
 msgstr "Aplicar"
