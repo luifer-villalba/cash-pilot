@@ -15,6 +15,7 @@
 {% set sort_by = sort_by | default('business,time') %}
 {% set sort_order = sort_order | default('asc') %}
 {% set businesses = businesses | default([]) %}
+{% set sort_option = sort_by ~ '|' ~ sort_order %}
 
 {% set visible_count = all_transfer_items | length %}
 {% set total_amount = all_transfer_items | map(attribute='amount') | sum %}
@@ -44,7 +45,7 @@
 
 <!-- Filter and Sort Controls (CP-REPORTS-05) - Always visible -->
 <div class="px-4 py-3 bg-base-100 border-b border-base-300 space-y-3">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <!-- Filter by Business -->
         <div class="flex flex-col gap-1">
             <label for="filter-business" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</label>
@@ -80,37 +81,25 @@
             </select>
         </div>
 
-        <!-- Sort By -->
+        <!-- Sort -->
         <div class="flex flex-col gap-1">
-            <label for="sort-by" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Sort By') }}</label>
+            <label for="sort-option" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Sort') }}</label>
             <select
-                id="sort-by"
-                name="sort_by"
+                id="sort-option"
+                name="sort_option"
                 class="select select-sm select-bordered bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
                 autocomplete="off"
-                aria-label="{{ _('Sort by field') }}"
+                aria-label="{{ _('Sort transfer list') }}"
             >
-                <option value="business,time" {% if sort_by == 'business,time' %}selected{% endif %}>{{ _('Business, Time') }}</option>
-                <option value="time" {% if sort_by == 'time' %}selected{% endif %}>{{ _('Time') }}</option>
-                <option value="amount" {% if sort_by == 'amount' %}selected{% endif %}>{{ _('Amount') }}</option>
-                <option value="business" {% if sort_by == 'business' %}selected{% endif %}>{{ _('Business') }}</option>
-            </select>
-        </div>
-
-        <!-- Sort Order -->
-        <div class="flex flex-col gap-1">
-            <label for="sort-order" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Order') }}</label>
-            <select
-                id="sort-order"
-                name="sort_order"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
-                onchange="updateTransferFilters()"
-                autocomplete="off"
-                aria-label="{{ _('Sort order') }}"
-            >
-                <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>{{ _('Ascending') }}</option>
-                <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>{{ _('Descending') }}</option>
+                <option value="business,time|asc" {% if sort_option == 'business,time|asc' %}selected{% endif %}>{{ _('Business, Time (A-Z)') }}</option>
+                <option value="business,time|desc" {% if sort_option == 'business,time|desc' %}selected{% endif %}>{{ _('Business, Time (Z-A)') }}</option>
+                <option value="time|desc" {% if sort_option == 'time|desc' %}selected{% endif %}>{{ _('Time (Newest first)') }}</option>
+                <option value="time|asc" {% if sort_option == 'time|asc' %}selected{% endif %}>{{ _('Time (Oldest first)') }}</option>
+                <option value="amount|desc" {% if sort_option == 'amount|desc' %}selected{% endif %}>{{ _('Amount (High to low)') }}</option>
+                <option value="amount|asc" {% if sort_option == 'amount|asc' %}selected{% endif %}>{{ _('Amount (Low to high)') }}</option>
+                <option value="business|asc" {% if sort_option == 'business|asc' %}selected{% endif %}>{{ _('Business (A-Z)') }}</option>
+                <option value="business|desc" {% if sort_option == 'business|desc' %}selected{% endif %}>{{ _('Business (Z-A)') }}</option>
             </select>
         </div>
 
@@ -139,7 +128,7 @@
     <div class="space-y-3">
         {% for item in all_transfer_items %}
         {% set row_index = loop.index + (current_page - 1) * page_size %}
-        <div class="border border-base-300 rounded-lg p-3 bg-base-100 hover:shadow-md transition-all duration-200">
+        <div data-transfer-row="{{ item.id }}" class="border border-base-300 rounded-lg p-3 bg-base-100 hover:shadow-md transition-all duration-200">
             <!-- Row Number & Business -->
             <div class="mb-2 flex items-center gap-2">
                 <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-base-content bg-base-200 rounded-full flex-shrink-0">{{ row_index }}</span>
@@ -186,8 +175,6 @@
                     class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
                     data-transfer-id="{{ item.id }}"
                     {% if item.is_verified %}checked{% endif %}
-                    hx-on:change="htmx.ajax('POST', this.checked ? '/admin/transfer-items/{{ item.id }}/verify' : '/admin/transfer-items/{{ item.id }}/unverify', {target: this, swap: 'none'})"
-                    hx-indicator=".htmx-request .spinner"
                     title="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
                     aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
                 />
@@ -218,7 +205,7 @@
         <tbody>
             {% for item in all_transfer_items %}
             {% set row_index = loop.index + (current_page - 1) * page_size %}
-            <tr class="hover:bg-base-200/30 transition-colors duration-150">
+            <tr data-transfer-row="{{ item.id }}" class="hover:bg-base-200/30 transition-colors duration-150">
                 <td class="text-center font-mono text-xs font-semibold text-base-content/60">{{ row_index }}</td>
                 <td class="text-center">
                     <a href="/sessions/{{ item.session_id }}" 
@@ -239,8 +226,6 @@
                         class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
                         data-transfer-id="{{ item.id }}"
                         {% if item.is_verified %}checked{% endif %}
-                        hx-on:change="htmx.ajax('POST', this.checked ? '/admin/transfer-items/{{ item.id }}/verify' : '/admin/transfer-items/{{ item.id }}/unverify', {target: this, swap: 'none'})"
-                        hx-indicator=".htmx-request .spinner"
                         title="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
                         aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
                     />
@@ -364,33 +349,41 @@
 document.addEventListener('DOMContentLoaded', function() {
     const filterBusinessElem = document.getElementById('filter-business');
     const filterVerifiedElem = document.getElementById('filter-verified');
-    const sortByElem = document.getElementById('sort-by');
-    const sortOrderElem = document.getElementById('sort-order');
+    const sortOptionElem = document.getElementById('sort-option');
     const pageSizeElem = document.getElementById('page-size');
 
     // Set values from server context (prevents browser autocomplete override)
     if (filterBusinessElem) filterBusinessElem.value = '{{ filter_business }}';
     if (filterVerifiedElem) filterVerifiedElem.value = '{{ filter_verified }}';
-    if (sortByElem) sortByElem.value = '{{ sort_by }}';
-    if (sortOrderElem) sortOrderElem.value = '{{ sort_order }}';
+    if (sortOptionElem) sortOptionElem.value = '{{ sort_option }}';
     if (pageSizeElem) pageSizeElem.value = '{{ page_size }}';
 });
+
+function parseSortOption(sortOptionValue) {
+    if (!sortOptionValue) {
+        return { sortBy: 'business,time', sortOrder: 'asc' };
+    }
+
+    const parts = sortOptionValue.split('|');
+    const sortBy = parts[0] || 'business,time';
+    const sortOrder = parts[1] || 'asc';
+
+    return { sortBy, sortOrder };
+}
 
 function updateTransferFilters() {
     const filterBusinessElem = document.getElementById('filter-business');
     const filterVerifiedElem = document.getElementById('filter-verified');
-    const sortByElem = document.getElementById('sort-by');
-    const sortOrderElem = document.getElementById('sort-order');
+    const sortOptionElem = document.getElementById('sort-option');
     const pageSizeElem = document.getElementById('page-size');
 
-    if (!filterBusinessElem || !filterVerifiedElem || !sortByElem || !sortOrderElem || !pageSizeElem) {
+    if (!filterBusinessElem || !filterVerifiedElem || !sortOptionElem || !pageSizeElem) {
         return;
     }
 
     const filterBusiness = filterBusinessElem.value;
     const filterVerified = filterVerifiedElem.value;
-    const sortBy = sortByElem.value;
-    const sortOrder = sortOrderElem.value;
+    const sortSelection = parseSortOption(sortOptionElem.value);
     const pageSize = pageSizeElem.value;
 
     let url = new URL(window.location);
@@ -406,8 +399,8 @@ function updateTransferFilters() {
     // Always set filter_verified (backend expects it)
     url.searchParams.set('filter_verified', filterVerified);
 
-    url.searchParams.set('sort_by', sortBy);
-    url.searchParams.set('sort_order', sortOrder);
+    url.searchParams.set('sort_by', sortSelection.sortBy);
+    url.searchParams.set('sort_order', sortSelection.sortOrder);
     url.searchParams.set('page_size', pageSize);
 
     window.location.href = url.toString();
@@ -416,18 +409,58 @@ function updateTransferFilters() {
 function updateTransferPageSize() {
     const filterBusiness = document.getElementById('filter-business').value;
     const filterVerified = document.getElementById('filter-verified').value;
-    const sortBy = document.getElementById('sort-by').value;
-    const sortOrder = document.getElementById('sort-order').value;
+    const sortOption = document.getElementById('sort-option').value;
+    const sortSelection = parseSortOption(sortOption);
     const pageSize = document.getElementById('page-size').value;
 
     let url = new URL(window.location);
     url.searchParams.set('page', '1');  // Reset to page 1
     url.searchParams.set('filter_business', filterBusiness);
     url.searchParams.set('filter_verified', filterVerified);
-    url.searchParams.set('sort_by', sortBy);
-    url.searchParams.set('sort_order', sortOrder);
+    url.searchParams.set('sort_by', sortSelection.sortBy);
+    url.searchParams.set('sort_order', sortSelection.sortOrder);
     url.searchParams.set('page_size', pageSize);
 
     window.location.href = url.toString();
 }
+
+document.addEventListener('change', function(event) {
+    var target = event.target;
+    if (!target || !target.classList || !target.classList.contains('transfer-verify-checkbox')) {
+        return;
+    }
+
+    var transferId = target.getAttribute('data-transfer-id');
+    if (!transferId) {
+        return;
+    }
+
+    var desiredChecked = !!target.checked;
+    var previousChecked = !desiredChecked;
+    var endpoint = desiredChecked
+        ? '/admin/transfer-items/' + transferId + '/verify'
+        : '/admin/transfer-items/' + transferId + '/unverify';
+
+    target.disabled = true;
+
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Verification request failed');
+            }
+            window.location.reload();
+        })
+        .catch(function(error) {
+            target.checked = previousChecked;
+            target.disabled = false;
+            console.error(error);
+        });
+});
+
 </script>
