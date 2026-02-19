@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-17 00:27+0000\n"
+"POT-Creation-Date: 2026-02-19 12:37+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -610,6 +610,12 @@ msgstr ""
 msgid "Last updated"
 msgstr ""
 
+msgid "Last updated at"
+msgstr ""
+
+msgid "Paraguay Time"
+msgstr ""
+
 msgid "Notes"
 msgstr ""
 
@@ -736,13 +742,58 @@ msgstr ""
 msgid "Transfers"
 msgstr ""
 
+msgid "Filter by business"
+msgstr ""
+
+msgid "Filter by verification status"
+msgstr ""
+
+msgid "All Transfers"
+msgstr ""
+
+msgid "Unverified Only"
+msgstr ""
+
+msgid "Verified Only"
+msgstr ""
+
+msgid "Sort"
+msgstr ""
+
+msgid "Sort transfer list"
+msgstr ""
+
+msgid "Business, Time (A-Z)"
+msgstr ""
+
+msgid "Business, Time (Z-A)"
+msgstr ""
+
+msgid "Time (Newest first)"
+msgstr ""
+
+msgid "Time (Oldest first)"
+msgstr ""
+
+msgid "Amount (High to low)"
+msgstr ""
+
+msgid "Amount (Low to high)"
+msgstr ""
+
+msgid "Business (A-Z)"
+msgstr ""
+
+msgid "Business (Z-A)"
+msgstr ""
+
+msgid "Per Page"
+msgstr ""
+
+msgid "Items per page"
+msgstr ""
+
 msgid "Amount"
-msgstr ""
-
-msgid "Description"
-msgstr ""
-
-msgid "Verified"
 msgstr ""
 
 msgid "Mark as unverified"
@@ -751,7 +802,40 @@ msgstr ""
 msgid "Mark as verified"
 msgstr ""
 
+msgid "Verified"
+msgstr ""
+
+msgid "#"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "transfers"
+msgstr ""
+
+msgid "First page"
+msgstr ""
+
+msgid "Previous page"
+msgstr ""
+
+msgid "Next page"
+msgstr ""
+
+msgid "Last page"
+msgstr ""
+
+msgid "Page Total"
+msgstr ""
+
 msgid "transfer"
+msgstr ""
+
+msgid "No transfers match the current filters"
+msgstr ""
+
+msgid "Try adjusting your filter settings above"
 msgstr ""
 
 msgid "No bank transfers recorded"
@@ -1057,18 +1141,6 @@ msgid "Restore"
 msgstr ""
 
 msgid "Showing"
-msgstr ""
-
-msgid "First page"
-msgstr ""
-
-msgid "Previous page"
-msgstr ""
-
-msgid "Next page"
-msgstr ""
-
-msgid "Last page"
 msgstr ""
 
 msgid "No sessions found"
