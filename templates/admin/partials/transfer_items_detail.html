@@ -16,6 +16,7 @@
 {% set sort_order = sort_order | default('asc') %}
 {% set businesses = businesses | default([]) %}
 {% set sort_option = sort_by ~ '|' ~ sort_order %}
+{% set business_id = selected_business_id | default('', true) %}
 
 {% set visible_count = all_transfer_items | length %}
 {% set total_amount = all_transfer_items | map(attribute='amount') | sum %}
@@ -248,7 +249,7 @@
         <div class="flex items-center gap-2">
             {% if current_page > 1 %}
             <a
-                href="?date={{ comparison_date.isoformat() }}&page=1&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page=1&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('First page') }}"
                 title="{{ _('First page') }}"
@@ -263,7 +264,7 @@
 
             {% if current_page > 1 %}
             <a
-                href="?date={{ comparison_date.isoformat() }}&page={{ current_page - 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page - 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Previous page') }}"
                 title="{{ _('Previous page') }}"
@@ -281,7 +282,7 @@
 
             {% if current_page < total_pages %}
             <a
-                href="?date={{ comparison_date.isoformat() }}&page={{ current_page + 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page + 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Next page') }}"
                 title="{{ _('Next page') }}"
@@ -296,7 +297,7 @@
 
             {% if current_page < total_pages %}
             <a
-                href="?date={{ comparison_date.isoformat() }}&page={{ total_pages }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}&filter_business={{ filter_business }}&filter_verified={{ filter_verified }}&filter_cashier={{ filter_cashier }}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ total_pages }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Last page') }}"
                 title="{{ _('Last page') }}"
@@ -353,10 +354,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const pageSizeElem = document.getElementById('page-size');
 
     // Set values from server context (prevents browser autocomplete override)
-    if (filterBusinessElem) filterBusinessElem.value = '{{ filter_business }}';
-    if (filterVerifiedElem) filterVerifiedElem.value = '{{ filter_verified }}';
-    if (sortOptionElem) sortOptionElem.value = '{{ sort_option }}';
-    if (pageSizeElem) pageSizeElem.value = '{{ page_size }}';
+    if (filterBusinessElem) filterBusinessElem.value = {{ filter_business | tojson }};
+    if (filterVerifiedElem) filterVerifiedElem.value = {{ filter_verified | tojson }};
+    if (sortOptionElem) sortOptionElem.value = {{ sort_option | tojson }};
+    if (pageSizeElem) pageSizeElem.value = {{ page_size | tojson }};
 });
 
 function parseSortOption(sortOptionValue) {
@@ -387,6 +388,8 @@ function updateTransferFilters() {
     const pageSize = pageSizeElem.value;
 
     let url = new URL(window.location);
+    const filterCashier = url.searchParams.get('filter_cashier');
+    const businessId = url.searchParams.get('business_id');
     url.searchParams.set('page', '1');
 
     // Set or remove filter_business
@@ -403,6 +406,16 @@ function updateTransferFilters() {
     url.searchParams.set('sort_order', sortSelection.sortOrder);
     url.searchParams.set('page_size', pageSize);
 
+    if (filterCashier) {
+        url.searchParams.set('filter_cashier', filterCashier);
+    } else {
+        url.searchParams.delete('filter_cashier');
+    }
+
+    if (businessId) {
+        url.searchParams.set('business_id', businessId);
+    }
+
     window.location.href = url.toString();
 }
 
@@ -414,12 +427,30 @@ function updateTransferPageSize() {
     const pageSize = document.getElementById('page-size').value;
 
     let url = new URL(window.location);
+    const filterCashier = url.searchParams.get('filter_cashier');
+    const businessId = url.searchParams.get('business_id');
     url.searchParams.set('page', '1');  // Reset to page 1
-    url.searchParams.set('filter_business', filterBusiness);
+
+    if (filterBusiness) {
+        url.searchParams.set('filter_business', filterBusiness);
+    } else {
+        url.searchParams.delete('filter_business');
+    }
+
     url.searchParams.set('filter_verified', filterVerified);
     url.searchParams.set('sort_by', sortSelection.sortBy);
     url.searchParams.set('sort_order', sortSelection.sortOrder);
     url.searchParams.set('page_size', pageSize);
+
+    if (filterCashier) {
+        url.searchParams.set('filter_cashier', filterCashier);
+    } else {
+        url.searchParams.delete('filter_cashier');
+    }
+
+    if (businessId) {
+        url.searchParams.set('business_id', businessId);
+    }
 
     window.location.href = url.toString();
 }

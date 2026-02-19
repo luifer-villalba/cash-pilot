@@ -498,9 +498,12 @@ async def _apply_transfer_sorting_and_pagination(
         for field in sort_fields:
             if field == "business":
                 # Business name
-                business_id = item.get("business_id", "")
-                business_name = business_names_by_id.get(business_id, "").lower()
-                keys.append(business_name)
+                business_id = item.get("business_id")
+                business_name = business_names_by_id.get(business_id)
+                business_sort_key = (
+                    business_name.lower() if business_name is not None else str(business_id or "")
+                )
+                keys.append(business_sort_key)
             elif field == "time":
                 # Chronological order
                 created_at = item.get("created_at")
@@ -906,19 +909,25 @@ async def reconciliation_compare_dashboard(
         filter_cashier=filter_cashier,
     )
 
+    total_count = len(filtered_items)
+    if total_count == 0:
+        total_pages = 0
+        clamped_page = 1
+        start_index = 0
+    else:
+        total_pages = (total_count + page_size - 1) // page_size
+        clamped_page = min(page, total_pages)
+        start_index = (clamped_page - 1) * page_size + 1
+
     # Apply sorting and pagination (CP-REPORTS-05)
-    sorted_items, total_count = await _apply_transfer_sorting_and_pagination(
+    sorted_items, _ = await _apply_transfer_sorting_and_pagination(
         filtered_items,
         business_names_by_id=business_names_by_id,
         sort_by=sort_by,
         sort_order=sort_order,
-        page=page,
+        page=clamped_page,
         page_size=page_size,
     )
-
-    # Calculate pagination info
-    total_pages = (total_count + page_size - 1) // page_size
-    start_index = (page - 1) * page_size + 1
 
     # Get all businesses for the selector
     all_businesses = await get_active_businesses(db)
@@ -946,7 +955,7 @@ async def reconciliation_compare_dashboard(
             "locale": locale,
             "_": _,
             # Pagination (CP-REPORTS-05)
-            "current_page": page,
+            "current_page": clamped_page,
             "page_size": page_size,
             "total_pages": total_pages,
             "start_index": start_index,
