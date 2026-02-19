@@ -1,14 +1,11 @@
 """Tests for CP-REPORTS-05 — Transfer List Review UX (pagination + filters + sorting)."""
 
 import pytest
-from datetime import datetime, date, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from cashpilot.models.transfer_item import TransferItem
-from cashpilot.models.user import UserRole
 
 
 class TestTransferItemsPagination:
