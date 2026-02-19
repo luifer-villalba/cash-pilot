@@ -920,7 +920,7 @@ async def reconciliation_compare_dashboard(
         start_index = (clamped_page - 1) * page_size + 1
 
     # Apply sorting and pagination (CP-REPORTS-05)
-    sorted_items, _ = await _apply_transfer_sorting_and_pagination(
+    sorted_items, paginated_total_count = await _apply_transfer_sorting_and_pagination(
         filtered_items,
         business_names_by_id=business_names_by_id,
         sort_by=sort_by,
@@ -928,6 +928,8 @@ async def reconciliation_compare_dashboard(
         page=clamped_page,
         page_size=page_size,
     )
+
+    total_count = paginated_total_count
 
     # Get all businesses for the selector
     all_businesses = await get_active_businesses(db)
