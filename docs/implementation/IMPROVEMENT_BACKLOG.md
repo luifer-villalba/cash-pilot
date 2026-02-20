@@ -30,7 +30,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Any authenticated user can edit any session
 * **Evidence:** `src/cashpilot/api/cash_session_edit.py`
 * **Acceptance impact:** AC-02, AC-05
-* **Status:** Completed (2026-01-29)
+* **Status:** ✅ Completed (2026-01-29)
 
 ### CP-RBAC-02 — Restrict audit / flag endpoints to Admin
 
@@ -38,7 +38,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Audit data visible and mutable by any user
 * **Evidence:** `src/cashpilot/api/cash_session_audit.py`
 * **Acceptance impact:** AC-02, AC-07
-* **Status:** Completed (2026-02-01)
+* **Status:** ✅ Completed (2026-02-01)
 
 ### CP-RBAC-03 — Enforce business assignment on all session flows
 
@@ -46,7 +46,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Cashiers can act on unassigned businesses
 * **Evidence:** `routes/sessions.py` (HTML flow)
 * **Acceptance impact:** AC-01, AC-02
-* **Status:** Completed (2026-02-04) - All 4 PRs implemented:
+* **Status:** ✅ Completed (2026-02-04) — All 4 PRs implemented:
   * PR 1: Session create ✓
   * PR 2: Session close/reconciliation ✓
   * PR 3: Session edit forms ✓
@@ -57,7 +57,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** Medium
 * **Problem:** Docs/tests must reflect superadmin reality; ensure endpoints treat Admin as global.
 * **Evidence:** Decision: Admin is superadmin
-* **Status:** Approved
+* **Status:** ✅ Approved
 
 ---
 
@@ -71,7 +71,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Invalid data may be partially saved
 * **Evidence:** `core/db.py`, `routes/sessions.py`
 * **Acceptance impact:** AC-04
-* **Status:** Completed (2026-02-05)
+* **Status:** ✅ Completed (2026-02-05)
 
 ### CP-DATA-02 — Enforce single open session per cashier/business
 
@@ -79,7 +79,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Multiple open sessions possible via UI
 * **Evidence:** Missing overlap check in HTML flow
 * **Acceptance impact:** AC-03
-* **Status:** Completed (2026-02-08)
+* **Status:** ✅ Completed (2026-02-08)
 
 ---
 
@@ -93,7 +93,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** ES6 syntax breaks IE11
 * **Evidence:** `templates/base.html`
 * **Acceptance impact:** AC-08
-* **Status:** Completed (2026-02-09)
+* **Status:** ✅ Completed (2026-02-09)
 
 ### CP-LEGACY-02 — Replace unsupported DOM APIs
 
@@ -101,7 +101,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** `classList.toggle(force)` unsupported
 * **Evidence:** `static/js/dashboard.js`
 * **Acceptance impact:** AC-08
-* **Status:** Completed (2026-02-10)
+* **Status:** ✅ Completed (2026-02-10)
 
 ---
 
@@ -115,7 +115,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Invalid UUIDs can raise uncaught errors and return 500s
 * **Evidence:** Multiple API routes with direct UUID parsing
 * **Acceptance impact:** Reliability / error hygiene
-* **Status:** Completed (2026-01-29)
+* **Status:** ✅ Completed (2026-01-29)
 
 ---
 
@@ -129,7 +129,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Filter order and comparison logic do not match expected business workflow
 * **Evidence:** `templates/reports/business-stats.html`, `src/cashpilot/api/routes/business_stats.py`
 * **Acceptance impact:** AC-06, AC-04
-* **Status:** Completed (2026-01-29)
+* **Status:** ✅ Completed (2026-01-29)
 
 ### CP-REPORTS-02 — Auto-refresh reconciliation comparison page
 
@@ -138,7 +138,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `templates/admin/reconciliation_compare.html`
 * **User Story:** Admin enters daily reconciliation at 23:20, cashiers close sessions at 23:30-23:35, admin needs to F5 repeatedly to see updated comparison
 * **Acceptance impact:** UX improvement, no AC impact
-* **Status:** Completed (2026-02-14)
+* **Status:** ✅ Completed (2026-02-14)
 * **Solution:** HTMX polling to auto-refresh comparison table every 45 seconds
 * **Implementation:**
   - Added `hx-trigger="load, every 45s"` to comparison results section
@@ -152,14 +152,14 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `templates/admin/reconciliation_compare.html`
 * **User Story:** Admin reviews daily reconciliation and needs to see all bank transfers (from `transfer_items` table) in one place to cross-check against bank statement
 * **Acceptance impact:** AC-06 (reporting accuracy)
-* **Status:** In Progress (2026-02-16) — Implementation Plan: `docs/implementation/CP-REPORTS-03-BANK-TRANSFERS.md`
+* **Status:** ✅ Completed (2026-02-16) — Implementation Plan: `docs/implementation/CP-REPORTS-03-BANK-TRANSFERS.md`
   - [x] Backend data fetching implemented
   - [x] Template created (transfer_items_detail.html)
   - [x] Reconciliation routes updated
   - [x] Tests written (test_transfer_items_display.py)
   - [x] **NEW:** Tabbed interface added (Bank Transfers in separate tab on reconciliation page)
-  - [ ] Code review pending
-  - [ ] Manual testing on Windows 7/IE11
+  - [x] Code review completed
+  - [x] Manual testing on Windows 7/IE11
 * **Requirements:**
   - Display all transfer line items from cash sessions for the business+date
   - Show: transfer description, amount, session ID, cashier name, timestamp
@@ -192,7 +192,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - [x] Each transfer shows: description, amount, cashier, time
   - [x] Summary shows total transfers and total amount
   - [x] List is chronologically sorted (earliest first)
-  - [ ] Works on Windows 7 / IE11
+  - [x] Works on Windows 7 / IE11
 
 ### CP-REPORTS-04 — Add transfer verification workflow (Phase 2)
 
@@ -246,7 +246,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `templates/admin/partials/transfer_items_detail.html`
 * **User Story:** Admin needs faster verification by filtering and sorting transfer items without losing context
 * **Acceptance impact:** UX improvement, no AC impact
-* **Status:** Not started (ASAP)
+* **Status:** ✅ Completed (2026-02-18) — Implementation Plan: `docs/implementation/CP-REPORTS-05-TRANSFER-UX.md`
 * **Requirements:**
   - Add pagination to transfers list (server-side)
   - Page size selector with at least 20 and 50 items
@@ -265,11 +265,11 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - CP-REPORTS-03 completed ✓
   - CP-REPORTS-04 completed ✓
 * **Acceptance Criteria:**
-  - [ ] Admin can page through transfers with 20 or 50 items per page
-  - [ ] Filters work for business, cashier, and verified state
-  - [ ] Default view can show only unverified items
-  - [ ] Headers are clickable and sort by business, time, amount
-  - [ ] Row order number is visible and consistent per page
+  - [x] Admin can page through transfers with 20 or 50 items per page
+  - [x] Filters work for business, cashier, and verified state
+  - [x] Default view can show only unverified items
+  - [x] Headers are clickable and sort by business, time, amount
+  - [x] Row order number is visible and consistent per page
 
 ---
 
@@ -283,7 +283,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Roles are global, docs require per-business
 * **Evidence:** `models/user.py` vs `DATA_MODEL.md`
 * **Decision:** Roles are global; Admin is superadmin. Docs aligned to code.
-* **Status:** Roles are global (docs aligned to code)
+* **Status:** ✅ Decided — Roles are global (docs aligned to code)
 
 ### CP-MODEL-02 — Add or document business timezone
 
@@ -291,14 +291,14 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Timezone missing from business entity
 * **Evidence:** `models/business.py`
 * **Decision:** All businesses operate in Paraguay timezone (America/Asuncion). System uses UTC internally with timezone-aware datetimes.
-* **Status:** Documented (2026-02-14) - No field needed; Paraguay-only deployment
+* **Status:** ✅ Documented (2026-02-14) — No field needed; Paraguay-only deployment
 
 ### CP-MODEL-03 — Link DailyReconciliation to CashSession
 
 * **Severity:** High
 * **Problem:** Missing linkage and audit fields
 * **Evidence:** `models/daily_reconciliation.py`
-* **Status:** Completed (2026-02-13)
+* **Status:** ✅ Completed (2026-02-13)
   * **Clarification**: DailyReconciliation represents ALL sessions for a business+date
   * No direct FK needed - relationship is implicit via `business_id + date`
   * Added `last_modified_at` and `last_modified_by` audit fields
@@ -316,7 +316,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** High
 * **Problem:** Tests lack AC references
 * **Evidence:** `tests/`
-* **Status:** Completed (2026-02-12) - Added AC references to 20+ tests:
+* **Status:** ✅ Completed (2026-02-12) — Added AC references to 20+ tests:
   * test_admin_business_assignment.py — 11 tests (AC-01, AC-02, AC-04, AC-07)
   * test_cash_session_edit.py — 3 tests (AC-02, AC-04, AC-05)
   * test_cashier_timeout.py — 2 tests (AC-02)
@@ -330,7 +330,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** Critical
 * **Problem:** API RBAC bypass untested
 * **Evidence:** Missing coverage
-* **Status:** Completed (2026-02-12) - Added tests for:
+* **Status:** ✅ Completed (2026-02-12) — Added tests for:
   * POST /users (create user) — admin-only verified ✓
   * DELETE /admin/users/{id}/businesses/{id} (unassign) — admin-only verified ✓
   * Test count: 316 → 330 (+14 tests)
@@ -346,14 +346,14 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** Medium
 * **Problem:** Backup not explicit
 * **Evidence:** `RELEASE_CHECKLIST.md`
-* **Status:** Completed (2026-02-06)
+* **Status:** ✅ Completed (2026-02-06)
 
 ### CP-REL-02 — Document Windows 7 verification evidence
 
 * **Severity:** Medium
 * **Problem:** No proof of legacy testing
 * **Evidence:** `docs/reference/w7-compatibility.md` exists but lacks verification procedures
-* **Status:** Not started
+* **Status:** ⏳ Not started
 * **Requirements:**
   - Document browser version matrix (IE11, Chrome 50+, Firefox 45+)
   - Create manual test checklist for Windows 7 environment
@@ -372,7 +372,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Cashiers are unaware when their sessions are flagged for review
 * **User Story:** Admin flags session at 23:45, cashier only discovers it next shift or via manual dashboard check
 * **Acceptance impact:** UX improvement, no AC impact
-* **Status:** Not started
+* **Status:** ⏳ Not started
 * **Requirements:**
   - Opt-in feature (disabled by default)
   - User preference toggle in settings page

@@ -2,7 +2,7 @@
 
 **Epic:** EPIC 6 — Reporting UX & Comparisons (MEDIUM)  
 **Priority:** HIGH / ASAP  
-**Status:** In Progress (Started 2026-02-16)  
+**Status:** ✅ Completed (2026-02-16)  
 
 ---
 
@@ -33,15 +33,15 @@ Admin must either:
 
 ## Acceptance Criteria
 
-- [ ] **AC-1:** Admin can view all bank transfer line items from cash sessions for a business+date
-- [ ] **AC-2:** Each transfer displays: description, amount, session ID (linked), cashier name, timestamp
-- [ ] **AC-3:** Transfers are displayed in chronological order (earliest first)
-- [ ] **AC-4:** Summary row shows total count and sum of all transfers for the day
-- [ ] **AC-5:** Transfer section is read-only (no verification/editing in Phase 1)
-- [ ] **AC-6:** Section is admin-only (RBAC enforced on both backend and frontend)
-- [ ] **AC-7:** All monetary amounts use monospace font and Paraguay format (Gs X.XXX)
-- [ ] **AC-8:** Compatible with Windows 7/IE11 (no modern JS features)
-- [ ] **AC-9:** Section integrates seamlessly with existing reconciliation_compare_results.html
+- [x] **AC-1:** Admin can view all bank transfer line items from cash sessions for a business+date
+- [x] **AC-2:** Each transfer displays: description, amount, session ID (linked), cashier name, timestamp
+- [x] **AC-3:** Transfers are displayed in chronological order (earliest first)
+- [x] **AC-4:** Summary row shows total count and sum of all transfers for the day
+- [x] **AC-5:** Transfer section is read-only (no verification/editing in Phase 1)
+- [x] **AC-6:** Section is admin-only (RBAC enforced on both backend and frontend)
+- [x] **AC-7:** All monetary amounts use monospace font and Paraguay format (Gs X.XXX)
+- [x] **AC-8:** Compatible with Windows 7/IE11 (no modern JS features)
+- [x] **AC-9:** Section integrates seamlessly with existing reconciliation_compare_results.html
 
 ---
 
@@ -212,13 +212,13 @@ In `reconciliation_compare_results.html` (after Sales Reconciliation Comparison 
 
 ## Success Criteria (DoD)
 
-- [ ] PR: backend data fetching + reconciliation route update
-- [ ] PR: transfer items template + styles
-- [ ] PR: tests + compatibility verification
-- [ ] Code review passed
-- [ ] Manual testing on Windows 7/IE11
-- [ ] Backlog updated to Completed status
-- [ ] Documentation updated (DATA_MODEL.md if needed)
+- [x] PR: backend data fetching + reconciliation route update
+- [x] PR: transfer items template + styles
+- [x] PR: tests + compatibility verification
+- [x] Code review passed
+- [x] Manual testing on Windows 7/IE11
+- [x] Backlog updated to Completed status
+- [x] Documentation updated (DATA_MODEL.md if needed)
 
 ---
 
@@ -249,4 +249,4 @@ In `reconciliation_compare_results.html` (after Sales Reconciliation Comparison 
 
 **Start Date:** 2026-02-16  
 **Target Completion:** 2026-02-17  
-**Status Tracking:** Update after each PR  
+**Status Tracking:** Closed (implemented, reviewed, and documented)  
