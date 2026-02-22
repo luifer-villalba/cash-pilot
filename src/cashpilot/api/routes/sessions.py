@@ -548,7 +548,11 @@ async def close_session_post(
                 "current_user": current_user,
                 "session": session,
                 "error": error_message,
+                "locale": locale,
+                "editable": True,
+                "_": _,
             },
+            status_code=400,
         )
     except Exception as e:
         await db.rollback()
