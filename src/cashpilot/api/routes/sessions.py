@@ -569,7 +569,7 @@ async def close_session_post(
             {
                 "current_user": current_user,
                 "session": session,
-                "error": str(e),
+                "error": _("Operation failed"),
                 "locale": locale,
                 "editable": True,
                 "_": _,
