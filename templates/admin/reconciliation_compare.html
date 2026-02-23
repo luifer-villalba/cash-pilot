@@ -183,13 +183,13 @@
                 <div
                     id="comparison-results"
                     hx-get="/admin/reconciliation/compare-results?date={{ comparison_date.isoformat() }}{% if selected_business_id %}&business_id={{ selected_business_id }}{% endif %}"
-                    hx-trigger="every 45s"
+                    hx-trigger="every 120s, manual-refresh"
                     hx-swap="innerHTML"
                     aria-live="polite"
                     aria-busy="false"
                     class="space-y-8 htmx-settling"
                 >
-                    <!-- Initial content (rendered server-side, updated every 45s via HTMX) -->
+                    <!-- Initial content (rendered server-side, updated every 120s via HTMX) -->
                     {% include 'admin/partials/reconciliation_compare_results.html' %}
                 </div>
             </div>
@@ -651,6 +651,47 @@
             var form = document.getElementById('filter-form');
             var businessSelect = document.getElementById('business_id');
             var dateInput = document.getElementById('date');
+            var expandedSessionsByBusiness = {};
+            var allowNextComparisonRefresh = false;
+
+            function setSessionExpandedState(businessId, isExpanded) {
+                if (!businessId) return;
+                if (isExpanded) {
+                    expandedSessionsByBusiness[businessId] = true;
+                } else {
+                    delete expandedSessionsByBusiness[businessId];
+                }
+            }
+
+            function hasExpandedSessionRows() {
+                return Object.keys(expandedSessionsByBusiness).length > 0;
+            }
+
+            function restoreExpandedSessionRows() {
+                if (typeof htmx === 'undefined') return;
+
+                var knownBusinessIds = Object.keys(expandedSessionsByBusiness);
+                for (var i = 0; i < knownBusinessIds.length; i += 1) {
+                    var businessId = knownBusinessIds[i];
+                    var detailRow = document.getElementById('sessions-row-' + businessId);
+                    var expandBtn = document.querySelector('.expand-sessions-btn[data-business-id="' + businessId + '"]');
+
+                    if (!detailRow || !expandBtn) {
+                        delete expandedSessionsByBusiness[businessId];
+                        continue;
+                    }
+
+                    detailRow.classList.remove('hidden');
+
+                    var chevron = expandBtn.querySelector('.chevron-icon');
+                    if (chevron) chevron.style.transform = 'rotate(180deg)';
+
+                    var detailContainer = document.getElementById('sessions-detail-' + businessId);
+                    if (detailContainer && detailContainer.children.length === 0) {
+                        htmx.ajax('GET', expandBtn.getAttribute('hx-get'), { target: '#sessions-detail-' + businessId, swap: 'innerHTML' });
+                    }
+                }
+            }
 
             function autoSubmit() {
                 if (form) {
@@ -725,6 +766,15 @@
 
             document.addEventListener('click', function(e) {
                 var target = e.target || e.srcElement;
+                var refreshBtn = findClosest(target, 'refresh-comparison-btn');
+                if (refreshBtn) {
+                    var resultsContainer = document.getElementById('comparison-results');
+                    if (!resultsContainer || typeof htmx === 'undefined') return;
+                    allowNextComparisonRefresh = true;
+                    htmx.trigger(resultsContainer, 'manual-refresh');
+                    return;
+                }
+
                 var expandBtn = findClosest(target, 'expand-sessions-btn');
                 if (expandBtn) {
                     var businessId = expandBtn.getAttribute('data-business-id');
@@ -734,12 +784,35 @@
                     if (detailRow) {
                         if (detailRow.classList.contains('hidden')) {
                             detailRow.classList.remove('hidden');
+                            setSessionExpandedState(businessId, true);
                             if (chevron) chevron.style.transform = 'rotate(180deg)';
                         } else {
                             detailRow.classList.add('hidden');
+                            setSessionExpandedState(businessId, false);
                             if (chevron) chevron.style.transform = 'rotate(0deg)';
                         }
                     }
+                }
+            });
+
+            document.body.addEventListener('htmx:afterSwap', function(evt) {
+                if (!evt || !evt.detail || !evt.detail.target) return;
+                if (evt.detail.target.id === 'comparison-results') {
+                    restoreExpandedSessionRows();
+                }
+            });
+
+            document.body.addEventListener('htmx:beforeRequest', function(evt) {
+                if (!evt || !evt.detail || !evt.detail.target) return;
+                if (evt.detail.target.id !== 'comparison-results') return;
+
+                if (allowNextComparisonRefresh) {
+                    allowNextComparisonRefresh = false;
+                    return;
+                }
+
+                if (hasExpandedSessionRows()) {
+                    evt.preventDefault();
                 }
             });
 
