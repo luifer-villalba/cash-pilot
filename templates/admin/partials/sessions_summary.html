@@ -10,13 +10,13 @@
                         <th class="text-[10px] font-bold uppercase tracking-wider border-r border-info/10 text-info">{{ _('Session #') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider border-r border-info/10 text-info">{{ _('Cashier') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider border-r border-info/10 text-info">{{ _('Time') }}</th>
-                        <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Cash') }}</th>
+                        <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Initial Cash') }}</th>
+                        <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Final Cash') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Envelope') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Transfer') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Expenses') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Card') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Credit') }}</th>
-                        <th class="text-[10px] font-bold uppercase tracking-wider text-right border-r border-info/10 text-info">{{ _('Total') }}</th>
                         <th class="text-[10px] font-bold uppercase tracking-wider text-center text-info">{{ _('Status') }}</th>
                     </tr>
                 </thead>
@@ -52,8 +52,11 @@
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">
+                            <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.session.initial_cash or 0) }}</span>
+                        </td>
+                        <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">
                             {% if item.session.status == 'CLOSED' %}
-                                <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.cash_sales) }}</span>
+                                <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.session.final_cash or 0) }}</span>
                             {% else %}
                                 <span class="text-base-content/40">-</span>
                             {% endif %}
@@ -89,13 +92,6 @@
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">
                             {% if item.session.status == 'CLOSED' %}
                                 <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.credit_sales) }}</span>
-                            {% else %}
-                                <span class="text-base-content/40">-</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-right font-mono tabular-nums text-xs font-semibold border-r border-info/10">
-                            {% if item.session.status == 'CLOSED' %}
-                                <span class="text-base-content">{{ "{:,.0f}".format(item.total_sales) }}</span>
                             {% else %}
                                 <span class="text-base-content/40">-</span>
                             {% endif %}

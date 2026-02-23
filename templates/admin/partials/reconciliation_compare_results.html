@@ -15,17 +15,29 @@
                 <p class="text-xs text-base-content/60">{{ _('System vs manual totals by business') }}</p>
             </div>
         </div>
-        <!-- Last Updated Indicator -->
-        <div class="flex items-center gap-2 text-xs text-base-content/60 flex-shrink-0" title="Last updated at {{ last_updated }} (Paraguay Time)">
-            <svg class="w-3 h-3 text-success flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                <circle cx="10" cy="10" r="8"></circle>
-            </svg>
-            <span class="hidden sm:inline">{{ _('Last updated') }}</span>
-            <time
-                datetime="{{ last_updated }}"
-                class="font-mono font-semibold text-base-content"
-                aria-label="{{ _('Last updated at') }} {{ last_updated_display }} ({{ _('Paraguay Time') }})"
-            >{{ last_updated_display }}</time>
+        <!-- Last Updated Indicator + Manual Refresh -->
+        <div class="flex items-center gap-2 text-xs text-base-content/60 flex-shrink-0">
+            <div class="flex items-center gap-2" title="Last updated at {{ last_updated }} (Paraguay Time)">
+                <svg class="w-3 h-3 text-success flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <circle cx="10" cy="10" r="8"></circle>
+                </svg>
+                <span class="hidden sm:inline">{{ _('Last updated') }}</span>
+                <time
+                    datetime="{{ last_updated }}"
+                    class="font-mono font-semibold text-base-content"
+                    aria-label="{{ _('Last updated at') }} {{ last_updated_display }} ({{ _('Paraguay Time') }})"
+                >{{ last_updated_display }}</time>
+            </div>
+            <button
+                type="button"
+                class="btn btn-ghost btn-xs btn-square refresh-comparison-btn"
+                aria-label="{{ _('Refresh comparison table') }}"
+                title="{{ _('Refresh') }}"
+            >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+            </button>
         </div>
     </div>
 </div>
