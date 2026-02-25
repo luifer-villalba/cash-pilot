@@ -464,7 +464,8 @@ These routes return HTML pages (Jinja2 templates) for the web interface.
 
 - `GET /reports/weekly-trend` - Weekly trend report page
 - `GET /reports/business-stats` - Business statistics page
-- `GET /admin/reconciliation/{business_id}/{date}` - Daily reconciliation comparison
+- `GET /admin/reconciliation/compare` - Daily reconciliation comparison page (single date)
+- `GET /admin/transfers/date-range` - Bank transfers report across date range (filters + presets + pagination)
 
 ---
 

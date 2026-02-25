@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/admin.py
 import secrets
 import string
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -422,6 +422,131 @@ async def _fetch_transfer_items_for_reconciliation(
         )
 
     return transfer_items
+
+
+def _parse_iso_date(value: str | None) -> date | None:
+    """Parse YYYY-MM-DD date string safely."""
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value).date()
+    except (ValueError, TypeError):
+        return None
+
+
+def _resolve_transfer_report_range(
+    from_date: str | None,
+    to_date: str | None,
+    preset: str | None,
+) -> tuple[date, date, str]:
+    """Resolve date range for transfer report using explicit dates or presets."""
+    today = today_local()
+
+    parsed_from = _parse_iso_date(from_date)
+    parsed_to = _parse_iso_date(to_date)
+
+    if parsed_from and parsed_to:
+        if parsed_from <= parsed_to:
+            return parsed_from, parsed_to, "custom"
+        return parsed_to, parsed_from, "custom"
+
+    if parsed_from and not parsed_to:
+        return parsed_from, parsed_from, "custom"
+    if parsed_to and not parsed_from:
+        return parsed_to, parsed_to, "custom"
+
+    selected_preset = preset or "last_7_days"
+
+    if selected_preset == "today":
+        return today, today, selected_preset
+    if selected_preset == "yesterday":
+        day = today - timedelta(days=1)
+        return day, day, selected_preset
+    if selected_preset == "last_2_days":
+        return today - timedelta(days=1), today, selected_preset
+    if selected_preset == "last_3_days":
+        return today - timedelta(days=2), today, selected_preset
+    if selected_preset == "last_month":
+        return today - timedelta(days=29), today, selected_preset
+
+    # Default and explicit "last_7_days"
+    return today - timedelta(days=6), today, "last_7_days"
+
+
+async def _fetch_transfer_items_for_date_range(
+    db: AsyncSession,
+    from_date: date,
+    to_date: date,
+    selected_business_id: UUID | None = None,
+) -> tuple[list[dict], dict[str, str]]:
+    """Fetch transfer items across a date range, optionally scoped to one business."""
+    stmt = (
+        select(
+            TransferItem.id,
+            TransferItem.session_id,
+            TransferItem.description,
+            TransferItem.amount,
+            TransferItem.created_at,
+            TransferItem.is_verified,
+            User.id.label("cashier_id"),
+            User.first_name,
+            User.last_name,
+            CashSession.session_number,
+            CashSession.business_id,
+            CashSession.session_date,
+            Business.name.label("business_name"),
+        )
+        .join(CashSession, TransferItem.session_id == CashSession.id)
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(
+            and_(
+                CashSession.session_date >= from_date,
+                CashSession.session_date <= to_date,
+                ~TransferItem.is_deleted,
+                ~CashSession.is_deleted,
+                Business.is_active,
+            )
+        )
+        .order_by(TransferItem.created_at.asc())
+    )
+
+    if selected_business_id is not None:
+        stmt = stmt.where(CashSession.business_id == selected_business_id)
+
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    transfer_items = []
+    business_names_by_id: dict[str, str] = {}
+
+    for row in rows:
+        cashier_name = row.first_name or ""
+        if row.last_name:
+            cashier_name += f" {row.last_name[0]}."
+        cashier_name = cashier_name.strip()
+
+        business_id_str = str(row.business_id)
+        business_names_by_id[business_id_str] = row.business_name
+
+        transfer_items.append(
+            {
+                "id": row.id,
+                "session_id": row.session_id,
+                "session_number": row.session_number,
+                "description": row.description,
+                "amount": row.amount,
+                "created_at": row.created_at,
+                "cashier_id": row.cashier_id,
+                "cashier_name": cashier_name,
+                "is_verified": row.is_verified,
+                "business_id": business_id_str,
+                "business_name": row.business_name,
+                "session_date": row.session_date,
+            }
+        )
+
+    return transfer_items, business_names_by_id
 
 
 async def _apply_transfer_filters(
@@ -1023,6 +1148,129 @@ async def reconciliation_compare_results_partial(
             "last_updated_display": last_updated_display,
             "locale": locale,
             "_": _,
+        },
+    )
+
+
+@router.get("/transfers/date-range", response_class=HTMLResponse)
+async def transfer_date_range_report(
+    request: Request,
+    from_date: str | None = Query(None, description="From date (YYYY-MM-DD)"),
+    to_date: str | None = Query(None, description="To date (YYYY-MM-DD)"),
+    preset: str | None = Query(
+        None,
+        pattern="^(today|yesterday|last_2_days|last_3_days|last_7_days|last_month|custom)$",
+        description="Quick preset date range",
+    ),
+    business_id: str | None = Query(None, description="Filter by business ID"),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(20, ge=10, le=100, description="Items per page"),
+    sort_by: str = Query("time", description="Sort fields: business|time|amount"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    filter_verified: str = Query(
+        "all", pattern="^(all|verified|unverified)$", description="Filter by verification status"
+    ),
+    filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """CP-REPORTS-06: Bank transfers report with date-range, presets, filters, and pagination."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    selected_from_date, selected_to_date, selected_preset = _resolve_transfer_report_range(
+        from_date, to_date, preset
+    )
+
+    selected_business_id: UUID | None = None
+    if business_id and business_id.strip():
+        try:
+            selected_business_id = UUID(business_id)
+        except (ValueError, TypeError):
+            selected_business_id = None
+
+    all_businesses = await get_active_businesses(db)
+
+    all_transfer_items, business_names_by_id = await _fetch_transfer_items_for_date_range(
+        db,
+        from_date=selected_from_date,
+        to_date=selected_to_date,
+        selected_business_id=selected_business_id,
+    )
+
+    filtered_items = await _apply_transfer_filters(
+        all_transfer_items,
+        filter_business=str(selected_business_id) if selected_business_id else None,
+        filter_verified=filter_verified,
+        filter_cashier=filter_cashier,
+    )
+
+    filtered_total_count = len(filtered_items)
+    filtered_total_amount = sum((item.get("amount") or Decimal("0")) for item in filtered_items)
+
+    if filtered_total_count == 0:
+        total_pages = 0
+        clamped_page = 1
+        start_index = 0
+    else:
+        total_pages = (filtered_total_count + page_size - 1) // page_size
+        clamped_page = min(page, total_pages)
+        start_index = (clamped_page - 1) * page_size + 1
+
+    paginated_items, paginated_total_count = await _apply_transfer_sorting_and_pagination(
+        filtered_items,
+        business_names_by_id=business_names_by_id,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=clamped_page,
+        page_size=page_size,
+    )
+
+    filtered_total_count = paginated_total_count
+
+    page_total_amount = sum((item.get("amount") or Decimal("0")) for item in paginated_items)
+
+    cashier_options_map: dict[str, str] = {}
+    for item in all_transfer_items:
+        cashier_id = item.get("cashier_id")
+        cashier_name = item.get("cashier_name")
+        if cashier_id is None:
+            continue
+        cashier_id_str = str(cashier_id)
+        if cashier_id_str not in cashier_options_map:
+            cashier_options_map[cashier_id_str] = cashier_name
+
+    cashier_options = [
+        {"id": cashier_id, "name": cashier_options_map[cashier_id]}
+        for cashier_id in sorted(cashier_options_map, key=lambda key: cashier_options_map[key])
+    ]
+
+    return templates.TemplateResponse(
+        request,
+        "admin/transfers_date_range_report.html",
+        {
+            "current_user": current_user,
+            "locale": locale,
+            "_": _,
+            "from_date": selected_from_date,
+            "to_date": selected_to_date,
+            "selected_preset": selected_preset,
+            "businesses": all_businesses,
+            "selected_business_id": str(selected_business_id) if selected_business_id else "",
+            "all_transfer_items": paginated_items,
+            "transfer_items_total_count": filtered_total_count,
+            "filtered_total_amount": filtered_total_amount,
+            "page_total_amount": page_total_amount,
+            "businesses_by_id": business_names_by_id,
+            "cashier_options": cashier_options,
+            "current_page": clamped_page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "start_index": start_index,
+            "filter_verified": filter_verified,
+            "filter_cashier": filter_cashier,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
         },
     )
 
