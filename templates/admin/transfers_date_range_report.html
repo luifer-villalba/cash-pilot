@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Bank Transfers by Date Range') }} - CashPilot{% endblock %}
+
+{% block content %}
+{% set transfer_items_total_count = transfer_items_total_count | default(0) %}
+{% set current_page = current_page | default(1) %}
+{% set page_size = page_size | default(20) %}
+{% set total_pages = total_pages | default(0) %}
+{% set start_index = start_index | default(0) %}
+{% set filter_verified = filter_verified | default('all', true) %}
+{% set filter_cashier = filter_cashier | default('', true) %}
+{% set sort_by = sort_by | default('time') %}
+{% set sort_order = sort_order | default('desc') %}
+{% set selected_business_id = selected_business_id | default('', true) %}
+{% set sort_option = sort_by ~ '|' ~ sort_order %}
+{% set visible_count = all_transfer_items | length %}
+{% set base_query = 'from_date=' ~ from_date.isoformat() ~ '&to_date=' ~ to_date.isoformat() ~ '&preset=' ~ selected_preset ~ '&filter_verified=' ~ filter_verified ~ '&sort_by=' ~ sort_by ~ '&sort_order=' ~ sort_order ~ '&page_size=' ~ page_size %}
+{% if selected_business_id %}
+{% set base_query = base_query ~ '&business_id=' ~ selected_business_id %}
+{% endif %}
+{% if filter_cashier %}
+{% set base_query = base_query ~ '&filter_cashier=' ~ filter_cashier %}
+{% endif %}
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Bank Transfers by Date Range') }}</h1>
+            <p class="text-xs md:text-sm text-base-content/60">{{ _('Review transfers across multiple days with filters and pagination') }}</p>
+        </div>
+        <a href="/admin/reconciliation/compare?date={{ to_date.isoformat() }}" class="btn btn-outline btn-sm gap-2" data-back>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            {{ _('Back to Reconciliation') }}
+        </a>
+    </div>
+
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
+        <form id="range-filter-form" method="get" action="/admin/transfers/date-range" class="space-y-4">
+            <input type="hidden" id="preset-input" name="preset" value="{{ selected_preset }}" />
+            <input type="hidden" name="page" value="1" />
+
+            <div class="mb-2">
+                <label for="business_id" class="label py-1">
+                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+                </label>
+                <select id="business_id" name="business_id" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-label="{{ _('Select business to analyze') }}">
+                    <option value="">{{ _('All Businesses') }}</option>
+                    {% for business in businesses %}
+                    <option value="{{ business.id }}" {% if selected_business_id == business.id|string %}selected{% endif %}>{{ business.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="divider my-3 text-xs text-base-content/50">{{ _('Select date') }}</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="form-control">
+                    <label for="from_date" class="label py-1">
+                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('From') }}</span>
+                    </label>
+                    <input id="from_date" name="from_date" type="date" value="{{ from_date.isoformat() }}" class="input input-bordered w-full focus:input-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200" />
+                </div>
+                <div class="form-control">
+                    <label for="to_date" class="label py-1">
+                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('To') }}</span>
+                    </label>
+                    <input id="to_date" name="to_date" type="date" value="{{ to_date.isoformat() }}" class="input input-bordered w-full focus:input-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200" />
+                </div>
+            </div>
+
+            <div id="selectedPeriodBanner" class="mb-1 p-3 bg-info/10 border border-info/30 rounded-lg" role="status" aria-live="polite">
+                <div class="flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="font-medium text-info">{{ _('Viewing') }}:</span>
+                    <span id="selectedPeriodText" class="text-base-content font-semibold">{{ from_date.strftime('%B %d, %Y') }} - {{ to_date.strftime('%B %d, %Y') }}</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="today">{{ _('Today') }}</button>
+                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="yesterday">{{ _('Yesterday') }}</button>
+                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_2_days">{{ _('Last 2 days') }}</button>
+                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_3_days">{{ _('Last 3 days') }}</button>
+                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_7_days">{{ _('Last 7 days') }}</button>
+                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_month">{{ _('Last month') }}</button>
+            </div>
+
+            <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
+                <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>{{ _('Pick Custom Date') }}</span>
+                    </div>
+                </summary>
+                <div class="collapse-content pt-2">
+                    <p class="text-xs text-base-content/60">{{ _('Set From and To dates to use a custom range.') }}</p>
+                </div>
+            </details>
+
+            <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
+                <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 13.414V19a1 1 0 01-1.447.894l-2-1A1 1 0 0110 18v-4.586L3.293 6.707A1 1 0 013 6V4z"/>
+                        </svg>
+                        <span>{{ _('More Options') }}</span>
+                    </div>
+                </summary>
+                <div class="collapse-content pt-3 space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div class="form-control">
+                            <label for="filter_verified" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Verification') }}</span></label>
+                            <select id="filter_verified" name="filter_verified" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                <option value="all" {% if filter_verified == 'all' %}selected{% endif %}>{{ _('All transfers') }}</option>
+                                <option value="unverified" {% if filter_verified == 'unverified' %}selected{% endif %}>{{ _('Unverified only') }}</option>
+                                <option value="verified" {% if filter_verified == 'verified' %}selected{% endif %}>{{ _('Verified only') }}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-control">
+                            <label for="filter_cashier" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cashier') }}</span></label>
+                            <select id="filter_cashier" name="filter_cashier" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                <option value="">{{ _('All cashiers') }}</option>
+                                {% for cashier in cashier_options %}
+                                <option value="{{ cashier.id }}" {% if filter_cashier == cashier.id %}selected{% endif %}>{{ cashier.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-control">
+                            <label for="sort_option" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Sort') }}</span></label>
+                            <select id="sort_option" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                <option value="time|desc" {% if sort_option == 'time|desc' %}selected{% endif %}>{{ _('Time (newest first)') }}</option>
+                                <option value="time|asc" {% if sort_option == 'time|asc' %}selected{% endif %}>{{ _('Time (oldest first)') }}</option>
+                                <option value="amount|desc" {% if sort_option == 'amount|desc' %}selected{% endif %}>{{ _('Amount (high to low)') }}</option>
+                                <option value="amount|asc" {% if sort_option == 'amount|asc' %}selected{% endif %}>{{ _('Amount (low to high)') }}</option>
+                                <option value="business|asc" {% if sort_option == 'business|asc' %}selected{% endif %}>{{ _('Business (A-Z)') }}</option>
+                                <option value="business|desc" {% if sort_option == 'business|desc' %}selected{% endif %}>{{ _('Business (Z-A)') }}</option>
+                                <option value="business,time|asc" {% if sort_option == 'business,time|asc' %}selected{% endif %}>{{ _('Business, time (A-Z)') }}</option>
+                                <option value="business,time|desc" {% if sort_option == 'business,time|desc' %}selected{% endif %}>{{ _('Business, time (Z-A)') }}</option>
+                            </select>
+                            <input type="hidden" id="sort_by" name="sort_by" value="{{ sort_by }}" />
+                            <input type="hidden" id="sort_order" name="sort_order" value="{{ sort_order }}" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-control">
+                            <label for="page_size" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Per page') }}</span></label>
+                            <select id="page_size" name="page_size" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
+                                <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
+                                <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+                            </select>
+                        </div>
+                        <div class="form-control justify-end">
+                            <label class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Actions') }}</span></label>
+                            <button type="submit" class="btn btn-sm btn-primary transition-all hover:scale-[1.02] active:scale-[0.98]">{{ _('Refresh') }}</button>
+                        </div>
+                    </div>
+                </div>
+            </details>
+        </form>
+    </div>
+
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-hidden">
+        <div class="px-4 py-3 bg-base-200/40 border-b border-base-300 flex flex-wrap items-center justify-between gap-3">
+            <div class="text-sm font-medium text-base-content">
+                {{ from_date.strftime('%b %d, %Y') }} → {{ to_date.strftime('%b %d, %Y') }}
+            </div>
+            <div class="text-right">
+                <div class="text-xs text-base-content/60">{{ _('Filtered transfers') }}</div>
+                <div class="text-sm font-bold font-mono">{{ transfer_items_total_count }}</div>
+            </div>
+            <div class="text-right">
+                <div class="text-xs text-base-content/60">{{ _('Filtered total amount') }}</div>
+                <div class="text-sm font-bold font-mono">Gs {{ filtered_total_amount | format_currency_py }}</div>
+            </div>
+        </div>
+
+        {% if visible_count > 0 %}
+        <div class="lg:hidden px-4 py-4 space-y-3">
+            {% for item in all_transfer_items %}
+            {% set row_index = loop.index + (current_page - 1) * page_size %}
+            <div class="border border-base-300 rounded-lg p-3 bg-base-100">
+                <div class="mb-2 flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-base-content bg-base-200 rounded-full flex-shrink-0">{{ row_index }}</span>
+                    <a href="/sessions/{{ item.session_id }}" class="badge badge-outline badge-sm font-mono text-primary">#{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}</a>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-1">{{ item.business_name }}</p>
+                <p class="text-sm font-semibold truncate mb-1">{{ item.description }}</p>
+                <div class="flex items-center justify-between text-xs text-base-content/70 mt-2">
+                    <span>{{ item.cashier_name }}</span>
+                    <span class="font-mono">{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') if item.created_at else '—' }}</span>
+                </div>
+                <div class="text-right mt-2">
+                    <span class="font-mono font-bold">Gs {{ item.amount | format_currency_py }}</span>
+                </div>
+                <div class="mt-2 flex items-center gap-2 pt-2 border-t border-base-300">
+                    <input
+                        type="checkbox"
+                        class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                        data-transfer-id="{{ item.id }}"
+                        {% if item.is_verified %}checked{% endif %}
+                        aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                    />
+                    <span class="text-xs {% if item.is_verified %}text-success{% else %}text-warning{% endif %}">
+                        {% if item.is_verified %}✓ {{ _('Verified') }}{% else %}⚠ {{ _('Pending verification') }}{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="hidden lg:block overflow-x-auto">
+            <table class="table table-sm w-full">
+                <thead>
+                    <tr class="bg-base-200/50">
+                        <th class="text-xs font-bold uppercase tracking-wider text-center">#</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('Session') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider">{{ _('Business') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider">{{ _('Cashier') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider">{{ _('Description') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Amount') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Time') }}</th>
+                        <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('Verified') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in all_transfer_items %}
+                    {% set row_index = loop.index + (current_page - 1) * page_size %}
+                    <tr>
+                        <td class="text-center text-xs font-mono text-base-content/60">{{ row_index }}</td>
+                        <td class="text-center">
+                            <a href="/sessions/{{ item.session_id }}" class="badge badge-outline badge-sm font-mono text-primary">#{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}</a>
+                        </td>
+                        <td class="text-sm font-medium">{{ item.business_name }}</td>
+                        <td class="text-sm">{{ item.cashier_name }}</td>
+                        <td class="text-sm">{{ item.description | truncate(60) }}</td>
+                        <td class="text-right font-mono font-semibold">Gs {{ item.amount | format_currency_py }}</td>
+                        <td class="text-right font-mono text-xs text-base-content/70">{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') if item.created_at else '—' }}</td>
+                        <td class="text-center">
+                            <input
+                                type="checkbox"
+                                class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                                data-transfer-id="{{ item.id }}"
+                                {% if item.is_verified %}checked{% endif %}
+                                aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                            />
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-base-200/70 border-t border-base-300 px-4 py-4 flex items-center justify-between gap-3">
+            <div class="text-xs text-base-content/70">
+                {{ start_index }}-{{ [start_index + page_size - 1, transfer_items_total_count] | min }} {{ _('of') }} {{ transfer_items_total_count }} {{ _('transfers') }}
+            </div>
+            <div class="text-xs font-mono">
+                {{ _('Page total') }}: Gs {{ page_total_amount | format_currency_py }}
+            </div>
+        </div>
+
+        <div class="bg-base-100 border-t border-base-300 px-4 py-3 flex items-center justify-end gap-2">
+            {% if current_page > 1 %}
+            <a class="btn btn-sm btn-outline" href="?{{ base_query }}&page=1">{{ _('First') }}</a>
+            <a class="btn btn-sm btn-outline" href="?{{ base_query }}&page={{ current_page - 1 }}">{{ _('Previous') }}</a>
+            {% else %}
+            <button class="btn btn-sm btn-outline btn-disabled" disabled>{{ _('First') }}</button>
+            <button class="btn btn-sm btn-outline btn-disabled" disabled>{{ _('Previous') }}</button>
+            {% endif %}
+
+            <span class="px-2 text-xs font-semibold">{{ current_page }} / {{ total_pages }}</span>
+
+            {% if current_page < total_pages %}
+            <a class="btn btn-sm btn-outline" href="?{{ base_query }}&page={{ current_page + 1 }}">{{ _('Next') }}</a>
+            <a class="btn btn-sm btn-outline" href="?{{ base_query }}&page={{ total_pages }}">{{ _('Last') }}</a>
+            {% else %}
+            <button class="btn btn-sm btn-outline btn-disabled" disabled>{{ _('Next') }}</button>
+            <button class="btn btn-sm btn-outline btn-disabled" disabled>{{ _('Last') }}</button>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="px-4 py-12 text-center">
+            <p class="text-sm text-base-content/60 font-medium">{{ _('No transfers found for current filters and range') }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(function() {
+    function pad2(value) {
+        return (value < 10 ? '0' : '') + value;
+    }
+
+    function formatLocalDate(value) {
+        return value.getFullYear() + '-' + pad2(value.getMonth() + 1) + '-' + pad2(value.getDate());
+    }
+
+    function resolveRangeForPreset(preset) {
+        var today = new Date();
+        var from = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        var to = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        if (preset === 'yesterday') {
+            from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+            to = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+        } else if (preset === 'last_2_days') {
+            from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+        } else if (preset === 'last_3_days') {
+            from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2);
+        } else if (preset === 'last_month') {
+            from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29);
+        } else if (preset === 'last_7_days') {
+            from = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+        }
+
+        return {
+            from: formatLocalDate(from),
+            to: formatLocalDate(to),
+        };
+    }
+
+    function setActivePresetButton() {
+        var presetInputEl = document.getElementById('preset-input');
+        var selectedPreset = presetInputEl ? presetInputEl.value : '';
+        var buttons = document.querySelectorAll('.preset-btn');
+        for (var i = 0; i < buttons.length; i += 1) {
+            var btn = buttons[i];
+            btn.classList.remove('btn-primary');
+            if (!btn.classList.contains('btn-outline')) {
+                btn.classList.add('btn-outline');
+            }
+            if (btn.getAttribute('data-preset') === selectedPreset) {
+                btn.classList.remove('btn-outline');
+                btn.classList.add('btn-primary');
+            }
+        }
+    }
+
+    function parseSortOption(value) {
+        if (!value) {
+            return { sortBy: 'time', sortOrder: 'desc' };
+        }
+        var parts = value.split('|');
+        return {
+            sortBy: parts[0] || 'time',
+            sortOrder: parts[1] || 'desc'
+        };
+    }
+
+    function autoSubmitFilters() {
+        var form = document.getElementById('range-filter-form');
+        if (!form) return;
+
+        var pageInput = form.querySelector('input[name="page"]');
+        if (pageInput) {
+            pageInput.value = '1';
+        }
+        form.submit();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('range-filter-form');
+        var fromDateInput = document.getElementById('from_date');
+        var toDateInput = document.getElementById('to_date');
+        var presetInput = document.getElementById('preset-input');
+        var presetButtons = document.querySelectorAll('.preset-btn');
+        var sortOption = document.getElementById('sort_option');
+        var sortByInput = document.getElementById('sort_by');
+        var sortOrderInput = document.getElementById('sort_order');
+        var businessInput = document.getElementById('business_id');
+        var verifiedInput = document.getElementById('filter_verified');
+        var cashierInput = document.getElementById('filter_cashier');
+        var pageSizeInput = document.getElementById('page_size');
+
+        setActivePresetButton();
+
+        if (sortOption && sortByInput && sortOrderInput) {
+            sortOption.addEventListener('change', function() {
+                var selected = parseSortOption(sortOption.value);
+                sortByInput.value = selected.sortBy;
+                sortOrderInput.value = selected.sortOrder;
+                autoSubmitFilters();
+            });
+        }
+
+        if (businessInput) businessInput.addEventListener('change', autoSubmitFilters);
+        if (verifiedInput) verifiedInput.addEventListener('change', autoSubmitFilters);
+        if (cashierInput) cashierInput.addEventListener('change', autoSubmitFilters);
+        if (pageSizeInput) pageSizeInput.addEventListener('change', autoSubmitFilters);
+
+        for (var i = 0; i < presetButtons.length; i += 1) {
+            presetButtons[i].addEventListener('click', function() {
+                var preset = this.getAttribute('data-preset');
+                var range = resolveRangeForPreset(preset);
+
+                if (fromDateInput) fromDateInput.value = range.from;
+                if (toDateInput) toDateInput.value = range.to;
+                if (presetInput) presetInput.value = preset;
+
+                autoSubmitFilters();
+            });
+        }
+
+        if (fromDateInput) {
+            fromDateInput.addEventListener('change', function() {
+                if (presetInput) presetInput.value = 'custom';
+                autoSubmitFilters();
+            });
+        }
+        if (toDateInput) {
+            toDateInput.addEventListener('change', function() {
+                if (presetInput) presetInput.value = 'custom';
+                autoSubmitFilters();
+            });
+        }
+
+        document.addEventListener('change', function(event) {
+            var target = event.target;
+            if (!target || !target.classList || !target.classList.contains('transfer-verify-checkbox')) {
+                return;
+            }
+
+            var transferId = target.getAttribute('data-transfer-id');
+            if (!transferId) {
+                return;
+            }
+
+            var desiredChecked = !!target.checked;
+            var previousChecked = !desiredChecked;
+            var endpoint = desiredChecked
+                ? '/admin/transfer-items/' + transferId + '/verify'
+                : '/admin/transfer-items/' + transferId + '/unverify';
+
+            target.disabled = true;
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Verification request failed');
+                    }
+                    window.location.reload();
+                })
+                .catch(function(error) {
+                    target.checked = previousChecked;
+                    target.disabled = false;
+                    console.error(error);
+                });
+        });
+    });
+})();
+</script>
+{% endblock %}

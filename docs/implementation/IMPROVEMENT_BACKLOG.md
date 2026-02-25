@@ -271,6 +271,114 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - [x] Headers are clickable and sort by business, time, amount
   - [x] Row order number is visible and consistent per page
 
+### CP-REPORTS-06 — Bank transfers date-range report (ASAP)
+
+* **Severity:** High
+* **Priority:** ASAP
+* **Problem:** Current reconciliation view is day-based; admins need a clear way to review all bank transfers across a date range.
+* **Evidence:** `templates/admin/reconciliation_compare.html`
+* **User Story:** Admin wants to analyze and reconcile transfer movements for multiple days in one report, with fast navigation and clear totals.
+* **Acceptance impact:** AC-06 (reporting clarity/accuracy)
+* **Status:** 🚧 In progress (2026-02-22)
+* **Scope correction:** No bank account filter (field does not exist in current data model).
+* **Functional Proposal:**
+  - New report view (recommended): `Bank Transfers by Date Range`
+  - Filters:
+    - Date range: `from` + `to`
+    - Business (optional)
+    - Cashier (optional)
+    - Verification status (all / verified / unverified)
+  - Presets (quick actions):
+    - Today
+    - Yesterday
+    - Last 2 days
+    - Last 3 days
+    - Last 7 days
+    - Last month
+  - Pagination: server-side pagination with page size selector (20 / 50)
+  - Sorting: by date/time, amount, business, cashier
+  - UX: desktop table + mobile cards, sticky summary with transfer count + amount total for current filters
+* **Phase Plan:**
+  - **Phase 1 (ASAP):** date-range report with filters, presets, sorting, and pagination
+  - **Phase 2:** export capability aligned with cash sessions UX (CSV and Excel)
+* **Export Requirements (Phase 2):**
+  - Export current filtered result set
+  - Formats:
+    - CSV (required)
+    - Excel `.xlsx` (desired; implement if dependency/risk is acceptable)
+  - Keep export behavior consistent with main cash sessions page conventions
+* **Implementation Steps:**
+  - Add route/service for date-range transfer query (with validated range bounds)
+  - Add report template and filter/preset controls
+  - Implement server-side pagination + sorting query params
+  - Add totals/subtotals for active filtered dataset
+  - Add export endpoints/actions for CSV and (if approved) Excel
+  - Add tests for filters, presets, pagination, sorting, and export outputs
+* **Dependencies:**
+  - Reuse transfer verification fields from CP-REPORTS-04
+  - Reuse pagination/filter UX patterns from CP-REPORTS-05 and cash sessions export flow
+* **Acceptance Criteria:**
+  - [ ] Admin can view transfers across a custom date range in one report
+  - [ ] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [ ] Pagination works with at least 20 and 50 rows per page
+  - [ ] Business/cashier/verification filters work together correctly
+  - [ ] No bank account filter is present
+  - [ ] CSV export works for current filtered result set
+  - [ ] Excel export is available or explicitly deferred with documented rationale
+
+### CP-REPORTS-07 — Expenses date-range report (ASAP)
+
+* **Severity:** High
+* **Priority:** ASAP
+* **Problem:** Current expense visibility is fragmented/day-scoped; admins need one clear report to review all expenses across a date range.
+* **Evidence:** Existing reconciliation/reporting flows are optimized per day, not multi-day expense analysis.
+* **User Story:** Admin wants to review and audit expense movements for multiple days in a single view, with fast filters and clear totals.
+* **Acceptance impact:** AC-06 (reporting clarity/accuracy)
+* **Status:** ⏳ Not started
+* **Functional Proposal:**
+  - New report view (recommended): `Expenses by Date Range`
+  - Filters:
+    - Date range: `from` + `to`
+    - Business (optional)
+    - Cashier/User (optional, if expense ownership exists)
+    - Expense category/type (if field exists)
+  - Presets (quick actions):
+    - Today
+    - Yesterday
+    - Last 2 days
+    - Last 3 days
+    - Last 7 days
+    - Last month
+  - Pagination: server-side pagination with page size selector (20 / 50)
+  - Sorting: by date/time, amount, business, user, category
+  - UX: desktop table + mobile cards, sticky summary with expense count + total amount for current filters
+* **Phase Plan:**
+  - **Phase 1 (ASAP):** date-range expense report with filters, presets, sorting, and pagination
+  - **Phase 2:** export capability aligned with cash sessions UX (CSV and Excel)
+* **Export Requirements (Phase 2):**
+  - Export current filtered result set
+  - Formats:
+    - CSV (required)
+    - Excel `.xlsx` (desired; implement if dependency/risk is acceptable)
+  - Keep export behavior consistent with main cash sessions page conventions
+* **Implementation Steps:**
+  - Add route/service for date-range expense query (with validated range bounds)
+  - Add report template and filter/preset controls
+  - Implement server-side pagination + sorting query params
+  - Add totals/subtotals for active filtered dataset
+  - Add export endpoints/actions for CSV and (if approved) Excel
+  - Add tests for filters, presets, pagination, sorting, and export outputs
+* **Dependencies:**
+  - Reuse pagination/filter UX patterns from CP-REPORTS-05 and cash sessions export flow
+  - Confirm canonical expense source model/table for query consistency
+* **Acceptance Criteria:**
+  - [ ] Admin can view expenses across a custom date range in one report
+  - [ ] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [ ] Pagination works with at least 20 and 50 rows per page
+  - [ ] Business/user/category filters work together correctly when fields exist
+  - [ ] CSV export works for current filtered result set
+  - [ ] Excel export is available or explicitly deferred with documented rationale
+
 ---
 
 ## 🟠 EPIC 4 — Data Model Alignment (DECISION REQUIRED)
