@@ -279,13 +279,14 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `templates/admin/reconciliation_compare.html`
 * **User Story:** Admin wants to analyze and reconcile transfer movements for multiple days in one report, with fast navigation and clear totals.
 * **Acceptance impact:** AC-06 (reporting clarity/accuracy)
-* **Status:** 🚧 In progress (2026-02-22)
+* **Status:** ✅ Completed (2026-02-26) — Phase 1 delivered (date-range report, presets, filters, sorting, pagination)
 * **Scope correction:** No bank account filter (field does not exist in current data model).
+* **Business filter correction:** Must support **multi-selection** of businesses (e.g., 2–3 pharmacies at once), not single-select.
 * **Functional Proposal:**
   - New report view (recommended): `Bank Transfers by Date Range`
   - Filters:
     - Date range: `from` + `to`
-    - Business (optional)
+    - Businesses (optional, multi-select)
     - Cashier (optional)
     - Verification status (all / verified / unverified)
   - Presets (quick actions):
@@ -295,6 +296,9 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
     - Last 3 days
     - Last 7 days
     - Last month
+  - Quick filters behavior:
+    - Preset click must update `from` + `to` and execute search immediately
+    - Keep selected businesses/cashier/verification filters when changing preset
   - Pagination: server-side pagination with page size selector (20 / 50)
   - Sorting: by date/time, amount, business, cashier
   - UX: desktop table + mobile cards, sticky summary with transfer count + amount total for current filters
@@ -309,7 +313,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - Keep export behavior consistent with main cash sessions page conventions
 * **Implementation Steps:**
   - Add route/service for date-range transfer query (with validated range bounds)
-  - Add report template and filter/preset controls
+  - Add report template and filter/preset controls (including multi-business selector)
   - Implement server-side pagination + sorting query params
   - Add totals/subtotals for active filtered dataset
   - Add export endpoints/actions for CSV and (if approved) Excel
@@ -317,14 +321,20 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Dependencies:**
   - Reuse transfer verification fields from CP-REPORTS-04
   - Reuse pagination/filter UX patterns from CP-REPORTS-05 and cash sessions export flow
+* **Docs to read before implementation (required):**
+  - `docs/sdlc/IMPLEMENTATION_PLAN.md`
+  - `docs/architecture/DATA_MODEL.md`
+  - `docs/reference/API.md`
+  - `docs/reference/features/DAILY_RECONCILIATION.md`
+  - `docs/implementation/CP-REPORTS-05-TRANSFER-UX.md`
 * **Acceptance Criteria:**
-  - [ ] Admin can view transfers across a custom date range in one report
-  - [ ] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
-  - [ ] Pagination works with at least 20 and 50 rows per page
-  - [ ] Business/cashier/verification filters work together correctly
-  - [ ] No bank account filter is present
-  - [ ] CSV export works for current filtered result set
-  - [ ] Excel export is available or explicitly deferred with documented rationale
+  - [x] Admin can view transfers across a custom date range in one report
+  - [x] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [x] Pagination works with at least 20 and 50 rows per page
+  - [x] Multi-business/cashier/verification filters work together correctly
+  - [x] No bank account filter is present
+  - [ ] (Phase 2) CSV export works for current filtered result set
+  - [ ] (Phase 2) Excel export is available or explicitly deferred with documented rationale
 
 ### CP-REPORTS-07 — Expenses date-range report (ASAP)
 
@@ -339,7 +349,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - New report view (recommended): `Expenses by Date Range`
   - Filters:
     - Date range: `from` + `to`
-    - Business (optional)
+    - Businesses (optional, multi-select)
     - Cashier/User (optional, if expense ownership exists)
     - Expense category/type (if field exists)
   - Presets (quick actions):
@@ -349,6 +359,9 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
     - Last 3 days
     - Last 7 days
     - Last month
+  - Quick filters behavior:
+    - Preset click must update `from` + `to` and execute search immediately
+    - Keep selected businesses/user/category filters when changing preset
   - Pagination: server-side pagination with page size selector (20 / 50)
   - Sorting: by date/time, amount, business, user, category
   - UX: desktop table + mobile cards, sticky summary with expense count + total amount for current filters
@@ -363,7 +376,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - Keep export behavior consistent with main cash sessions page conventions
 * **Implementation Steps:**
   - Add route/service for date-range expense query (with validated range bounds)
-  - Add report template and filter/preset controls
+  - Add report template and filter/preset controls (including multi-business selector)
   - Implement server-side pagination + sorting query params
   - Add totals/subtotals for active filtered dataset
   - Add export endpoints/actions for CSV and (if approved) Excel
@@ -371,11 +384,80 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Dependencies:**
   - Reuse pagination/filter UX patterns from CP-REPORTS-05 and cash sessions export flow
   - Confirm canonical expense source model/table for query consistency
+* **Docs to read before implementation (required):**
+  - `docs/sdlc/IMPLEMENTATION_PLAN.md`
+  - `docs/architecture/DATA_MODEL.md`
+  - `docs/reference/API.md`
+  - `docs/reference/features/DAILY_RECONCILIATION.md`
+  - `docs/implementation/CP-REPORTS-05-TRANSFER-UX.md`
 * **Acceptance Criteria:**
   - [ ] Admin can view expenses across a custom date range in one report
   - [ ] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
   - [ ] Pagination works with at least 20 and 50 rows per page
-  - [ ] Business/user/category filters work together correctly when fields exist
+  - [ ] Multi-business/user/category filters work together correctly when fields exist
+  - [ ] CSV export works for current filtered result set
+  - [ ] Excel export is available or explicitly deferred with documented rationale
+
+### CP-REPORTS-08 — Envelope (sobres) date-range report (ASAP)
+
+* **Severity:** High
+* **Priority:** ASAP
+* **Problem:** Envelope visibility is session-by-session; admins need a dedicated report to find envelope amounts across a period and across selected pharmacies.
+* **Evidence:** `src/cashpilot/models/cash_session.py` (`envelope_amount`), existing day-scoped reconciliation/reporting flows
+* **User Story:** Admin needs to search envelopes for a specific period and optionally only 2–3 pharmacies at once, with quick filters for rapid daily operations.
+* **Acceptance impact:** AC-06 (reporting clarity/accuracy)
+* **Status:** ⏳ Not started
+* **Functional Proposal:**
+  - New report view (recommended): `Envelopes by Date Range`
+  - Filters:
+    - Date range: `from` + `to`
+    - Pharmacies/Businesses (optional, multi-select)
+    - Cashier (optional)
+    - Amount state (all / with envelope > 0 / zero)
+  - Presets (quick actions):
+    - Today
+    - Yesterday
+    - Last 2 days
+    - Last 3 days
+    - Last 7 days
+    - Last month
+  - Quick filters behavior:
+    - Preset click must update `from` + `to` and execute search immediately
+    - Keep selected pharmacies/cashier/amount-state filters when changing preset
+  - Pagination: server-side pagination with page size selector (20 / 50)
+  - Sorting: by date/time, envelope amount, business, cashier
+  - UX: desktop table + mobile cards, sticky summary with session count + envelope amount total for current filters
+* **Phase Plan:**
+  - **Phase 1 (ASAP):** date-range envelope report with filters, presets, sorting, pagination, and totals
+  - **Phase 2:** export capability aligned with cash sessions UX (CSV and Excel)
+* **Export Requirements (Phase 2):**
+  - Export current filtered result set
+  - Formats:
+    - CSV (required)
+    - Excel `.xlsx` (desired; implement if dependency/risk is acceptable)
+  - Keep export behavior consistent with main cash sessions page conventions
+* **Implementation Steps:**
+  - Add route/service for date-range envelope query (with validated range bounds)
+  - Add report template and filter/preset controls (including multi-business selector)
+  - Implement server-side pagination + sorting query params
+  - Add totals/subtotals for active filtered dataset
+  - Add export endpoints/actions for CSV and (if approved) Excel
+  - Add tests for filters, presets, pagination, sorting, and export outputs
+* **Dependencies:**
+  - Reuse pagination/filter UX patterns from CP-REPORTS-05 and cash sessions export flow
+  - Reuse `CashSession.envelope_amount` as canonical source
+* **Docs to read before implementation (required):**
+  - `docs/sdlc/IMPLEMENTATION_PLAN.md`
+  - `docs/architecture/DATA_MODEL.md`
+  - `docs/reference/API.md`
+  - `docs/reference/features/DAILY_RECONCILIATION.md`
+  - `docs/product/ACCEPTANCE_CRITERIA.md`
+* **Acceptance Criteria:**
+  - [ ] Admin can view envelope amounts across a custom date range in one report
+  - [ ] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [ ] Pagination works with at least 20 and 50 rows per page
+  - [ ] Multi-business/cashier/amount-state filters work together correctly
+  - [ ] Summary shows total sessions and total envelope amount for current filters
   - [ ] CSV export works for current filtered result set
   - [ ] Excel export is available or explicitly deferred with documented rationale
 

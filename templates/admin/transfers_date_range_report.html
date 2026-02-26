@@ -29,12 +29,17 @@
             <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Bank Transfers by Date Range') }}</h1>
             <p class="text-xs md:text-sm text-base-content/60">{{ _('Review transfers across multiple days with filters and pagination') }}</p>
         </div>
-        <a href="/admin/reconciliation/compare?date={{ to_date.isoformat() }}" class="btn btn-outline btn-sm gap-2" data-back>
+        <button
+            type="button"
+            class="btn btn-outline btn-sm gap-2"
+            data-back
+            onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href='/admin/reconciliation/compare?date={{ to_date.isoformat() }}'; }"
+        >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
             {{ _('Back to Reconciliation') }}
-        </a>
+        </button>
     </div>
 
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
@@ -129,7 +134,7 @@
                             <select id="filter_cashier" name="filter_cashier" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
                                 <option value="">{{ _('All cashiers') }}</option>
                                 {% for cashier in cashier_options %}
-                                <option value="{{ cashier.id }}" {% if filter_cashier == cashier.id %}selected{% endif %}>{{ cashier.name }}</option>
+                                <option value="{{ cashier.id }}" {% if filter_cashier == cashier.id|string %}selected{% endif %}>{{ cashier.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -461,6 +466,7 @@
                     target.checked = previousChecked;
                     target.disabled = false;
                     console.error(error);
+                    alert("{{ _('Failed to update verification status. Please try again.') }}");
                 });
         });
     });
