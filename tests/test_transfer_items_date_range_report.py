@@ -38,8 +38,8 @@ class TestTransferItemsDateRangeReport:
         cashier = await factories.user(role=UserRole.CASHIER, email="cashier-range@test.com")
         await factories.user_business(business=business, user=cashier)
 
-        in_range_date = date(2026, 2, 20)
-        out_of_range_date = date(2026, 2, 15)
+        in_range_date = date.today() - timedelta(days=2)
+        out_of_range_date = date.today() - timedelta(days=7)
 
         in_range_session = await factories.cash_session(
             business=business,
@@ -59,7 +59,7 @@ class TestTransferItemsDateRangeReport:
                 session_id=in_range_session.id,
                 description="Included transfer",
                 amount=Decimal("1000.00"),
-                created_at=datetime(2026, 2, 20, 10, 0, 0),
+                created_at=datetime.combine(in_range_date, datetime.min.time()),
             )
         )
         db_session.add(
@@ -67,15 +67,15 @@ class TestTransferItemsDateRangeReport:
                 session_id=out_range_session.id,
                 description="Excluded transfer",
                 amount=Decimal("2000.00"),
-                created_at=datetime(2026, 2, 15, 10, 0, 0),
+                created_at=datetime.combine(out_of_range_date, datetime.min.time()),
             )
         )
         await db_session.commit()
 
         items, _ = await _fetch_transfer_items_for_date_range(
             db_session,
-            from_date=date(2026, 2, 18),
-            to_date=date(2026, 2, 22),
+            from_date=in_range_date - timedelta(days=1),
+            to_date=in_range_date + timedelta(days=1),
         )
 
         assert len(items) == 1
@@ -94,7 +94,7 @@ class TestTransferItemsDateRangeReport:
         await factories.user_business(business=business_a, user=cashier)
         await factories.user_business(business=business_b, user=cashier)
 
-        session_date = date(2026, 2, 20)
+        session_date = date.today() - timedelta(days=1)
         session_a = await factories.cash_session(
             business=business_a,
             cashier=cashier,
@@ -113,7 +113,7 @@ class TestTransferItemsDateRangeReport:
                 session_id=session_a.id,
                 description="Transfer A",
                 amount=Decimal("1000.00"),
-                created_at=datetime(2026, 2, 20, 11, 0, 0),
+                created_at=datetime.combine(session_date, datetime.min.time()),
             )
         )
         db_session.add(
@@ -121,7 +121,7 @@ class TestTransferItemsDateRangeReport:
                 session_id=session_b.id,
                 description="Transfer B",
                 amount=Decimal("2000.00"),
-                created_at=datetime(2026, 2, 20, 12, 0, 0),
+                created_at=datetime.combine(session_date, datetime.min.time()) + timedelta(hours=1),
             )
         )
         await db_session.commit()
@@ -150,7 +150,7 @@ class TestTransferItemsDateRangeReport:
         )
         await factories.user_business(business=business, user=cashier)
 
-        session_date = date(2026, 2, 20)
+        session_date = date.today() - timedelta(days=1)
         session = await factories.cash_session(
             business=business,
             cashier=cashier,
@@ -163,7 +163,7 @@ class TestTransferItemsDateRangeReport:
                 session_id=session.id,
                 description="Date range transfer row",
                 amount=Decimal("12345.00"),
-                created_at=datetime(2026, 2, 20, 13, 45, 0),
+                created_at=datetime.combine(session_date, datetime.min.time()) + timedelta(hours=13, minutes=45),
             )
         )
         await db_session.commit()

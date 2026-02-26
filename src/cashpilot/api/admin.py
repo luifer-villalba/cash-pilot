@@ -1164,7 +1164,7 @@ async def transfer_date_range_report(
     ),
     business_id: str | None = Query(None, description="Filter by business ID"),
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
-    page_size: int = Query(20, ge=10, le=100, description="Items per page"),
+    page_size: int = Query(20, ge=10, le=50, description="Items per page"),
     sort_by: str = Query("time", description="Sort fields: business|time|amount"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     filter_verified: str = Query(
@@ -1191,22 +1191,50 @@ async def transfer_date_range_report(
 
     all_businesses = await get_active_businesses(db)
 
-    all_transfer_items, business_names_by_id = await _fetch_transfer_items_for_date_range(
-        db,
-        from_date=selected_from_date,
-        to_date=selected_to_date,
-        selected_business_id=selected_business_id,
-    )
+    conditions = [
+        CashSession.session_date >= selected_from_date,
+        CashSession.session_date <= selected_to_date,
+        ~TransferItem.is_deleted,
+        ~CashSession.is_deleted,
+        Business.is_active,
+    ]
 
-    filtered_items = await _apply_transfer_filters(
-        all_transfer_items,
-        filter_business=str(selected_business_id) if selected_business_id else None,
-        filter_verified=filter_verified,
-        filter_cashier=filter_cashier,
-    )
+    if selected_business_id is not None:
+        conditions.append(CashSession.business_id == selected_business_id)
 
-    filtered_total_count = len(filtered_items)
-    filtered_total_amount = sum((item.get("amount") or Decimal("0")) for item in filtered_items)
+    if filter_verified == "verified":
+        conditions.append(TransferItem.is_verified)
+    elif filter_verified == "unverified":
+        conditions.append(~TransferItem.is_verified)
+
+    if filter_cashier and filter_cashier.strip():
+        try:
+            cashier_uuid = UUID(filter_cashier)
+            conditions.append(User.id == cashier_uuid)
+        except (ValueError, TypeError):
+            filter_cashier = None
+
+    where_clause = and_(*conditions)
+
+    count_stmt = (
+        select(func.count(TransferItem.id))
+        .join(CashSession, TransferItem.session_id == CashSession.id)
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(where_clause)
+    )
+    count_result = await db.execute(count_stmt)
+    filtered_total_count = count_result.scalar() or 0
+
+    total_stmt = (
+        select(func.coalesce(func.sum(TransferItem.amount), Decimal("0.00")))
+        .join(CashSession, TransferItem.session_id == CashSession.id)
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(where_clause)
+    )
+    total_result = await db.execute(total_stmt)
+    filtered_total_amount = total_result.scalar() or Decimal("0.00")
 
     if filtered_total_count == 0:
         total_pages = 0
@@ -1217,28 +1245,116 @@ async def transfer_date_range_report(
         clamped_page = min(page, total_pages)
         start_index = (clamped_page - 1) * page_size + 1
 
-    paginated_items, paginated_total_count = await _apply_transfer_sorting_and_pagination(
-        filtered_items,
-        business_names_by_id=business_names_by_id,
-        sort_by=sort_by,
-        sort_order=sort_order,
-        page=clamped_page,
-        page_size=page_size,
-    )
+    sort_fields = [field.strip() for field in sort_by.split(",") if field.strip()]
+    if not sort_fields:
+        sort_fields = ["time"]
 
-    filtered_total_count = paginated_total_count
+    sort_desc = sort_order.lower() == "desc"
+    order_clauses = []
+    for field in sort_fields:
+        if field == "business":
+            order_clauses.append(Business.name.desc() if sort_desc else Business.name.asc())
+        elif field == "amount":
+            order_clauses.append(
+                TransferItem.amount.desc() if sort_desc else TransferItem.amount.asc()
+            )
+        elif field == "time":
+            order_clauses.append(
+                TransferItem.created_at.desc() if sort_desc else TransferItem.created_at.asc()
+            )
+
+    if not order_clauses:
+        order_clauses.append(
+            TransferItem.created_at.desc() if sort_desc else TransferItem.created_at.asc()
+        )
+    order_clauses.append(TransferItem.id.desc() if sort_desc else TransferItem.id.asc())
+
+    offset = (clamped_page - 1) * page_size
+    data_stmt = (
+        select(
+            TransferItem.id,
+            TransferItem.session_id,
+            TransferItem.description,
+            TransferItem.amount,
+            TransferItem.created_at,
+            TransferItem.is_verified,
+            User.id.label("cashier_id"),
+            User.first_name,
+            User.last_name,
+            CashSession.session_number,
+            CashSession.business_id,
+            CashSession.session_date,
+            Business.name.label("business_name"),
+        )
+        .join(CashSession, TransferItem.session_id == CashSession.id)
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(where_clause)
+        .order_by(*order_clauses)
+        .offset(offset)
+        .limit(page_size)
+    )
+    data_result = await db.execute(data_stmt)
+    paginated_rows = data_result.all()
+
+    paginated_items = []
+    business_names_by_id: dict[str, str] = {}
+    for row in paginated_rows:
+        cashier_name = row.first_name or ""
+        if row.last_name:
+            cashier_name += f" {row.last_name[0]}."
+        cashier_name = cashier_name.strip()
+
+        business_id_str = str(row.business_id)
+        business_names_by_id[business_id_str] = row.business_name
+
+        paginated_items.append(
+            {
+                "id": row.id,
+                "session_id": row.session_id,
+                "session_number": row.session_number,
+                "description": row.description,
+                "amount": row.amount,
+                "created_at": row.created_at,
+                "cashier_id": row.cashier_id,
+                "cashier_name": cashier_name,
+                "is_verified": row.is_verified,
+                "business_id": business_id_str,
+                "business_name": row.business_name,
+                "session_date": row.session_date,
+            }
+        )
 
     page_total_amount = sum((item.get("amount") or Decimal("0")) for item in paginated_items)
 
+    option_conditions = [
+        CashSession.session_date >= selected_from_date,
+        CashSession.session_date <= selected_to_date,
+        ~TransferItem.is_deleted,
+        ~CashSession.is_deleted,
+        Business.is_active,
+    ]
+    if selected_business_id is not None:
+        option_conditions.append(CashSession.business_id == selected_business_id)
+
+    cashier_options_stmt = (
+        select(User.id, User.first_name, User.last_name)
+        .join(CashSession, CashSession.cashier_id == User.id)
+        .join(TransferItem, TransferItem.session_id == CashSession.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(and_(*option_conditions))
+        .distinct()
+        .order_by(User.first_name, User.last_name)
+    )
+    cashier_options_result = await db.execute(cashier_options_stmt)
+
     cashier_options_map: dict[str, str] = {}
-    for item in all_transfer_items:
-        cashier_id = item.get("cashier_id")
-        cashier_name = item.get("cashier_name")
-        if cashier_id is None:
-            continue
-        cashier_id_str = str(cashier_id)
-        if cashier_id_str not in cashier_options_map:
-            cashier_options_map[cashier_id_str] = cashier_name
+    for cashier_id, first_name, last_name in cashier_options_result.all():
+        cashier_name = first_name or ""
+        if last_name:
+            cashier_name += f" {last_name[0]}."
+        cashier_name = cashier_name.strip()
+        cashier_options_map[str(cashier_id)] = cashier_name
 
     cashier_options = [
         {"id": cashier_id, "name": cashier_options_map[cashier_id]}
