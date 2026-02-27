@@ -344,7 +344,8 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** Existing reconciliation/reporting flows are optimized per day, not multi-day expense analysis.
 * **User Story:** Admin wants to review and audit expense movements for multiple days in a single view, with fast filters and clear totals.
 * **Acceptance impact:** AC-06 (reporting clarity/accuracy)
-* **Status:** ⏳ Not started
+* **Status:** ✅ Completed (2026-02-27) — Phase 1 delivered (date-range report, presets, filters, sorting, pagination)
+* **Scope correction:** No expense category filter (field does not exist in current `expense_items` model).
 * **Functional Proposal:**
   - New report view (recommended): `Expenses by Date Range`
   - Filters:
@@ -391,10 +392,10 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - `docs/reference/features/DAILY_RECONCILIATION.md`
   - `docs/implementation/CP-REPORTS-05-TRANSFER-UX.md`
 * **Acceptance Criteria:**
-  - [ ] Admin can view expenses across a custom date range in one report
-  - [ ] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
-  - [ ] Pagination works with at least 20 and 50 rows per page
-  - [ ] Multi-business/user/category filters work together correctly when fields exist
+  - [x] Admin can view expenses across a custom date range in one report
+  - [x] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [x] Pagination works with at least 20 and 50 rows per page
+  - [x] Multi-business/user filters work together correctly (category deferred: field does not exist)
   - [ ] CSV export works for current filtered result set
   - [ ] Excel export is available or explicitly deferred with documented rationale
 

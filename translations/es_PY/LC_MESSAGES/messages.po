@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-19 12:37+0000\n"
+"POT-Creation-Date: 2026-02-27 15:02+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -103,6 +103,9 @@ msgstr "Formato de número inválido. Por favor ingresá un monto válido."
 
 msgid "Edit window expired (32 hours passed)"
 msgstr "No podes editar (pasaron más de 32 horas)"
+
+msgid "Operation failed"
+msgstr "Operación fallida"
 
 msgid "Selected business not found."
 msgstr "No se encontró el negocio seleccionado."
@@ -299,6 +302,117 @@ msgstr "Actualizar contraseña"
 msgid "Back to Dashboard"
 msgstr "Volver al Panel"
 
+msgid "Expenses by Date Range"
+msgstr "Gastos por rango de fechas"
+
+msgid "Review expense items across multiple days with filters and pagination"
+msgstr "Revisá gastos en varios días con filtros y paginación"
+
+msgid "Back"
+msgstr "Volver"
+
+msgid "Last 2 days"
+msgstr "Últimos 2 días"
+
+msgid "Last 3 days"
+msgstr "Últimos 3 días"
+
+msgid "Last 7 days"
+msgstr "Últimos 7 días"
+
+msgid "This month"
+msgstr "Este mes"
+
+msgid "Search description…"
+msgstr "Buscar descripción…"
+
+msgid "Apply"
+msgstr "Aplicar"
+
+msgid "From"
+msgstr "Desde"
+
+msgid "To"
+msgstr "Hasta"
+
+msgid "All cashiers"
+msgstr "Todos los cajeros"
+
+msgid "Sort"
+msgstr "Orden"
+
+msgid "Time (newest first)"
+msgstr "Hora (más recientes primero)"
+
+msgid "Time (oldest first)"
+msgstr "Hora (más antiguas primero)"
+
+msgid "Amount (high to low)"
+msgstr "Monto (de mayor a menor)"
+
+msgid "Amount (low to high)"
+msgstr "Monto (de menor a mayor)"
+
+msgid "Business (A-Z)"
+msgstr "Negocio (A-Z)"
+
+msgid "Business (Z-A)"
+msgstr "Negocio (Z-A)"
+
+msgid "Cashier (A-Z)"
+msgstr "Cajero (A-Z)"
+
+msgid "Cashier (Z-A)"
+msgstr "Cajero (Z-A)"
+
+msgid "Per page"
+msgstr "Por página"
+
+msgid "Filtered expenses"
+msgstr "Gastos filtrados"
+
+msgid "Filtered total amount"
+msgstr "Monto total filtrado"
+
+msgid "Session"
+msgstr "Sesión"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Amount"
+msgstr "Monto"
+
+msgid "Time"
+msgstr "Hora"
+
+msgid "of"
+msgstr "de"
+
+msgid "expenses"
+msgstr "gastos"
+
+msgid "Page total"
+msgstr "Total de la página"
+
+msgid "First"
+msgstr "Primera"
+
+msgid "Previous"
+msgstr "Anterior"
+
+msgid "Next"
+msgstr "Siguiente"
+
+msgid "Last"
+msgstr "Última"
+
+msgid "No expenses found for current filters and range"
+msgstr "No se encontraron gastos para los filtros y rango actuales"
+
+msgid "selected"
+msgstr "seleccionado"
+
 msgid "Daily Reconciliation Comparison"
 msgstr "Comparación de Conciliación Diaria"
 
@@ -415,6 +529,48 @@ msgstr "Cargando notas..."
 msgid "Close modal"
 msgstr "Cerrar modal"
 
+msgid "Bank Transfers by Date Range"
+msgstr "Transferencias bancarias por rango de fechas"
+
+msgid "Review transfers across multiple days with filters and pagination"
+msgstr "Revisá transferencias en varios días con filtros y paginación"
+
+msgid "Verification"
+msgstr "Verificación"
+
+msgid "Unverified"
+msgstr "No verificadas"
+
+msgid "Verified"
+msgstr "Verificado"
+
+msgid "Business, time (A-Z)"
+msgstr "Negocio, hora (A-Z)"
+
+msgid "Business, time (Z-A)"
+msgstr "Negocio, hora (Z-A)"
+
+msgid "Filtered transfers"
+msgstr "Transferencias filtradas"
+
+msgid "Mark as unverified"
+msgstr "Marcar como no verificado"
+
+msgid "Mark as verified"
+msgstr "Marcar como verificado"
+
+msgid "Pending verification"
+msgstr "Verificación pendiente"
+
+msgid "transfers"
+msgstr "transferencias"
+
+msgid "No transfers found for current filters and range"
+msgstr "No se encontraron transferencias para los filtros y rango actuales"
+
+msgid "Failed to update verification status. Please try again."
+msgstr "No se pudo actualizar el estado de verificación. Intentá de nuevo."
+
 msgid "User Management - CashPilot"
 msgstr "Gestión de Usuarios - CashPilot"
 
@@ -520,12 +676,6 @@ msgstr "Seleccionar un Negocio"
 msgid "None"
 msgstr "Ninguno"
 
-msgid "of"
-msgstr "de"
-
-msgid "selected"
-msgstr "seleccionado"
-
 msgid "Save"
 msgstr "Guardar"
 
@@ -534,9 +684,6 @@ msgstr "Error al cargar usuarios"
 
 msgid "Reset failed"
 msgstr "Restablecimiento fallido"
-
-msgid "Operation failed"
-msgstr "Operación fallida"
 
 msgid "Password reset successfully"
 msgstr "Contraseña restablecida exitosamente"
@@ -628,6 +775,12 @@ msgstr "Última actualización a las"
 msgid "Paraguay Time"
 msgstr "Hora de Paraguay"
 
+msgid "Refresh comparison table"
+msgstr "Actualizar tabla de comparación"
+
+msgid "Refresh"
+msgstr "Actualizar"
+
 msgid "Notes"
 msgstr "Notas"
 
@@ -706,9 +859,6 @@ msgstr "Dif:"
 msgid "Select a business to view reconciliation data"
 msgstr "Seleccioná un negocio para ver datos de conciliación"
 
-msgid "Session"
-msgstr "Sesión"
-
 msgid "Unknown"
 msgstr "Desconocido"
 
@@ -718,8 +868,11 @@ msgstr "No hay notas disponibles para esta fecha."
 msgid "Session #"
 msgstr "Sesión #"
 
-msgid "Time"
-msgstr "Hora"
+msgid "Initial Cash"
+msgstr "Efectivo Inicial"
+
+msgid "Final Cash"
+msgstr "Efectivo Final"
 
 msgid "Envelope"
 msgstr "Sobre"
@@ -730,9 +883,6 @@ msgstr "Transferencia"
 msgid "Expenses"
 msgstr "Gastos"
 
-msgid "Total"
-msgstr "Total"
-
 msgid "View details for session"
 msgstr "Ver detalles de la sesión"
 
@@ -741,6 +891,9 @@ msgstr "Marcado"
 
 msgid "Total System"
 msgstr "Total Agenda"
+
+msgid "Total"
+msgstr "Total"
 
 msgid "No sessions found for this date"
 msgstr "No se encontraron sesiones para esta fecha"
@@ -769,9 +922,6 @@ msgstr "Solo no verificadas"
 msgid "Verified Only"
 msgstr "Solo verificadas"
 
-msgid "Sort"
-msgstr "Orden"
-
 msgid "Sort transfer list"
 msgstr "Ordenar lista de transferencias"
 
@@ -793,38 +943,14 @@ msgstr "Monto (de mayor a menor)"
 msgid "Amount (Low to high)"
 msgstr "Monto (de menor a mayor)"
 
-msgid "Business (A-Z)"
-msgstr "Negocio (A-Z)"
-
-msgid "Business (Z-A)"
-msgstr "Negocio (Z-A)"
-
 msgid "Per Page"
 msgstr "Por página"
 
 msgid "Items per page"
 msgstr "Elementos por página"
 
-msgid "Amount"
-msgstr "Monto"
-
-msgid "Mark as unverified"
-msgstr "Marcar como no verificado"
-
-msgid "Mark as verified"
-msgstr "Marcar como verificado"
-
-msgid "Verified"
-msgstr "Verificado"
-
 msgid "#"
 msgstr "#"
-
-msgid "Description"
-msgstr "Descripción"
-
-msgid "transfers"
-msgstr "transferencias"
 
 msgid "First page"
 msgstr "Primera página"
@@ -921,9 +1047,6 @@ msgstr "Añada nombres de cajeros después de la creación"
 
 msgid "Edit Business"
 msgstr "Editar Negocio"
-
-msgid "Back"
-msgstr "Volver"
 
 msgid "Enable or disable this business location"
 msgstr "Habilitar o deshabilitar esta sucursal"
@@ -1237,14 +1360,8 @@ msgstr "Seleccionar Fecha"
 msgid "Next day"
 msgstr "Día siguiente"
 
-msgid "Next"
-msgstr "Siguiente"
-
 msgid "Previous day"
 msgstr "Día anterior"
-
-msgid "Previous"
-msgstr "Anterior"
 
 msgid "Date for reconciliation entry"
 msgstr "Fecha para la entrada de conciliación"
@@ -1334,9 +1451,6 @@ msgstr "a"
 
 msgid "End date for custom range"
 msgstr "Fecha de fin para rango personalizado"
-
-msgid "Apply"
-msgstr "Aplicar"
 
 msgid "up"
 msgstr "arriba"
@@ -1582,9 +1696,6 @@ msgstr "Error al generar reporte"
 msgid "No cashier data available"
 msgstr "No hay datos de cajeros disponibles"
 
-msgid "expenses"
-msgstr "gastos"
-
 msgid "cash"
 msgstr "efectivo"
 
@@ -1632,6 +1743,20 @@ msgstr "Operaciones Diarias"
 
 msgid "Real-Time"
 msgstr "Tiempo Real"
+
+msgid ""
+"Review bank transfers across a selected period with filters, sorting, and"
+" pagination"
+msgstr ""
+"Revisá transferencias bancarias en un período seleccionado con filtros, "
+"ordenamiento y paginación"
+
+msgid ""
+"Review expenses across a selected period with filters, sorting, and "
+"pagination"
+msgstr ""
+"Revisá gastos en un período seleccionado con filtros, ordenamiento y "
+"paginación"
 
 msgid "Business Intelligence"
 msgstr "Inteligencia de Negocios"
@@ -2148,9 +2273,6 @@ msgstr "Fecha de la Sesión"
 msgid "Opened At"
 msgstr "Abierto en"
 
-msgid "Initial Cash"
-msgstr "Efectivo Inicial"
-
 msgid "Live Reconciliation"
 msgstr "Conciliación en Vivo"
 
@@ -2271,9 +2393,6 @@ msgstr "Guardar cambios en sesión cerrada"
 
 msgid "Current Values"
 msgstr "Valores Actuales"
-
-msgid "Final Cash"
-msgstr "Efectivo Final"
 
 msgid "Quick Tip"
 msgstr "Consejo Rápido"
