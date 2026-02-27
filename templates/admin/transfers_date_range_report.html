@@ -13,11 +13,16 @@
 {% set sort_by = sort_by | default('time') %}
 {% set sort_order = sort_order | default('desc') %}
 {% set selected_business_id = selected_business_id | default('', true) %}
+{% set selected_business_ids = selected_business_ids | default([], true) %}
 {% set origin = origin | default('', true) %}
 {% set sort_option = sort_by ~ '|' ~ sort_order %}
 {% set visible_count = all_transfer_items | length %}
 {% set base_query = 'from_date=' ~ from_date.isoformat() ~ '&to_date=' ~ to_date.isoformat() ~ '&filter_verified=' ~ filter_verified ~ '&sort_by=' ~ sort_by ~ '&sort_order=' ~ sort_order ~ '&page_size=' ~ page_size %}
-{% if selected_business_id %}
+{% if selected_business_ids %}
+{% for business_filter_id in selected_business_ids %}
+{% set base_query = base_query ~ '&business_ids=' ~ business_filter_id %}
+{% endfor %}
+{% elif selected_business_id %}
 {% set base_query = base_query ~ '&business_id=' ~ selected_business_id %}
 {% endif %}
 {% if filter_cashier %}
