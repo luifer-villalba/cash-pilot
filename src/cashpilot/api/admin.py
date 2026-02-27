@@ -442,6 +442,22 @@ def _resolve_transfer_report_range(
     """Resolve date range for transfer report using explicit dates or presets."""
     today = today_local()
 
+    # Preserve quick-filter selection when preset is explicitly chosen.
+    if preset and preset != "custom":
+        if preset == "today":
+            return today, today, preset
+        if preset == "yesterday":
+            day = today - timedelta(days=1)
+            return day, day, preset
+        if preset == "last_2_days":
+            return today - timedelta(days=1), today, preset
+        if preset == "last_3_days":
+            return today - timedelta(days=2), today, preset
+        if preset == "last_month":
+            return today - timedelta(days=29), today, preset
+        # Default for explicit "last_7_days" or unknown preset value
+        return today - timedelta(days=6), today, "last_7_days"
+
     parsed_from = _parse_iso_date(from_date)
     parsed_to = _parse_iso_date(to_date)
 
@@ -455,22 +471,8 @@ def _resolve_transfer_report_range(
     if parsed_to and not parsed_from:
         return parsed_to, parsed_to, "custom"
 
-    selected_preset = preset or "last_7_days"
-
-    if selected_preset == "today":
-        return today, today, selected_preset
-    if selected_preset == "yesterday":
-        day = today - timedelta(days=1)
-        return day, day, selected_preset
-    if selected_preset == "last_2_days":
-        return today - timedelta(days=1), today, selected_preset
-    if selected_preset == "last_3_days":
-        return today - timedelta(days=2), today, selected_preset
-    if selected_preset == "last_month":
-        return today - timedelta(days=29), today, selected_preset
-
-    # Default and explicit "last_7_days"
-    return today - timedelta(days=6), today, "last_7_days"
+    # Default preset on first load: today
+    return today, today, "today"
 
 
 async def _fetch_transfer_items_for_date_range(
@@ -1155,6 +1157,7 @@ async def reconciliation_compare_results_partial(
 @router.get("/transfers/date-range", response_class=HTMLResponse)
 async def transfer_date_range_report(
     request: Request,
+    date: str | None = Query(None, description="Single date (YYYY-MM-DD), maps to from=to"),
     from_date: str | None = Query(None, description="From date (YYYY-MM-DD)"),
     to_date: str | None = Query(None, description="To date (YYYY-MM-DD)"),
     preset: str | None = Query(
@@ -1171,6 +1174,7 @@ async def transfer_date_range_report(
         "all", pattern="^(all|verified|unverified)$", description="Filter by verification status"
     ),
     filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
+    origin: str | None = Query(None, description="Navigation origin context"),
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1178,8 +1182,18 @@ async def transfer_date_range_report(
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
+    normalized_from_date = from_date
+    normalized_to_date = to_date
+    normalized_preset = preset
+
+    # Support deep-link from reconciliation with single date while preserving custom semantics.
+    if date and not from_date and not to_date:
+        normalized_from_date = date
+        normalized_to_date = date
+        normalized_preset = normalized_preset or "custom"
+
     selected_from_date, selected_to_date, selected_preset = _resolve_transfer_report_range(
-        from_date, to_date, preset
+        normalized_from_date, normalized_to_date, normalized_preset
     )
 
     selected_business_id: UUID | None = None
@@ -1387,6 +1401,7 @@ async def transfer_date_range_report(
             "filter_cashier": filter_cashier,
             "sort_by": sort_by,
             "sort_order": sort_order,
+            "origin": origin or "",
         },
     )
 

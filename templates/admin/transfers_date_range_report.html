@@ -13,18 +13,22 @@
 {% set sort_by = sort_by | default('time') %}
 {% set sort_order = sort_order | default('desc') %}
 {% set selected_business_id = selected_business_id | default('', true) %}
+{% set origin = origin | default('', true) %}
 {% set sort_option = sort_by ~ '|' ~ sort_order %}
 {% set visible_count = all_transfer_items | length %}
-{% set base_query = 'from_date=' ~ from_date.isoformat() ~ '&to_date=' ~ to_date.isoformat() ~ '&preset=' ~ selected_preset ~ '&filter_verified=' ~ filter_verified ~ '&sort_by=' ~ sort_by ~ '&sort_order=' ~ sort_order ~ '&page_size=' ~ page_size %}
+{% set base_query = 'from_date=' ~ from_date.isoformat() ~ '&to_date=' ~ to_date.isoformat() ~ '&filter_verified=' ~ filter_verified ~ '&sort_by=' ~ sort_by ~ '&sort_order=' ~ sort_order ~ '&page_size=' ~ page_size %}
 {% if selected_business_id %}
 {% set base_query = base_query ~ '&business_id=' ~ selected_business_id %}
 {% endif %}
 {% if filter_cashier %}
 {% set base_query = base_query ~ '&filter_cashier=' ~ filter_cashier %}
 {% endif %}
+{% if origin %}
+{% set base_query = base_query ~ '&origin=' ~ origin %}
+{% endif %}
 
-<div class="space-y-6">
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4">
+<div class="space-y-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2">
         <div>
             <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Bank Transfers by Date Range') }}</h1>
             <p class="text-xs md:text-sm text-base-content/60">{{ _('Review transfers across multiple days with filters and pagination') }}</p>
@@ -38,139 +42,148 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
-            {{ _('Back to Reconciliation') }}
+            Volver
         </button>
     </div>
 
-    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
-        <form id="range-filter-form" method="get" action="/admin/transfers/date-range" class="space-y-4">
-            <input type="hidden" id="preset-input" name="preset" value="{{ selected_preset }}" />
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm px-3 py-3">
+        <form id="range-filter-form" method="get" action="/admin/transfers/date-range" class="space-y-1">
             <input type="hidden" name="page" value="1" />
+            {% if origin %}
+            <input type="hidden" name="origin" value="{{ origin }}" />
+            {% endif %}
 
-            <div class="mb-2">
-                <label for="business_id" class="label py-1">
-                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
-                </label>
-                <select id="business_id" name="business_id" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all" aria-label="{{ _('Select business to analyze') }}">
-                    <option value="">{{ _('All Businesses') }}</option>
-                    {% for business in businesses %}
-                    <option value="{{ business.id }}" {% if selected_business_id == business.id|string %}selected{% endif %}>{{ business.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="divider my-3 text-xs text-base-content/50">{{ _('Select date') }}</div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="form-control">
-                    <label for="from_date" class="label py-1">
-                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('From') }}</span>
-                    </label>
-                    <input id="from_date" name="from_date" type="date" value="{{ from_date.isoformat() }}" class="input input-bordered w-full focus:input-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200" />
-                </div>
-                <div class="form-control">
-                    <label for="to_date" class="label py-1">
-                        <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('To') }}</span>
-                    </label>
-                    <input id="to_date" name="to_date" type="date" value="{{ to_date.isoformat() }}" class="input input-bordered w-full focus:input-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200" />
-                </div>
-            </div>
-
-            <div id="selectedPeriodBanner" class="mb-1 p-3 bg-info/10 border border-info/30 rounded-lg" role="status" aria-live="polite">
-                <div class="flex items-center gap-2 text-sm">
-                    <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <span class="font-medium text-info">{{ _('Viewing') }}:</span>
-                    <span id="selectedPeriodText" class="text-base-content font-semibold">{{ from_date.strftime('%B %d, %Y') }} - {{ to_date.strftime('%B %d, %Y') }}</span>
-                </div>
-            </div>
-
-            <div class="flex flex-wrap gap-2">
-                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="today">{{ _('Today') }}</button>
-                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="yesterday">{{ _('Yesterday') }}</button>
-                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_2_days">{{ _('Last 2 days') }}</button>
-                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_3_days">{{ _('Last 3 days') }}</button>
-                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_7_days">{{ _('Last 7 days') }}</button>
-                <button type="button" class="btn btn-sm btn-outline preset-btn transition-all hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/20" data-preset="last_month">{{ _('Last month') }}</button>
-            </div>
-
-            <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
-                <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <span>{{ _('Pick Custom Date') }}</span>
-                    </div>
-                </summary>
-                <div class="collapse-content pt-2">
-                    <p class="text-xs text-base-content/60">{{ _('Set From and To dates to use a custom range.') }}</p>
-                </div>
-            </details>
-
-            <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
-                <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 13.414V19a1 1 0 01-1.447.894l-2-1A1 1 0 0110 18v-4.586L3.293 6.707A1 1 0 013 6V4z"/>
-                        </svg>
-                        <span>{{ _('More Options') }}</span>
-                    </div>
-                </summary>
-                <div class="collapse-content pt-3 space-y-3">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div class="form-control">
-                            <label for="filter_verified" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Verification') }}</span></label>
-                            <select id="filter_verified" name="filter_verified" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
-                                <option value="all" {% if filter_verified == 'all' %}selected{% endif %}>{{ _('All transfers') }}</option>
-                                <option value="unverified" {% if filter_verified == 'unverified' %}selected{% endif %}>{{ _('Unverified only') }}</option>
-                                <option value="verified" {% if filter_verified == 'verified' %}selected{% endif %}>{{ _('Verified only') }}</option>
-                            </select>
-                        </div>
-
-                        <div class="form-control">
-                            <label for="filter_cashier" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cashier') }}</span></label>
-                            <select id="filter_cashier" name="filter_cashier" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
-                                <option value="">{{ _('All cashiers') }}</option>
-                                {% for cashier in cashier_options %}
-                                <option value="{{ cashier.id }}" {% if filter_cashier == cashier.id|string %}selected{% endif %}>{{ cashier.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="form-control">
-                            <label for="sort_option" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Sort') }}</span></label>
-                            <select id="sort_option" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
-                                <option value="time|desc" {% if sort_option == 'time|desc' %}selected{% endif %}>{{ _('Time (newest first)') }}</option>
-                                <option value="time|asc" {% if sort_option == 'time|asc' %}selected{% endif %}>{{ _('Time (oldest first)') }}</option>
-                                <option value="amount|desc" {% if sort_option == 'amount|desc' %}selected{% endif %}>{{ _('Amount (high to low)') }}</option>
-                                <option value="amount|asc" {% if sort_option == 'amount|asc' %}selected{% endif %}>{{ _('Amount (low to high)') }}</option>
-                                <option value="business|asc" {% if sort_option == 'business|asc' %}selected{% endif %}>{{ _('Business (A-Z)') }}</option>
-                                <option value="business|desc" {% if sort_option == 'business|desc' %}selected{% endif %}>{{ _('Business (Z-A)') }}</option>
-                                <option value="business,time|asc" {% if sort_option == 'business,time|asc' %}selected{% endif %}>{{ _('Business, time (A-Z)') }}</option>
-                                <option value="business,time|desc" {% if sort_option == 'business,time|desc' %}selected{% endif %}>{{ _('Business, time (Z-A)') }}</option>
-                            </select>
-                            <input type="hidden" id="sort_by" name="sort_by" value="{{ sort_by }}" />
-                            <input type="hidden" id="sort_order" name="sort_order" value="{{ sort_order }}" />
-                        </div>
+            <div class="filters-primary-row flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 min-h-9">
+                <div class="filters-left flex flex-wrap items-center gap-2">
+                    <div class="filters-item filters-quick flex flex-wrap items-center gap-2">
+                        <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 h-9 min-h-0 px-3" data-preset="today">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Today') }}
+                        </button>
+                        <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 h-9 min-h-0 px-3" data-preset="yesterday">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M7 14 L9 16 L7 18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Yesterday') }}
+                        </button>
+                        <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 h-9 min-h-0 px-3" data-preset="last_7_days">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="7" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="14" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Last 7 days') }}
+                        </button>
+                        <button type="button" class="preset-btn btn btn-sm btn-outline gap-1 h-9 min-h-0 px-3" data-preset="last_month">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="7" y="13" width="3" height="6" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="11" y="9" width="3" height="10" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="15" y="6" width="3" height="13" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            {{ _('Last month') }}
+                        </button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="form-control">
-                            <label for="page_size" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Per page') }}</span></label>
-                            <select id="page_size" name="page_size" class="select select-bordered w-full focus:select-primary focus:ring-2 focus:ring-primary/20 transition-all">
-                                <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
-                                <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
-                            </select>
-                        </div>
-                        <div class="form-control justify-end">
-                            <label class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Actions') }}</span></label>
-                            <button type="submit" class="btn btn-sm btn-primary transition-all hover:scale-[1.02] active:scale-[0.98]">{{ _('Refresh') }}</button>
-                        </div>
+                    <div class="filters-item flex items-center">
+                        <select id="filter_verified" name="filter_verified" class="select select-sm select-bordered w-24 filters-compact-select h-9 min-h-0 leading-none" aria-label="{{ _('Verification') }}">
+                            <option value="all" {% if filter_verified == 'all' %}selected{% endif %}>{{ _('All') }}</option>
+                            <option value="unverified" {% if filter_verified == 'unverified' %}selected{% endif %}>{{ _('Unverified') }}</option>
+                            <option value="verified" {% if filter_verified == 'verified' %}selected{% endif %}>{{ _('Verified') }}</option>
+                        </select>
+                    </div>
+
+                    <div class="filters-item flex items-center">
+                        <select id="business_id" name="business_id" class="select select-sm select-bordered w-36 filters-compact-select h-9 min-h-0 leading-none" aria-label="{{ _('Business') }}">
+                            <option value="">{{ _('All Businesses') }}</option>
+                            {% for business in businesses %}
+                            <option value="{{ business.id }}" {% if selected_business_id == business.id|string %}selected{% endif %}>{{ business.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
-            </details>
+
+                <div class="filters-right flex items-center">
+                    <div class="filters-actions flex items-center">
+                        <button
+                            type="button"
+                            id="filter-toggle"
+                            class="btn btn-sm btn-ghost btn-square hover:bg-base-200 h-9 w-9 min-h-0"
+                            aria-expanded="false"
+                            aria-controls="filter-advanced"
+                            aria-label="{{ _('More options') }}"
+                        >
+                            <svg id="filter-chevron" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="filter-advanced" class="filters-advanced-row hidden bg-base-200/40 border border-base-300 rounded-lg p-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                    <div class="form-control">
+                        <label for="from_date" class="label py-1">
+                            <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('From') }}</span>
+                        </label>
+                        <input id="from_date" name="from_date" type="date" value="{{ from_date.isoformat() }}" class="input input-sm input-bordered w-full" />
+                    </div>
+
+                    <div class="form-control">
+                        <label for="to_date" class="label py-1">
+                            <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('To') }}</span>
+                        </label>
+                        <input id="to_date" name="to_date" type="date" value="{{ to_date.isoformat() }}" class="input input-sm input-bordered w-full" />
+                    </div>
+
+                    <div class="form-control">
+                        <label for="filter_cashier" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Cashier') }}</span></label>
+                        <select id="filter_cashier" name="filter_cashier" class="select select-sm select-bordered w-full">
+                            <option value="">{{ _('All cashiers') }}</option>
+                            {% for cashier in cashier_options %}
+                            <option value="{{ cashier.id }}" {% if filter_cashier == cashier.id|string %}selected{% endif %}>{{ cashier.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label for="sort_option" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Sort') }}</span></label>
+                        <select id="sort_option" class="select select-sm select-bordered w-full">
+                            <option value="time|desc" {% if sort_option == 'time|desc' %}selected{% endif %}>{{ _('Time (newest first)') }}</option>
+                            <option value="time|asc" {% if sort_option == 'time|asc' %}selected{% endif %}>{{ _('Time (oldest first)') }}</option>
+                            <option value="amount|desc" {% if sort_option == 'amount|desc' %}selected{% endif %}>{{ _('Amount (high to low)') }}</option>
+                            <option value="amount|asc" {% if sort_option == 'amount|asc' %}selected{% endif %}>{{ _('Amount (low to high)') }}</option>
+                            <option value="business|asc" {% if sort_option == 'business|asc' %}selected{% endif %}>{{ _('Business (A-Z)') }}</option>
+                            <option value="business|desc" {% if sort_option == 'business|desc' %}selected{% endif %}>{{ _('Business (Z-A)') }}</option>
+                            <option value="business,time|asc" {% if sort_option == 'business,time|asc' %}selected{% endif %}>{{ _('Business, time (A-Z)') }}</option>
+                            <option value="business,time|desc" {% if sort_option == 'business,time|desc' %}selected{% endif %}>{{ _('Business, time (Z-A)') }}</option>
+                        </select>
+                        <input type="hidden" id="sort_by" name="sort_by" value="{{ sort_by }}" />
+                        <input type="hidden" id="sort_order" name="sort_order" value="{{ sort_order }}" />
+                    </div>
+
+                    <div class="form-control">
+                        <label for="page_size" class="label py-1"><span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Per page') }}</span></label>
+                        <select id="page_size" name="page_size" class="select select-sm select-bordered w-full">
+                            <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
+                            <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
 
@@ -335,9 +348,49 @@
         };
     }
 
+    function parseIsoDate(value) {
+        if (!value || value.indexOf('-') === -1) return null;
+        var parts = value.split('-');
+        if (parts.length !== 3) return null;
+        var year = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10) - 1;
+        var day = parseInt(parts[2], 10);
+        if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+        return new Date(year, month, day);
+    }
+
+    function isSameDate(left, right) {
+        return left && right
+            && left.getFullYear() === right.getFullYear()
+            && left.getMonth() === right.getMonth()
+            && left.getDate() === right.getDate();
+    }
+
+    function inferPresetFromDates() {
+        var fromDateInput = document.getElementById('from_date');
+        var toDateInput = document.getElementById('to_date');
+        if (!fromDateInput || !toDateInput) return '';
+
+        var from = parseIsoDate(fromDateInput.value);
+        var to = parseIsoDate(toDateInput.value);
+        if (!from || !to) return '';
+
+        var today = new Date();
+        var todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        var yesterday = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate() - 1);
+        var last7Start = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate() - 6);
+        var lastMonthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), todayStart.getDate() - 29);
+
+        if (isSameDate(from, todayStart) && isSameDate(to, todayStart)) return 'today';
+        if (isSameDate(from, yesterday) && isSameDate(to, yesterday)) return 'yesterday';
+        if (isSameDate(from, last7Start) && isSameDate(to, todayStart)) return 'last_7_days';
+        if (isSameDate(from, lastMonthStart) && isSameDate(to, todayStart)) return 'last_month';
+
+        return '';
+    }
+
     function setActivePresetButton() {
-        var presetInputEl = document.getElementById('preset-input');
-        var selectedPreset = presetInputEl ? presetInputEl.value : '';
+        var selectedPreset = inferPresetFromDates();
         var buttons = document.querySelectorAll('.preset-btn');
         for (var i = 0; i < buttons.length; i += 1) {
             var btn = buttons[i];
@@ -378,7 +431,6 @@
         var form = document.getElementById('range-filter-form');
         var fromDateInput = document.getElementById('from_date');
         var toDateInput = document.getElementById('to_date');
-        var presetInput = document.getElementById('preset-input');
         var presetButtons = document.querySelectorAll('.preset-btn');
         var sortOption = document.getElementById('sort_option');
         var sortByInput = document.getElementById('sort_by');
@@ -387,6 +439,24 @@
         var verifiedInput = document.getElementById('filter_verified');
         var cashierInput = document.getElementById('filter_cashier');
         var pageSizeInput = document.getElementById('page_size');
+        var advancedToggle = document.getElementById('filter-toggle');
+        var advancedFilters = document.getElementById('filter-advanced');
+        var advancedChevron = document.getElementById('filter-chevron');
+
+        if (advancedToggle && advancedFilters) {
+            advancedToggle.addEventListener('click', function() {
+                var isHidden = advancedFilters.classList.contains('hidden');
+                if (isHidden) {
+                    advancedFilters.classList.remove('hidden');
+                } else {
+                    advancedFilters.classList.add('hidden');
+                }
+                advancedToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+                if (advancedChevron) {
+                    advancedChevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            });
+        }
 
         setActivePresetButton();
 
@@ -411,7 +481,7 @@
 
                 if (fromDateInput) fromDateInput.value = range.from;
                 if (toDateInput) toDateInput.value = range.to;
-                if (presetInput) presetInput.value = preset;
+                setActivePresetButton();
 
                 autoSubmitFilters();
             });
@@ -419,13 +489,13 @@
 
         if (fromDateInput) {
             fromDateInput.addEventListener('change', function() {
-                if (presetInput) presetInput.value = 'custom';
+                setActivePresetButton();
                 autoSubmitFilters();
             });
         }
         if (toDateInput) {
             toDateInput.addEventListener('change', function() {
-                if (presetInput) presetInput.value = 'custom';
+                setActivePresetButton();
                 autoSubmitFilters();
             });
         }
