@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-19 12:37+0000\n"
+"POT-Creation-Date: 2026-02-27 15:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -94,6 +94,9 @@ msgid "Invalid number format. Please enter a valid amount."
 msgstr ""
 
 msgid "Edit window expired (32 hours passed)"
+msgstr ""
+
+msgid "Operation failed"
 msgstr ""
 
 msgid "Selected business not found."
@@ -289,6 +292,117 @@ msgstr ""
 msgid "Back to Dashboard"
 msgstr ""
 
+msgid "Expenses by Date Range"
+msgstr ""
+
+msgid "Review expense items across multiple days with filters and pagination"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Last 2 days"
+msgstr ""
+
+msgid "Last 3 days"
+msgstr ""
+
+msgid "Last 7 days"
+msgstr ""
+
+msgid "This month"
+msgstr ""
+
+msgid "Search description…"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "From"
+msgstr ""
+
+msgid "To"
+msgstr ""
+
+msgid "All cashiers"
+msgstr ""
+
+msgid "Sort"
+msgstr ""
+
+msgid "Time (newest first)"
+msgstr ""
+
+msgid "Time (oldest first)"
+msgstr ""
+
+msgid "Amount (high to low)"
+msgstr ""
+
+msgid "Amount (low to high)"
+msgstr ""
+
+msgid "Business (A-Z)"
+msgstr ""
+
+msgid "Business (Z-A)"
+msgstr ""
+
+msgid "Cashier (A-Z)"
+msgstr ""
+
+msgid "Cashier (Z-A)"
+msgstr ""
+
+msgid "Per page"
+msgstr ""
+
+msgid "Filtered expenses"
+msgstr ""
+
+msgid "Filtered total amount"
+msgstr ""
+
+msgid "Session"
+msgstr ""
+
+msgid "Description"
+msgstr ""
+
+msgid "Amount"
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid "of"
+msgstr ""
+
+msgid "expenses"
+msgstr ""
+
+msgid "Page total"
+msgstr ""
+
+msgid "First"
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Last"
+msgstr ""
+
+msgid "No expenses found for current filters and range"
+msgstr ""
+
+msgid "selected"
+msgstr ""
+
 msgid "Daily Reconciliation Comparison"
 msgstr ""
 
@@ -403,6 +517,48 @@ msgstr ""
 msgid "Close modal"
 msgstr ""
 
+msgid "Bank Transfers by Date Range"
+msgstr ""
+
+msgid "Review transfers across multiple days with filters and pagination"
+msgstr ""
+
+msgid "Verification"
+msgstr ""
+
+msgid "Unverified"
+msgstr ""
+
+msgid "Verified"
+msgstr ""
+
+msgid "Business, time (A-Z)"
+msgstr ""
+
+msgid "Business, time (Z-A)"
+msgstr ""
+
+msgid "Filtered transfers"
+msgstr ""
+
+msgid "Mark as unverified"
+msgstr ""
+
+msgid "Mark as verified"
+msgstr ""
+
+msgid "Pending verification"
+msgstr ""
+
+msgid "transfers"
+msgstr ""
+
+msgid "No transfers found for current filters and range"
+msgstr ""
+
+msgid "Failed to update verification status. Please try again."
+msgstr ""
+
 msgid "User Management - CashPilot"
 msgstr ""
 
@@ -508,12 +664,6 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-msgid "of"
-msgstr ""
-
-msgid "selected"
-msgstr ""
-
 msgid "Save"
 msgstr ""
 
@@ -521,9 +671,6 @@ msgid "Failed to load users"
 msgstr ""
 
 msgid "Reset failed"
-msgstr ""
-
-msgid "Operation failed"
 msgstr ""
 
 msgid "Password reset successfully"
@@ -616,6 +763,12 @@ msgstr ""
 msgid "Paraguay Time"
 msgstr ""
 
+msgid "Refresh comparison table"
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
 msgid "Notes"
 msgstr ""
 
@@ -694,9 +847,6 @@ msgstr ""
 msgid "Select a business to view reconciliation data"
 msgstr ""
 
-msgid "Session"
-msgstr ""
-
 msgid "Unknown"
 msgstr ""
 
@@ -706,7 +856,10 @@ msgstr ""
 msgid "Session #"
 msgstr ""
 
-msgid "Time"
+msgid "Initial Cash"
+msgstr ""
+
+msgid "Final Cash"
 msgstr ""
 
 msgid "Envelope"
@@ -718,9 +871,6 @@ msgstr ""
 msgid "Expenses"
 msgstr ""
 
-msgid "Total"
-msgstr ""
-
 msgid "View details for session"
 msgstr ""
 
@@ -728,6 +878,9 @@ msgid "Flagged"
 msgstr ""
 
 msgid "Total System"
+msgstr ""
+
+msgid "Total"
 msgstr ""
 
 msgid "No sessions found for this date"
@@ -757,9 +910,6 @@ msgstr ""
 msgid "Verified Only"
 msgstr ""
 
-msgid "Sort"
-msgstr ""
-
 msgid "Sort transfer list"
 msgstr ""
 
@@ -781,37 +931,13 @@ msgstr ""
 msgid "Amount (Low to high)"
 msgstr ""
 
-msgid "Business (A-Z)"
-msgstr ""
-
-msgid "Business (Z-A)"
-msgstr ""
-
 msgid "Per Page"
 msgstr ""
 
 msgid "Items per page"
 msgstr ""
 
-msgid "Amount"
-msgstr ""
-
-msgid "Mark as unverified"
-msgstr ""
-
-msgid "Mark as verified"
-msgstr ""
-
-msgid "Verified"
-msgstr ""
-
 msgid "#"
-msgstr ""
-
-msgid "Description"
-msgstr ""
-
-msgid "transfers"
 msgstr ""
 
 msgid "First page"
@@ -908,9 +1034,6 @@ msgid "Add cashier names after creation"
 msgstr ""
 
 msgid "Edit Business"
-msgstr ""
-
-msgid "Back"
 msgstr ""
 
 msgid "Enable or disable this business location"
@@ -1223,13 +1346,7 @@ msgstr ""
 msgid "Next day"
 msgstr ""
 
-msgid "Next"
-msgstr ""
-
 msgid "Previous day"
-msgstr ""
-
-msgid "Previous"
 msgstr ""
 
 msgid "Date for reconciliation entry"
@@ -1317,9 +1434,6 @@ msgid "to"
 msgstr ""
 
 msgid "End date for custom range"
-msgstr ""
-
-msgid "Apply"
 msgstr ""
 
 msgid "up"
@@ -1564,9 +1678,6 @@ msgstr ""
 msgid "No cashier data available"
 msgstr ""
 
-msgid "expenses"
-msgstr ""
-
 msgid "cash"
 msgstr ""
 
@@ -1613,6 +1724,16 @@ msgid "Daily Operations"
 msgstr ""
 
 msgid "Real-Time"
+msgstr ""
+
+msgid ""
+"Review bank transfers across a selected period with filters, sorting, and"
+" pagination"
+msgstr ""
+
+msgid ""
+"Review expenses across a selected period with filters, sorting, and "
+"pagination"
 msgstr ""
 
 msgid "Business Intelligence"
@@ -2122,9 +2243,6 @@ msgstr ""
 msgid "Opened At"
 msgstr ""
 
-msgid "Initial Cash"
-msgstr ""
-
 msgid "Live Reconciliation"
 msgstr ""
 
@@ -2238,9 +2356,6 @@ msgid "Save changes to closed session"
 msgstr ""
 
 msgid "Current Values"
-msgstr ""
-
-msgid "Final Cash"
 msgstr ""
 
 msgid "Quick Tip"
