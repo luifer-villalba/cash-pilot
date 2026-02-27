@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/admin.py
 import secrets
 import string
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -437,42 +437,24 @@ def _parse_iso_date(value: str | None) -> date | None:
 def _resolve_transfer_report_range(
     from_date: str | None,
     to_date: str | None,
-    preset: str | None,
-) -> tuple[date, date, str]:
-    """Resolve date range for transfer report using explicit dates or presets."""
+) -> tuple[date, date]:
+    """Resolve date range for transfer report using explicit dates only."""
     today = today_local()
-
-    # Preserve quick-filter selection when preset is explicitly chosen.
-    if preset and preset != "custom":
-        if preset == "today":
-            return today, today, preset
-        if preset == "yesterday":
-            day = today - timedelta(days=1)
-            return day, day, preset
-        if preset == "last_2_days":
-            return today - timedelta(days=1), today, preset
-        if preset == "last_3_days":
-            return today - timedelta(days=2), today, preset
-        if preset == "last_month":
-            return today - timedelta(days=29), today, preset
-        # Default for explicit "last_7_days" or unknown preset value
-        return today - timedelta(days=6), today, "last_7_days"
 
     parsed_from = _parse_iso_date(from_date)
     parsed_to = _parse_iso_date(to_date)
 
     if parsed_from and parsed_to:
         if parsed_from <= parsed_to:
-            return parsed_from, parsed_to, "custom"
-        return parsed_to, parsed_from, "custom"
+            return parsed_from, parsed_to
+        return parsed_to, parsed_from
 
     if parsed_from and not parsed_to:
-        return parsed_from, parsed_from, "custom"
+        return parsed_from, parsed_from
     if parsed_to and not parsed_from:
-        return parsed_to, parsed_to, "custom"
+        return parsed_to, parsed_to
 
-    # Default preset on first load: today
-    return today, today, "today"
+    return today, today
 
 
 async def _fetch_transfer_items_for_date_range(
@@ -1157,15 +1139,11 @@ async def reconciliation_compare_results_partial(
 @router.get("/transfers/date-range", response_class=HTMLResponse)
 async def transfer_date_range_report(
     request: Request,
-    date: str | None = Query(None, description="Single date (YYYY-MM-DD), maps to from=to"),
+    single_date: str | None = Query(None, description="Single date (YYYY-MM-DD), maps to from=to"),
     from_date: str | None = Query(None, description="From date (YYYY-MM-DD)"),
     to_date: str | None = Query(None, description="To date (YYYY-MM-DD)"),
-    preset: str | None = Query(
-        None,
-        pattern="^(today|yesterday|last_2_days|last_3_days|last_7_days|last_month|custom)$",
-        description="Quick preset date range",
-    ),
-    business_id: str | None = Query(None, description="Filter by business ID"),
+    business_id: str | None = Query(None, description="Filter by single business ID (legacy)"),
+    business_ids: list[str] | None = Query(None, description="Filter by one or more business IDs"),
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(20, ge=10, le=50, description="Items per page"),
     sort_by: str = Query("time", description="Sort fields: business|time|amount"),
@@ -1178,30 +1156,37 @@ async def transfer_date_range_report(
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
-    """CP-REPORTS-06: Bank transfers report with date-range, presets, filters, and pagination."""
+    """CP-REPORTS-06: Bank transfers report with date-range, filters, and pagination."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
 
     normalized_from_date = from_date
     normalized_to_date = to_date
-    normalized_preset = preset
 
-    # Support deep-link from reconciliation with single date while preserving custom semantics.
-    if date and not from_date and not to_date:
-        normalized_from_date = date
-        normalized_to_date = date
-        normalized_preset = normalized_preset or "custom"
+    if single_date and not from_date and not to_date:
+        normalized_from_date = single_date
+        normalized_to_date = single_date
 
-    selected_from_date, selected_to_date, selected_preset = _resolve_transfer_report_range(
-        normalized_from_date, normalized_to_date, normalized_preset
+    selected_from_date, selected_to_date = _resolve_transfer_report_range(
+        normalized_from_date, normalized_to_date
     )
 
-    selected_business_id: UUID | None = None
+    selected_business_ids: list[UUID] = []
     if business_id and business_id.strip():
         try:
-            selected_business_id = UUID(business_id)
+            selected_business_ids.append(UUID(business_id))
         except (ValueError, TypeError):
-            selected_business_id = None
+            pass
+
+    for value in business_ids or []:
+        if not value or not value.strip():
+            continue
+        try:
+            parsed_business_id = UUID(value)
+            if parsed_business_id not in selected_business_ids:
+                selected_business_ids.append(parsed_business_id)
+        except (ValueError, TypeError):
+            continue
 
     all_businesses = await get_active_businesses(db)
 
@@ -1213,8 +1198,8 @@ async def transfer_date_range_report(
         Business.is_active,
     ]
 
-    if selected_business_id is not None:
-        conditions.append(CashSession.business_id == selected_business_id)
+    if selected_business_ids:
+        conditions.append(CashSession.business_id.in_(selected_business_ids))
 
     if filter_verified == "verified":
         conditions.append(TransferItem.is_verified)
@@ -1348,8 +1333,8 @@ async def transfer_date_range_report(
         ~CashSession.is_deleted,
         Business.is_active,
     ]
-    if selected_business_id is not None:
-        option_conditions.append(CashSession.business_id == selected_business_id)
+    if selected_business_ids:
+        option_conditions.append(CashSession.business_id.in_(selected_business_ids))
 
     cashier_options_stmt = (
         select(User.id, User.first_name, User.last_name)
@@ -1384,9 +1369,11 @@ async def transfer_date_range_report(
             "_": _,
             "from_date": selected_from_date,
             "to_date": selected_to_date,
-            "selected_preset": selected_preset,
             "businesses": all_businesses,
-            "selected_business_id": str(selected_business_id) if selected_business_id else "",
+            "selected_business_id": str(selected_business_ids[0]) if selected_business_ids else "",
+            "selected_business_ids": [
+                str(business_uuid) for business_uuid in selected_business_ids
+            ],
             "all_transfer_items": paginated_items,
             "transfer_items_total_count": filtered_total_count,
             "filtered_total_amount": filtered_total_amount,

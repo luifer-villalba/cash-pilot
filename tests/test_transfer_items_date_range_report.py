@@ -14,18 +14,17 @@ class TestTransferItemsDateRangeReport:
     """Test CP-REPORTS-06 backend helpers and route behavior."""
 
     @pytest.mark.asyncio
-    async def test_resolve_transfer_report_range_last_3_days(self):
-        """Preset last_3_days resolves to a 3-day inclusive range."""
+    async def test_resolve_transfer_report_range_swaps_invalid_bounds(self):
+        """When from_date > to_date, helper normalizes by swapping bounds."""
         from cashpilot.api.admin import _resolve_transfer_report_range
 
-        from_date, to_date, selected = _resolve_transfer_report_range(
-            from_date=None,
-            to_date=None,
-            preset="last_3_days",
-        )
+        start = (date.today() - timedelta(days=1)).isoformat()
+        end = (date.today() - timedelta(days=4)).isoformat()
 
-        assert selected == "last_3_days"
-        assert (to_date - from_date).days == 2
+        from_date, to_date = _resolve_transfer_report_range(from_date=start, to_date=end)
+
+        assert from_date <= to_date
+        assert (to_date - from_date).days == 3
 
     @pytest.mark.asyncio
     async def test_fetch_transfer_items_for_date_range_filters_by_dates(
@@ -173,7 +172,6 @@ class TestTransferItemsDateRangeReport:
             params={
                 "from_date": session_date.isoformat(),
                 "to_date": session_date.isoformat(),
-                "preset": "custom",
             },
         )
 
@@ -223,7 +221,6 @@ class TestTransferItemsDateRangeReport:
             params={
                 "from_date": session_date.isoformat(),
                 "to_date": session_date.isoformat(),
-                "preset": "custom",
                 "filter_verified": "verified",
             },
         )
@@ -231,3 +228,114 @@ class TestTransferItemsDateRangeReport:
         assert response.status_code == 200
         assert "Verified row" in response.text
         assert "Unverified row" not in response.text
+
+    @pytest.mark.asyncio
+    async def test_admin_route_accepts_single_date_query(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """single_date maps to a one-day range when from/to are not provided."""
+        business = await factories.business(name="Single Date Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-single-date@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        target_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=target_date,
+            status="CLOSED",
+        )
+
+        db_session.add(
+            TransferItem(
+                session_id=session.id,
+                description="Single date transfer row",
+                amount=Decimal("999.00"),
+                created_at=datetime.combine(target_date, datetime.min.time()),
+            )
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/transfers/date-range",
+            params={
+                "single_date": target_date.isoformat(),
+            },
+        )
+
+        assert response.status_code == 200
+        assert "Single date transfer row" in response.text
+
+    @pytest.mark.asyncio
+    async def test_admin_route_filters_with_multiple_business_ids(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """business_ids accepts multiple values and includes rows from all selected businesses."""
+        business_a = await factories.business(name="Business Multi A")
+        business_b = await factories.business(name="Business Multi B")
+        business_c = await factories.business(name="Business Multi C")
+
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-multi-biz@test.com")
+        await factories.user_business(business=business_a, user=cashier)
+        await factories.user_business(business=business_b, user=cashier)
+        await factories.user_business(business=business_c, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session_a = await factories.cash_session(
+            business=business_a,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+        session_b = await factories.cash_session(
+            business=business_b,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+        session_c = await factories.cash_session(
+            business=business_c,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+
+        db_session.add(
+            TransferItem(
+                session_id=session_a.id,
+                description="Business A transfer",
+                amount=Decimal("1000.00"),
+                created_at=datetime.combine(session_date, datetime.min.time()),
+            )
+        )
+        db_session.add(
+            TransferItem(
+                session_id=session_b.id,
+                description="Business B transfer",
+                amount=Decimal("2000.00"),
+                created_at=datetime.combine(session_date, datetime.min.time()) + timedelta(minutes=1),
+            )
+        )
+        db_session.add(
+            TransferItem(
+                session_id=session_c.id,
+                description="Business C transfer",
+                amount=Decimal("3000.00"),
+                created_at=datetime.combine(session_date, datetime.min.time()) + timedelta(minutes=2),
+            )
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/transfers/date-range",
+            params={
+                "from_date": session_date.isoformat(),
+                "to_date": session_date.isoformat(),
+                "business_ids": [str(business_a.id), str(business_b.id)],
+            },
+        )
+
+        assert response.status_code == 200
+        assert "Business A transfer" in response.text
+        assert "Business B transfer" in response.text
+        assert "Business C transfer" not in response.text
