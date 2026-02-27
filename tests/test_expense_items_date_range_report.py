@@ -238,3 +238,55 @@ class TestExpenseItemsDateRangeReport:
         assert response.status_code == 200
         assert "Cashier A expense" in response.text
         assert "Cashier B expense" not in response.text
+
+    @pytest.mark.asyncio
+    async def test_admin_route_applies_description_filter_case_insensitive(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Description filter matches substring without case sensitivity."""
+        business = await factories.business(name="Expense Description Business")
+        cashier = await factories.user(
+            role=UserRole.CASHIER,
+            email="cashier-expense-description@test.com",
+        )
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+
+        db_session.add(
+            ExpenseItem(
+                session_id=session.id,
+                description="Cash & Carry Supplies",
+                amount=Decimal("1000.00"),
+                created_at=datetime.combine(session_date, datetime.min.time()),
+            )
+        )
+        db_session.add(
+            ExpenseItem(
+                session_id=session.id,
+                description="Delivery fuel",
+                amount=Decimal("2000.00"),
+                created_at=datetime.combine(session_date, datetime.min.time())
+                + timedelta(minutes=1),
+            )
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/expenses/date-range",
+            params={
+                "from_date": session_date.isoformat(),
+                "to_date": session_date.isoformat(),
+                "filter_description": "cAsH & CaRrY",
+            },
+        )
+
+        assert response.status_code == 200
+        assert "Cash & Carry Supplies" in response.text
+        assert "Delivery fuel" not in response.text

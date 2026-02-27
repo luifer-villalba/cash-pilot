@@ -329,7 +329,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - `docs/implementation/CP-REPORTS-05-TRANSFER-UX.md`
 * **Acceptance Criteria:**
   - [x] Admin can view transfers across a custom date range in one report
-  - [x] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [x] Presets (Today, Yesterday, Last 2/3/7 days, This month) populate and execute correctly
   - [x] Pagination works with at least 20 and 50 rows per page
   - [x] Multi-business/cashier/verification filters work together correctly
   - [x] No bank account filter is present
@@ -393,7 +393,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - `docs/implementation/CP-REPORTS-05-TRANSFER-UX.md`
 * **Acceptance Criteria:**
   - [x] Admin can view expenses across a custom date range in one report
-  - [x] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [x] Presets (Today, Yesterday, Last 2/3/7 days, This month) populate and execute correctly
   - [x] Pagination works with at least 20 and 50 rows per page
   - [x] Multi-business/user filters work together correctly (category deferred: field does not exist)
   - [ ] CSV export works for current filtered result set

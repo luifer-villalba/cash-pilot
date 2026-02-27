@@ -30,10 +30,10 @@
 {% set base_query = base_query ~ '&filter_cashier=' ~ filter_cashier %}
 {% endif %}
 {% if filter_description %}
-{% set base_query = base_query ~ '&filter_description=' ~ filter_description %}
+{% set base_query = base_query ~ '&filter_description=' ~ (filter_description | urlencode) %}
 {% endif %}
 {% if origin %}
-{% set base_query = base_query ~ '&origin=' ~ origin %}
+{% set base_query = base_query ~ '&origin=' ~ (origin | urlencode) %}
 {% endif %}
 
 <div class="space-y-4">
