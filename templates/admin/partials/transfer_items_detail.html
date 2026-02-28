@@ -249,7 +249,7 @@
         <div class="flex items-center gap-2">
             {% if current_page > 1 %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page=1&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page=1&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('First page') }}"
                 title="{{ _('First page') }}"
@@ -264,7 +264,7 @@
 
             {% if current_page > 1 %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page - 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page - 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Previous page') }}"
                 title="{{ _('Previous page') }}"
@@ -282,7 +282,7 @@
 
             {% if current_page < total_pages %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page + 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page + 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Next page') }}"
                 title="{{ _('Next page') }}"
@@ -297,7 +297,7 @@
 
             {% if current_page < total_pages %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ total_pages }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ total_pages }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Last page') }}"
                 title="{{ _('Last page') }}"
