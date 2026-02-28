@@ -1,6 +1,7 @@
 """Tests for CP-REPORTS-06 — Bank transfers date-range report."""
 
 from datetime import date, datetime, timedelta
+from html import unescape
 from decimal import Decimal
 
 import pytest
@@ -389,5 +390,6 @@ class TestTransferItemsDateRangeReport:
         )
 
         assert response.status_code == 200
-        assert "Cash & Carry Deposit" in response.text
-        assert "Supplier payment" not in response.text
+        response_text = unescape(response.text)
+        assert "Cash & Carry Deposit" in response_text
+        assert "Supplier payment" not in response_text

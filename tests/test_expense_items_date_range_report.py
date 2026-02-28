@@ -1,6 +1,7 @@
 """Tests for CP-REPORTS-07 — Expenses date-range report."""
 
 from datetime import date, datetime, timedelta
+from html import unescape
 from decimal import Decimal
 
 import pytest
@@ -288,5 +289,6 @@ class TestExpenseItemsDateRangeReport:
         )
 
         assert response.status_code == 200
-        assert "Cash & Carry Supplies" in response.text
-        assert "Delivery fuel" not in response.text
+        response_text = unescape(response.text)
+        assert "Cash & Carry Supplies" in response_text
+        assert "Delivery fuel" not in response_text
