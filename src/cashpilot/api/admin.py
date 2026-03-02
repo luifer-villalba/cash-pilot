@@ -1684,6 +1684,293 @@ async def expenses_date_range_report(
     )
 
 
+@router.get("/envelopes/date-range", response_class=HTMLResponse)
+async def envelopes_date_range_report(
+    request: Request,
+    single_date: str | None = Query(None, description="Single date (YYYY-MM-DD), maps to from=to"),
+    from_date: str | None = Query(None, description="From date (YYYY-MM-DD)"),
+    to_date: str | None = Query(None, description="To date (YYYY-MM-DD)"),
+    preset: str = Query(
+        "today",
+        pattern="^(today|yesterday|last_2_days|last_3_days|last_7_days|last_month|custom)$",
+        description="Quick date preset",
+    ),
+    business_id: str | None = Query(None, description="Filter by single business ID (legacy)"),
+    business_ids: list[str] | None = Query(None, description="Filter by one or more business IDs"),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(20, ge=10, le=50, description="Items per page"),
+    sort_by: str = Query("time", description="Sort fields: business|cashier|time|amount"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
+    filter_amount_state: str = Query(
+        "all",
+        pattern="^(all|with_envelope|zero)$",
+        description="Filter by envelope amount state",
+    ),
+    origin: str | None = Query(None, description="Navigation origin context"),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """CP-REPORTS-08: Envelope report with date-range, filters, and pagination."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    normalized_from_date = from_date
+    normalized_to_date = to_date
+
+    if single_date and not from_date and not to_date:
+        normalized_from_date = single_date
+        normalized_to_date = single_date
+
+    if not normalized_from_date and not normalized_to_date and preset != "custom":
+        today = today_local()
+        if preset == "yesterday":
+            start, end = (today - timedelta(days=1), today - timedelta(days=1))
+        elif preset == "last_2_days":
+            start, end = (today - timedelta(days=1), today)
+        elif preset == "last_3_days":
+            start, end = (today - timedelta(days=2), today)
+        elif preset == "last_7_days":
+            start, end = (today - timedelta(days=6), today)
+        elif preset == "last_month":
+            start, end = (today - timedelta(days=29), today)
+        else:
+            start, end = (today, today)
+        normalized_from_date = start.isoformat()
+        normalized_to_date = end.isoformat()
+
+    selected_from_date, selected_to_date = _resolve_transfer_report_range(
+        normalized_from_date, normalized_to_date
+    )
+
+    selected_business_ids: list[UUID] = []
+    if business_id and business_id.strip():
+        try:
+            selected_business_ids.append(UUID(business_id))
+        except (ValueError, TypeError):
+            pass
+
+    for value in business_ids or []:
+        if not value or not value.strip():
+            continue
+        try:
+            parsed_business_id = UUID(value)
+            if parsed_business_id not in selected_business_ids:
+                selected_business_ids.append(parsed_business_id)
+        except (ValueError, TypeError):
+            continue
+
+    all_businesses = await get_active_businesses(db)
+
+    conditions = [
+        CashSession.session_date >= selected_from_date,
+        CashSession.session_date <= selected_to_date,
+        ~CashSession.is_deleted,
+        Business.is_active,
+    ]
+
+    if selected_business_ids:
+        conditions.append(CashSession.business_id.in_(selected_business_ids))
+
+    if filter_cashier and filter_cashier.strip():
+        try:
+            cashier_uuid = UUID(filter_cashier)
+            conditions.append(User.id == cashier_uuid)
+        except (ValueError, TypeError):
+            filter_cashier = None
+
+    if filter_amount_state == "with_envelope":
+        conditions.append(CashSession.envelope_amount > Decimal("0.00"))
+    elif filter_amount_state == "zero":
+        conditions.append(CashSession.envelope_amount == Decimal("0.00"))
+
+    where_clause = and_(*conditions)
+
+    count_stmt = (
+        select(func.count(CashSession.id))
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(where_clause)
+    )
+    count_result = await db.execute(count_stmt)
+    filtered_total_count = count_result.scalar() or 0
+
+    total_stmt = (
+        select(func.coalesce(func.sum(CashSession.envelope_amount), Decimal("0.00")))
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(where_clause)
+    )
+    total_result = await db.execute(total_stmt)
+    filtered_total_amount = total_result.scalar() or Decimal("0.00")
+
+    if filtered_total_count == 0:
+        total_pages = 0
+        clamped_page = 1
+        start_index = 0
+    else:
+        total_pages = (filtered_total_count + page_size - 1) // page_size
+        clamped_page = min(page, total_pages)
+        start_index = (clamped_page - 1) * page_size + 1
+
+    sort_fields = [field.strip() for field in sort_by.split(",") if field.strip()]
+    if not sort_fields:
+        sort_fields = ["time"]
+
+    sort_desc = sort_order.lower() == "desc"
+    order_clauses = []
+    for field in sort_fields:
+        if field == "business":
+            order_clauses.append(Business.name.desc() if sort_desc else Business.name.asc())
+        elif field == "cashier":
+            order_clauses.append(User.first_name.desc() if sort_desc else User.first_name.asc())
+            order_clauses.append(User.last_name.desc() if sort_desc else User.last_name.asc())
+        elif field == "amount":
+            order_clauses.append(
+                CashSession.envelope_amount.desc()
+                if sort_desc
+                else CashSession.envelope_amount.asc()
+            )
+        elif field == "time":
+            order_clauses.append(
+                CashSession.session_date.desc() if sort_desc else CashSession.session_date.asc()
+            )
+            order_clauses.append(
+                CashSession.opened_time.desc() if sort_desc else CashSession.opened_time.asc()
+            )
+
+    if not order_clauses:
+        order_clauses.append(
+            CashSession.session_date.desc() if sort_desc else CashSession.session_date.asc()
+        )
+        order_clauses.append(
+            CashSession.opened_time.desc() if sort_desc else CashSession.opened_time.asc()
+        )
+    order_clauses.append(CashSession.id.desc() if sort_desc else CashSession.id.asc())
+
+    offset = (clamped_page - 1) * page_size
+    data_stmt = (
+        select(
+            CashSession.id,
+            CashSession.session_number,
+            CashSession.business_id,
+            CashSession.session_date,
+            CashSession.opened_time,
+            CashSession.status,
+            CashSession.envelope_amount,
+            User.id.label("cashier_id"),
+            User.first_name,
+            User.last_name,
+            Business.name.label("business_name"),
+        )
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(where_clause)
+        .order_by(*order_clauses)
+        .offset(offset)
+        .limit(page_size)
+    )
+    data_result = await db.execute(data_stmt)
+    paginated_rows = data_result.all()
+
+    paginated_sessions = []
+    business_names_by_id: dict[str, str] = {}
+    for row in paginated_rows:
+        cashier_name = row.first_name or ""
+        if row.last_name:
+            cashier_name += f" {row.last_name[0]}."
+        cashier_name = cashier_name.strip()
+
+        business_id_str = str(row.business_id)
+        business_names_by_id[business_id_str] = row.business_name
+
+        paginated_sessions.append(
+            {
+                "session_id": row.id,
+                "session_number": row.session_number,
+                "amount": row.envelope_amount,
+                "session_date": row.session_date,
+                "opened_time": row.opened_time,
+                "status": row.status,
+                "cashier_id": row.cashier_id,
+                "cashier_name": cashier_name,
+                "business_id": business_id_str,
+                "business_name": row.business_name,
+            }
+        )
+
+    page_total_amount = sum((item.get("amount") or Decimal("0")) for item in paginated_sessions)
+
+    option_conditions = [
+        CashSession.session_date >= selected_from_date,
+        CashSession.session_date <= selected_to_date,
+        ~CashSession.is_deleted,
+        Business.is_active,
+    ]
+    if selected_business_ids:
+        option_conditions.append(CashSession.business_id.in_(selected_business_ids))
+    if filter_amount_state == "with_envelope":
+        option_conditions.append(CashSession.envelope_amount > Decimal("0.00"))
+    elif filter_amount_state == "zero":
+        option_conditions.append(CashSession.envelope_amount == Decimal("0.00"))
+
+    cashier_options_stmt = (
+        select(User.id, User.first_name, User.last_name)
+        .join(CashSession, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(and_(*option_conditions))
+        .distinct()
+        .order_by(User.first_name, User.last_name)
+    )
+    cashier_options_result = await db.execute(cashier_options_stmt)
+
+    cashier_options_map: dict[str, str] = {}
+    for cashier_id, first_name, last_name in cashier_options_result.all():
+        cashier_name = first_name or ""
+        if last_name:
+            cashier_name += f" {last_name[0]}."
+        cashier_name = cashier_name.strip()
+        cashier_options_map[str(cashier_id)] = cashier_name
+
+    cashier_options = [
+        {"id": cashier_id, "name": cashier_options_map[cashier_id]}
+        for cashier_id in sorted(cashier_options_map, key=lambda key: cashier_options_map[key])
+    ]
+
+    return templates.TemplateResponse(
+        request,
+        "admin/envelopes_date_range_report.html",
+        {
+            "current_user": current_user,
+            "locale": locale,
+            "_": _,
+            "from_date": selected_from_date,
+            "to_date": selected_to_date,
+            "businesses": all_businesses,
+            "selected_business_id": str(selected_business_ids[0]) if selected_business_ids else "",
+            "selected_business_ids": [
+                str(business_uuid) for business_uuid in selected_business_ids
+            ],
+            "all_envelope_sessions": paginated_sessions,
+            "envelope_sessions_total_count": filtered_total_count,
+            "filtered_total_amount": filtered_total_amount,
+            "page_total_amount": page_total_amount,
+            "businesses_by_id": business_names_by_id,
+            "cashier_options": cashier_options,
+            "current_page": clamped_page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "start_index": start_index,
+            "filter_cashier": filter_cashier,
+            "filter_amount_state": filter_amount_state,
+            "sort_by": sort_by,
+            "sort_order": sort_order,
+            "origin": origin or "",
+            "preset": preset,
+        },
+    )
+
+
 @router.post("/transfer-items/{transfer_id}/verify")
 async def verify_transfer_item(
     transfer_id: UUID,
