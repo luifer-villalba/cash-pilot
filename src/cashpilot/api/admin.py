@@ -1692,21 +1692,21 @@ async def envelopes_date_range_report(
     to_date: str | None = Query(None, description="To date (YYYY-MM-DD)"),
     preset: str = Query(
         "today",
-        pattern="^(today|yesterday|last_2_days|last_3_days|last_7_days|last_month|custom)$",
+        pattern="^(today|yesterday|last_2_days|last_3_days|last_7_days|this_month|custom)$",
         description="Quick date preset",
     ),
     business_id: str | None = Query(None, description="Filter by single business ID (legacy)"),
     business_ids: list[str] | None = Query(None, description="Filter by one or more business IDs"),
-    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
-    page_size: int = Query(20, ge=10, le=50, description="Items per page"),
+    page: int = Query(1, ge=1, description="Page number (unused, pagination disabled)"),
+    page_size: int = Query(
+        20,
+        ge=10,
+        le=50,
+        description="Items per page (unused, pagination disabled)",
+    ),
     sort_by: str = Query("time", description="Sort fields: business|cashier|time|amount"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
-    filter_amount_state: str = Query(
-        "all",
-        pattern="^(all|with_envelope|zero)$",
-        description="Filter by envelope amount state",
-    ),
     origin: str | None = Query(None, description="Navigation origin context"),
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
@@ -1732,8 +1732,8 @@ async def envelopes_date_range_report(
             start, end = (today - timedelta(days=2), today)
         elif preset == "last_7_days":
             start, end = (today - timedelta(days=6), today)
-        elif preset == "last_month":
-            start, end = (today - timedelta(days=29), today)
+        elif preset == "this_month":
+            start, end = (today.replace(day=1), today)
         else:
             start, end = (today, today)
         normalized_from_date = start.isoformat()
@@ -1765,6 +1765,7 @@ async def envelopes_date_range_report(
     conditions = [
         CashSession.session_date >= selected_from_date,
         CashSession.session_date <= selected_to_date,
+        CashSession.envelope_amount > Decimal("0.00"),
         ~CashSession.is_deleted,
         Business.is_active,
     ]
@@ -1778,11 +1779,6 @@ async def envelopes_date_range_report(
             conditions.append(User.id == cashier_uuid)
         except (ValueError, TypeError):
             filter_cashier = None
-
-    if filter_amount_state == "with_envelope":
-        conditions.append(CashSession.envelope_amount > Decimal("0.00"))
-    elif filter_amount_state == "zero":
-        conditions.append(CashSession.envelope_amount == Decimal("0.00"))
 
     where_clause = and_(*conditions)
 
@@ -1804,14 +1800,59 @@ async def envelopes_date_range_report(
     total_result = await db.execute(total_stmt)
     filtered_total_amount = total_result.scalar() or Decimal("0.00")
 
+    summary_stmt = (
+        select(
+            CashSession.business_id,
+            Business.name.label("business_name"),
+            func.count(CashSession.id).label("session_count"),
+            func.coalesce(func.sum(CashSession.envelope_amount), Decimal("0.00")).label(
+                "envelope_total"
+            ),
+            func.max(CashSession.session_date).label("last_session_date"),
+        )
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .where(where_clause)
+        .group_by(CashSession.business_id, Business.name)
+        .order_by(func.sum(CashSession.envelope_amount).desc(), Business.name.asc())
+    )
+    summary_result = await db.execute(summary_stmt)
+    summary_rows = summary_result.all()
+
+    total_businesses_with_envelopes = len(summary_rows)
+    average_envelope_amount = (
+        (filtered_total_amount / filtered_total_count)
+        if filtered_total_count > 0
+        else Decimal("0.00")
+    )
+
+    envelopes_by_business = []
+    for row in summary_rows:
+        business_total = row.envelope_total or Decimal("0.00")
+        percentage = (
+            (business_total / filtered_total_amount) * Decimal("100")
+            if filtered_total_amount > 0
+            else Decimal("0.00")
+        )
+        envelopes_by_business.append(
+            {
+                "business_id": str(row.business_id),
+                "business_name": row.business_name,
+                "session_count": row.session_count or 0,
+                "total_amount": business_total,
+                "percentage": percentage,
+                "last_session_date": row.last_session_date,
+            }
+        )
+
     if filtered_total_count == 0:
         total_pages = 0
         clamped_page = 1
         start_index = 0
     else:
-        total_pages = (filtered_total_count + page_size - 1) // page_size
-        clamped_page = min(page, total_pages)
-        start_index = (clamped_page - 1) * page_size + 1
+        total_pages = 1
+        clamped_page = 1
+        start_index = 1
 
     sort_fields = [field.strip() for field in sort_by.split(",") if field.strip()]
     if not sort_fields:
@@ -1848,7 +1889,6 @@ async def envelopes_date_range_report(
         )
     order_clauses.append(CashSession.id.desc() if sort_desc else CashSession.id.asc())
 
-    offset = (clamped_page - 1) * page_size
     data_stmt = (
         select(
             CashSession.id,
@@ -1867,8 +1907,6 @@ async def envelopes_date_range_report(
         .join(Business, CashSession.business_id == Business.id)
         .where(where_clause)
         .order_by(*order_clauses)
-        .offset(offset)
-        .limit(page_size)
     )
     data_result = await db.execute(data_stmt)
     paginated_rows = data_result.all()
@@ -1899,20 +1937,44 @@ async def envelopes_date_range_report(
             }
         )
 
+    grouped_sessions_map: dict[str, dict] = {}
+    for item in paginated_sessions:
+        business_id = item["business_id"]
+        if business_id not in grouped_sessions_map:
+            grouped_sessions_map[business_id] = {
+                "business_id": business_id,
+                "business_name": item["business_name"],
+                "sessions": [],
+                "session_count": 0,
+                "total_amount": Decimal("0.00"),
+            }
+
+        grouped_sessions_map[business_id]["sessions"].append(item)
+        grouped_sessions_map[business_id]["session_count"] += 1
+        grouped_sessions_map[business_id]["total_amount"] += item.get("amount") or Decimal("0.00")
+
+    ordered_business_ids = [item["business_id"] for item in envelopes_by_business]
+    envelope_sessions_by_business = []
+
+    for business_id in ordered_business_ids:
+        if business_id in grouped_sessions_map:
+            envelope_sessions_by_business.append(grouped_sessions_map[business_id])
+
+    for business_id, grouped in grouped_sessions_map.items():
+        if business_id not in ordered_business_ids:
+            envelope_sessions_by_business.append(grouped)
+
     page_total_amount = sum((item.get("amount") or Decimal("0")) for item in paginated_sessions)
 
     option_conditions = [
         CashSession.session_date >= selected_from_date,
         CashSession.session_date <= selected_to_date,
+        CashSession.envelope_amount > Decimal("0.00"),
         ~CashSession.is_deleted,
         Business.is_active,
     ]
     if selected_business_ids:
         option_conditions.append(CashSession.business_id.in_(selected_business_ids))
-    if filter_amount_state == "with_envelope":
-        option_conditions.append(CashSession.envelope_amount > Decimal("0.00"))
-    elif filter_amount_state == "zero":
-        option_conditions.append(CashSession.envelope_amount == Decimal("0.00"))
 
     cashier_options_stmt = (
         select(User.id, User.first_name, User.last_name)
@@ -1954,6 +2016,10 @@ async def envelopes_date_range_report(
             "all_envelope_sessions": paginated_sessions,
             "envelope_sessions_total_count": filtered_total_count,
             "filtered_total_amount": filtered_total_amount,
+            "total_businesses_with_envelopes": total_businesses_with_envelopes,
+            "average_envelope_amount": average_envelope_amount,
+            "envelopes_by_business": envelopes_by_business,
+            "envelope_sessions_by_business": envelope_sessions_by_business,
             "page_total_amount": page_total_amount,
             "businesses_by_id": business_names_by_id,
             "cashier_options": cashier_options,
@@ -1962,7 +2028,6 @@ async def envelopes_date_range_report(
             "total_pages": total_pages,
             "start_index": start_index,
             "filter_cashier": filter_cashier,
-            "filter_amount_state": filter_amount_state,
             "sort_by": sort_by,
             "sort_order": sort_order,
             "origin": origin or "",
