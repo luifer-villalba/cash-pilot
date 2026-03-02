@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-27 15:02+0000\n"
+"POT-Creation-Date: 2026-03-02 08:15+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -302,11 +302,11 @@ msgstr "Actualizar contraseña"
 msgid "Back to Dashboard"
 msgstr "Volver al Panel"
 
-msgid "Expenses by Date Range"
-msgstr "Gastos por rango de fechas"
+msgid "Envelopes by Date Range"
+msgstr "Sobres por rango de fechas"
 
-msgid "Review expense items across multiple days with filters and pagination"
-msgstr "Revisá gastos en varios días con filtros y paginación"
+msgid "Review envelope amounts across multiple days with filters and pagination"
+msgstr "Revisá montos de sobres en varios días con filtros y paginación"
 
 msgid "Back"
 msgstr "Volver"
@@ -322,9 +322,6 @@ msgstr "Últimos 7 días"
 
 msgid "This month"
 msgstr "Este mes"
-
-msgid "Search description…"
-msgstr "Buscar descripción…"
 
 msgid "Apply"
 msgstr "Aplicar"
@@ -347,11 +344,11 @@ msgstr "Hora (más recientes primero)"
 msgid "Time (oldest first)"
 msgstr "Hora (más antiguas primero)"
 
-msgid "Amount (high to low)"
-msgstr "Monto (de mayor a menor)"
+msgid "Envelope amount (high to low)"
+msgstr "Monto del sobre (de mayor a menor)"
 
-msgid "Amount (low to high)"
-msgstr "Monto (de menor a mayor)"
+msgid "Envelope amount (low to high)"
+msgstr "Monto del sobre (de menor a mayor)"
 
 msgid "Business (A-Z)"
 msgstr "Negocio (A-Z)"
@@ -365,6 +362,112 @@ msgstr "Cajero (A-Z)"
 msgid "Cashier (Z-A)"
 msgstr "Cajero (Z-A)"
 
+msgid "Total envelopes"
+msgstr "Total de sobres"
+
+msgid "Total amount"
+msgstr "Monto total"
+
+msgid "Businesses with envelopes"
+msgstr "Negocios con sobres"
+
+msgid "Average per envelope"
+msgstr "Promedio por sobre"
+
+msgid "Summary by business"
+msgstr "Resumen por negocio"
+
+msgid "Top businesses by total envelope amount"
+msgstr "Principales negocios por monto total de sobres"
+
+msgid "# Envelopes"
+msgstr "# Sobres"
+
+msgid "Total"
+msgstr "Total"
+
+#, no-python-format
+msgid "% of total"
+msgstr "% of total"
+
+msgid "Action"
+msgstr "Acción"
+
+msgid "View"
+msgstr "Ver"
+
+msgid "No business summary available for current filters"
+msgstr "No hay resumen por negocio para los filtros actuales"
+
+msgid "Filtered sessions"
+msgstr "Sesiones filtradas"
+
+msgid "Filtered envelope total"
+msgstr "Total filtrado de sobres"
+
+msgid "Showing"
+msgstr "Mostrando"
+
+msgid "envelopes across"
+msgstr "sobres en"
+
+msgid "businesses"
+msgstr "negocios"
+
+msgid "envelopes"
+msgstr "sobres"
+
+msgid "Select all"
+msgstr "Seleccionar todo"
+
+msgid "Clear"
+msgstr "Limpiar"
+
+msgid "Session"
+msgstr "Sesión"
+
+msgid "Envelope Amount"
+msgstr "Monto del Sobre"
+
+msgid "Time"
+msgstr "Hora"
+
+msgid "sessions"
+msgstr "sesiones"
+
+msgid "Page total"
+msgstr "Total de la página"
+
+msgid "No envelope sessions found for current filters and range"
+msgstr "No se encontraron sesiones con sobres para los filtros y rango actuales"
+
+msgid "Selected envelopes summary"
+msgstr "Resumen de sobres seleccionados"
+
+msgid "Selected"
+msgstr "Seleccionados"
+
+msgid "Clear selection"
+msgstr "Limpiar selección"
+
+msgid "selected"
+msgstr "seleccionado"
+
+msgid "Expenses by Date Range"
+msgstr "Gastos por rango de fechas"
+
+msgid "Review expense items across multiple days with filters and pagination"
+msgstr "Revisá gastos en varios días con filtros y paginación"
+
+msgid "Search description…"
+msgstr "Buscar descripción…"
+
+msgid "Amount (high to low)"
+msgstr "Monto (de mayor a menor)"
+
+msgid "Amount (low to high)"
+msgstr "Monto (de menor a mayor)"
+
 msgid "Per page"
 msgstr "Por página"
 
@@ -374,26 +477,17 @@ msgstr "Gastos filtrados"
 msgid "Filtered total amount"
 msgstr "Monto total filtrado"
 
-msgid "Session"
-msgstr "Sesión"
-
 msgid "Description"
 msgstr "Descripción"
 
 msgid "Amount"
 msgstr "Monto"
 
-msgid "Time"
-msgstr "Hora"
-
 msgid "of"
 msgstr "de"
 
 msgid "expenses"
 msgstr "gastos"
-
-msgid "Page total"
-msgstr "Total de la página"
 
 msgid "First"
 msgstr "Primera"
@@ -409,9 +503,6 @@ msgstr "Última"
 
 msgid "No expenses found for current filters and range"
 msgstr "No se encontraron gastos para los filtros y rango actuales"
-
-msgid "selected"
-msgstr "seleccionado"
 
 msgid "Daily Reconciliation Comparison"
 msgstr "Comparación de Conciliación Diaria"
@@ -892,9 +983,6 @@ msgstr "Marcado"
 msgid "Total System"
 msgstr "Total Agenda"
 
-msgid "Total"
-msgstr "Total"
-
 msgid "No sessions found for this date"
 msgstr "No se encontraron sesiones para esta fecha"
 
@@ -1191,9 +1279,6 @@ msgstr "Sesiones de Caja"
 msgid "session"
 msgstr "sesión"
 
-msgid "sessions"
-msgstr "sesiones"
-
 msgid "Open Cash Session"
 msgstr "Abrir Caja"
 
@@ -1274,9 +1359,6 @@ msgstr "Solo administradores y el creador de la sesión pueden eliminar"
 
 msgid "Restore"
 msgstr "Restaurar"
-
-msgid "Showing"
-msgstr "Mostrando"
 
 msgid "No sessions found"
 msgstr "No se encontraron sesiones"
@@ -1587,9 +1669,6 @@ msgstr "Sin datos de comparación"
 msgid "Bank Transfer"
 msgstr "Transferencia Bancaria"
 
-msgid "businesses"
-msgstr "negocios"
-
 msgid "Top"
 msgstr "Mayor"
 
@@ -1758,6 +1837,13 @@ msgstr ""
 "Revisá gastos en un período seleccionado con filtros, ordenamiento y "
 "paginación"
 
+msgid ""
+"Review envelope amounts across a selected period with filters, sorting, "
+"and pagination"
+msgstr ""
+"Revisá montos de sobres en un período seleccionado con filtros, ordenamiento y "
+"paginación"
+
 msgid "Business Intelligence"
 msgstr "Inteligencia de Negocios"
 
@@ -1769,9 +1855,6 @@ msgstr "Este Mes"
 
 msgid "Cashier name"
 msgstr "Nombre del cajero"
-
-msgid "Clear"
-msgstr "Limpiar"
 
 msgid "Date Range"
 msgstr "Rango de Fechas"
@@ -2210,9 +2293,6 @@ msgstr "Conteo Final de Efectivo"
 msgid "Total counted in drawer"
 msgstr "Total contado en el cajón"
 
-msgid "Envelope Amount"
-msgstr "Monto del Sobre"
-
 msgid "Cash removed from register (if any)"
 msgstr "Dinero retirado de la caja (si hubiese)"
 
@@ -2554,9 +2634,6 @@ msgstr "Cuándo"
 msgid "Who"
 msgstr "Quién"
 
-msgid "Action"
-msgstr "Acción"
-
 msgid "Changed Fields"
 msgstr "Campos Cambiados"
 
@@ -2645,21 +2722,4 @@ msgstr "ej., Discrepancia alta, requiere revisión del gerente..."
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
 
-#~ msgid "Loading comparison data"
-#~ msgstr "Cargando datos de comparación"
-
-#~ msgid "Difference Colors:"
-#~ msgstr "Colores de Diferencia:"
-
-#~ msgid "Green (Surplus)"
-#~ msgstr "Verde (Superávit)"
-
-#~ msgid "Manual has MORE than System (positive difference)"
-#~ msgstr "Farmagic tiene MÁS que Agenda (diferencia positiva)"
-
-#~ msgid "Red (Deficit)"
-#~ msgstr "Rojo (Déficit)"
-
-#~ msgid "Manual has LESS than System (negative difference)"
-#~ msgstr "Farmagic tiene MENOS que Agenda (diferencia negativa)"
 

@@ -171,7 +171,7 @@ class TestEnvelopeDateRangeReport:
         assert response.status_code == 200
         assert "Summary by business" in response.text
         assert "Businesses with envelopes" in response.text
-        assert "View only this business" in response.text
+        assert "View" in response.text
 
     @pytest.mark.asyncio
     async def test_admin_route_applies_cashier_filter(
