@@ -268,20 +268,18 @@
             {% for business_group in envelope_sessions_by_business %}
             <div class="border border-base-300 rounded-lg overflow-hidden bg-base-100">
                 <div class="px-3 py-2 bg-base-200/40 border-b border-base-300 flex items-center justify-between gap-3">
-                    <div class="text-sm font-semibold text-base-content">{{ business_group.business_name }}</div>
-                    <div class="flex items-center gap-2">
-                        <div class="text-xs font-mono text-base-content/80">
-                            {{ business_group.session_count }} {{ _('envelopes') }} · Gs {{ business_group.total_amount | format_currency_py }}
-                        </div>
-                        <button
-                            type="button"
-                            class="btn btn-xs btn-outline business-select-toggle"
+                    <div class="flex items-center gap-2 min-w-0">
+                        <input
+                            type="checkbox"
+                            class="checkbox checkbox-sm business-master-checkbox"
                             data-business-id="{{ business_group.business_id }}"
-                            data-select-label="{{ _('Select all') }}"
-                            data-clear-label="{{ _('Clear') }}"
-                        >
-                            {{ _('Select all') }}
-                        </button>
+                            title="{{ _('Select all') }}"
+                            aria-label="{{ _('Select all') }}"
+                        />
+                        <div class="text-sm font-semibold text-base-content truncate">{{ business_group.business_name }}</div>
+                    </div>
+                    <div class="text-xs font-mono text-base-content/80 text-right">
+                        {{ business_group.session_count }} {{ _('envelopes') }} · Gs {{ business_group.total_amount | format_currency_py }}
                     </div>
                 </div>
 
@@ -588,38 +586,53 @@
             }
         }
 
-        updateBusinessToggleButtons();
+        updateBusinessMasterCheckboxes();
     }
 
-    function updateBusinessToggleButtons() {
-        var businessToggles = document.querySelectorAll('.business-select-toggle');
+    function updateBusinessMasterCheckboxes() {
+        var masterCheckboxes = document.querySelectorAll('.business-master-checkbox');
         var checkboxes = document.querySelectorAll('.envelope-select-checkbox');
 
-        for (var i = 0; i < businessToggles.length; i += 1) {
-            var toggle = businessToggles[i];
-            var businessId = toggle.getAttribute('data-business-id');
-            var selectLabel = toggle.getAttribute('data-select-label') || 'Select all';
-            var clearLabel = toggle.getAttribute('data-clear-label') || 'Clear';
-            var hasAny = false;
-            var allSelected = true;
+        for (var i = 0; i < masterCheckboxes.length; i += 1) {
+            var masterCheckbox = masterCheckboxes[i];
+            var businessId = masterCheckbox.getAttribute('data-business-id');
+            var sessionsState = {};
 
             for (var j = 0; j < checkboxes.length; j += 1) {
                 if (checkboxes[j].getAttribute('data-business-id') === businessId) {
-                    hasAny = true;
-                    if (!checkboxes[j].checked) {
-                        allSelected = false;
-                        break;
+                    var sessionId = checkboxes[j].getAttribute('data-session-id');
+                    if (!sessionId) {
+                        continue;
+                    }
+                    if (!Object.prototype.hasOwnProperty.call(sessionsState, sessionId)) {
+                        sessionsState[sessionId] = false;
+                    }
+                    if (checkboxes[j].checked) {
+                        sessionsState[sessionId] = true;
                     }
                 }
             }
 
-            if (!hasAny) {
-                toggle.textContent = selectLabel;
-                toggle.disabled = true;
-            } else {
-                toggle.disabled = false;
-                toggle.textContent = allSelected ? clearLabel : selectLabel;
+            var sessionIds = Object.keys(sessionsState);
+            var totalSessions = sessionIds.length;
+            var selectedSessions = 0;
+
+            for (var k = 0; k < sessionIds.length; k += 1) {
+                if (sessionsState[sessionIds[k]]) {
+                    selectedSessions += 1;
+                }
             }
+
+            if (totalSessions === 0) {
+                masterCheckbox.disabled = true;
+                masterCheckbox.checked = false;
+                masterCheckbox.indeterminate = false;
+                continue;
+            }
+
+            masterCheckbox.disabled = false;
+            masterCheckbox.checked = selectedSessions === totalSessions;
+            masterCheckbox.indeterminate = selectedSessions > 0 && selectedSessions < totalSessions;
         }
     }
 
@@ -640,7 +653,7 @@
         var businessCheckboxes = document.querySelectorAll('.business-checkbox');
         var envelopeSelectRows = document.querySelectorAll('.envelope-select-row');
         var envelopeSelectCheckboxes = document.querySelectorAll('.envelope-select-checkbox');
-        var businessSelectToggles = document.querySelectorAll('.business-select-toggle');
+        var businessMasterCheckboxes = document.querySelectorAll('.business-master-checkbox');
         var clearSelectionButton = document.getElementById('clear-envelope-selection');
         var cashierInput = document.getElementById('filter_cashier');
         var advancedToggle = document.getElementById('filter-toggle');
@@ -775,27 +788,10 @@
             });
         }
 
-        for (var b = 0; b < businessSelectToggles.length; b += 1) {
-            businessSelectToggles[b].addEventListener('click', function() {
+        for (var b = 0; b < businessMasterCheckboxes.length; b += 1) {
+            businessMasterCheckboxes[b].addEventListener('change', function() {
                 var businessId = this.getAttribute('data-business-id');
-                var hasAny = false;
-                var allSelected = true;
-
-                for (var n = 0; n < envelopeSelectCheckboxes.length; n += 1) {
-                    if (envelopeSelectCheckboxes[n].getAttribute('data-business-id') === businessId) {
-                        hasAny = true;
-                        if (!envelopeSelectCheckboxes[n].checked) {
-                            allSelected = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (!hasAny) {
-                    return;
-                }
-
-                var nextChecked = !allSelected;
+                var nextChecked = this.checked;
                 for (var p = 0; p < envelopeSelectCheckboxes.length; p += 1) {
                     if (envelopeSelectCheckboxes[p].getAttribute('data-business-id') === businessId) {
                         envelopeSelectCheckboxes[p].checked = nextChecked;
