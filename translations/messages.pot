@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-02-27 15:02+0000\n"
+"POT-Creation-Date: 2026-03-02 08:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -292,10 +292,10 @@ msgstr ""
 msgid "Back to Dashboard"
 msgstr ""
 
-msgid "Expenses by Date Range"
+msgid "Envelopes by Date Range"
 msgstr ""
 
-msgid "Review expense items across multiple days with filters and pagination"
+msgid "Review envelope amounts across multiple days with filters and pagination"
 msgstr ""
 
 msgid "Back"
@@ -311,9 +311,6 @@ msgid "Last 7 days"
 msgstr ""
 
 msgid "This month"
-msgstr ""
-
-msgid "Search description…"
 msgstr ""
 
 msgid "Apply"
@@ -337,10 +334,10 @@ msgstr ""
 msgid "Time (oldest first)"
 msgstr ""
 
-msgid "Amount (high to low)"
+msgid "Envelope amount (high to low)"
 msgstr ""
 
-msgid "Amount (low to high)"
+msgid "Envelope amount (low to high)"
 msgstr ""
 
 msgid "Business (A-Z)"
@@ -355,6 +352,112 @@ msgstr ""
 msgid "Cashier (Z-A)"
 msgstr ""
 
+msgid "Total envelopes"
+msgstr ""
+
+msgid "Total amount"
+msgstr ""
+
+msgid "Businesses with envelopes"
+msgstr ""
+
+msgid "Average per envelope"
+msgstr ""
+
+msgid "Summary by business"
+msgstr ""
+
+msgid "Top businesses by total envelope amount"
+msgstr ""
+
+msgid "# Envelopes"
+msgstr ""
+
+msgid "Total"
+msgstr ""
+
+#, python-format
+msgid "% of total"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "View"
+msgstr ""
+
+msgid "No business summary available for current filters"
+msgstr ""
+
+msgid "Filtered sessions"
+msgstr ""
+
+msgid "Filtered envelope total"
+msgstr ""
+
+msgid "Showing"
+msgstr ""
+
+msgid "envelopes across"
+msgstr ""
+
+msgid "businesses"
+msgstr ""
+
+msgid "envelopes"
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Session"
+msgstr ""
+
+msgid "Envelope Amount"
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid "sessions"
+msgstr ""
+
+msgid "Page total"
+msgstr ""
+
+msgid "No envelope sessions found for current filters and range"
+msgstr ""
+
+msgid "Selected envelopes summary"
+msgstr ""
+
+msgid "Selected"
+msgstr ""
+
+msgid "Clear selection"
+msgstr ""
+
+msgid "selected"
+msgstr ""
+
+msgid "Expenses by Date Range"
+msgstr ""
+
+msgid "Review expense items across multiple days with filters and pagination"
+msgstr ""
+
+msgid "Search description…"
+msgstr ""
+
+msgid "Amount (high to low)"
+msgstr ""
+
+msgid "Amount (low to high)"
+msgstr ""
+
 msgid "Per page"
 msgstr ""
 
@@ -364,25 +467,16 @@ msgstr ""
 msgid "Filtered total amount"
 msgstr ""
 
-msgid "Session"
-msgstr ""
-
 msgid "Description"
 msgstr ""
 
 msgid "Amount"
 msgstr ""
 
-msgid "Time"
-msgstr ""
-
 msgid "of"
 msgstr ""
 
 msgid "expenses"
-msgstr ""
-
-msgid "Page total"
 msgstr ""
 
 msgid "First"
@@ -398,9 +492,6 @@ msgid "Last"
 msgstr ""
 
 msgid "No expenses found for current filters and range"
-msgstr ""
-
-msgid "selected"
 msgstr ""
 
 msgid "Daily Reconciliation Comparison"
@@ -880,9 +971,6 @@ msgstr ""
 msgid "Total System"
 msgstr ""
 
-msgid "Total"
-msgstr ""
-
 msgid "No sessions found for this date"
 msgstr ""
 
@@ -1179,9 +1267,6 @@ msgstr ""
 msgid "session"
 msgstr ""
 
-msgid "sessions"
-msgstr ""
-
 msgid "Open Cash Session"
 msgstr ""
 
@@ -1261,9 +1346,6 @@ msgid "Only admins and session creator can delete"
 msgstr ""
 
 msgid "Restore"
-msgstr ""
-
-msgid "Showing"
 msgstr ""
 
 msgid "No sessions found"
@@ -1571,9 +1653,6 @@ msgstr ""
 msgid "Bank Transfer"
 msgstr ""
 
-msgid "businesses"
-msgstr ""
-
 msgid "Top"
 msgstr ""
 
@@ -1736,6 +1815,11 @@ msgid ""
 "pagination"
 msgstr ""
 
+msgid ""
+"Review envelope amounts across a selected period with filters, sorting, "
+"and pagination"
+msgstr ""
+
 msgid "Business Intelligence"
 msgstr ""
 
@@ -1746,9 +1830,6 @@ msgid "This Month"
 msgstr ""
 
 msgid "Cashier name"
-msgstr ""
-
-msgid "Clear"
 msgstr ""
 
 msgid "Date Range"
@@ -2180,9 +2261,6 @@ msgstr ""
 msgid "Total counted in drawer"
 msgstr ""
 
-msgid "Envelope Amount"
-msgstr ""
-
 msgid "Cash removed from register (if any)"
 msgstr ""
 
@@ -2510,9 +2588,6 @@ msgid "When"
 msgstr ""
 
 msgid "Who"
-msgstr ""
-
-msgid "Action"
 msgstr ""
 
 msgid "Changed Fields"

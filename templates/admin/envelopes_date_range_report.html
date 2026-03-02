@@ -231,7 +231,7 @@
                                 <input type="hidden" name="origin" value="{{ origin }}" />
                                 {% endif %}
                                 <input type="hidden" name="business_ids" value="{{ item.business_id }}" />
-                                <button type="submit" class="btn btn-xs btn-outline">{{ _('View only this business') }}</button>
+                                <button type="submit" class="btn btn-xs btn-outline">{{ _('View') }}</button>
                             </form>
                         </td>
                     </tr>
@@ -269,8 +269,19 @@
             <div class="border border-base-300 rounded-lg overflow-hidden bg-base-100">
                 <div class="px-3 py-2 bg-base-200/40 border-b border-base-300 flex items-center justify-between gap-3">
                     <div class="text-sm font-semibold text-base-content">{{ business_group.business_name }}</div>
-                    <div class="text-xs font-mono text-base-content/80">
-                        {{ business_group.session_count }} {{ _('envelopes') }} · Gs {{ business_group.total_amount | format_currency_py }}
+                    <div class="flex items-center gap-2">
+                        <div class="text-xs font-mono text-base-content/80">
+                            {{ business_group.session_count }} {{ _('envelopes') }} · Gs {{ business_group.total_amount | format_currency_py }}
+                        </div>
+                        <button
+                            type="button"
+                            class="btn btn-xs btn-outline business-select-toggle"
+                            data-business-id="{{ business_group.business_id }}"
+                            data-select-label="{{ _('Select all') }}"
+                            data-clear-label="{{ _('Clear') }}"
+                        >
+                            {{ _('Select all') }}
+                        </button>
                     </div>
                 </div>
 
@@ -279,6 +290,7 @@
                     <div class="border border-base-300 rounded-lg p-3 bg-base-100 envelope-select-row cursor-pointer"
                          data-session-id="{{ item.session_id }}"
                          data-business-name="{{ item.business_name }}"
+                        data-business-id="{{ item.business_id }}"
                          data-amount="{{ item.amount }}"
                          role="button"
                          tabindex="0"
@@ -288,6 +300,7 @@
                             class="hidden envelope-select-checkbox"
                             data-session-id="{{ item.session_id }}"
                             data-business-name="{{ item.business_name }}"
+                            data-business-id="{{ item.business_id }}"
                             data-amount="{{ item.amount }}"
                         />
                         <div class="mb-2 flex items-center gap-2">
@@ -321,6 +334,7 @@
                             <tr class="envelope-select-row cursor-pointer"
                                 data-session-id="{{ item.session_id }}"
                                 data-business-name="{{ item.business_name }}"
+                                data-business-id="{{ item.business_id }}"
                                 data-amount="{{ item.amount }}"
                                 role="button"
                                 tabindex="0"
@@ -330,6 +344,7 @@
                                     class="hidden envelope-select-checkbox"
                                     data-session-id="{{ item.session_id }}"
                                     data-business-name="{{ item.business_name }}"
+                                    data-business-id="{{ item.business_id }}"
                                     data-amount="{{ item.amount }}"
                                 />
                                 <td class="text-center text-xs font-mono text-base-content/60">{{ loop.index }}</td>
@@ -572,6 +587,40 @@
                 summaryBar.classList.add('hidden');
             }
         }
+
+        updateBusinessToggleButtons();
+    }
+
+    function updateBusinessToggleButtons() {
+        var businessToggles = document.querySelectorAll('.business-select-toggle');
+        var checkboxes = document.querySelectorAll('.envelope-select-checkbox');
+
+        for (var i = 0; i < businessToggles.length; i += 1) {
+            var toggle = businessToggles[i];
+            var businessId = toggle.getAttribute('data-business-id');
+            var selectLabel = toggle.getAttribute('data-select-label') || 'Select all';
+            var clearLabel = toggle.getAttribute('data-clear-label') || 'Clear';
+            var hasAny = false;
+            var allSelected = true;
+
+            for (var j = 0; j < checkboxes.length; j += 1) {
+                if (checkboxes[j].getAttribute('data-business-id') === businessId) {
+                    hasAny = true;
+                    if (!checkboxes[j].checked) {
+                        allSelected = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasAny) {
+                toggle.textContent = selectLabel;
+                toggle.disabled = true;
+            } else {
+                toggle.disabled = false;
+                toggle.textContent = allSelected ? clearLabel : selectLabel;
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -591,6 +640,7 @@
         var businessCheckboxes = document.querySelectorAll('.business-checkbox');
         var envelopeSelectRows = document.querySelectorAll('.envelope-select-row');
         var envelopeSelectCheckboxes = document.querySelectorAll('.envelope-select-checkbox');
+        var businessSelectToggles = document.querySelectorAll('.business-select-toggle');
         var clearSelectionButton = document.getElementById('clear-envelope-selection');
         var cashierInput = document.getElementById('filter_cashier');
         var advancedToggle = document.getElementById('filter-toggle');
@@ -721,6 +771,37 @@
                         envelopeSelectCheckboxes[m].checked = !isCurrentlySelected;
                     }
                 }
+                updateSelectionSummary();
+            });
+        }
+
+        for (var b = 0; b < businessSelectToggles.length; b += 1) {
+            businessSelectToggles[b].addEventListener('click', function() {
+                var businessId = this.getAttribute('data-business-id');
+                var hasAny = false;
+                var allSelected = true;
+
+                for (var n = 0; n < envelopeSelectCheckboxes.length; n += 1) {
+                    if (envelopeSelectCheckboxes[n].getAttribute('data-business-id') === businessId) {
+                        hasAny = true;
+                        if (!envelopeSelectCheckboxes[n].checked) {
+                            allSelected = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (!hasAny) {
+                    return;
+                }
+
+                var nextChecked = !allSelected;
+                for (var p = 0; p < envelopeSelectCheckboxes.length; p += 1) {
+                    if (envelopeSelectCheckboxes[p].getAttribute('data-business-id') === businessId) {
+                        envelopeSelectCheckboxes[p].checked = nextChecked;
+                    }
+                }
+
                 updateSelectionSummary();
             });
         }
