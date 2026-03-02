@@ -24,13 +24,24 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-2">
-            <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}" class="btn btn-outline btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]">
+            <a href="/reconciliation/daily?date={{ comparison_date.isoformat() }}" class="btn btn-primary btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
                 {{ _('Edit Entries') }}
             </a>
-            <a href="/" class="btn btn-outline btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150 hover:scale-[1.02] active:scale-[0.98]" data-back>
+            <a
+                href="/admin/envelopes/date-range?from_date={{ comparison_date.isoformat() }}&to_date={{ comparison_date.isoformat() }}&preset=custom{% if selected_business_id %}&business_id={{ selected_business_id }}{% endif %}"
+                class="btn btn-outline btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150"
+                title="{{ _('Envelopes by Date Range') }}"
+                aria-label="{{ _('Envelopes by Date Range') }}"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9 6 9-6-9-4-9 4zm0 0v10l9 4 9-4V7"/>
+                </svg>
+                {{ _('Envelopes') }}
+            </a>
+            <a href="/" class="btn btn-ghost btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150" data-back>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -42,137 +53,160 @@
     <!-- Filters -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-4">
         <form method="get" action="/admin/reconciliation/compare" id="filter-form">
-            <!-- Business Selector (Most Important - Full Width) -->
-            <div class="mb-4">
-                <label for="business_id" class="label py-1">
-                    <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
-                </label>
-                <select
-                    id="business_id"
-                    name="business_id"
-                    class="select select-bordered w-full focus:select-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200"
-                    aria-label="{{ _('Select business to analyze') }}"
-                >
-                    <option value="">{{ _('All Businesses') }}</option>
-                    {% for business in businesses %}
-                    <option value="{{ business.id }}" {% if selected_business_id == business.id|string %}selected{% endif %}>
-                        {{ business.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="divider my-4 text-xs font-medium text-base-content/60">{{ _('Select date') }}</div>
-
-            <!-- Selected Period Banner -->
-            <div id="selectedPeriodBanner" class="mb-3 p-3 bg-info/10 border border-info/30 rounded-lg" role="status" aria-live="polite">
-                <div class="flex items-center gap-2 text-sm">
-                    <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <span class="font-medium text-info">{{ _('Viewing') }}:</span>
-                    <span id="selectedPeriodText" class="text-base-content font-semibold">{{ comparison_date.strftime('%B %d, %Y') if comparison_date else '' }}</span>
+            <div class="flex flex-wrap items-end gap-3 mb-3">
+                <div class="flex-1 min-w-[18rem]">
+                    <label for="business_id" class="label py-1">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Business') }}</span>
+                    </label>
+                    <select
+                        id="business_id"
+                        name="business_id"
+                        class="select select-bordered w-full focus:select-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200"
+                        aria-label="{{ _('Select business to analyze') }}"
+                    >
+                        <option value="">{{ _('All Businesses') }}</option>
+                        {% for business in businesses %}
+                        <option value="{{ business.id }}" {% if selected_business_id == business.id|string %}selected{% endif %}>
+                            {{ business.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
-            </div>
 
-            <!-- Quick Action Buttons (First button with icon, starts as btn-outline) -->
-            <div class="flex flex-wrap gap-2 mb-4">
-                <button 
-                    type="button"
-                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
-                    data-days="0" 
-                    aria-label="{{ _('Select today') }}"
-                >
-                    <span class="hidden sm:inline">{{ _('Today') }}</span>
-                    <span class="sm:hidden">{{ _('Today') }}</span>
-                </button>
-                <button 
-                    type="button"
-                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
-                    data-days="1" 
-                    aria-label="{{ _('Select yesterday') }}"
-                >
-                    <span class="hidden sm:inline">{{ _('Yesterday') }}</span>
-                    <span class="sm:hidden">{{ _('Yesterday') }}</span>
-                </button>
-                <button 
-                    type="button"
-                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
-                    data-days="2" 
-                    aria-label="{{ _('Select 2 days ago') }}"
-                >
-                    <span class="hidden sm:inline">{{ _('2 Days Ago') }}</span>
-                    <span class="sm:hidden">{{ _('2 Days Ago') }}</span>
-                </button>
-                <button 
-                    type="button"
-                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
-                    data-days="7" 
-                    aria-label="{{ _('Select 7 days ago') }}"
-                >
-                    <span class="hidden sm:inline">{{ _('7 Days Ago') }}</span>
-                    <span class="sm:hidden">{{ _('7 Days Ago') }}</span>
-                </button>
-                <button 
-                    type="button"
-                    class="btn btn-xs sm:btn-sm btn-outline quick-date-btn transition-all duration-150 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2" 
-                    data-days="30" 
-                    aria-label="{{ _('Select 30 days ago') }}"
-                >
-                    <span class="hidden sm:inline">{{ _('30 Days Ago') }}</span>
-                    <span class="sm:hidden">{{ _('30 Days Ago') }}</span>
-                </button>
-            </div>
+                <div class="w-full sm:w-auto min-w-[12rem]">
+                    <label for="date" class="label py-1">
+                        <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Date') }}</span>
+                    </label>
+                    <input
+                        type="date"
+                        name="date"
+                        id="date"
+                        value="{{ comparison_date.isoformat() }}"
+                        class="input input-bordered w-full focus:input-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200"
+                        aria-label="{{ _('Date') }}"
+                    />
+                </div>
 
-            <!-- Custom Date Selector (Collapsed by Default) -->
-            <details class="collapse collapse-arrow bg-base-200/50 rounded-lg border border-base-300">
-                <summary class="collapse-title text-sm font-medium cursor-pointer hover:bg-base-200 transition-all">
-                    <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <span>{{ _('Pick Custom Date') }}</span>
-                    </div>
-                </summary>
-                <div class="collapse-content pt-3">
-                    <div class="form-control">
-                        <label for="date" class="label py-1">
-                            <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Date') }}</span>
-                        </label>
-                        <input
-                            type="date"
-                            name="date"
-                            id="date"
-                            value="{{ comparison_date.isoformat() }}"
-                            class="input input-bordered w-full focus:input-primary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-200"
-                            aria-describedby="date-help"
-                        />
-                        <label class="label pt-2" id="date-help-container">
-                            <span class="label-text-alt text-info font-medium flex items-center gap-1" id="date-help">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <div class="w-full xl:flex-1">
+                    <label class="label py-1 justify-start">
+                        <div class="flex items-center gap-2">
+                            <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Select date') }}</span>
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-primary/30 bg-primary/10 text-primary text-[11px] font-semibold" role="status" aria-live="polite">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
-                                {{ _('Select a date to compare reconciliation data') }}
+                                <span id="selectedPeriodText" class="font-semibold text-base-content">{{ comparison_date.strftime('%d/%m/%Y') if comparison_date else '' }}</span>
                             </span>
-                        </label>
+                        </div>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-2 rounded-lg border border-base-300 bg-base-200/40 p-2 min-h-[3rem]">
+                        <button
+                            type="button"
+                            class="btn btn-xs sm:btn-sm btn-outline shift-date-btn focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-shift-days="-1"
+                            aria-label="{{ _('Previous day') }}"
+                            title="{{ _('Previous day') }}"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-xs sm:btn-sm btn-ghost quick-date-btn focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-days="0"
+                            aria-label="{{ _('Select today') }}"
+                        >
+                            <span class="hidden sm:inline">{{ _('Today') }}</span>
+                            <span class="sm:hidden">{{ _('Today') }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-xs sm:btn-sm btn-ghost quick-date-btn focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-days="1"
+                            aria-label="{{ _('Select yesterday') }}"
+                        >
+                            <span class="hidden sm:inline">{{ _('Yesterday') }}</span>
+                            <span class="sm:hidden">{{ _('Yesterday') }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-xs sm:btn-sm btn-ghost quick-date-btn focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-days="2"
+                            aria-label="{{ _('Select 2 days ago') }}"
+                        >
+                            <span class="hidden sm:inline">{{ _('2 Days Ago') }}</span>
+                            <span class="sm:hidden">{{ _('2 Days Ago') }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-xs sm:btn-sm btn-ghost quick-date-btn focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-days="7"
+                            aria-label="{{ _('Select 7 days ago') }}"
+                        >
+                            <span class="hidden sm:inline">{{ _('7 Days Ago') }}</span>
+                            <span class="sm:hidden">{{ _('7 Days Ago') }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-xs sm:btn-sm btn-ghost quick-date-btn focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-days="30"
+                            aria-label="{{ _('Select 30 days ago') }}"
+                        >
+                            <span class="hidden sm:inline">{{ _('30 Days Ago') }}</span>
+                            <span class="sm:hidden">{{ _('30 Days Ago') }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-xs sm:btn-sm btn-outline shift-date-btn focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-shift-days="1"
+                            aria-label="{{ _('Next day') }}"
+                            title="{{ _('Next day') }}"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
-            </details>
+            </div>
+
         </form>
     </div>
 
     <!-- Comparison Results & Transfers - TABBED INTERFACE -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm overflow-hidden">
         <!-- Tab Headers -->
-        <div class="flex border-b border-base-300 bg-base-200/50" role="tablist" aria-label="{{ _('Reconciliation data views') }}">
-            <button type="button" id="sales-tab-button" class="tab-button active inline-flex items-center justify-center gap-2 flex-1 px-6 py-4 font-semibold text-base-content bg-base-100 border-b-2 border-primary transition-all duration-200 hover:bg-base-200/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-inset" role="tab" data-tab="sales" aria-selected="true" aria-controls="sales-tab">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                <span>{{ _('Sales Comparison') }}</span>
-            </button>
-            <button type="button" id="transfers-tab-button" class="tab-button inline-flex items-center justify-center gap-2 flex-1 px-6 py-4 font-semibold text-base-content/70 bg-base-200/50 border-b-2 border-transparent transition-all duration-200 hover:text-base-content hover:bg-base-200/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-inset" role="tab" data-tab="transfers" aria-selected="false" aria-controls="transfers-tab">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                <span>{{ _('Bank Transfers') }}</span>
-            </button>
+        <div class="flex items-center border-b border-base-300 bg-base-200/50">
+            <div class="flex flex-1 min-w-0" role="tablist" aria-label="{{ _('Reconciliation data views') }}">
+                <button type="button" id="sales-tab-button" class="tab-button active inline-flex items-center justify-center gap-2 flex-1 px-6 py-4 font-semibold text-base-content bg-base-100 border-b-2 border-primary transition-all duration-200 hover:bg-base-200/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-inset" role="tab" data-tab="sales" aria-selected="true" aria-controls="sales-tab">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    <span>{{ _('Sales Comparison') }}</span>
+                </button>
+                <button type="button" id="transfers-tab-button" class="tab-button inline-flex items-center justify-center gap-2 flex-1 px-6 py-4 font-semibold text-base-content/70 bg-base-200/50 border-b-2 border-transparent transition-all duration-200 hover:text-base-content hover:bg-base-200/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-inset" role="tab" data-tab="transfers" aria-selected="false" aria-controls="transfers-tab">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                    <span>{{ _('Bank Transfers') }}</span>
+                </button>
+            </div>
+            <div id="sales-tab-last-updated" class="flex items-center gap-1.5 text-xs text-base-content/60 px-3 sm:px-4">
+                <div class="flex items-center gap-1.5" title="{{ _('Last updated at') }} {{ last_updated_display }} ({{ _('Paraguay Time') }})">
+                    <svg class="w-3 h-3 text-success flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <circle cx="10" cy="10" r="8"></circle>
+                    </svg>
+                    <span class="hidden xl:inline">{{ _('Last updated') }}</span>
+                    <time id="sales-last-updated-time" datetime="{{ last_updated }}" class="font-mono font-semibold text-base-content" aria-label="{{ _('Last updated at') }} {{ last_updated_display }} ({{ _('Paraguay Time') }})">{{ last_updated_display }}</time>
+                </div>
+                <button
+                    type="button"
+                    class="btn btn-ghost btn-xs btn-square refresh-comparison-btn"
+                    aria-label="{{ _('Refresh comparison table') }}"
+                    title="{{ _('Refresh') }}"
+                >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- Tab Content -->
@@ -616,6 +650,7 @@
         function activateTab(tabName) {
             var tabButtons = document.querySelectorAll('.tab-button');
             var tabContents = document.querySelectorAll('.tab-content');
+            var salesTabLastUpdated = document.getElementById('sales-tab-last-updated');
 
             forEachNode(tabButtons, function(btn) {
                 removeClasses(btn, ['active', 'text-base-content', 'border-primary', 'bg-base-100']);
@@ -640,6 +675,14 @@
                 contentElement.classList.remove('hidden');
                 contentElement.classList.add('active');
             }
+
+            if (salesTabLastUpdated) {
+                if (tabName === 'sales') {
+                    salesTabLastUpdated.classList.remove('hidden');
+                } else {
+                    salesTabLastUpdated.classList.add('hidden');
+                }
+            }
         }
 
         // Helper function to update URL with tab parameter
@@ -653,6 +696,22 @@
             var dateInput = document.getElementById('date');
             var expandedSessionsByBusiness = {};
             var allowNextComparisonRefresh = false;
+
+            function syncLastUpdatedIndicator() {
+                var source = document.getElementById('comparison-last-updated-source');
+                var target = document.getElementById('sales-last-updated-time');
+                if (!source || !target) return;
+
+                var displayValue = (source.textContent || '').trim();
+                var datetimeValue = source.getAttribute('datetime') || '';
+
+                if (displayValue) {
+                    target.textContent = displayValue;
+                }
+                if (datetimeValue) {
+                    target.setAttribute('datetime', datetimeValue);
+                }
+            }
 
             function setSessionExpandedState(businessId, isExpanded) {
                 if (!businessId) return;
@@ -703,18 +762,34 @@
                 businessSelect.addEventListener('change', autoSubmit);
             }
 
+            var quickButtons = document.querySelectorAll('.quick-date-btn');
+            var shiftDateButtons = document.querySelectorAll('.shift-date-btn');
+
+            function resetQuickButtonsState() {
+                forEachNode(quickButtons, function(btn) {
+                    removeClasses(btn, ['btn-primary']);
+                    addClasses(btn, ['btn-ghost']);
+                });
+            }
+
+            function parseDateInputValue(value) {
+                if (!value) return null;
+                var parts = value.split('-');
+                if (parts.length !== 3) return null;
+                var year = parseInt(parts[0], 10);
+                var month = parseInt(parts[1], 10) - 1;
+                var day = parseInt(parts[2], 10);
+                if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+                return new Date(year, month, day);
+            }
+
             if (dateInput) {
                 dateInput.addEventListener('change', function() {
-                    var quickButtons = document.querySelectorAll('.quick-date-btn');
-                    forEachNode(quickButtons, function(btn) {
-                        removeClasses(btn, ['btn-primary']);
-                        addClasses(btn, ['btn-outline']);
-                    });
+                    resetQuickButtonsState();
                     autoSubmit();
                 });
             }
 
-            var quickButtons = document.querySelectorAll('.quick-date-btn');
             forEachNode(quickButtons, function(btn) {
                 btn.addEventListener('click', function() {
                     var daysAgo = parseInt(this.getAttribute('data-days'), 10);
@@ -726,12 +801,29 @@
                         dateInput.value = dateStr;
                     }
 
-                    forEachNode(quickButtons, function(button) {
-                        removeClasses(button, ['btn-primary']);
-                        addClasses(button, ['btn-outline']);
-                    });
-                    removeClasses(this, ['btn-outline']);
+                    resetQuickButtonsState();
+                    removeClasses(this, ['btn-ghost']);
                     addClasses(this, ['btn-primary']);
+                    autoSubmit();
+                });
+            });
+
+            forEachNode(shiftDateButtons, function(btn) {
+                btn.addEventListener('click', function() {
+                    var shiftDays = parseInt(this.getAttribute('data-shift-days'), 10);
+                    if (isNaN(shiftDays) || !dateInput) {
+                        return;
+                    }
+
+                    var baseDate = parseDateInputValue(dateInput.value);
+                    if (!baseDate) {
+                        var today = new Date();
+                        baseDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    }
+
+                    var shiftedDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + shiftDays);
+                    dateInput.value = formatLocalDate(shiftedDate);
+                    resetQuickButtonsState();
                     autoSubmit();
                 });
             });
@@ -759,7 +851,7 @@
                 }
 
                 if (activeBtn) {
-                    removeClasses(activeBtn, ['btn-outline']);
+                    removeClasses(activeBtn, ['btn-ghost']);
                     addClasses(activeBtn, ['btn-primary']);
                 }
             }
@@ -798,6 +890,7 @@
             document.body.addEventListener('htmx:afterSwap', function(evt) {
                 if (!evt || !evt.detail || !evt.detail.target) return;
                 if (evt.detail.target.id === 'comparison-results') {
+                    syncLastUpdatedIndicator();
                     restoreExpandedSessionRows();
                 }
             });
@@ -831,6 +924,7 @@
             var tabButtons = document.querySelectorAll('.tab-button');
             var activeTab = getQueryParam('tab') || 'sales';
             activateTab(activeTab);
+            syncLastUpdatedIndicator();
 
             forEachNode(tabButtons, function(button) {
                 button.addEventListener('click', function() {
