@@ -36,7 +36,7 @@
 {% set base_query = base_query ~ '&origin=' ~ (origin | urlencode) %}
 {% endif %}
 
-<div class="space-y-4">
+<div class="space-y-4 pb-24">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2">
         <div>
             <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Envelopes by Date Range') }}</h1>
@@ -276,7 +276,20 @@
 
                 <div class="lg:hidden px-3 py-3 space-y-3">
                     {% for item in business_group.sessions %}
-                    <div class="border border-base-300 rounded-lg p-3 bg-base-100">
+                    <div class="border border-base-300 rounded-lg p-3 bg-base-100 envelope-select-row cursor-pointer"
+                         data-session-id="{{ item.session_id }}"
+                         data-business-name="{{ item.business_name }}"
+                         data-amount="{{ item.amount }}"
+                         role="button"
+                         tabindex="0"
+                         aria-pressed="false">
+                        <input
+                            type="checkbox"
+                            class="hidden envelope-select-checkbox"
+                            data-session-id="{{ item.session_id }}"
+                            data-business-name="{{ item.business_name }}"
+                            data-amount="{{ item.amount }}"
+                        />
                         <div class="mb-2 flex items-center gap-2">
                             <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-base-content bg-base-200 rounded-full flex-shrink-0">{{ loop.index }}</span>
                             <a href="/sessions/{{ item.session_id }}" class="badge badge-outline badge-sm font-mono text-primary">#{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}</a>
@@ -305,7 +318,20 @@
                         </thead>
                         <tbody>
                             {% for item in business_group.sessions %}
-                            <tr>
+                            <tr class="envelope-select-row cursor-pointer"
+                                data-session-id="{{ item.session_id }}"
+                                data-business-name="{{ item.business_name }}"
+                                data-amount="{{ item.amount }}"
+                                role="button"
+                                tabindex="0"
+                                aria-pressed="false">
+                                <input
+                                    type="checkbox"
+                                    class="hidden envelope-select-checkbox"
+                                    data-session-id="{{ item.session_id }}"
+                                    data-business-name="{{ item.business_name }}"
+                                    data-amount="{{ item.amount }}"
+                                />
                                 <td class="text-center text-xs font-mono text-base-content/60">{{ loop.index }}</td>
                                 <td class="text-center">
                                     <a href="/sessions/{{ item.session_id }}" class="badge badge-outline badge-sm font-mono text-primary">#{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}</a>
@@ -335,6 +361,23 @@
             <p class="text-sm text-base-content/60 font-medium">{{ _('No envelope sessions found for current filters and range') }}</p>
         </div>
         {% endif %}
+    </div>
+</div>
+
+<div id="selection-summary-bar" class="hidden fixed bottom-0 left-0 right-0 z-40 bg-base-100 border-t border-base-300 shadow-lg">
+    <div class="max-w-[1400px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="text-sm font-semibold text-base-content">{{ _('Selected envelopes summary') }}</div>
+        <div class="flex flex-wrap items-center gap-4 text-xs sm:text-sm">
+            <div>
+                <span class="text-base-content/60">{{ _('Selected') }}:</span>
+                <span id="selected-envelope-count" class="font-mono font-bold">0</span>
+            </div>
+            <div>
+                <span class="text-base-content/60">{{ _('Total') }}:</span>
+                <span id="selected-envelope-total" class="font-mono font-bold">Gs 0,00</span>
+            </div>
+            <button type="button" id="clear-envelope-selection" class="btn btn-xs btn-outline">{{ _('Clear selection') }}</button>
+        </div>
     </div>
 </div>
 
@@ -449,6 +492,88 @@
         form.submit();
     }
 
+    function parseAmount(value) {
+        if (!value) return 0;
+        var normalized = String(value).trim();
+        if (normalized.indexOf(',') !== -1 && normalized.indexOf('.') !== -1) {
+            normalized = normalized.replace(/\./g, '').replace(',', '.');
+        } else if (normalized.indexOf(',') !== -1) {
+            normalized = normalized.replace(',', '.');
+        }
+        var parsed = parseFloat(normalized);
+        if (isNaN(parsed)) {
+            parsed = parseFloat(String(value));
+        }
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    function formatGs(value) {
+        var amount = Math.round((value || 0) * 100) / 100;
+        var fixed = amount.toFixed(2);
+        var parts = fixed.split('.');
+        var integerPart = parts[0];
+        var decimalPart = parts[1] || '00';
+        var withThousands = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        if (decimalPart === '00') {
+            return 'Gs ' + withThousands;
+        }
+        return 'Gs ' + withThousands + ',' + decimalPart;
+    }
+
+    function updateSelectionSummary() {
+        var checkboxes = document.querySelectorAll('.envelope-select-checkbox');
+        var rows = document.querySelectorAll('.envelope-select-row');
+        var selectedCount = 0;
+        var selectedTotal = 0;
+        var selectedBySessionId = {};
+
+        for (var i = 0; i < checkboxes.length; i += 1) {
+            var checkboxSessionId = checkboxes[i].getAttribute('data-session-id');
+            if (checkboxes[i].checked && checkboxSessionId && !selectedBySessionId[checkboxSessionId]) {
+                selectedBySessionId[checkboxSessionId] = true;
+                selectedCount += 1;
+                selectedTotal += parseAmount(checkboxes[i].getAttribute('data-amount'));
+            }
+        }
+
+        for (var j = 0; j < rows.length; j += 1) {
+            var row = rows[j];
+            var rowSessionId = row.getAttribute('data-session-id');
+            var rowChecked = false;
+            for (var k = 0; k < checkboxes.length; k += 1) {
+                if (checkboxes[k].getAttribute('data-session-id') === rowSessionId) {
+                    if (checkboxes[k].checked) {
+                        rowChecked = true;
+                        break;
+                    }
+                }
+            }
+
+            if (rowChecked) {
+                row.classList.add('bg-primary/10');
+                row.classList.add('border-primary/40');
+                row.setAttribute('aria-pressed', 'true');
+            } else {
+                row.classList.remove('bg-primary/10');
+                row.classList.remove('border-primary/40');
+                row.setAttribute('aria-pressed', 'false');
+            }
+        }
+
+        var selectedCountEl = document.getElementById('selected-envelope-count');
+        var selectedTotalEl = document.getElementById('selected-envelope-total');
+        var summaryBar = document.getElementById('selection-summary-bar');
+        if (selectedCountEl) selectedCountEl.textContent = String(selectedCount);
+        if (selectedTotalEl) selectedTotalEl.textContent = formatGs(selectedTotal);
+        if (summaryBar) {
+            if (selectedCount > 0) {
+                summaryBar.classList.remove('hidden');
+            } else {
+                summaryBar.classList.add('hidden');
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         var form = document.getElementById('range-filter-form');
         var fromDateInput = document.getElementById('from_date');
@@ -464,6 +589,9 @@
         var businessFilterClear = document.getElementById('business-filter-clear');
         var businessFilterLabel = document.getElementById('business-filter-label');
         var businessCheckboxes = document.querySelectorAll('.business-checkbox');
+        var envelopeSelectRows = document.querySelectorAll('.envelope-select-row');
+        var envelopeSelectCheckboxes = document.querySelectorAll('.envelope-select-checkbox');
+        var clearSelectionButton = document.getElementById('clear-envelope-selection');
         var cashierInput = document.getElementById('filter_cashier');
         var advancedToggle = document.getElementById('filter-toggle');
         var advancedFilters = document.getElementById('filter-advanced');
@@ -552,6 +680,61 @@
         }
 
         updateBusinessFilterLabel();
+        for (var j = 0; j < envelopeSelectRows.length; j += 1) {
+            envelopeSelectRows[j].addEventListener('click', function(event) {
+                var target = event.target;
+                if (target && (target.tagName === 'A' || target.closest('a'))) {
+                    return;
+                }
+
+                var sessionId = this.getAttribute('data-session-id');
+                var isCurrentlySelected = false;
+                for (var n = 0; n < envelopeSelectCheckboxes.length; n += 1) {
+                    if (envelopeSelectCheckboxes[n].getAttribute('data-session-id') === sessionId && envelopeSelectCheckboxes[n].checked) {
+                        isCurrentlySelected = true;
+                        break;
+                    }
+                }
+                for (var m = 0; m < envelopeSelectCheckboxes.length; m += 1) {
+                    if (envelopeSelectCheckboxes[m].getAttribute('data-session-id') === sessionId) {
+                        envelopeSelectCheckboxes[m].checked = !isCurrentlySelected;
+                    }
+                }
+                updateSelectionSummary();
+            });
+
+            envelopeSelectRows[j].addEventListener('keydown', function(event) {
+                if (event.key !== 'Enter' && event.key !== ' ') {
+                    return;
+                }
+                event.preventDefault();
+                var sessionId = this.getAttribute('data-session-id');
+                var isCurrentlySelected = false;
+                for (var n = 0; n < envelopeSelectCheckboxes.length; n += 1) {
+                    if (envelopeSelectCheckboxes[n].getAttribute('data-session-id') === sessionId && envelopeSelectCheckboxes[n].checked) {
+                        isCurrentlySelected = true;
+                        break;
+                    }
+                }
+                for (var m = 0; m < envelopeSelectCheckboxes.length; m += 1) {
+                    if (envelopeSelectCheckboxes[m].getAttribute('data-session-id') === sessionId) {
+                        envelopeSelectCheckboxes[m].checked = !isCurrentlySelected;
+                    }
+                }
+                updateSelectionSummary();
+            });
+        }
+
+        if (clearSelectionButton) {
+            clearSelectionButton.addEventListener('click', function() {
+                for (var k = 0; k < envelopeSelectCheckboxes.length; k += 1) {
+                    envelopeSelectCheckboxes[k].checked = false;
+                }
+                updateSelectionSummary();
+            });
+        }
+
+        updateSelectionSummary();
         if (cashierInput) cashierInput.addEventListener('change', autoSubmitFilters);
 
         for (var i = 0; i < presetButtons.length; i += 1) {
