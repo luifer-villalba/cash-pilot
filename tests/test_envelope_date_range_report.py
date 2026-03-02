@@ -133,6 +133,47 @@ class TestEnvelopeDateRangeReport:
         assert str(session_c.id) not in response.text
 
     @pytest.mark.asyncio
+    async def test_admin_route_renders_business_summary_mvp(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Report renders KPI + business summary block with quick filter action."""
+        business_a = await factories.business(name="Envelope Summary A")
+        business_b = await factories.business(name="Envelope Summary B")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-summary@test.com")
+        await factories.user_business(business=business_a, user=cashier)
+        await factories.user_business(business=business_b, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        await factories.cash_session(
+            business=business_a,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1100.00"),
+        )
+        await factories.cash_session(
+            business=business_b,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("2200.00"),
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/envelopes/date-range",
+            params={
+                "from_date": session_date.isoformat(),
+                "to_date": session_date.isoformat(),
+            },
+        )
+
+        assert response.status_code == 200
+        assert "Summary by business" in response.text
+        assert "Businesses with envelopes" in response.text
+        assert "View only this business" in response.text
+
+    @pytest.mark.asyncio
     async def test_admin_route_applies_cashier_filter(
         self, db_session: AsyncSession, factories, admin_client
     ):
@@ -185,12 +226,12 @@ class TestEnvelopeDateRangeReport:
         assert str(session_b.id) not in response.text
 
     @pytest.mark.asyncio
-    async def test_admin_route_applies_amount_state_filter(
+    async def test_admin_route_excludes_zero_envelope_by_default(
         self, db_session: AsyncSession, factories, admin_client
     ):
-        """Amount state filter selects only sessions with envelope amount > 0."""
-        business = await factories.business(name="Envelope State Business")
-        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-state@test.com")
+        """Zero envelope sessions are excluded by default from the report."""
+        business = await factories.business(name="Envelope Default Filter Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-default@test.com")
         await factories.user_business(business=business, user=cashier)
 
         session_date = date.today() - timedelta(days=1)
@@ -206,7 +247,7 @@ class TestEnvelopeDateRangeReport:
             cashier=cashier,
             session_date=session_date,
             status="CLOSED",
-            envelope_amount=Decimal("5000.00"),
+            envelope_amount=Decimal("500.00"),
         )
         await db_session.commit()
 
@@ -215,7 +256,6 @@ class TestEnvelopeDateRangeReport:
             params={
                 "from_date": session_date.isoformat(),
                 "to_date": session_date.isoformat(),
-                "filter_amount_state": "with_envelope",
             },
         )
 
@@ -224,16 +264,17 @@ class TestEnvelopeDateRangeReport:
         assert str(zero_session.id) not in response.text
 
     @pytest.mark.asyncio
-    async def test_admin_route_last_month_preset_sets_date_range(
+    async def test_admin_route_this_month_preset_sets_date_range(
         self, db_session: AsyncSession, factories, admin_client
     ):
-        """last_month preset returns data from the last 30 days window."""
+        """this_month preset returns data from current month up to today."""
         business = await factories.business(name="Envelope Preset Business")
         cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-preset@test.com")
         await factories.user_business(business=business, user=cashier)
 
-        inside_date = date.today() - timedelta(days=10)
-        outside_date = date.today() - timedelta(days=40)
+        today = date.today()
+        inside_date = today.replace(day=1)
+        outside_date = inside_date - timedelta(days=1)
 
         inside_session = await factories.cash_session(
             business=business,
@@ -253,7 +294,7 @@ class TestEnvelopeDateRangeReport:
 
         response = await admin_client.get(
             "/admin/envelopes/date-range",
-            params={"preset": "last_month"},
+            params={"preset": "this_month"},
         )
 
         assert response.status_code == 200
