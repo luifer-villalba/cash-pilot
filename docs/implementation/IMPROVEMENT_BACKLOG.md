@@ -407,7 +407,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `src/cashpilot/models/cash_session.py` (`envelope_amount`), existing day-scoped reconciliation/reporting flows
 * **User Story:** Admin needs to search envelopes for a specific period and optionally only 2–3 pharmacies at once, with quick filters for rapid daily operations.
 * **Acceptance impact:** AC-06 (reporting clarity/accuracy)
-* **Status:** ⏳ Not started
+* **Status:** ✅ Completed (2026-03-01) — Phase 1 delivered (date-range report, presets, filters, sorting, pagination, totals)
 * **Functional Proposal:**
   - New report view (recommended): `Envelopes by Date Range`
   - Filters:
@@ -454,11 +454,11 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - `docs/reference/features/DAILY_RECONCILIATION.md`
   - `docs/product/ACCEPTANCE_CRITERIA.md`
 * **Acceptance Criteria:**
-  - [ ] Admin can view envelope amounts across a custom date range in one report
-  - [ ] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
-  - [ ] Pagination works with at least 20 and 50 rows per page
-  - [ ] Multi-business/cashier/amount-state filters work together correctly
-  - [ ] Summary shows total sessions and total envelope amount for current filters
+  - [x] Admin can view envelope amounts across a custom date range in one report
+  - [x] Presets (Today, Yesterday, Last 2/3/7 days, Last month) populate and execute correctly
+  - [x] Pagination works with at least 20 and 50 rows per page
+  - [x] Multi-business/cashier/amount-state filters work together correctly
+  - [x] Summary shows total sessions and total envelope amount for current filters
   - [ ] CSV export works for current filtered result set
   - [ ] Excel export is available or explicitly deferred with documented rationale
 
