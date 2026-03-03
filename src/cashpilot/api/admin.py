@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/admin.py
 import secrets
 import string
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -1148,7 +1148,7 @@ async def transfer_date_range_report(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(20, ge=10, le=50, description="Items per page"),
     sort_by: str = Query("time", description="Sort fields: business|time|amount"),
-    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     filter_verified: str = Query(
         "all", pattern="^(all|verified|unverified)$", description="Filter by verification status"
     ),
@@ -1963,6 +1963,19 @@ async def envelopes_date_range_report(
     for business_id, grouped in grouped_sessions_map.items():
         if business_id not in ordered_business_ids:
             envelope_sessions_by_business.append(grouped)
+
+    for grouped in envelope_sessions_by_business:
+        grouped["sessions"].sort(
+            key=lambda session: (
+                session.get("session_date"),
+                session.get("opened_time") or time.min,
+                session.get("session_id"),
+            )
+        )
+
+    envelope_sessions_by_business.sort(
+        key=lambda grouped: (grouped.get("business_name") or "").casefold()
+    )
 
     page_total_amount = sum((item.get("amount") or Decimal("0")) for item in paginated_sessions)
 
