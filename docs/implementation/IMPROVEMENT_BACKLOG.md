@@ -462,6 +462,46 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - [ ] CSV export works for current filtered result set
   - [ ] Excel export is available or explicitly deferred with documented rationale
 
+### CP-REPORTS-08B — Envelope withdrawal/deposit tracking + notes (MVP)
+
+* **Severity:** High
+* **Priority:** High
+* **Problem:** Envelope amount visibility exists, but there is no explicit tracking of what was withdrawn vs what was actually deposited in bank, including partial deposits and operational notes.
+* **Evidence:** `CP-REPORTS-08` Phase 1 report currently uses `CashSession.envelope_amount` as source and does not persist deposit lifecycle events.
+* **User Story:** Admin withdraws an envelope amount from session close, then deposits full or partial amount later; admin needs to track pending balances, differences, and per-envelope notes.
+* **Acceptance impact:** AC-06 (reporting clarity/accuracy), AC-07 (auditability of financial adjustments)
+* **Status:** ⏳ Not started
+* **Functional Proposal (MVP):**
+  - Extend envelope reporting workflow with deposit lifecycle:
+    - `withdrawn` → `partially_deposited` → `deposited`
+  - Persist per-envelope deposit data:
+    - Withdrawn amount (source: envelope amount)
+    - One or many partial deposit events (amount + bank deposit date)
+    - Calculated fields: deposited total and difference (`withdrawn - deposited`)
+  - Add envelope note field (single free-text note per envelope)
+  - Rule: note required when deposited total is lower than withdrawn amount
+  - Rule: day close allowed with pending envelopes, but note is required for pending state
+  - Location (MVP): reporting flow (CP-REPORTS-08 screen) with update actions
+* **Permissions:** Reuse current permissions from session close/reconciliation flows
+* **Implementation Steps:**
+  - Add data model support for envelope deposit lifecycle and partial deposit events
+  - Add migration(s) for new fields/tables and indexes needed for date-range queries
+  - Add service/query logic to compute deposited total, pending amount, and status
+  - Update CP-REPORTS-08 UI to allow deposit event registration and envelope note editing
+  - Add validations for required notes on short-deposit and pending-at-close scenarios
+  - Add tests for permissions, lifecycle transitions, calculations, and validations
+* **Dependencies:**
+  - CP-REPORTS-08 Phase 1 completed ✓
+  - Reuse existing report filter/pagination/sorting patterns from CP-REPORTS-05/06/07/08 ✓
+* **Acceptance Criteria (MVP):**
+  - [ ] Admin can register one or many partial deposits for the same envelope
+  - [ ] System calculates deposited total and difference vs withdrawn amount automatically
+  - [ ] Report shows totals: withdrawn vs deposited for selected date range
+  - [ ] Report lists pending envelopes (not fully deposited)
+  - [ ] Note is mandatory when deposited total is lower than withdrawn amount
+  - [ ] Pending-at-close workflow requires note and does not block close
+  - [ ] Existing RBAC constraints are respected for all new mutating actions
+
 ---
 
 ## 🟠 EPIC 4 — Data Model Alignment (DECISION REQUIRED)
