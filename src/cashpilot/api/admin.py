@@ -6,6 +6,7 @@ from decimal import Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from babel.dates import format_date, format_time
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
@@ -1418,7 +1419,7 @@ async def expenses_date_range_report(
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(20, ge=10, le=50, description="Items per page"),
     sort_by: str = Query("time", description="Sort fields: business|cashier|time|amount"),
-    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
     filter_description: str | None = Query(
         None,
@@ -1705,7 +1706,7 @@ async def envelopes_date_range_report(
         description="Items per page (unused, pagination disabled)",
     ),
     sort_by: str = Query("time", description="Sort fields: business|cashier|time|amount"),
-    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
     origin: str | None = Query(None, description="Navigation origin context"),
     current_user: User = Depends(require_admin),
@@ -1714,6 +1715,7 @@ async def envelopes_date_range_report(
     """CP-REPORTS-08: Envelope report with date-range, filters, and pagination."""
     locale = get_locale(request)
     _ = get_translation_function(locale)
+    babel_locale = "es_PY" if locale == "es" else "en"
 
     normalized_from_date = from_date
     normalized_to_date = to_date
@@ -1814,7 +1816,7 @@ async def envelopes_date_range_report(
         .join(Business, CashSession.business_id == Business.id)
         .where(where_clause)
         .group_by(CashSession.business_id, Business.name)
-        .order_by(func.sum(CashSession.envelope_amount).desc(), Business.name.asc())
+        .order_by(Business.name.asc())
     )
     summary_result = await db.execute(summary_stmt)
     summary_rows = summary_result.all()
@@ -1913,6 +1915,26 @@ async def envelopes_date_range_report(
 
     paginated_sessions = []
     business_names_by_id: dict[str, str] = {}
+    today = today_local()
+    yesterday = today - timedelta(days=1)
+
+    def build_session_time_label(session_date: date, opened_time: time | None) -> str:
+        weekday_name = session_date.strftime("%A")
+        translated_weekday = _(weekday_name)
+        date_label = format_date(session_date, format="short", locale=babel_locale)
+        time_label = (
+            format_time(opened_time, format="HH:mm", locale=babel_locale) if opened_time else "—"
+        )
+
+        if session_date == today:
+            relative_label = _("Today")
+            return f"{relative_label} ({translated_weekday}) · {date_label} · {time_label}"
+        if session_date == yesterday:
+            relative_label = _("Yesterday")
+            return f"{relative_label} ({translated_weekday}) · {date_label} · {time_label}"
+
+        return f"{translated_weekday} · {date_label} · {time_label}"
+
     for row in paginated_rows:
         cashier_name = row.first_name or ""
         if row.last_name:
@@ -1929,6 +1951,7 @@ async def envelopes_date_range_report(
                 "amount": row.envelope_amount,
                 "session_date": row.session_date,
                 "opened_time": row.opened_time,
+                "session_time_label": build_session_time_label(row.session_date, row.opened_time),
                 "status": row.status,
                 "cashier_id": row.cashier_id,
                 "cashier_name": cashier_name,
@@ -1963,15 +1986,6 @@ async def envelopes_date_range_report(
     for business_id, grouped in grouped_sessions_map.items():
         if business_id not in ordered_business_ids:
             envelope_sessions_by_business.append(grouped)
-
-    for grouped in envelope_sessions_by_business:
-        grouped["sessions"].sort(
-            key=lambda session: (
-                session.get("session_date"),
-                session.get("opened_time") or time.min,
-                session.get("session_id"),
-            )
-        )
 
     envelope_sessions_by_business.sort(
         key=lambda grouped: (grouped.get("business_name") or "").casefold()

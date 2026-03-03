@@ -219,6 +219,55 @@ class TestEnvelopeDateRangeReport:
         assert response.text.index(alpha_header) < response.text.index(zeta_header)
 
     @pytest.mark.asyncio
+    async def test_admin_route_renders_summary_rows_in_alphabetical_order(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Summary table rows are ordered alphabetically by business name."""
+        business_z = await factories.business(name="Zeta Summary Pharmacy")
+        business_a = await factories.business(name="Alpha Summary Pharmacy")
+        cashier = await factories.user(
+            role=UserRole.CASHIER,
+            email="cashier-envelope-summary-order@test.com",
+        )
+        await factories.user_business(business=business_z, user=cashier)
+        await factories.user_business(business=business_a, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        await factories.cash_session(
+            business=business_z,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("9000.00"),
+        )
+        await factories.cash_session(
+            business=business_a,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1000.00"),
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/envelopes/date-range",
+            params={
+                "from_date": session_date.isoformat(),
+                "to_date": session_date.isoformat(),
+            },
+        )
+
+        assert response.status_code == 200
+
+        summary_start = response.text.index("Summary by business")
+        summary_end = response.text.index("Showing", summary_start)
+        summary_block = response.text[summary_start:summary_end]
+
+        assert "Alpha Summary Pharmacy" in summary_block
+        assert "Zeta Summary Pharmacy" in summary_block
+        assert summary_block.index("Alpha Summary Pharmacy") < summary_block.index("Zeta Summary Pharmacy")
+
+    @pytest.mark.asyncio
     async def test_admin_route_renders_envelopes_in_ascending_datetime_order(
         self, db_session: AsyncSession, factories, admin_client
     ):
@@ -231,7 +280,7 @@ class TestEnvelopeDateRangeReport:
         middle_date = date.today() - timedelta(days=2)
         newest_date = date.today() - timedelta(days=1)
 
-        await factories.cash_session(
+        middle_session = await factories.cash_session(
             business=business,
             cashier=cashier,
             session_date=middle_date,
@@ -239,7 +288,7 @@ class TestEnvelopeDateRangeReport:
             status="CLOSED",
             envelope_amount=Decimal("1200.00"),
         )
-        await factories.cash_session(
+        newest_session = await factories.cash_session(
             business=business,
             cashier=cashier,
             session_date=newest_date,
@@ -247,7 +296,7 @@ class TestEnvelopeDateRangeReport:
             status="CLOSED",
             envelope_amount=Decimal("1300.00"),
         )
-        await factories.cash_session(
+        oldest_session = await factories.cash_session(
             business=business,
             cashier=cashier,
             session_date=oldest_date,
@@ -267,15 +316,56 @@ class TestEnvelopeDateRangeReport:
 
         assert response.status_code == 200
 
-        oldest_dt = f"{oldest_date.isoformat()} 08:30:00"
-        middle_dt = f"{middle_date.isoformat()} 09:15:00"
-        newest_dt = f"{newest_date.isoformat()} 10:45:00"
+        oldest_link = f"/sessions/{oldest_session.id}"
+        middle_link = f"/sessions/{middle_session.id}"
+        newest_link = f"/sessions/{newest_session.id}"
 
-        assert oldest_dt in response.text
-        assert middle_dt in response.text
-        assert newest_dt in response.text
-        assert response.text.index(oldest_dt) < response.text.index(middle_dt)
-        assert response.text.index(middle_dt) < response.text.index(newest_dt)
+        assert oldest_link in response.text
+        assert middle_link in response.text
+        assert newest_link in response.text
+        assert response.text.index(oldest_link) < response.text.index(middle_link)
+        assert response.text.index(middle_link) < response.text.index(newest_link)
+
+    @pytest.mark.asyncio
+    async def test_admin_route_renders_weekday_label_by_locale(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Session time label includes localized weekday based on selected language."""
+        business = await factories.business(name="Envelope Locale Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-locale@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        monday_date = date(2026, 2, 23)
+        await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=monday_date,
+            opened_time=time(14, 30, 0),
+            status="CLOSED",
+            envelope_amount=Decimal("1500.00"),
+        )
+        await db_session.commit()
+
+        response_en = await admin_client.get(
+            "/admin/envelopes/date-range",
+            params={
+                "from_date": monday_date.isoformat(),
+                "to_date": monday_date.isoformat(),
+            },
+        )
+        response_es = await admin_client.get(
+            "/admin/envelopes/date-range",
+            params={
+                "from_date": monday_date.isoformat(),
+                "to_date": monday_date.isoformat(),
+                "lang": "es",
+            },
+        )
+
+        assert response_en.status_code == 200
+        assert response_es.status_code == 200
+        assert "Monday" in response_en.text
+        assert "Lunes" in response_es.text
 
     @pytest.mark.asyncio
     async def test_admin_route_applies_cashier_filter(
