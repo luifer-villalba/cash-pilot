@@ -307,7 +307,7 @@
                         </div>
                         <div class="flex items-center justify-between text-xs text-base-content/70 mt-2">
                             <span>{{ item.cashier_name }}</span>
-                            <span class="font-mono">{{ item.session_date.strftime('%Y-%m-%d') }} {{ item.opened_time.strftime('%H:%M:%S') if item.opened_time else '—' }}</span>
+                            <span>{{ item.session_time_label }}</span>
                         </div>
                         <div class="text-right mt-2">
                             <span class="font-mono font-bold">Gs {{ item.amount | format_currency_py }}</span>
@@ -351,7 +351,7 @@
                                 </td>
                                 <td class="text-sm">{{ item.cashier_name }}</td>
                                 <td class="text-right font-mono font-semibold">Gs {{ item.amount | format_currency_py }}</td>
-                                <td class="text-right font-mono text-xs text-base-content/70">{{ item.session_date.strftime('%Y-%m-%d') }} {{ item.opened_time.strftime('%H:%M:%S') if item.opened_time else '—' }}</td>
+                                <td class="text-right text-xs text-base-content/70">{{ item.session_time_label }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -490,18 +490,50 @@
 
     function parseSortOption(value) {
         if (!value) {
-            return { sortBy: 'time', sortOrder: 'desc' };
+            return { sortBy: 'time', sortOrder: 'asc' };
         }
         var parts = value.split('|');
         return {
             sortBy: parts[0] || 'time',
-            sortOrder: parts[1] || 'desc'
+            sortOrder: parts[1] || 'asc'
         };
+    }
+
+    var ADVANCED_FILTERS_STATE_KEY = 'envelopesAdvancedFiltersOpen';
+
+    function setAdvancedFiltersOpenState(isOpen, persistState) {
+        var advancedToggle = document.getElementById('filter-toggle');
+        var advancedFilters = document.getElementById('filter-advanced');
+        var advancedChevron = document.getElementById('filter-chevron');
+
+        if (!advancedToggle || !advancedFilters) return;
+
+        if (isOpen) {
+            advancedFilters.classList.remove('hidden');
+        } else {
+            advancedFilters.classList.add('hidden');
+        }
+
+        advancedToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        if (advancedChevron) {
+            advancedChevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        if (persistState) {
+            sessionStorage.setItem(ADVANCED_FILTERS_STATE_KEY, isOpen ? '1' : '0');
+        }
     }
 
     function autoSubmitFilters() {
         var form = document.getElementById('range-filter-form');
         if (!form) return;
+        var advancedFilters = document.getElementById('filter-advanced');
+        if (advancedFilters) {
+            sessionStorage.setItem(
+                ADVANCED_FILTERS_STATE_KEY,
+                advancedFilters.classList.contains('hidden') ? '0' : '1'
+            );
+        }
         form.submit();
     }
 
@@ -659,21 +691,25 @@
         var advancedToggle = document.getElementById('filter-toggle');
         var advancedFilters = document.getElementById('filter-advanced');
         var advancedChevron = document.getElementById('filter-chevron');
+        var applyButton = form.querySelector('button[type="submit"]');
 
         if (!form) return;
 
         if (advancedToggle && advancedFilters) {
+            var savedAdvancedFiltersState = sessionStorage.getItem(ADVANCED_FILTERS_STATE_KEY);
+            if (savedAdvancedFiltersState === '1') {
+                setAdvancedFiltersOpenState(true, false);
+            }
+
             advancedToggle.addEventListener('click', function() {
                 var isHidden = advancedFilters.classList.contains('hidden');
-                if (isHidden) {
-                    advancedFilters.classList.remove('hidden');
-                } else {
-                    advancedFilters.classList.add('hidden');
-                }
-                advancedToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
-                if (advancedChevron) {
-                    advancedChevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-                }
+                setAdvancedFiltersOpenState(isHidden, true);
+            });
+        }
+
+        if (applyButton) {
+            applyButton.addEventListener('click', function() {
+                sessionStorage.removeItem(ADVANCED_FILTERS_STATE_KEY);
             });
         }
 
