@@ -206,14 +206,26 @@ msgstr "Sobres"
 msgid "Envelope management"
 msgstr "Gestión de sobres"
 
+msgid "Envelope workspace"
+msgstr "Centro de sobres"
+
 msgid "View envelopes"
 msgstr "Ver sobres"
+
+msgid "Envelope report"
+msgstr "Reporte de sobres"
 
 msgid "Deposits list"
 msgstr "Lista de depósitos"
 
+msgid "Deposit history"
+msgstr "Historial de depósitos"
+
 msgid "New deposit"
 msgstr "Nuevo depósito"
+
+msgid "Create deposit"
+msgstr "Crear depósito"
 
 msgid "Back to Report"
 msgstr "Volver al Reporte"
