@@ -20,6 +20,8 @@ from cashpilot.models.daily_reconciliation_schemas import (
     DailyReconciliationUpdate,
 )
 from cashpilot.models.enums import SessionStatus
+from cashpilot.models.envelope_deposit_batch import EnvelopeDepositBatch
+from cashpilot.models.envelope_deposit_event import EnvelopeDepositEvent
 from cashpilot.models.expense_item import ExpenseItem
 from cashpilot.models.transfer_item import TransferItem
 from cashpilot.models.user import User, UserRole
@@ -44,6 +46,8 @@ __all__ = [
     "DailyReconciliationCreate",
     "DailyReconciliationRead",
     "DailyReconciliationUpdate",
+    "EnvelopeDepositBatch",
+    "EnvelopeDepositEvent",
     "SessionStatus",
     "User",
     "UserCreate",

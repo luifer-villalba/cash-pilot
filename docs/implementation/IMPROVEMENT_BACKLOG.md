@@ -470,9 +470,14 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Evidence:** `CP-REPORTS-08` Phase 1 report currently uses `CashSession.envelope_amount` as source and does not persist deposit lifecycle events.
 * **User Story:** Admin withdraws an envelope amount from session close, then deposits full or partial amount later; admin needs to track pending balances, differences, and per-envelope notes.
 * **Acceptance impact:** AC-06 (reporting clarity/accuracy), AC-07 (auditability of financial adjustments)
-* **Status:** ⏳ Not started
+* **Status:** 🔄 Replanned (2026-03-03) — prior implementation reverted; redesign approved
 * **Functional Proposal (MVP):**
-  - Extend envelope reporting workflow with deposit lifecycle:
+  - Keep CP-REPORTS-08 as read-focused report; move mutation flow to dedicated screen
+  - New screen: `Nuevo depósito` / `New Envelope Deposit`
+    - User selects envelopes from CP-REPORTS-08 list
+    - User can select envelopes from one or many pharmacies in the same batch
+    - User registers deposit amounts per selected envelope and one deposit date for the batch
+  - Lifecycle remains:
     - `withdrawn` → `partially_deposited` → `deposited`
   - Persist per-envelope deposit data:
     - Withdrawn amount (source: envelope amount)
@@ -481,21 +486,27 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
   - Add envelope note field (single free-text note per envelope)
   - Rule: note required when deposited total is lower than withdrawn amount
   - Rule: day close allowed with pending envelopes, but note is required for pending state
-  - Location (MVP): reporting flow (CP-REPORTS-08 screen) with update actions
+  - Location (MVP): separate deposit screen (no inline edit forms in CP-REPORTS-08 table)
 * **Permissions:** Reuse current permissions from session close/reconciliation flows
 * **Implementation Steps:**
+  - Create ticket plan: `docs/implementation/CP-REPORTS-08B-NEW-DEPOSIT-SCREEN.md`
   - Add data model support for envelope deposit lifecycle and partial deposit events
   - Add migration(s) for new fields/tables and indexes needed for date-range queries
   - Add service/query logic to compute deposited total, pending amount, and status
-  - Update CP-REPORTS-08 UI to allow deposit event registration and envelope note editing
+  - Keep CP-REPORTS-08 selection UX and route selection to `Nuevo depósito` screen
+  - Implement batch deposit endpoint for selected envelopes (cross-business supported)
+  - Implement dedicated `Nuevo depósito` UI with per-envelope amount inputs
   - Add validations for required notes on short-deposit and pending-at-close scenarios
   - Add tests for permissions, lifecycle transitions, calculations, and validations
 * **Dependencies:**
   - CP-REPORTS-08 Phase 1 completed ✓
   - Reuse existing report filter/pagination/sorting patterns from CP-REPORTS-05/06/07/08 ✓
 * **Acceptance Criteria (MVP):**
+  - [ ] Admin can open a dedicated `Nuevo depósito` screen from CP-REPORTS-08 selection
   - [ ] Admin can register one or many partial deposits for the same envelope
+  - [ ] Admin can include envelopes from more than one pharmacy in the same deposit batch
   - [ ] System calculates deposited total and difference vs withdrawn amount automatically
+  - [ ] CP-REPORTS-08 remains report-first and does not embed inline deposit forms
   - [ ] Report shows totals: withdrawn vs deposited for selected date range
   - [ ] Report lists pending envelopes (not fully deposited)
   - [ ] Note is mandatory when deposited total is lower than withdrawn amount

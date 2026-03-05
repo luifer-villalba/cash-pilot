@@ -44,6 +44,8 @@ from cashpilot.main import create_app
 # Import all models
 from cashpilot.models.business import Business  # noqa: F401
 from cashpilot.models.cash_session import CashSession  # noqa: F401
+from cashpilot.models.envelope_deposit_batch import EnvelopeDepositBatch  # noqa: F401
+from cashpilot.models.envelope_deposit_event import EnvelopeDepositEvent  # noqa: F401
 from cashpilot.models.user import User  # noqa: F401
 from tests.factories import BusinessFactory, CashSessionFactory, UserFactory
 from cashpilot.models.user_business import UserBusiness
