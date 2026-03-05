@@ -4,8 +4,10 @@ from datetime import date, time, timedelta
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.models.envelope_deposit_event import EnvelopeDepositEvent
 from cashpilot.models.user import UserRole
 
 
@@ -494,3 +496,259 @@ class TestEnvelopeDateRangeReport:
         assert response.status_code == 200
         assert str(inside_session.id) in response.text
         assert str(outside_session.id) not in response.text
+
+    @pytest.mark.asyncio
+    async def test_admin_can_open_new_deposit_screen_with_selected_envelopes(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Admin can open dedicated new deposit screen with selected sessions."""
+        business = await factories.business(name="Envelope Deposit Screen Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-deposit-screen@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1500.00"),
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/envelopes/deposits/new",
+            params={
+                "session_ids": [str(session.id)],
+                "return_to": "/admin/envelopes/date-range",
+            },
+        )
+
+        assert response.status_code == 200
+        assert "New Envelope Deposit" in response.text
+        assert str(session.id) in response.text
+
+    @pytest.mark.asyncio
+    async def test_admin_can_register_batch_deposit_for_multiple_businesses(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Batch deposit persists one event per selected envelope across businesses."""
+        business_a = await factories.business(name="Envelope Batch A")
+        business_b = await factories.business(name="Envelope Batch B")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-batch@test.com")
+        await factories.user_business(business=business_a, user=cashier)
+        await factories.user_business(business=business_b, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session_a = await factories.cash_session(
+            business=business_a,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1000.00"),
+        )
+        session_b = await factories.cash_session(
+            business=business_b,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("2000.00"),
+        )
+        await db_session.commit()
+
+        response = await admin_client.post(
+            "/admin/envelopes/deposits/batch",
+            data={
+                "session_ids": [str(session_a.id), str(session_b.id)],
+                f"amount_{session_a.id}": "1000",
+                f"amount_{session_b.id}": "1200",
+                f"note_{session_a.id}": "Deposited full",
+                f"note_{session_b.id}": "Deposited partial",
+                "depositor_user_id": str(admin_client.test_user.id),
+                "deposit_date": session_date.isoformat(),
+                "return_to": "/admin/envelopes/date-range",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 303
+        assert response.headers["location"].startswith("/admin/envelopes/date-range")
+
+        events_result = await db_session.execute(select(EnvelopeDepositEvent))
+        events = events_result.scalars().all()
+        assert len(events) == 2
+
+        amounts_by_session = {str(event.session_id): event.amount for event in events}
+        depositor_by_session = {str(event.session_id): event.deposited_by_name for event in events}
+        assert amounts_by_session[str(session_a.id)] == Decimal("1000.00")
+        assert amounts_by_session[str(session_b.id)] == Decimal("1200.00")
+        assert depositor_by_session[str(session_a.id)] == "Admin User"
+        assert depositor_by_session[str(session_b.id)] == "Admin User"
+
+    @pytest.mark.asyncio
+    async def test_batch_deposit_validates_amount_bounds(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Deposit amount must be > 0 and <= pending amount."""
+        business = await factories.business(name="Envelope Batch Validation")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-bounds@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1000.00"),
+        )
+        await db_session.commit()
+
+        response_zero = await admin_client.post(
+            "/admin/envelopes/deposits/batch",
+            data={
+                "session_ids": [str(session.id)],
+                f"amount_{session.id}": "0",
+                "depositor_user_id": str(admin_client.test_user.id),
+                "deposit_date": session_date.isoformat(),
+                "return_to": "/admin/envelopes/date-range",
+            },
+        )
+        assert response_zero.status_code == 400
+        assert "Amount must be greater than zero" in response_zero.text
+
+        response_over = await admin_client.post(
+            "/admin/envelopes/deposits/batch",
+            data={
+                "session_ids": [str(session.id)],
+                f"amount_{session.id}": "1001",
+                "depositor_user_id": str(admin_client.test_user.id),
+                "deposit_date": session_date.isoformat(),
+                "return_to": "/admin/envelopes/date-range",
+            },
+        )
+        assert response_over.status_code == 400
+        assert "Amount cannot exceed pending" in response_over.text
+
+    @pytest.mark.asyncio
+    async def test_batch_deposit_requires_note_when_pending_remains(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """A note is required when deposit leaves pending amount."""
+        business = await factories.business(name="Envelope Partial Note")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-note@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1000.00"),
+        )
+        await db_session.commit()
+
+        response = await admin_client.post(
+            "/admin/envelopes/deposits/batch",
+            data={
+                "session_ids": [str(session.id)],
+                f"amount_{session.id}": "400",
+                f"note_{session.id}": "",
+                "depositor_user_id": str(admin_client.test_user.id),
+                "deposit_date": session_date.isoformat(),
+                "return_to": "/admin/envelopes/date-range",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "A note is required when envelope remains pending" in response.text
+
+    @pytest.mark.asyncio
+    async def test_cashier_forbidden_on_new_deposit_routes(self, client):
+        """Cashier role cannot access new deposit screen or batch endpoint."""
+        response_get = await client.get("/admin/envelopes/deposits/new")
+        response_post = await client.post(
+            "/admin/envelopes/deposits/batch",
+            data={"deposit_date": date.today().isoformat()},
+        )
+
+        assert response_get.status_code == 403
+        assert response_post.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_report_marks_fully_deposited_sessions_as_not_selectable(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Fully deposited envelopes are visible but cannot be selected for new deposits."""
+        business = await factories.business(name="Envelope Fully Deposited")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-fully@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1000.00"),
+        )
+        await db_session.commit()
+
+        db_session.add(
+            EnvelopeDepositEvent(
+                session_id=session.id,
+                amount=Decimal("1000.00"),
+                deposit_date=session_date,
+                note="Full deposit",
+                created_by=admin_client.test_user.id,
+            )
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/envelopes/date-range",
+            params={
+                "from_date": session_date.isoformat(),
+                "to_date": session_date.isoformat(),
+            },
+        )
+
+        assert response.status_code == 200
+        assert str(session.id) in response.text
+        assert f'data-session-id="{session.id}"' in response.text
+        assert 'data-depositable="0"' in response.text
+
+    @pytest.mark.asyncio
+    async def test_batch_deposit_rejects_date_before_session_date(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Deposit date cannot be earlier than selected cash session date."""
+        business = await factories.business(name="Envelope Date Rule")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-envelope-date-rule@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1000.00"),
+        )
+        await db_session.commit()
+
+        response = await admin_client.post(
+            "/admin/envelopes/deposits/batch",
+            data={
+                "session_ids": [str(session.id)],
+                f"amount_{session.id}": "1000",
+                f"note_{session.id}": "",
+                "depositor_user_id": str(admin_client.test_user.id),
+                "deposit_date": (session_date - timedelta(days=1)).isoformat(),
+                "return_to": "/admin/envelopes/date-range",
+            },
+        )
+
+        assert response.status_code == 400
+        assert "Deposit date cannot be earlier than selected session date" in response.text

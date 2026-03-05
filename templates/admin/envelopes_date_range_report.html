@@ -285,11 +285,12 @@
 
                 <div class="lg:hidden px-3 py-3 space-y-3">
                     {% for item in business_group.sessions %}
-                    <div class="border border-base-300 rounded-lg p-3 bg-base-100 envelope-select-row cursor-pointer"
+                    <div class="border border-base-300 rounded-lg p-3 bg-base-100 envelope-select-row {% if item.is_depositable %}cursor-pointer{% else %}opacity-70{% endif %}"
                          data-session-id="{{ item.session_id }}"
                          data-business-name="{{ item.business_name }}"
                         data-business-id="{{ item.business_id }}"
                          data-amount="{{ item.amount }}"
+                         data-depositable="{{ '1' if item.is_depositable else '0' }}"
                          role="button"
                          tabindex="0"
                          aria-pressed="false">
@@ -300,10 +301,19 @@
                             data-business-name="{{ item.business_name }}"
                             data-business-id="{{ item.business_id }}"
                             data-amount="{{ item.amount }}"
+                            data-depositable="{{ '1' if item.is_depositable else '0' }}"
+                            {% if not item.is_depositable %}disabled{% endif %}
                         />
                         <div class="mb-2 flex items-center gap-2">
                             <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-base-content bg-base-200 rounded-full flex-shrink-0">{{ loop.index }}</span>
                             <a href="/sessions/{{ item.session_id }}" class="badge badge-outline badge-sm font-mono text-primary">#{{ item.session_number if item.session_number else item.session_id | string | truncate(8, true) }}</a>
+                            {% if item.deposit_status == 'DEPOSITED' %}
+                            <span class="badge badge-success badge-sm">{{ _('Deposited') }}</span>
+                            {% elif item.deposit_status == 'PARTIAL' %}
+                            <span class="badge badge-warning badge-sm">{{ _('Partial') }}</span>
+                            {% else %}
+                            <span class="badge badge-outline badge-sm">{{ _('Pending') }}</span>
+                            {% endif %}
                         </div>
                         <div class="flex items-center justify-between text-xs text-base-content/70 mt-2">
                             <span>{{ item.cashier_name }}</span>
@@ -312,6 +322,15 @@
                         <div class="text-right mt-2">
                             <span class="font-mono font-bold">Gs {{ item.amount | format_currency_py }}</span>
                         </div>
+                        <div class="mt-1 text-xs text-base-content/70">
+                            {{ _('Deposited') }}: Gs {{ item.deposited_total | format_currency_py }} · {{ _('Pending') }}: Gs {{ item.pending_amount | format_currency_py }}
+                        </div>
+                        {% if item.deposited_total > 0 %}
+                        <button type="button" class="btn btn-outline btn-primary btn-xs mt-2 deposit-detail-btn" data-session-id="{{ item.session_id }}">{{ _('View deposit detail') }}</button>
+                        {% endif %}
+                        {% if not item.is_depositable %}
+                        <div class="mt-1 text-xs text-base-content/70">{{ _('Already fully deposited. Selection disabled.') }}</div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -324,16 +343,21 @@
                                 <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('Session') }}</th>
                                 <th class="text-xs font-bold uppercase tracking-wider">{{ _('Cashier') }}</th>
                                 <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Envelope Amount') }}</th>
+                                <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Deposited') }}</th>
+                                <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Pending') }}</th>
+                                <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('State') }}</th>
+                                <th class="text-xs font-bold uppercase tracking-wider text-center">{{ _('Detail') }}</th>
                                 <th class="text-xs font-bold uppercase tracking-wider text-right">{{ _('Time') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in business_group.sessions %}
-                            <tr class="envelope-select-row cursor-pointer"
+                            <tr class="envelope-select-row {% if item.is_depositable %}cursor-pointer{% else %}opacity-70{% endif %}"
                                 data-session-id="{{ item.session_id }}"
                                 data-business-name="{{ item.business_name }}"
                                 data-business-id="{{ item.business_id }}"
                                 data-amount="{{ item.amount }}"
+                                data-depositable="{{ '1' if item.is_depositable else '0' }}"
                                 role="button"
                                 tabindex="0"
                                 aria-pressed="false">
@@ -344,6 +368,8 @@
                                     data-business-name="{{ item.business_name }}"
                                     data-business-id="{{ item.business_id }}"
                                     data-amount="{{ item.amount }}"
+                                    data-depositable="{{ '1' if item.is_depositable else '0' }}"
+                                    {% if not item.is_depositable %}disabled{% endif %}
                                 />
                                 <td class="text-center text-xs font-mono text-base-content/60">{{ loop.index }}</td>
                                 <td class="text-center">
@@ -351,6 +377,24 @@
                                 </td>
                                 <td class="text-sm">{{ item.cashier_name }}</td>
                                 <td class="text-right font-mono font-semibold">Gs {{ item.amount | format_currency_py }}</td>
+                                <td class="text-right font-mono">Gs {{ item.deposited_total | format_currency_py }}</td>
+                                <td class="text-right font-mono">Gs {{ item.pending_amount | format_currency_py }}</td>
+                                <td class="text-center">
+                                    {% if item.deposit_status == 'DEPOSITED' %}
+                                    <span class="badge badge-success badge-sm">{{ _('Deposited') }}</span>
+                                    {% elif item.deposit_status == 'PARTIAL' %}
+                                    <span class="badge badge-warning badge-sm">{{ _('Partial') }}</span>
+                                    {% else %}
+                                    <span class="badge badge-outline badge-sm">{{ _('Pending') }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    {% if item.deposited_total > 0 %}
+                                    <button type="button" class="btn btn-outline btn-primary btn-xs deposit-detail-btn" data-session-id="{{ item.session_id }}">{{ _('View') }}</button>
+                                    {% else %}
+                                    <span class="text-xs text-base-content/50">—</span>
+                                    {% endif %}
+                                </td>
                                 <td class="text-right text-xs text-base-content/70">{{ item.session_time_label }}</td>
                             </tr>
                             {% endfor %}
@@ -377,6 +421,18 @@
     </div>
 </div>
 
+<dialog id="deposit-detail-modal" class="modal">
+    <div class="modal-box max-w-2xl">
+        <h3 class="font-bold text-lg">{{ _('Deposit detail') }}</h3>
+        <div id="deposit-detail-content" class="mt-3 text-sm"></div>
+        <div class="modal-action">
+            <form method="dialog">
+                <button class="btn btn-sm">{{ _('Close') }}</button>
+            </form>
+        </div>
+    </div>
+</dialog>
+
 <div id="selection-summary-bar" class="hidden fixed bottom-0 left-0 right-0 z-40 bg-base-100 border-t border-base-300 shadow-lg">
     <div class="max-w-[1400px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
         <div class="text-sm font-semibold text-base-content">{{ _('Selected envelopes summary') }}</div>
@@ -389,6 +445,7 @@
                 <span class="text-base-content/60">{{ _('Total') }}:</span>
                 <span id="selected-envelope-total" class="font-mono font-bold">Gs 0,00</span>
             </div>
+            <a id="new-deposit-link" href="/admin/envelopes/deposits/new" class="btn btn-xs btn-primary">{{ _('New deposit') }}</a>
             <button type="button" id="clear-envelope-selection" class="btn btn-xs btn-outline">{{ _('Clear selection') }}</button>
         </div>
     </div>
@@ -396,6 +453,8 @@
 
 <script>
 (function() {
+    var depositEventsBySession = {{ deposit_events_by_session | tojson }};
+
     function pad2(value) {
         return (value < 10 ? '0' : '') + value;
     }
@@ -574,6 +633,9 @@
 
         for (var i = 0; i < checkboxes.length; i += 1) {
             var checkboxSessionId = checkboxes[i].getAttribute('data-session-id');
+            if (checkboxes[i].disabled || checkboxes[i].getAttribute('data-depositable') !== '1') {
+                continue;
+            }
             if (checkboxes[i].checked && checkboxSessionId && !selectedBySessionId[checkboxSessionId]) {
                 selectedBySessionId[checkboxSessionId] = true;
                 selectedCount += 1;
@@ -587,6 +649,9 @@
             var rowChecked = false;
             for (var k = 0; k < checkboxes.length; k += 1) {
                 if (checkboxes[k].getAttribute('data-session-id') === rowSessionId) {
+                    if (checkboxes[k].disabled || checkboxes[k].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     if (checkboxes[k].checked) {
                         rowChecked = true;
                         break;
@@ -608,8 +673,27 @@
         var selectedCountEl = document.getElementById('selected-envelope-count');
         var selectedTotalEl = document.getElementById('selected-envelope-total');
         var summaryBar = document.getElementById('selection-summary-bar');
+        var newDepositLink = document.getElementById('new-deposit-link');
         if (selectedCountEl) selectedCountEl.textContent = String(selectedCount);
         if (selectedTotalEl) selectedTotalEl.textContent = formatGs(selectedTotal);
+        if (newDepositLink) {
+            var baseUrl = '/admin/envelopes/deposits/new';
+            var params = [];
+            var sessionIds = Object.keys(selectedBySessionId);
+            var returnToUrl = '/admin/envelopes/date-range?{{ base_query | safe }}';
+            for (var sessionIndex = 0; sessionIndex < sessionIds.length; sessionIndex += 1) {
+                params.push('session_ids=' + encodeURIComponent(sessionIds[sessionIndex]));
+            }
+            params.push('return_to=' + encodeURIComponent(returnToUrl));
+            newDepositLink.href = baseUrl + (params.length ? ('?' + params.join('&')) : '');
+            if (selectedCount > 0) {
+                newDepositLink.removeAttribute('aria-disabled');
+                newDepositLink.classList.remove('btn-disabled');
+            } else {
+                newDepositLink.setAttribute('aria-disabled', 'true');
+                newDepositLink.classList.add('btn-disabled');
+            }
+        }
         if (summaryBar) {
             if (selectedCount > 0) {
                 summaryBar.classList.remove('hidden');
@@ -632,6 +716,9 @@
 
             for (var j = 0; j < checkboxes.length; j += 1) {
                 if (checkboxes[j].getAttribute('data-business-id') === businessId) {
+                    if (checkboxes[j].disabled || checkboxes[j].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     var sessionId = checkboxes[j].getAttribute('data-session-id');
                     if (!sessionId) {
                         continue;
@@ -687,6 +774,9 @@
         var envelopeSelectCheckboxes = document.querySelectorAll('.envelope-select-checkbox');
         var businessMasterCheckboxes = document.querySelectorAll('.business-master-checkbox');
         var clearSelectionButton = document.getElementById('clear-envelope-selection');
+        var detailButtons = document.querySelectorAll('.deposit-detail-btn');
+        var detailModal = document.getElementById('deposit-detail-modal');
+        var detailContent = document.getElementById('deposit-detail-content');
         var cashierInput = document.getElementById('filter_cashier');
         var advancedToggle = document.getElementById('filter-toggle');
         var advancedFilters = document.getElementById('filter-advanced');
@@ -782,19 +872,29 @@
         for (var j = 0; j < envelopeSelectRows.length; j += 1) {
             envelopeSelectRows[j].addEventListener('click', function(event) {
                 var target = event.target;
-                if (target && (target.tagName === 'A' || target.closest('a'))) {
+                if (target && (target.tagName === 'A' || target.closest('a') || target.closest('.deposit-detail-btn'))) {
+                    return;
+                }
+
+                if (this.getAttribute('data-depositable') !== '1') {
                     return;
                 }
 
                 var sessionId = this.getAttribute('data-session-id');
                 var isCurrentlySelected = false;
                 for (var n = 0; n < envelopeSelectCheckboxes.length; n += 1) {
+                    if (envelopeSelectCheckboxes[n].disabled || envelopeSelectCheckboxes[n].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     if (envelopeSelectCheckboxes[n].getAttribute('data-session-id') === sessionId && envelopeSelectCheckboxes[n].checked) {
                         isCurrentlySelected = true;
                         break;
                     }
                 }
                 for (var m = 0; m < envelopeSelectCheckboxes.length; m += 1) {
+                    if (envelopeSelectCheckboxes[m].disabled || envelopeSelectCheckboxes[m].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     if (envelopeSelectCheckboxes[m].getAttribute('data-session-id') === sessionId) {
                         envelopeSelectCheckboxes[m].checked = !isCurrentlySelected;
                     }
@@ -807,15 +907,24 @@
                     return;
                 }
                 event.preventDefault();
+                if (this.getAttribute('data-depositable') !== '1') {
+                    return;
+                }
                 var sessionId = this.getAttribute('data-session-id');
                 var isCurrentlySelected = false;
                 for (var n = 0; n < envelopeSelectCheckboxes.length; n += 1) {
+                    if (envelopeSelectCheckboxes[n].disabled || envelopeSelectCheckboxes[n].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     if (envelopeSelectCheckboxes[n].getAttribute('data-session-id') === sessionId && envelopeSelectCheckboxes[n].checked) {
                         isCurrentlySelected = true;
                         break;
                     }
                 }
                 for (var m = 0; m < envelopeSelectCheckboxes.length; m += 1) {
+                    if (envelopeSelectCheckboxes[m].disabled || envelopeSelectCheckboxes[m].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     if (envelopeSelectCheckboxes[m].getAttribute('data-session-id') === sessionId) {
                         envelopeSelectCheckboxes[m].checked = !isCurrentlySelected;
                     }
@@ -829,6 +938,9 @@
                 var businessId = this.getAttribute('data-business-id');
                 var nextChecked = this.checked;
                 for (var p = 0; p < envelopeSelectCheckboxes.length; p += 1) {
+                    if (envelopeSelectCheckboxes[p].disabled || envelopeSelectCheckboxes[p].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     if (envelopeSelectCheckboxes[p].getAttribute('data-business-id') === businessId) {
                         envelopeSelectCheckboxes[p].checked = nextChecked;
                     }
@@ -841,9 +953,69 @@
         if (clearSelectionButton) {
             clearSelectionButton.addEventListener('click', function() {
                 for (var k = 0; k < envelopeSelectCheckboxes.length; k += 1) {
+                    if (envelopeSelectCheckboxes[k].disabled || envelopeSelectCheckboxes[k].getAttribute('data-depositable') !== '1') {
+                        continue;
+                    }
                     envelopeSelectCheckboxes[k].checked = false;
                 }
                 updateSelectionSummary();
+            });
+        }
+
+        function buildDetailHtml(events) {
+            if (!events || !events.length) {
+                return '<div class="text-base-content/70">{{ _('No deposit events yet for this envelope.') }}</div>';
+            }
+            var envelopeTotal = 0;
+            for (var t = 0; t < events.length; t += 1) {
+                envelopeTotal += parseAmount(events[t].amount || 0);
+            }
+
+            var html = '<div class="space-y-3">';
+            html += '<div class="rounded-lg border border-base-300 bg-base-200/40 p-3">';
+            html += '<div class="text-xs text-base-content/60">{{ _('Total deposited for this envelope') }}</div>';
+            html += '<div class="font-mono font-bold text-base">' + formatGs(envelopeTotal) + '</div>';
+            html += '<div class="text-xs text-base-content/60 mt-1">' + events.length + ' {{ _('events') }}</div>';
+            html += '</div>';
+
+            html += '<div class="space-y-2">';
+            for (var i = 0; i < events.length; i += 1) {
+                var eventItem = events[i];
+                var noteText = eventItem.note ? eventItem.note : '—';
+                var depositorText = eventItem.deposited_by_name ? eventItem.deposited_by_name : '—';
+                html += '<div class="border border-base-300 rounded-lg p-2">';
+                html += '<div class="text-xs text-base-content/60">' + (eventItem.deposit_date || '') + '</div>';
+                html += '<div class="font-mono font-semibold">Gs ' + formatGs(eventItem.amount || 0).replace('Gs ', '') + '</div>';
+                html += '<div class="text-xs">{{ _('Deposited by') }}: ' + depositorText + '</div>';
+                html += '<div class="text-xs">{{ _('Note') }}: ' + noteText + '</div>';
+
+                var batchTotal = parseAmount(eventItem.batch_total_amount || 0);
+                var batchSessionCount = parseInt(eventItem.batch_session_count || 0, 10);
+                if (!isNaN(batchTotal) && batchTotal > 0) {
+                    html += '<div class="text-xs mt-1"><span class="text-base-content/70">{{ _('Batch total') }}:</span> <span class="font-mono">' + formatGs(batchTotal) + '</span>';
+                    if (!isNaN(batchSessionCount) && batchSessionCount > 0) {
+                        html += ' <span class="text-base-content/60">(' + batchSessionCount + ' {{ _('envelopes') }})</span>';
+                    }
+                    html += '</div>';
+                }
+
+                var otherEnvelopes = eventItem.batch_other_session_labels || [];
+                if (otherEnvelopes.length > 0) {
+                    html += '<div class="text-xs mt-1">{{ _('Also deposited with') }}: ' + otherEnvelopes.join(', ') + '</div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        for (var d = 0; d < detailButtons.length; d += 1) {
+            detailButtons[d].addEventListener('click', function() {
+                if (!detailModal || !detailContent) return;
+                var sessionId = this.getAttribute('data-session-id');
+                var events = depositEventsBySession[sessionId] || [];
+                detailContent.innerHTML = buildDetailHtml(events);
+                detailModal.showModal();
             });
         }
 

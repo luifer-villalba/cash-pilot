@@ -3,12 +3,13 @@ import secrets
 import string
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
+from urllib.parse import urlsplit
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from babel.dates import format_date, format_time
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, case, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +20,7 @@ from cashpilot.api.utils import (
     get_active_businesses,
     get_locale,
     get_translation_function,
+    parse_currency,
     templates,
 )
 from cashpilot.core.db import get_db
@@ -27,6 +29,8 @@ from cashpilot.core.security import hash_password
 from cashpilot.models.business import Business
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.daily_reconciliation import DailyReconciliation
+from cashpilot.models.envelope_deposit_batch import EnvelopeDepositBatch
+from cashpilot.models.envelope_deposit_event import EnvelopeDepositEvent
 from cashpilot.models.expense_item import ExpenseItem
 from cashpilot.models.transfer_item import TransferItem
 from cashpilot.models.user import User
@@ -42,6 +46,7 @@ logger = get_logger(__name__)
 # Flags "Needs Review" if EITHER threshold is exceeded
 ABSOLUTE_THRESHOLD = Decimal("20000.00")  # 20,000 guaraníes
 VARIANCE_THRESHOLD = Decimal("2.0")  # 2%
+DEFAULT_ENVELOPES_REPORT_URL = "/admin/envelopes/date-range"
 
 
 # ===== HELPER FUNCTIONS =====
@@ -1891,6 +1896,18 @@ async def envelopes_date_range_report(
         )
     order_clauses.append(CashSession.id.desc() if sort_desc else CashSession.id.asc())
 
+    deposited_totals_subquery = (
+        select(
+            EnvelopeDepositEvent.session_id.label("session_id"),
+            func.coalesce(func.sum(EnvelopeDepositEvent.amount), Decimal("0.00")).label(
+                "deposited_total"
+            ),
+        )
+        .where(~EnvelopeDepositEvent.is_deleted)
+        .group_by(EnvelopeDepositEvent.session_id)
+        .subquery()
+    )
+
     data_stmt = (
         select(
             CashSession.id,
@@ -1904,9 +1921,17 @@ async def envelopes_date_range_report(
             User.first_name,
             User.last_name,
             Business.name.label("business_name"),
+            func.coalesce(
+                deposited_totals_subquery.c.deposited_total,
+                Decimal("0.00"),
+            ).label("deposited_total"),
         )
         .join(User, CashSession.cashier_id == User.id)
         .join(Business, CashSession.business_id == Business.id)
+        .outerjoin(
+            deposited_totals_subquery,
+            deposited_totals_subquery.c.session_id == CashSession.id,
+        )
         .where(where_clause)
         .order_by(*order_clauses)
     )
@@ -1941,6 +1966,19 @@ async def envelopes_date_range_report(
             cashier_name += f" {row.last_name[0]}."
         cashier_name = cashier_name.strip()
 
+        envelope_amount = row.envelope_amount or Decimal("0.00")
+        deposited_total = row.deposited_total or Decimal("0.00")
+        pending_amount = envelope_amount - deposited_total
+        if pending_amount < Decimal("0.00"):
+            pending_amount = Decimal("0.00")
+
+        if deposited_total <= Decimal("0.00"):
+            deposit_status = "PENDING"
+        elif pending_amount > Decimal("0.00"):
+            deposit_status = "PARTIAL"
+        else:
+            deposit_status = "DEPOSITED"
+
         business_id_str = str(row.business_id)
         business_names_by_id[business_id_str] = row.business_name
 
@@ -1948,7 +1986,7 @@ async def envelopes_date_range_report(
             {
                 "session_id": row.id,
                 "session_number": row.session_number,
-                "amount": row.envelope_amount,
+                "amount": envelope_amount,
                 "session_date": row.session_date,
                 "opened_time": row.opened_time,
                 "session_time_label": build_session_time_label(row.session_date, row.opened_time),
@@ -1957,8 +1995,130 @@ async def envelopes_date_range_report(
                 "cashier_name": cashier_name,
                 "business_id": business_id_str,
                 "business_name": row.business_name,
+                "deposited_total": deposited_total,
+                "pending_amount": pending_amount,
+                "deposit_status": deposit_status,
+                "is_depositable": pending_amount > Decimal("0.00"),
             }
         )
+
+    session_ids = [item["session_id"] for item in paginated_sessions]
+    deposit_events_by_session: dict[str, list[dict[str, str | int]]] = {
+        str(session_id): [] for session_id in session_ids
+    }
+
+    if session_ids:
+        events_stmt = (
+            select(
+                EnvelopeDepositEvent.session_id,
+                EnvelopeDepositEvent.batch_id,
+                EnvelopeDepositEvent.amount,
+                EnvelopeDepositEvent.deposit_date,
+                EnvelopeDepositEvent.note,
+                EnvelopeDepositEvent.deposited_by_name,
+                EnvelopeDepositEvent.created_at,
+            )
+            .where(
+                and_(
+                    EnvelopeDepositEvent.session_id.in_(session_ids),
+                    ~EnvelopeDepositEvent.is_deleted,
+                )
+            )
+            .order_by(
+                EnvelopeDepositEvent.deposit_date.desc(),
+                EnvelopeDepositEvent.created_at.desc(),
+            )
+        )
+        events_result = await db.execute(events_stmt)
+
+        raw_events = events_result.all()
+        batch_ids = {
+            event.batch_id for event in raw_events if getattr(event, "batch_id", None) is not None
+        }
+
+        batch_summary: dict[str, dict[str, Decimal | list[dict[str, str]]]] = {}
+        if batch_ids:
+            batch_events_stmt = (
+                select(
+                    EnvelopeDepositEvent.batch_id,
+                    EnvelopeDepositEvent.session_id,
+                    EnvelopeDepositEvent.amount,
+                    CashSession.session_number,
+                )
+                .join(CashSession, CashSession.id == EnvelopeDepositEvent.session_id)
+                .where(
+                    and_(
+                        EnvelopeDepositEvent.batch_id.in_(batch_ids),
+                        ~EnvelopeDepositEvent.is_deleted,
+                    )
+                )
+            )
+            batch_events_result = await db.execute(batch_events_stmt)
+
+            for batch_event in batch_events_result.all():
+                if batch_event.batch_id is None:
+                    continue
+
+                batch_key = str(batch_event.batch_id)
+                if batch_key not in batch_summary:
+                    batch_summary[batch_key] = {
+                        "total_amount": Decimal("0.00"),
+                        "sessions": [],
+                    }
+
+                amount_value = batch_event.amount or Decimal("0.00")
+                batch_summary[batch_key]["total_amount"] += amount_value
+
+                session_key = str(batch_event.session_id)
+                session_label = (
+                    f"#{batch_event.session_number}"
+                    if batch_event.session_number
+                    else f"#{session_key[:8]}"
+                )
+
+                existing_sessions = batch_summary[batch_key]["sessions"]
+                if not any(item.get("session_id") == session_key for item in existing_sessions):
+                    existing_sessions.append(
+                        {
+                            "session_id": session_key,
+                            "session_label": session_label,
+                        }
+                    )
+
+        for event in raw_events:
+            session_key = str(event.session_id)
+            if session_key not in deposit_events_by_session:
+                deposit_events_by_session[session_key] = []
+
+            batch_key = str(event.batch_id) if event.batch_id else ""
+            batch_data = batch_summary.get(batch_key, None) if batch_key else None
+
+            other_session_labels: list[str] = []
+            if batch_data:
+                for batch_session in batch_data.get("sessions", []):
+                    if batch_session.get("session_id") != session_key:
+                        other_session_labels.append(batch_session.get("session_label", ""))
+
+            deposit_events_by_session[session_key].append(
+                {
+                    "amount": f"{event.amount or Decimal('0.00')}",
+                    "deposit_date": event.deposit_date.isoformat() if event.deposit_date else "",
+                    "note": event.note or "",
+                    "deposited_by_name": event.deposited_by_name or "",
+                    "created_at": event.created_at.isoformat() if event.created_at else "",
+                    "batch_total_amount": (
+                        f"{batch_data.get('total_amount', Decimal('0.00'))}"
+                        if batch_data
+                        else "0.00"
+                    ),
+                    "batch_session_count": (
+                        len(batch_data.get("sessions", [])) if batch_data else 0
+                    ),
+                    "batch_other_session_labels": [
+                        label for label in other_session_labels if label
+                    ],
+                }
+            )
 
     grouped_sessions_map: dict[str, dict] = {}
     for item in paginated_sessions:
@@ -2059,8 +2219,348 @@ async def envelopes_date_range_report(
             "sort_order": sort_order,
             "origin": origin or "",
             "preset": preset,
+            "deposit_events_by_session": deposit_events_by_session,
         },
     )
+
+
+def _resolve_envelopes_return_to(return_to: str | None) -> str:
+    """Allow redirects only to the envelopes date-range report."""
+    if not return_to:
+        return DEFAULT_ENVELOPES_REPORT_URL
+
+    parsed = urlsplit(return_to)
+    if parsed.scheme or parsed.netloc:
+        return DEFAULT_ENVELOPES_REPORT_URL
+
+    if not return_to.startswith("/") or return_to.startswith("//"):
+        return DEFAULT_ENVELOPES_REPORT_URL
+
+    if not return_to.startswith(DEFAULT_ENVELOPES_REPORT_URL):
+        return DEFAULT_ENVELOPES_REPORT_URL
+
+    return return_to
+
+
+async def _load_envelope_selection_rows(
+    db: AsyncSession,
+    session_ids: list[UUID],
+) -> list[dict]:
+    """Load selected envelope sessions with deposited/pending calculations."""
+    if not session_ids:
+        return []
+
+    unique_ids = list(dict.fromkeys(session_ids))
+
+    deposited_totals_subquery = (
+        select(
+            EnvelopeDepositEvent.session_id.label("session_id"),
+            func.coalesce(func.sum(EnvelopeDepositEvent.amount), Decimal("0.00")).label(
+                "deposited_total"
+            ),
+        )
+        .where(~EnvelopeDepositEvent.is_deleted)
+        .group_by(EnvelopeDepositEvent.session_id)
+        .subquery()
+    )
+
+    stmt = (
+        select(
+            CashSession.id,
+            CashSession.session_number,
+            CashSession.session_date,
+            CashSession.opened_time,
+            CashSession.envelope_amount,
+            User.first_name,
+            User.last_name,
+            Business.name.label("business_name"),
+            func.coalesce(
+                deposited_totals_subquery.c.deposited_total,
+                Decimal("0.00"),
+            ).label("deposited_total"),
+        )
+        .join(User, CashSession.cashier_id == User.id)
+        .join(Business, CashSession.business_id == Business.id)
+        .outerjoin(
+            deposited_totals_subquery,
+            deposited_totals_subquery.c.session_id == CashSession.id,
+        )
+        .where(
+            and_(
+                CashSession.id.in_(unique_ids),
+                ~CashSession.is_deleted,
+                Business.is_active,
+                CashSession.envelope_amount > Decimal("0.00"),
+            )
+        )
+        .order_by(
+            Business.name.asc(),
+            CashSession.session_date.asc(),
+            CashSession.opened_time.asc(),
+            CashSession.id.asc(),
+        )
+    )
+
+    result = await db.execute(stmt)
+    rows = []
+
+    for item in result.all():
+        envelope_amount = item.envelope_amount or Decimal("0.00")
+        deposited_total = item.deposited_total or Decimal("0.00")
+        pending_amount = envelope_amount - deposited_total
+        if pending_amount <= Decimal("0.00"):
+            continue
+
+        cashier_name = item.first_name or ""
+        if item.last_name:
+            cashier_name += f" {item.last_name[0]}."
+        cashier_name = cashier_name.strip()
+
+        rows.append(
+            {
+                "session_id": item.id,
+                "session_number": item.session_number,
+                "session_date": item.session_date,
+                "opened_time": item.opened_time,
+                "business_name": item.business_name,
+                "cashier_name": cashier_name,
+                "envelope_amount": envelope_amount,
+                "deposited_total": deposited_total,
+                "pending_amount": pending_amount,
+            }
+        )
+
+    return rows
+
+
+@router.get("/envelopes/deposits/new", response_class=HTMLResponse)
+async def envelopes_new_deposit_screen(
+    request: Request,
+    session_ids: list[str] | None = Query(None),
+    return_to: str | None = Query(None),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Render dedicated envelope batch deposit screen."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    parsed_session_ids: list[UUID] = []
+    for raw_session_id in session_ids or []:
+        if not raw_session_id or not raw_session_id.strip():
+            continue
+        try:
+            parsed_session_id = UUID(raw_session_id)
+        except (ValueError, TypeError):
+            continue
+        if parsed_session_id not in parsed_session_ids:
+            parsed_session_ids.append(parsed_session_id)
+
+    selected_rows = await _load_envelope_selection_rows(db, parsed_session_ids)
+    safe_return_to = _resolve_envelopes_return_to(return_to)
+
+    active_users_stmt = select(User).where(User.is_active).order_by(User.first_name, User.last_name)
+    active_users_result = await db.execute(active_users_stmt)
+    active_users = active_users_result.scalars().all()
+
+    depositor_user_options = [
+        {
+            "id": str(user.id),
+            "label": user.display_name_email,
+        }
+        for user in active_users
+    ]
+
+    return templates.TemplateResponse(
+        request,
+        "admin/envelopes_new_deposit.html",
+        {
+            "current_user": current_user,
+            "locale": locale,
+            "_": _,
+            "selected_rows": selected_rows,
+            "errors": [],
+            "field_errors": {},
+            "amount_values": {},
+            "note_values": {},
+            "depositor_user_options": depositor_user_options,
+            "selected_depositor_user_id": str(current_user.id),
+            "deposit_date": today_local().isoformat(),
+            "return_to": safe_return_to,
+            "selected_session_ids": [str(row["session_id"]) for row in selected_rows],
+        },
+    )
+
+
+@router.post("/envelopes/deposits/batch")
+async def envelopes_batch_deposit_submit(
+    request: Request,
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Persist one envelope deposit event per selected envelope row."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+    form_data = await request.form()
+
+    selected_session_id_values = form_data.getlist("session_ids")
+    return_to = _resolve_envelopes_return_to(form_data.get("return_to"))
+    deposit_date_raw = (form_data.get("deposit_date") or "").strip()
+    selected_depositor_user_id = (form_data.get("depositor_user_id") or "").strip()
+
+    parsed_session_ids: list[UUID] = []
+    invalid_session_ids = False
+    for raw_session_id in selected_session_id_values:
+        if not raw_session_id or not raw_session_id.strip():
+            continue
+        try:
+            parsed_session_id = UUID(raw_session_id)
+        except (ValueError, TypeError):
+            invalid_session_ids = True
+            continue
+        if parsed_session_id not in parsed_session_ids:
+            parsed_session_ids.append(parsed_session_id)
+
+    selected_rows = await _load_envelope_selection_rows(db, parsed_session_ids)
+    selected_rows_by_id = {str(row["session_id"]): row for row in selected_rows}
+
+    errors: list[str] = []
+    field_errors: dict[str, str] = {}
+    amount_values: dict[str, str] = {}
+    note_values: dict[str, str] = {}
+
+    active_users_stmt = select(User).where(User.is_active).order_by(User.first_name, User.last_name)
+    active_users_result = await db.execute(active_users_stmt)
+    active_users = active_users_result.scalars().all()
+    depositor_user_options = [
+        {
+            "id": str(user.id),
+            "label": user.display_name_email,
+        }
+        for user in active_users
+    ]
+
+    selected_depositor_user = None
+    if not selected_depositor_user_id:
+        field_errors["depositor_user_id"] = _("Select who deposited this batch.")
+    else:
+        try:
+            selected_depositor_uuid = UUID(selected_depositor_user_id)
+            for user in active_users:
+                if user.id == selected_depositor_uuid:
+                    selected_depositor_user = user
+                    break
+            if selected_depositor_user is None:
+                field_errors["depositor_user_id"] = _("Selected depositor is not valid.")
+        except (ValueError, TypeError):
+            field_errors["depositor_user_id"] = _("Selected depositor is not valid.")
+
+    if invalid_session_ids:
+        errors.append(_("One or more selected envelopes are invalid."))
+
+    if not parsed_session_ids:
+        errors.append(_("Select at least one envelope to continue."))
+
+    if parsed_session_ids and len(selected_rows) != len(parsed_session_ids):
+        errors.append(_("Some selected envelopes are no longer available for deposit."))
+
+    try:
+        deposit_date = datetime.fromisoformat(deposit_date_raw).date()
+    except (ValueError, TypeError):
+        deposit_date = None
+        errors.append(_("Deposit date is required and must be valid."))
+
+    if deposit_date is not None:
+        for row in selected_rows:
+            if deposit_date < row["session_date"]:
+                field_errors["deposit_date"] = _(
+                    "Deposit date cannot be earlier than selected session date."
+                )
+                break
+
+    deposit_rows_payload: dict[str, dict] = {}
+    for session_id_str, row in selected_rows_by_id.items():
+        amount_field_name = f"amount_{session_id_str}"
+        note_field_name = f"note_{session_id_str}"
+
+        raw_amount = (form_data.get(amount_field_name) or "").strip()
+        raw_note = (form_data.get(note_field_name) or "").strip()
+
+        amount_values[amount_field_name] = raw_amount
+        note_values[note_field_name] = raw_note
+
+        amount_value = parse_currency(raw_amount)
+
+        if amount_value is None:
+            field_errors[amount_field_name] = _("Enter a valid amount.")
+            continue
+        if amount_value <= Decimal("0.00"):
+            field_errors[amount_field_name] = _("Amount must be greater than zero.")
+            continue
+        if amount_value > row["pending_amount"]:
+            field_errors[amount_field_name] = _("Amount cannot exceed pending.")
+            continue
+
+        pending_after = row["pending_amount"] - amount_value
+        if pending_after > Decimal("0.00") and not raw_note:
+            field_errors[note_field_name] = _(
+                "A note is required when envelope remains pending after this deposit."
+            )
+            continue
+
+        deposit_rows_payload[session_id_str] = {
+            "amount": amount_value,
+            "note": raw_note,
+        }
+
+    if field_errors:
+        errors.append(_("Fix the highlighted amounts and try again."))
+
+    if errors:
+        return templates.TemplateResponse(
+            request,
+            "admin/envelopes_new_deposit.html",
+            {
+                "current_user": current_user,
+                "locale": locale,
+                "_": _,
+                "selected_rows": selected_rows,
+                "errors": errors,
+                "field_errors": field_errors,
+                "amount_values": amount_values,
+                "note_values": note_values,
+                "depositor_user_options": depositor_user_options,
+                "selected_depositor_user_id": selected_depositor_user_id,
+                "deposit_date": deposit_date_raw,
+                "return_to": return_to,
+                "selected_session_ids": [str(row["session_id"]) for row in selected_rows],
+            },
+            status_code=400,
+        )
+
+    deposit_batch = EnvelopeDepositBatch(
+        deposit_date=deposit_date,
+        deposited_by_user_id=selected_depositor_user.id,
+        created_by=current_user.id,
+    )
+    db.add(deposit_batch)
+    await db.flush()
+
+    for session_id_str, payload in deposit_rows_payload.items():
+        deposit_event = EnvelopeDepositEvent(
+            batch_id=deposit_batch.id,
+            session_id=UUID(session_id_str),
+            amount=payload["amount"],
+            deposit_date=deposit_date,
+            note=payload["note"] or None,
+            deposited_by_name=selected_depositor_user.display_name,
+            created_by=current_user.id,
+        )
+        db.add(deposit_event)
+
+    await db.commit()
+
+    return RedirectResponse(url=return_to, status_code=303)
 
 
 @router.post("/transfer-items/{transfer_id}/verify")
