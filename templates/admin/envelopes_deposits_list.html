@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('Envelope Deposits') }} - CashPilot{% endblock %}
+
+{% block content %}
+{% set deposit_batches = deposit_batches | default([], true) %}
+{% set total_batches = total_batches | default(0) %}
+{% set grand_total_amount = grand_total_amount | default(0) %}
+
+<div class="space-y-4 pb-20">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Envelope Deposits') }}</h1>
+            <p class="text-xs md:text-sm text-base-content/60">{{ _('Review already registered deposit batches and included envelopes') }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="/admin/envelopes/date-range" class="btn btn-outline btn-sm">{{ _('Back to report') }}</a>
+            <a href="/admin/envelopes/date-range" class="btn btn-primary btn-sm">{{ _('New deposit') }}</a>
+        </div>
+    </div>
+
+    <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm px-3 py-3">
+        <form method="get" action="/admin/envelopes/deposits" class="grid grid-cols-1 md:grid-cols-3 gap-2 items-end">
+            <div class="form-control">
+                <label for="from_date" class="label py-1">
+                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('From') }}</span>
+                </label>
+                <input id="from_date" name="from_date" type="date" value="{{ from_date.isoformat() }}" class="input input-sm input-bordered w-full" />
+            </div>
+            <div class="form-control">
+                <label for="to_date" class="label py-1">
+                    <span class="label-text text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('To') }}</span>
+                </label>
+                <input id="to_date" name="to_date" type="date" value="{{ to_date.isoformat() }}" class="input input-sm input-bordered w-full" />
+            </div>
+            <div class="flex items-center gap-2 md:justify-end">
+                <button type="submit" class="btn btn-sm btn-primary">{{ _('Apply') }}</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+        <div class="bg-base-100 border border-base-300 rounded-lg p-3">
+            <div class="text-xs text-base-content/60">{{ _('Deposit batches') }}</div>
+            <div class="text-lg font-bold font-mono">{{ total_batches }}</div>
+        </div>
+        <div class="bg-base-100 border border-base-300 rounded-lg p-3">
+            <div class="text-xs text-base-content/60">{{ _('Total deposited') }}</div>
+            <div class="text-lg font-bold font-mono">Gs {{ grand_total_amount | format_currency_py }}</div>
+        </div>
+        <div class="bg-base-100 border border-base-300 rounded-lg p-3">
+            <div class="text-xs text-base-content/60">{{ _('Range') }}</div>
+            <div class="text-sm font-semibold">{{ from_date.isoformat() }} → {{ to_date.isoformat() }}</div>
+        </div>
+    </div>
+
+    {% if not deposit_batches %}
+    <div class="bg-base-100 border border-base-300 rounded-lg p-6 text-center text-sm text-base-content/70">
+        {{ _('No deposits found for selected range.') }}
+    </div>
+    {% else %}
+    <div class="space-y-3">
+        {% for batch in deposit_batches %}
+        <details class="bg-base-100 border border-base-300 rounded-lg overflow-hidden" {% if loop.first %}open{% endif %}>
+            <summary class="px-4 py-3 cursor-pointer flex flex-wrap items-center justify-between gap-3 bg-base-200/40">
+                <div class="flex items-center gap-2 text-sm">
+                    <span class="badge badge-outline">{{ _('Batch') }}</span>
+                    <span class="font-mono">#{{ batch.batch_id[:8] }}</span>
+                    <span class="text-base-content/70">{{ batch.deposit_date.isoformat() }}</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                    <span><span class="text-base-content/60">{{ _('Deposited by') }}:</span> <span class="font-semibold">{{ batch.deposited_by }}</span></span>
+                    <span><span class="text-base-content/60">{{ _('Envelopes') }}:</span> <span class="font-mono font-bold">{{ batch.envelopes_count }}</span></span>
+                    <span><span class="text-base-content/60">{{ _('Total') }}:</span> <span class="font-mono font-bold">Gs {{ batch.total_amount | format_currency_py }}</span></span>
+                </div>
+            </summary>
+            <div class="overflow-x-auto">
+                <table class="table table-sm w-full">
+                    <thead>
+                        <tr class="bg-base-200/30">
+                            <th>{{ _('Business') }}</th>
+                            <th>{{ _('Session') }}</th>
+                            <th>{{ _('Date') }}</th>
+                            <th class="text-right">{{ _('Amount') }}</th>
+                            <th>{{ _('Note') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in batch.envelope_rows %}
+                        <tr>
+                            <td>{{ item.business_name }}</td>
+                            <td>
+                                <a href="/sessions/{{ item.session_id }}" class="badge badge-outline badge-sm font-mono text-primary">{{ item.session_label }}</a>
+                            </td>
+                            <td class="text-xs">{{ item.session_date.isoformat() }}</td>
+                            <td class="text-right font-mono">Gs {{ item.amount | format_currency_py }}</td>
+                            <td class="text-xs">{{ item.note if item.note else '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.models.envelope_deposit_batch import EnvelopeDepositBatch
 from cashpilot.models.envelope_deposit_event import EnvelopeDepositEvent
 from cashpilot.models.user import UserRole
 
@@ -529,6 +530,19 @@ class TestEnvelopeDateRangeReport:
         assert str(session.id) in response.text
 
     @pytest.mark.asyncio
+    async def test_admin_new_deposit_without_selection_redirects_to_report(
+        self, admin_client
+    ):
+        """Direct new-deposit entry without selected envelopes redirects to report."""
+        response = await admin_client.get(
+            "/admin/envelopes/deposits/new",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 303
+        assert response.headers["location"] == "/admin/envelopes/date-range?start_deposit=1"
+
+    @pytest.mark.asyncio
     async def test_admin_can_register_batch_deposit_for_multiple_businesses(
         self, db_session: AsyncSession, factories, admin_client
     ):
@@ -752,3 +766,65 @@ class TestEnvelopeDateRangeReport:
 
         assert response.status_code == 400
         assert "Deposit date cannot be earlier than selected session date" in response.text
+
+    @pytest.mark.asyncio
+    async def test_admin_can_view_deposits_list_with_batch_details(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Admin can view a list of registered deposit batches and envelope rows."""
+        business = await factories.business(name="Envelope Deposits List Business")
+        cashier = await factories.user(
+            role=UserRole.CASHIER,
+            email="cashier-envelope-deposits-list@test.com",
+        )
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+            envelope_amount=Decimal("1800.00"),
+        )
+        await db_session.commit()
+
+        deposit_batch = EnvelopeDepositBatch(
+            deposit_date=session_date,
+            deposited_by_user_id=admin_client.test_user.id,
+            created_by=admin_client.test_user.id,
+        )
+        db_session.add(deposit_batch)
+        await db_session.flush()
+
+        db_session.add(
+            EnvelopeDepositEvent(
+                batch_id=deposit_batch.id,
+                session_id=session.id,
+                amount=Decimal("1800.00"),
+                deposit_date=session_date,
+                note="Batch detail note",
+                deposited_by_name="Admin User",
+                created_by=admin_client.test_user.id,
+            )
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/envelopes/deposits",
+            params={
+                "from_date": session_date.isoformat(),
+                "to_date": session_date.isoformat(),
+            },
+        )
+
+        assert response.status_code == 200
+        assert "Envelope Deposits" in response.text
+        assert "Batch detail note" in response.text
+        assert f"/sessions/{session.id}" in response.text
+
+    @pytest.mark.asyncio
+    async def test_cashier_forbidden_on_deposits_list_route(self, client):
+        """Cashier role cannot access deposits list route."""
+        response = await client.get("/admin/envelopes/deposits")
+        assert response.status_code == 403

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-02 08:15+0000\n"
+"POT-Creation-Date: 2026-03-05 20:14+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -18,6 +18,48 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.14.0\n"
+
+msgid "Today"
+msgstr "Hoy"
+
+msgid "Yesterday"
+msgstr "Ayer"
+
+msgid "Select who deposited this batch."
+msgstr "Seleccioná quién depositó este lote."
+
+msgid "Selected depositor is not valid."
+msgstr "El usuario seleccionado para depósito no es válido."
+
+msgid "One or more selected envelopes are invalid."
+msgstr "Uno o más sobres seleccionados no son válidos."
+
+msgid "Select at least one envelope to continue."
+msgstr "Seleccioná al menos un sobre para continuar."
+
+msgid "Some selected envelopes are no longer available for deposit."
+msgstr "Algunos sobres seleccionados ya no están disponibles para depósito."
+
+msgid "Deposit date is required and must be valid."
+msgstr "La fecha de depósito es obligatoria y debe ser válida."
+
+msgid "Deposit date cannot be earlier than selected session date."
+msgstr "La fecha de depósito no puede ser anterior a la fecha de la sesión seleccionada."
+
+msgid "Enter a valid amount."
+msgstr "Ingresá un monto válido."
+
+msgid "Amount must be greater than zero."
+msgstr "El monto debe ser mayor a cero."
+
+msgid "Amount cannot exceed pending."
+msgstr "El monto no puede superar el pendiente."
+
+msgid "A note is required when envelope remains pending after this deposit."
+msgstr "La nota es obligatoria cuando el sobre queda parcialmente pendiente después del depósito."
+
+msgid "Fix the highlighted amounts and try again."
+msgstr "Corregí los campos marcados y volvé a intentar."
 
 msgid "Invalid date range. Please check your dates and try again."
 msgstr "Rango de fechas inválido. Por favor revisá las fechas e intentá de nuevo."
@@ -50,7 +92,7 @@ msgid "Daily Revenue Summary"
 msgstr "Resumen de Ventas Diarias"
 
 msgid "Total sales by payment method, net earnings, and discrepancy counts"
-msgstr ""
+msgstr "Total de ventas por método de pago, ganancias netas y conteo de discrepancias"
 "Total de ventas por método de pago, ganancias netas y conteo de "
 "discrepancias"
 
@@ -158,14 +200,23 @@ msgid ""
 "                        reconciliation"
 msgstr "Monitorear sesiones de caja y conciliación"
 
+msgid "Envelopes"
+msgstr "Sobres"
+
+msgid "Envelope management"
+msgstr "Gestión de sobres"
+
+msgid "View envelopes"
+msgstr "Ver sobres"
+
+msgid "Deposits list"
+msgstr "Lista de depósitos"
+
+msgid "New deposit"
+msgstr "Nuevo depósito"
+
 msgid "Back to Report"
 msgstr "Volver al Reporte"
-
-msgid "Today"
-msgstr "Hoy"
-
-msgid "Yesterday"
-msgstr "Ayer"
 
 msgid "Last 7 Days"
 msgstr "Últimos 7 días"
@@ -311,6 +362,9 @@ msgstr "Revisá montos de sobres en varios días con filtros y paginación"
 msgid "Back"
 msgstr "Volver"
 
+msgid "Select one or more envelopes, then click New deposit to continue."
+msgstr "Seleccioná uno o más sobres y luego hacé clic en Nuevo depósito para continuar."
+
 msgid "Last 2 days"
 msgstr "Últimos 2 días"
 
@@ -386,7 +440,7 @@ msgstr "# Sobres"
 msgid "Total"
 msgstr "Total"
 
-#, no-python-format
+#, no-python-format, python-format
 msgid "% of total"
 msgstr "% of total"
 
@@ -414,20 +468,38 @@ msgstr "sobres en"
 msgid "businesses"
 msgstr "negocios"
 
-msgid "envelopes"
-msgstr "sobres"
-
 msgid "Select all"
 msgstr "Seleccionar todo"
 
-msgid "Clear"
-msgstr "Limpiar"
+msgid "envelopes"
+msgstr "sobres"
+
+msgid "Deposited"
+msgstr "Depositado"
+
+msgid "Partial"
+msgstr "Parcial"
+
+msgid "Pending"
+msgstr "Pendiente"
+
+msgid "View deposit detail"
+msgstr "Ver detalle de depósito"
+
+msgid "Already fully deposited. Selection disabled."
+msgstr "Ya está depositado por completo. Selección deshabilitada."
 
 msgid "Session"
 msgstr "Sesión"
 
 msgid "Envelope Amount"
 msgstr "Monto del Sobre"
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Detail"
+msgstr "Detalle"
 
 msgid "Time"
 msgstr "Hora"
@@ -441,6 +513,12 @@ msgstr "Total de la página"
 msgid "No envelope sessions found for current filters and range"
 msgstr "No se encontraron sesiones con sobres para los filtros y rango actuales"
 
+msgid "Deposit detail"
+msgstr "Detalle de depósito"
+
+msgid "Close"
+msgstr "Cerrar"
+
 msgid "Selected envelopes summary"
 msgstr "Resumen de sobres seleccionados"
 
@@ -452,6 +530,102 @@ msgstr "Limpiar selección"
 
 msgid "selected"
 msgstr "seleccionado"
+
+msgid "No deposit events yet for this envelope."
+msgstr "Todavía no hay eventos de depósito para este sobre."
+
+msgid "Total deposited for this envelope"
+msgstr "Total depositado para este sobre"
+
+msgid "events"
+msgstr "eventos"
+
+msgid "Deposited by"
+msgstr "Depositado por"
+
+msgid "Note"
+msgstr "Nota"
+
+msgid "Batch total"
+msgstr "Total del lote"
+
+msgid "Also deposited with"
+msgstr "También depositado con"
+
+msgid "Envelope Deposits"
+msgstr "Depósitos de sobres"
+
+msgid "Review already registered deposit batches and included envelopes"
+msgstr "Revisá los lotes de depósito ya registrados y los sobres incluidos"
+
+msgid "Back to report"
+msgstr "Volver al reporte"
+
+msgid "Deposit batches"
+msgstr "Lotes de depósito"
+
+msgid "Total deposited"
+msgstr "Total depositado"
+
+msgid "Range"
+msgstr "Rango"
+
+msgid "No deposits found for selected range."
+msgstr "No se encontraron depósitos para el rango seleccionado."
+
+msgid "Batch"
+msgstr "Lote"
+
+msgid "Date"
+msgstr "Fecha"
+
+msgid "Amount"
+msgstr "Monto"
+
+msgid "New Envelope Deposit"
+msgstr "Nuevo depósito de sobres"
+
+msgid "Select envelopes, set amounts, and register one batch date"
+msgstr "Seleccioná sobres, definí montos y registrá una fecha de lote"
+
+msgid "No envelope sessions selected."
+msgstr "No hay sesiones con sobres seleccionadas."
+
+msgid "Deposit date"
+msgstr "Fecha de depósito"
+
+msgid "Select user"
+msgstr "Seleccionar usuario"
+
+msgid "Selected envelopes"
+msgstr "Sobres seleccionados"
+
+msgid "Total pending"
+msgstr "Total pendiente"
+
+msgid "Total to deposit"
+msgstr "Total a depositar"
+
+msgid "Total difference"
+msgstr "Diferencia total"
+
+msgid "Use"
+msgstr "Usar"
+
+msgid "Deposit amount"
+msgstr "Monto a depositar"
+
+msgid "Difference"
+msgstr "Diferencia"
+
+msgid "Required for partial deposit"
+msgstr "Obligatorio para depósito parcial"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Register deposits"
+msgstr "Registrar depósitos"
 
 msgid "Expenses by Date Range"
 msgstr "Gastos por rango de fechas"
@@ -479,9 +653,6 @@ msgstr "Monto total filtrado"
 
 msgid "Description"
 msgstr "Descripción"
-
-msgid "Amount"
-msgstr "Monto"
 
 msgid "of"
 msgstr "de"
@@ -522,8 +693,8 @@ msgstr "Seleccione un negocio para analizar"
 msgid "Select date"
 msgstr "Seleccionar fecha"
 
-msgid "Viewing"
-msgstr "Viendo"
+msgid "Previous day"
+msgstr "Día anterior"
 
 msgid "Select today"
 msgstr "Seleccionar hoy"
@@ -549,14 +720,8 @@ msgstr "Seleccionar hace 30 días"
 msgid "30 Days Ago"
 msgstr "Últimos 30 Días"
 
-msgid "Pick Custom Date"
-msgstr "Elegir Fecha Personalizada"
-
-msgid "Date"
-msgstr "Fecha"
-
-msgid "Select a date to compare reconciliation data"
-msgstr "Seleccioná una fecha para comparar datos de conciliación"
+msgid "Next day"
+msgstr "Día siguiente"
 
 msgid "Reconciliation data views"
 msgstr "Vistas de conciliación"
@@ -566,6 +731,21 @@ msgstr "Comparación de Ventas"
 
 msgid "Bank Transfers"
 msgstr "Transferencias"
+
+msgid "Last updated at"
+msgstr "Última actualización a las"
+
+msgid "Paraguay Time"
+msgstr "Hora de Paraguay"
+
+msgid "Last updated"
+msgstr "Última actualización"
+
+msgid "Refresh comparison table"
+msgstr "Actualizar tabla de comparación"
+
+msgid "Refresh"
+msgstr "Actualizar"
 
 msgid "Margin Comparison"
 msgstr "Comparación de Margen"
@@ -604,12 +784,9 @@ msgid "Margin Tips:"
 msgstr "Consejos de Margen:"
 
 msgid "Gross margin uses manual sales minus daily cost total when available."
-msgstr ""
+msgstr "El margen bruto usa ventas manuales menos el total de costo diario cuando está disponible."
 "El margen bruto usa ventas manuales menos el total de costo diario cuando"
 " está disponible."
-
-msgid "Close"
-msgstr "Cerrar"
 
 msgid "Session Notes"
 msgstr "Notas de Sesión"
@@ -731,9 +908,6 @@ msgstr "Opcional"
 msgid "Search businesses..."
 msgstr "Buscar negocios..."
 
-msgid "Cancel"
-msgstr "Cancelar"
-
 msgid "Reset Password"
 msgstr "Restablecer contraseña"
 
@@ -851,27 +1025,6 @@ msgstr "Eliminar"
 msgid "more"
 msgstr "más"
 
-msgid "Sales Reconciliation Comparison"
-msgstr "Comparación de Conciliación de Ventas"
-
-msgid "System vs manual totals by business"
-msgstr "Totales del sistema vs manuales por negocio"
-
-msgid "Last updated"
-msgstr "Última actualización"
-
-msgid "Last updated at"
-msgstr "Última actualización a las"
-
-msgid "Paraguay Time"
-msgstr "Hora de Paraguay"
-
-msgid "Refresh comparison table"
-msgstr "Actualizar tabla de comparación"
-
-msgid "Refresh"
-msgstr "Actualizar"
-
 msgid "Notes"
 msgstr "Notas"
 
@@ -902,9 +1055,6 @@ msgstr "Clic para agregar entrada manual"
 msgid "Add manual entry for"
 msgstr "Agregar entrada manual para"
 
-msgid "Pending"
-msgstr "Pendiente"
-
 msgid "Total Sales"
 msgstr "Ventas Totales"
 
@@ -934,9 +1084,6 @@ msgstr "Sesiones"
 
 msgid "No sessions"
 msgstr "Sin sesiones"
-
-msgid "Difference"
-msgstr "Diferencia"
 
 msgid "System:"
 msgstr "Agenda:"
@@ -1439,12 +1586,6 @@ msgstr "Ver informe de comparación"
 msgid "Select Date"
 msgstr "Seleccionar Fecha"
 
-msgid "Next day"
-msgstr "Día siguiente"
-
-msgid "Previous day"
-msgstr "Día anterior"
-
 msgid "Date for reconciliation entry"
 msgstr "Fecha para la entrada de conciliación"
 
@@ -1691,6 +1832,9 @@ msgstr ""
 msgid "Select Business"
 msgstr "Seleccionar un Negocio"
 
+msgid "Viewing"
+msgstr "Viendo"
+
 msgid "Show today"
 msgstr "Mostrar hoy"
 
@@ -1702,6 +1846,9 @@ msgstr "Mostrar hace 7 días"
 
 msgid "Show 30 days ago"
 msgstr "Mostrar hace 30 días"
+
+msgid "Pick Custom Date"
+msgstr "Elegir Fecha Personalizada"
 
 msgid "Loading report data..."
 msgstr "Cargando..."
@@ -1841,8 +1988,8 @@ msgid ""
 "Review envelope amounts across a selected period with filters, sorting, "
 "and pagination"
 msgstr ""
-"Revisá montos de sobres en un período seleccionado con filtros, ordenamiento y "
-"paginación"
+"Revisá montos de sobres en un período seleccionado con filtros, "
+"ordenamiento y paginación"
 
 msgid "Business Intelligence"
 msgstr "Inteligencia de Negocios"
@@ -1855,6 +2002,9 @@ msgstr "Este Mes"
 
 msgid "Cashier name"
 msgstr "Nombre del cajero"
+
+msgid "Clear"
+msgstr "Limpiar"
 
 msgid "Date Range"
 msgstr "Rango de Fechas"
@@ -2393,7 +2543,7 @@ msgid "Select a business"
 msgstr "Seleccionar un Negocio"
 
 msgid "No businesses assigned. Contact an administrator to assign you a location."
-msgstr ""
+msgstr "No hay negocios asignados. Contactá a un administrador para que te asigne una sucursal."
 "No hay negocios asignados. Contactá al administrador para asignar una "
 "sucursal."
 
@@ -2478,7 +2628,7 @@ msgid "Quick Tip"
 msgstr "Consejo Rápido"
 
 msgid "All edits are logged with reason and timestamp for compliance."
-msgstr ""
+msgstr "Todas las ediciones quedan registradas con motivo y fecha/hora para cumplimiento."
 "Todas las ediciones se registran con razón y marca de tiempo para "
 "cumplimiento."
 
@@ -2722,4 +2872,12 @@ msgstr "ej., Discrepancia alta, requiere revisión del gerente..."
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
 
+#~ msgid "Select a date to compare reconciliation data"
+#~ msgstr "Seleccioná una fecha para comparar datos de conciliación"
+
+#~ msgid "Sales Reconciliation Comparison"
+#~ msgstr "Comparación de Conciliación de Ventas"
+
+#~ msgid "System vs manual totals by business"
+#~ msgstr "Totales del sistema vs manuales por negocio"
 

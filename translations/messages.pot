@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-02 08:15+0000\n"
+"POT-Creation-Date: 2026-03-05 20:14+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,48 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.14.0\n"
+
+msgid "Today"
+msgstr ""
+
+msgid "Yesterday"
+msgstr ""
+
+msgid "Select who deposited this batch."
+msgstr ""
+
+msgid "Selected depositor is not valid."
+msgstr ""
+
+msgid "One or more selected envelopes are invalid."
+msgstr ""
+
+msgid "Select at least one envelope to continue."
+msgstr ""
+
+msgid "Some selected envelopes are no longer available for deposit."
+msgstr ""
+
+msgid "Deposit date is required and must be valid."
+msgstr ""
+
+msgid "Deposit date cannot be earlier than selected session date."
+msgstr ""
+
+msgid "Enter a valid amount."
+msgstr ""
+
+msgid "Amount must be greater than zero."
+msgstr ""
+
+msgid "Amount cannot exceed pending."
+msgstr ""
+
+msgid "A note is required when envelope remains pending after this deposit."
+msgstr ""
+
+msgid "Fix the highlighted amounts and try again."
+msgstr ""
 
 msgid "Invalid date range. Please check your dates and try again."
 msgstr ""
@@ -148,13 +190,22 @@ msgid ""
 "                        reconciliation"
 msgstr ""
 
+msgid "Envelopes"
+msgstr ""
+
+msgid "Envelope management"
+msgstr ""
+
+msgid "View envelopes"
+msgstr ""
+
+msgid "Deposits list"
+msgstr ""
+
+msgid "New deposit"
+msgstr ""
+
 msgid "Back to Report"
-msgstr ""
-
-msgid "Today"
-msgstr ""
-
-msgid "Yesterday"
 msgstr ""
 
 msgid "Last 7 Days"
@@ -301,6 +352,9 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
+msgid "Select one or more envelopes, then click New deposit to continue."
+msgstr ""
+
 msgid "Last 2 days"
 msgstr ""
 
@@ -404,19 +458,37 @@ msgstr ""
 msgid "businesses"
 msgstr ""
 
-msgid "envelopes"
-msgstr ""
-
 msgid "Select all"
 msgstr ""
 
-msgid "Clear"
+msgid "envelopes"
+msgstr ""
+
+msgid "Deposited"
+msgstr ""
+
+msgid "Partial"
+msgstr ""
+
+msgid "Pending"
+msgstr ""
+
+msgid "View deposit detail"
+msgstr ""
+
+msgid "Already fully deposited. Selection disabled."
 msgstr ""
 
 msgid "Session"
 msgstr ""
 
 msgid "Envelope Amount"
+msgstr ""
+
+msgid "State"
+msgstr ""
+
+msgid "Detail"
 msgstr ""
 
 msgid "Time"
@@ -431,6 +503,12 @@ msgstr ""
 msgid "No envelope sessions found for current filters and range"
 msgstr ""
 
+msgid "Deposit detail"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
 msgid "Selected envelopes summary"
 msgstr ""
 
@@ -441,6 +519,102 @@ msgid "Clear selection"
 msgstr ""
 
 msgid "selected"
+msgstr ""
+
+msgid "No deposit events yet for this envelope."
+msgstr ""
+
+msgid "Total deposited for this envelope"
+msgstr ""
+
+msgid "events"
+msgstr ""
+
+msgid "Deposited by"
+msgstr ""
+
+msgid "Note"
+msgstr ""
+
+msgid "Batch total"
+msgstr ""
+
+msgid "Also deposited with"
+msgstr ""
+
+msgid "Envelope Deposits"
+msgstr ""
+
+msgid "Review already registered deposit batches and included envelopes"
+msgstr ""
+
+msgid "Back to report"
+msgstr ""
+
+msgid "Deposit batches"
+msgstr ""
+
+msgid "Total deposited"
+msgstr ""
+
+msgid "Range"
+msgstr ""
+
+msgid "No deposits found for selected range."
+msgstr ""
+
+msgid "Batch"
+msgstr ""
+
+msgid "Date"
+msgstr ""
+
+msgid "Amount"
+msgstr ""
+
+msgid "New Envelope Deposit"
+msgstr ""
+
+msgid "Select envelopes, set amounts, and register one batch date"
+msgstr ""
+
+msgid "No envelope sessions selected."
+msgstr ""
+
+msgid "Deposit date"
+msgstr ""
+
+msgid "Select user"
+msgstr ""
+
+msgid "Selected envelopes"
+msgstr ""
+
+msgid "Total pending"
+msgstr ""
+
+msgid "Total to deposit"
+msgstr ""
+
+msgid "Total difference"
+msgstr ""
+
+msgid "Use"
+msgstr ""
+
+msgid "Deposit amount"
+msgstr ""
+
+msgid "Difference"
+msgstr ""
+
+msgid "Required for partial deposit"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Register deposits"
 msgstr ""
 
 msgid "Expenses by Date Range"
@@ -468,9 +642,6 @@ msgid "Filtered total amount"
 msgstr ""
 
 msgid "Description"
-msgstr ""
-
-msgid "Amount"
 msgstr ""
 
 msgid "of"
@@ -512,7 +683,7 @@ msgstr ""
 msgid "Select date"
 msgstr ""
 
-msgid "Viewing"
+msgid "Previous day"
 msgstr ""
 
 msgid "Select today"
@@ -539,13 +710,7 @@ msgstr ""
 msgid "30 Days Ago"
 msgstr ""
 
-msgid "Pick Custom Date"
-msgstr ""
-
-msgid "Date"
-msgstr ""
-
-msgid "Select a date to compare reconciliation data"
+msgid "Next day"
 msgstr ""
 
 msgid "Reconciliation data views"
@@ -555,6 +720,21 @@ msgid "Sales Comparison"
 msgstr ""
 
 msgid "Bank Transfers"
+msgstr ""
+
+msgid "Last updated at"
+msgstr ""
+
+msgid "Paraguay Time"
+msgstr ""
+
+msgid "Last updated"
+msgstr ""
+
+msgid "Refresh comparison table"
+msgstr ""
+
+msgid "Refresh"
 msgstr ""
 
 msgid "Margin Comparison"
@@ -594,9 +774,6 @@ msgid "Margin Tips:"
 msgstr ""
 
 msgid "Gross margin uses manual sales minus daily cost total when available."
-msgstr ""
-
-msgid "Close"
 msgstr ""
 
 msgid "Session Notes"
@@ -719,9 +896,6 @@ msgstr ""
 msgid "Search businesses..."
 msgstr ""
 
-msgid "Cancel"
-msgstr ""
-
 msgid "Reset Password"
 msgstr ""
 
@@ -839,27 +1013,6 @@ msgstr ""
 msgid "more"
 msgstr ""
 
-msgid "Sales Reconciliation Comparison"
-msgstr ""
-
-msgid "System vs manual totals by business"
-msgstr ""
-
-msgid "Last updated"
-msgstr ""
-
-msgid "Last updated at"
-msgstr ""
-
-msgid "Paraguay Time"
-msgstr ""
-
-msgid "Refresh comparison table"
-msgstr ""
-
-msgid "Refresh"
-msgstr ""
-
 msgid "Notes"
 msgstr ""
 
@@ -890,9 +1043,6 @@ msgstr ""
 msgid "Add manual entry for"
 msgstr ""
 
-msgid "Pending"
-msgstr ""
-
 msgid "Total Sales"
 msgstr ""
 
@@ -921,9 +1071,6 @@ msgid "Sessions"
 msgstr ""
 
 msgid "No sessions"
-msgstr ""
-
-msgid "Difference"
 msgstr ""
 
 msgid "System:"
@@ -1425,12 +1572,6 @@ msgstr ""
 msgid "Select Date"
 msgstr ""
 
-msgid "Next day"
-msgstr ""
-
-msgid "Previous day"
-msgstr ""
-
 msgid "Date for reconciliation entry"
 msgstr ""
 
@@ -1673,6 +1814,9 @@ msgstr ""
 msgid "Select Business"
 msgstr ""
 
+msgid "Viewing"
+msgstr ""
+
 msgid "Show today"
 msgstr ""
 
@@ -1683,6 +1827,9 @@ msgid "Show 7 days ago"
 msgstr ""
 
 msgid "Show 30 days ago"
+msgstr ""
+
+msgid "Pick Custom Date"
 msgstr ""
 
 msgid "Loading report data..."
@@ -1830,6 +1977,9 @@ msgid "This Month"
 msgstr ""
 
 msgid "Cashier name"
+msgstr ""
+
+msgid "Clear"
 msgstr ""
 
 msgid "Date Range"
