@@ -1714,6 +1714,7 @@ async def envelopes_date_range_report(
     sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
     origin: str | None = Query(None, description="Navigation origin context"),
+    start_deposit: bool = Query(False, description="Show guidance to select envelopes"),
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
@@ -2220,6 +2221,7 @@ async def envelopes_date_range_report(
             "origin": origin or "",
             "preset": preset,
             "deposit_events_by_session": deposit_events_by_session,
+            "show_select_envelopes_hint": start_deposit,
         },
     )
 
@@ -2358,6 +2360,12 @@ async def envelopes_new_deposit_screen(
 
     selected_rows = await _load_envelope_selection_rows(db, parsed_session_ids)
     safe_return_to = _resolve_envelopes_return_to(return_to)
+
+    if not parsed_session_ids or not selected_rows:
+        return RedirectResponse(
+            url=f"{DEFAULT_ENVELOPES_REPORT_URL}?start_deposit=1",
+            status_code=303,
+        )
 
     active_users_stmt = select(User).where(User.is_active).order_by(User.first_name, User.last_name)
     active_users_result = await db.execute(active_users_stmt)
@@ -2561,6 +2569,164 @@ async def envelopes_batch_deposit_submit(
     await db.commit()
 
     return RedirectResponse(url=return_to, status_code=303)
+
+
+@router.get("/envelopes/deposits", response_class=HTMLResponse)
+async def envelopes_deposits_list(
+    request: Request,
+    from_date: date | None = Query(None),
+    to_date: date | None = Query(None),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Render envelope deposits history grouped by deposit batch."""
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    today = today_local()
+    selected_to_date = to_date or today
+    selected_from_date = from_date or (selected_to_date - timedelta(days=30))
+
+    if selected_from_date > selected_to_date:
+        selected_from_date, selected_to_date = selected_to_date, selected_from_date
+
+    batch_totals_subquery = (
+        select(
+            EnvelopeDepositEvent.batch_id.label("batch_id"),
+            func.count(EnvelopeDepositEvent.id).label("envelopes_count"),
+            func.coalesce(func.sum(EnvelopeDepositEvent.amount), Decimal("0.00")).label(
+                "total_amount"
+            ),
+        )
+        .where(
+            and_(
+                EnvelopeDepositEvent.batch_id.isnot(None),
+                ~EnvelopeDepositEvent.is_deleted,
+            )
+        )
+        .group_by(EnvelopeDepositEvent.batch_id)
+        .subquery()
+    )
+
+    batches_stmt = (
+        select(
+            EnvelopeDepositBatch.id,
+            EnvelopeDepositBatch.deposit_date,
+            EnvelopeDepositBatch.created_at,
+            User.first_name,
+            User.last_name,
+            User.email,
+            func.coalesce(batch_totals_subquery.c.envelopes_count, 0).label("envelopes_count"),
+            func.coalesce(batch_totals_subquery.c.total_amount, Decimal("0.00")).label(
+                "total_amount"
+            ),
+        )
+        .join(User, User.id == EnvelopeDepositBatch.deposited_by_user_id)
+        .outerjoin(
+            batch_totals_subquery,
+            batch_totals_subquery.c.batch_id == EnvelopeDepositBatch.id,
+        )
+        .where(
+            and_(
+                EnvelopeDepositBatch.deposit_date >= selected_from_date,
+                EnvelopeDepositBatch.deposit_date <= selected_to_date,
+            )
+        )
+        .order_by(EnvelopeDepositBatch.deposit_date.desc(), EnvelopeDepositBatch.created_at.desc())
+    )
+    batches_result = await db.execute(batches_stmt)
+
+    batch_rows: list[dict] = []
+    batch_ids: list[UUID] = []
+    for row in batches_result.all():
+        depositor_name = (f"{row.first_name or ''} {row.last_name or ''}").strip()
+        if not depositor_name:
+            depositor_name = row.email or "—"
+
+        batch_id = row.id
+        batch_ids.append(batch_id)
+        batch_rows.append(
+            {
+                "batch_id": str(batch_id),
+                "deposit_date": row.deposit_date,
+                "created_at": row.created_at,
+                "deposited_by": depositor_name,
+                "envelopes_count": int(row.envelopes_count or 0),
+                "total_amount": row.total_amount or Decimal("0.00"),
+                "envelope_rows": [],
+            }
+        )
+
+    batch_rows_by_id = {item["batch_id"]: item for item in batch_rows}
+
+    if batch_ids:
+        items_stmt = (
+            select(
+                EnvelopeDepositEvent.batch_id,
+                EnvelopeDepositEvent.session_id,
+                EnvelopeDepositEvent.amount,
+                EnvelopeDepositEvent.note,
+                CashSession.session_number,
+                CashSession.session_date,
+                Business.name.label("business_name"),
+            )
+            .join(CashSession, CashSession.id == EnvelopeDepositEvent.session_id)
+            .join(Business, Business.id == CashSession.business_id)
+            .where(
+                and_(
+                    EnvelopeDepositEvent.batch_id.in_(batch_ids),
+                    ~EnvelopeDepositEvent.is_deleted,
+                )
+            )
+            .order_by(
+                Business.name.asc(),
+                CashSession.session_date.asc(),
+                CashSession.opened_time.asc(),
+            )
+        )
+        items_result = await db.execute(items_stmt)
+
+        for item in items_result.all():
+            if not item.batch_id:
+                continue
+
+            batch_key = str(item.batch_id)
+            parent = batch_rows_by_id.get(batch_key)
+            if not parent:
+                continue
+
+            session_id_str = str(item.session_id)
+            session_label = (
+                f"#{item.session_number}" if item.session_number else f"#{session_id_str[:8]}"
+            )
+            parent["envelope_rows"].append(
+                {
+                    "session_id": session_id_str,
+                    "session_label": session_label,
+                    "session_date": item.session_date,
+                    "business_name": item.business_name,
+                    "amount": item.amount or Decimal("0.00"),
+                    "note": item.note or "",
+                }
+            )
+
+    total_batches = len(batch_rows)
+    grand_total_amount = sum((item["total_amount"] for item in batch_rows), Decimal("0.00"))
+
+    return templates.TemplateResponse(
+        request,
+        "admin/envelopes_deposits_list.html",
+        {
+            "current_user": current_user,
+            "locale": locale,
+            "_": _,
+            "from_date": selected_from_date,
+            "to_date": selected_to_date,
+            "deposit_batches": batch_rows,
+            "total_batches": total_batches,
+            "grand_total_amount": grand_total_amount,
+        },
+    )
 
 
 @router.post("/transfer-items/{transfer_id}/verify")

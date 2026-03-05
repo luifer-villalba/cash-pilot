@@ -39,6 +39,27 @@ class TestRBACDashboardVisibility:
         response = await client.get("/")
         assert response.status_code in [200, 302]
 
+    @pytest.mark.asyncio
+    async def test_dashboard_shows_envelope_quick_links_for_admin(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Admin dashboard includes quick access links for envelopes and deposits list."""
+        response = await admin_client.get("/")
+        assert response.status_code == 200
+        assert '/admin/envelopes/date-range' in response.text
+        assert '/admin/envelopes/deposits' in response.text
+
+    @pytest.mark.asyncio
+    async def test_dashboard_hides_envelope_quick_links_for_cashier(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Cashier dashboard does not render admin-only envelope quick links."""
+        response = await client.get("/")
+        assert response.status_code in [200, 302]
+        if response.status_code == 200:
+            assert '/admin/envelopes/date-range' not in response.text
+            assert '/admin/envelopes/deposits' not in response.text
+
 
 class TestRBACBusinessListVisibility:
     """Test business list respects role-based access (AC-01, AC-02)."""

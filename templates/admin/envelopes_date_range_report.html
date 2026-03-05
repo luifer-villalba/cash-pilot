@@ -21,6 +21,7 @@
 {% set average_envelope_amount = average_envelope_amount | default(0) %}
 {% set envelopes_by_business = envelopes_by_business | default([], true) %}
 {% set envelope_sessions_by_business = envelope_sessions_by_business | default([], true) %}
+{% set show_select_envelopes_hint = show_select_envelopes_hint | default(false) %}
 {% set base_query = 'from_date=' ~ from_date.isoformat() ~ '&to_date=' ~ to_date.isoformat() ~ '&preset=' ~ preset ~ '&sort_by=' ~ sort_by ~ '&sort_order=' ~ sort_order %}
 {% if selected_business_ids %}
 {% for business_filter_id in selected_business_ids %}
@@ -42,18 +43,27 @@
             <h1 class="text-2xl md:text-3xl font-bold text-base-content">{{ _('Envelopes by Date Range') }}</h1>
             <p class="text-xs md:text-sm text-base-content/60">{{ _('Review envelope amounts across multiple days with filters and pagination') }}</p>
         </div>
-        <button
-            type="button"
-            class="btn btn-outline btn-sm gap-2"
-            data-back
-            onclick="window.location.href='/reports';"
-        >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
-            {{ _('Back') }}
-        </button>
+        <div class="flex items-center gap-2">
+            <a href="/admin/envelopes/deposits" class="btn btn-primary btn-sm">{{ _('Deposits list') }}</a>
+            <button
+                type="button"
+                class="btn btn-outline btn-sm gap-2"
+                data-back
+                onclick="window.location.href='/reports';"
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                {{ _('Back') }}
+            </button>
+        </div>
     </div>
+
+    {% if show_select_envelopes_hint %}
+    <div class="alert alert-info">
+        <div class="text-sm">{{ _('Select one or more envelopes, then click New deposit to continue.') }}</div>
+    </div>
+    {% endif %}
 
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm px-3 py-3">
         <form id="range-filter-form" method="get" action="/admin/envelopes/date-range" class="space-y-1">
