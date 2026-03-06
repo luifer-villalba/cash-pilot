@@ -26,6 +26,7 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import hash_password
+from cashpilot.core.validators import validate_currency
 from cashpilot.models.business import Business
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.daily_reconciliation import DailyReconciliation
@@ -2502,6 +2503,13 @@ async def envelopes_batch_deposit_submit(
         if amount_value is None:
             field_errors[amount_field_name] = _("Enter a valid amount.")
             continue
+        try:
+            validate_currency(amount_value)
+        except ValueError:
+            field_errors[amount_field_name] = _(
+                "Currency value too large. Maximum allowed: 9,999,999,999.99"
+            )
+            continue
         if amount_value <= Decimal("0.00"):
             field_errors[amount_field_name] = _("Amount must be greater than zero.")
             continue
@@ -2542,6 +2550,88 @@ async def envelopes_batch_deposit_submit(
                 "deposit_date": deposit_date_raw,
                 "return_to": return_to,
                 "selected_session_ids": [str(row["session_id"]) for row in selected_rows],
+            },
+            status_code=400,
+        )
+
+    requested_amounts_by_session: dict[UUID, Decimal] = {
+        UUID(session_id_str): payload["amount"]
+        for session_id_str, payload in deposit_rows_payload.items()
+    }
+    requested_session_ids = list(requested_amounts_by_session.keys())
+
+    locked_sessions_stmt = (
+        select(CashSession.id, CashSession.envelope_amount)
+        .where(
+            and_(
+                CashSession.id.in_(requested_session_ids),
+                ~CashSession.is_deleted,
+            )
+        )
+        .with_for_update()
+    )
+    locked_sessions_result = await db.execute(locked_sessions_stmt)
+    locked_sessions = {
+        row.id: row.envelope_amount or Decimal("0.00") for row in locked_sessions_result.all()
+    }
+
+    if len(locked_sessions) != len(requested_session_ids):
+        errors.append(_("Some selected envelopes are no longer available for deposit."))
+
+    if not errors:
+        deposited_totals_stmt = (
+            select(
+                EnvelopeDepositEvent.session_id,
+                func.coalesce(func.sum(EnvelopeDepositEvent.amount), Decimal("0.00")).label(
+                    "deposited_total"
+                ),
+            )
+            .where(
+                and_(
+                    EnvelopeDepositEvent.session_id.in_(requested_session_ids),
+                    ~EnvelopeDepositEvent.is_deleted,
+                )
+            )
+            .group_by(EnvelopeDepositEvent.session_id)
+        )
+        deposited_totals_result = await db.execute(deposited_totals_stmt)
+        deposited_totals_by_session = {
+            row.session_id: row.deposited_total or Decimal("0.00")
+            for row in deposited_totals_result.all()
+        }
+
+        for session_id, requested_amount in requested_amounts_by_session.items():
+            envelope_amount = locked_sessions.get(session_id, Decimal("0.00"))
+            deposited_total = deposited_totals_by_session.get(session_id, Decimal("0.00"))
+            pending_amount = envelope_amount - deposited_total
+            if pending_amount < Decimal("0.00"):
+                pending_amount = Decimal("0.00")
+
+            if requested_amount > pending_amount:
+                field_errors[f"amount_{session_id}"] = _("Amount cannot exceed pending.")
+
+    if field_errors:
+        errors.append(_("Fix the highlighted amounts and try again."))
+
+    if errors:
+        refreshed_rows = await _load_envelope_selection_rows(db, parsed_session_ids)
+        return templates.TemplateResponse(
+            request,
+            "admin/envelopes_new_deposit.html",
+            {
+                "current_user": current_user,
+                "locale": locale,
+                "_": _,
+                "selected_rows": refreshed_rows,
+                "errors": errors,
+                "field_errors": field_errors,
+                "amount_values": amount_values,
+                "note_values": note_values,
+                "depositor_user_options": depositor_user_options,
+                "selected_depositor_user_id": selected_depositor_user_id,
+                "deposit_date": deposit_date_raw,
+                "return_to": return_to,
+                "selected_session_ids": [str(row["session_id"]) for row in refreshed_rows],
             },
             status_code=400,
         )

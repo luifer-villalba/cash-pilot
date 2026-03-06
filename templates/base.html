@@ -546,6 +546,7 @@
                     <li><a href="/businesses" class="text-sm transition-colors hover:bg-primary/10">{{ _('Businesses') }}</a></li>
                     {% if current_user and current_user.role == 'ADMIN' %}
                     <li class="border-t border-base-200 pt-2 mt-2"><a href="/reports" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Reports') }}</a></li>
+                    <li><a href="/admin/envelopes/date-range" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Envelopes') }}</a></li>
                     <li><a href="/admin/users-page" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Users') }}</a></li>
                     {% endif %}
                 </ul>
@@ -581,6 +582,19 @@
                 </svg>
                 <span class="text-sm">{{ _('Reports') }}</span>
             </a>
+            <div class="dropdown dropdown-end">
+                <button tabindex="0" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path.startswith('/admin/envelopes') %} btn-active{% else %} btn-ghost{% endif %}">
+                    <span class="text-sm">{{ _('Envelopes') }}</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-56 border border-base-200 mt-2">
+                    <li><a href="/admin/envelopes/date-range">{{ _('Envelope report') }}</a></li>
+                    <li><a href="/admin/envelopes/date-range">{{ _('Create deposit') }}</a></li>
+                    <li><a href="/admin/envelopes/deposits">{{ _('Deposit history') }}</a></li>
+                </ul>
+            </div>
             <a href="/admin/users-page" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/admin/users-page' %} btn-active{% else %} btn-ghost{% endif %}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
