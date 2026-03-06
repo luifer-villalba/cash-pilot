@@ -165,7 +165,7 @@
                 </a>
                 <time datetime="{{ item.created_at.isoformat() if item.created_at else '' }}" 
                       class="text-base-content/60 font-mono">
-                                        {{ item.created_at | format_datetime_business('%H:%M:%S') if item.created_at else '—' }}
+                    {{ item.created_at | format_datetime_business('%H:%M:%S') if item.created_at else '—' }}
                 </time>
             </div>
 

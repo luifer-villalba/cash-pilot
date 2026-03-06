@@ -547,11 +547,11 @@
                     <li class="border-t border-base-200 pt-2 mt-2"><a href="/reports" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Reports') }}</a></li>
                     <li><a href="/admin/envelopes/date-range" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Envelopes') }}</a></li>
                     <li>
-                        <details {% if request.path == '/businesses' or request.path == '/admin/users-page' %}open{% endif %}>
-                            <summary class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">Admin</summary>
+                        <details {% if request.path.startswith('/businesses') or request.path.startswith('/admin/users-page') %}open{% endif %}>
+                            <summary class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Admin') }}</summary>
                             <ul>
-                                <li><a href="/businesses" class="text-sm transition-colors hover:bg-primary/10{% if request.path == '/businesses' %} font-semibold{% endif %}">{{ _('Businesses') }}</a></li>
-                                <li><a href="/admin/users-page" class="text-sm transition-colors hover:bg-primary/10{% if request.path == '/admin/users-page' %} font-semibold{% endif %}">{{ _('Users') }}</a></li>
+                                <li><a href="/businesses" class="text-sm transition-colors hover:bg-primary/10{% if request.path.startswith('/businesses') %} font-semibold{% endif %}">{{ _('Businesses') }}</a></li>
+                                <li><a href="/admin/users-page" class="text-sm transition-colors hover:bg-primary/10{% if request.path.startswith('/admin/users-page') %} font-semibold{% endif %}">{{ _('Users') }}</a></li>
                             </ul>
                         </details>
                     </li>
@@ -602,18 +602,18 @@
                 </ul>
             </div>
             <div class="dropdown dropdown-end">
-                <button tabindex="0" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path == '/businesses' or request.path == '/admin/users-page' %} btn-active{% else %} btn-ghost{% endif %}">
+                <button tabindex="0" class="btn btn-sm rounded-full gap-2 transition-all duration-200 hover:scale-105{% if request.path.startswith('/businesses') or request.path.startswith('/admin/users-page') %} btn-active{% else %} btn-ghost{% endif %}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h10"/>
                     </svg>
-                    <span class="text-sm">Admin</span>
+                    <span class="text-sm">{{ _('Admin') }}</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
                 <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-56 border border-base-200 mt-2">
-                    <li><a href="/businesses" class="{% if request.path == '/businesses' %}active{% endif %}">{{ _('Businesses') }}</a></li>
-                    <li><a href="/admin/users-page" class="{% if request.path == '/admin/users-page' %}active{% endif %}">{{ _('Users') }}</a></li>
+                    <li><a href="/businesses" class="{% if request.path.startswith('/businesses') %}active{% endif %}">{{ _('Businesses') }}</a></li>
+                    <li><a href="/admin/users-page" class="{% if request.path.startswith('/admin/users-page') %}active{% endif %}">{{ _('Users') }}</a></li>
                 </ul>
             </div>
             {% else %}

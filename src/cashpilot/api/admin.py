@@ -962,7 +962,13 @@ async def reconciliation_compare_dashboard(
     business_id: str | None = Query(None, description="Filter by business ID"),
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(20, ge=10, le=100, description="Items per page"),
-    sort_by: str = Query("business,time", description="Sort fields: business|time|amount"),
+    sort_by: str = Query(
+        "business,time",
+        description=(
+            "Comma-separated sort fields in priority order "
+            "(allowed: business,time,amount). Example: business,time"
+        ),
+    ),
     sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     filter_verified: str = Query(
         "all", pattern="^(all|verified|unverified)$", description="Filter by verification status"
