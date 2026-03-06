@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CashPilot 0.1.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-05 20:14+0000\n"
+"POT-Creation-Date: 2026-03-06 23:10+0000\n"
 "PO-Revision-Date: 2025-11-20 12:00+0000\n"
 "Last-Translator: Luifer Villalba <luifer@example.com>\n"
 "Language: es_PY\n"
@@ -44,10 +44,15 @@ msgid "Deposit date is required and must be valid."
 msgstr "La fecha de depósito es obligatoria y debe ser válida."
 
 msgid "Deposit date cannot be earlier than selected session date."
-msgstr "La fecha de depósito no puede ser anterior a la fecha de la sesión seleccionada."
+msgstr ""
+"La fecha de depósito no puede ser anterior a la fecha de la sesión "
+"seleccionada."
 
 msgid "Enter a valid amount."
 msgstr "Ingresá un monto válido."
+
+msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
+msgstr "Valor de moneda demasiado grande. Máximo permitido: 9.999.999.999,99"
 
 msgid "Amount must be greater than zero."
 msgstr "El monto debe ser mayor a cero."
@@ -56,7 +61,9 @@ msgid "Amount cannot exceed pending."
 msgstr "El monto no puede superar el pendiente."
 
 msgid "A note is required when envelope remains pending after this deposit."
-msgstr "La nota es obligatoria cuando el sobre queda parcialmente pendiente después del depósito."
+msgstr ""
+"La nota es obligatoria cuando el sobre queda parcialmente pendiente "
+"después del depósito."
 
 msgid "Fix the highlighted amounts and try again."
 msgstr "Corregí los campos marcados y volvé a intentar."
@@ -92,9 +99,10 @@ msgid "Daily Revenue Summary"
 msgstr "Resumen de Ventas Diarias"
 
 msgid "Total sales by payment method, net earnings, and discrepancy counts"
-msgstr "Total de ventas por método de pago, ganancias netas y conteo de discrepancias"
+msgstr ""
 "Total de ventas por método de pago, ganancias netas y conteo de "
-"discrepancias"
+"discrepanciasTotal de ventas por método de pago, ganancias netas y conteo"
+" de discrepancias"
 
 msgid "Flagged Cash Sessions"
 msgstr "Sesiones de caja marcadas"
@@ -137,9 +145,6 @@ msgstr "Comparar rendimiento entre múltiples sucursales"
 msgid "You already have an open session for this business."
 msgstr "Ya tenés una sesión abierta para este negocio."
 
-msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
-msgstr "Valor de moneda demasiado grande. Máximo permitido: 9.999.999.999,99"
-
 msgid "Invalid number format. Please enter a valid amount."
 msgstr "Formato de número inválido. Por favor ingresá un monto válido."
 
@@ -165,14 +170,29 @@ msgstr "Menú"
 msgid "Dashboard"
 msgstr "Panel"
 
-msgid "Businesses"
-msgstr "Negocios"
-
 msgid "Reports"
 msgstr "Reportes"
 
+msgid "Envelopes"
+msgstr "Sobres"
+
+msgid "Management"
+msgstr "Administración"
+
+msgid "Businesses"
+msgstr "Negocios"
+
 msgid "Users"
 msgstr "Usuarios"
+
+msgid "Envelope report"
+msgstr "Reporte de sobres"
+
+msgid "Create deposit"
+msgstr "Crear depósito"
+
+msgid "Deposit history"
+msgstr "Historial de depósitos"
 
 msgid "Toggle theme"
 msgstr "Cambiar tema"
@@ -199,33 +219,6 @@ msgid ""
 "Monitor cash sessions and\n"
 "                        reconciliation"
 msgstr "Monitorear sesiones de caja y conciliación"
-
-msgid "Envelopes"
-msgstr "Sobres"
-
-msgid "Envelope management"
-msgstr "Gestión de sobres"
-
-msgid "Envelope workspace"
-msgstr "Centro de sobres"
-
-msgid "View envelopes"
-msgstr "Ver sobres"
-
-msgid "Envelope report"
-msgstr "Reporte de sobres"
-
-msgid "Deposits list"
-msgstr "Lista de depósitos"
-
-msgid "Deposit history"
-msgstr "Historial de depósitos"
-
-msgid "New deposit"
-msgstr "Nuevo depósito"
-
-msgid "Create deposit"
-msgstr "Crear depósito"
 
 msgid "Back to Report"
 msgstr "Volver al Reporte"
@@ -371,11 +364,16 @@ msgstr "Sobres por rango de fechas"
 msgid "Review envelope amounts across multiple days with filters and pagination"
 msgstr "Revisá montos de sobres en varios días con filtros y paginación"
 
+msgid "Deposits list"
+msgstr "Lista de depósitos"
+
 msgid "Back"
 msgstr "Volver"
 
 msgid "Select one or more envelopes, then click New deposit to continue."
-msgstr "Seleccioná uno o más sobres y luego hacé clic en Nuevo depósito para continuar."
+msgstr ""
+"Seleccioná uno o más sobres y luego hacé clic en Nuevo depósito para "
+"continuar."
 
 msgid "Last 2 days"
 msgstr "Últimos 2 días"
@@ -452,7 +450,7 @@ msgstr "# Sobres"
 msgid "Total"
 msgstr "Total"
 
-#, no-python-format
+#, no-python-format, python-format
 msgid "% of total"
 msgstr "% of total"
 
@@ -536,6 +534,9 @@ msgstr "Resumen de sobres seleccionados"
 
 msgid "Selected"
 msgstr "Seleccionados"
+
+msgid "New deposit"
+msgstr "Nuevo depósito"
 
 msgid "Clear selection"
 msgstr "Limpiar selección"
@@ -796,7 +797,9 @@ msgid "Margin Tips:"
 msgstr "Consejos de Margen:"
 
 msgid "Gross margin uses manual sales minus daily cost total when available."
-msgstr "El margen bruto usa ventas manuales menos el total de costo diario cuando está disponible."
+msgstr ""
+"El margen bruto usa ventas manuales menos el total de costo diario cuando"
+" está disponible."
 
 msgid "Session Notes"
 msgstr "Notas de Sesión"
@@ -2553,7 +2556,9 @@ msgid "Select a business"
 msgstr "Seleccionar un Negocio"
 
 msgid "No businesses assigned. Contact an administrator to assign you a location."
-msgstr "No hay negocios asignados. Contactá a un administrador para que te asigne una sucursal."
+msgstr ""
+"No hay negocios asignados. Contactá a un administrador para que te asigne"
+" una sucursal."
 
 msgid "Which business location?"
 msgstr "¿Cuál ubicación del negocio?"
@@ -2636,7 +2641,9 @@ msgid "Quick Tip"
 msgstr "Consejo Rápido"
 
 msgid "All edits are logged with reason and timestamp for compliance."
-msgstr "Todas las ediciones quedan registradas con motivo y fecha/hora para cumplimiento."
+msgstr ""
+"Todas las ediciones quedan registradas con motivo y fecha/hora para "
+"cumplimiento."
 
 msgid "Edit Open Cash Session"
 msgstr "Editar Sesión de Caja Abierta"
@@ -2886,4 +2893,13 @@ msgstr "¿Remover marca de esta sesión?"
 
 #~ msgid "System vs manual totals by business"
 #~ msgstr "Totales del sistema vs manuales por negocio"
+
+#~ msgid "Envelope management"
+#~ msgstr "Gestión de sobres"
+
+#~ msgid "Envelope workspace"
+#~ msgstr "Centro de sobres"
+
+#~ msgid "View envelopes"
+#~ msgstr "Ver sobres"
 

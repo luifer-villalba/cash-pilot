@@ -231,6 +231,65 @@ class TestTransferItemsDateRangeReport:
         assert "Unverified row" not in response.text
 
     @pytest.mark.asyncio
+    async def test_admin_route_default_sort_matches_recon_compare_order(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Default ordering is business + time ascending, matching recon compare."""
+        business_a = await factories.business(name="Alpha Store")
+        business_b = await factories.business(name="Zulu Store")
+
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-sort@test.com")
+        await factories.user_business(business=business_a, user=cashier)
+        await factories.user_business(business=business_b, user=cashier)
+
+        session_date = date.today() - timedelta(days=1)
+        session_a = await factories.cash_session(
+            business=business_a,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+        session_b = await factories.cash_session(
+            business=business_b,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+
+        db_session.add(
+            TransferItem(
+                session_id=session_b.id,
+                description="Zulu transfer",
+                amount=Decimal("2000.00"),
+                created_at=datetime.combine(session_date, datetime.min.time()) + timedelta(hours=9),
+            )
+        )
+        db_session.add(
+            TransferItem(
+                session_id=session_a.id,
+                description="Alpha transfer",
+                amount=Decimal("1000.00"),
+                created_at=datetime.combine(session_date, datetime.min.time()) + timedelta(hours=10),
+            )
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            "/admin/transfers/date-range",
+            params={
+                "from_date": session_date.isoformat(),
+                "to_date": session_date.isoformat(),
+            },
+        )
+
+        assert response.status_code == 200
+        alpha_index = response.text.find("Alpha transfer")
+        zulu_index = response.text.find("Zulu transfer")
+        assert alpha_index != -1
+        assert zulu_index != -1
+        assert alpha_index < zulu_index
+
+    @pytest.mark.asyncio
     async def test_admin_route_accepts_single_date_query(
         self, db_session: AsyncSession, factories, admin_client
     ):
