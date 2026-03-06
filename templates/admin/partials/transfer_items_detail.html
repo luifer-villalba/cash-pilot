@@ -165,7 +165,7 @@
                 </a>
                 <time datetime="{{ item.created_at.isoformat() if item.created_at else '' }}" 
                       class="text-base-content/60 font-mono">
-                    {{ item.created_at.strftime('%H:%M:%S') if item.created_at else '—' }}
+                                        {{ item.created_at | format_datetime_business('%H:%M:%S') if item.created_at else '—' }}
                 </time>
             </div>
 
@@ -219,7 +219,7 @@
                 <td class="text-sm" title="{{ item.description }}">{{ item.description | truncate(40) }}</td>
                 <td class="text-right font-mono tabular-nums font-semibold">Gs {{ item.amount | format_currency_py }}</td>
                 <td class="text-right font-mono text-xs text-base-content/70">
-                    {{ item.created_at.strftime('%H:%M:%S') if item.created_at else '—' }}
+                    {{ item.created_at | format_datetime_business('%H:%M:%S') if item.created_at else '—' }}
                 </td>
                 <td class="text-center">
                     <input 

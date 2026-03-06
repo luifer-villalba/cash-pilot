@@ -248,6 +248,46 @@ class TestTransferItemsDisplay:
         assert response.status_code == 200
         assert "transfer-verify-checkbox" in response.text
 
+    @pytest.mark.asyncio
+    async def test_reconciliation_compare_displays_transfer_time_in_business_timezone(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Transfer time in recon compare is rendered using business timezone."""
+        from cashpilot.utils.datetime import utc_to_business
+
+        business = await factories.business(name="Timezone Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-timezone@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date(2026, 2, 16)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+
+        created_at_utc = datetime(2026, 2, 16, 14, 0, 0, tzinfo=timezone.utc)
+        expected_local_time = utc_to_business(created_at_utc).strftime("%H:%M:%S")
+
+        db_session.add(
+            TransferItem(
+                session_id=session.id,
+                description="Timezone check transfer",
+                amount=Decimal("50000.00"),
+                created_at=created_at_utc,
+            )
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            f"/admin/reconciliation/compare?date={session_date.isoformat()}&tab=transfers"
+        )
+
+        assert response.status_code == 200
+        assert "Timezone check transfer" in response.text
+        assert expected_local_time in response.text
+
     # ─────── AC-6: RBAC enforcement ────────
 
     @pytest.mark.asyncio

@@ -1154,7 +1154,7 @@ async def transfer_date_range_report(
     business_ids: list[str] | None = Query(None, description="Filter by one or more business IDs"),
     page: int = Query(1, ge=1, description="Page number (1-indexed)"),
     page_size: int = Query(20, ge=10, le=50, description="Items per page"),
-    sort_by: str = Query("time", description="Sort fields: business|time|amount"),
+    sort_by: str = Query("business,time", description="Sort fields: business|time|amount"),
     sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
     filter_verified: str = Query(
         "all", pattern="^(all|verified|unverified)$", description="Filter by verification status"

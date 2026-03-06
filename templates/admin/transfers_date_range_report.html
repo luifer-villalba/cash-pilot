@@ -10,8 +10,8 @@
 {% set start_index = start_index | default(0) %}
 {% set filter_verified = filter_verified | default('all', true) %}
 {% set filter_cashier = filter_cashier | default('', true) %}
-{% set sort_by = sort_by | default('time') %}
-{% set sort_order = sort_order | default('desc') %}
+{% set sort_by = sort_by | default('business,time') %}
+{% set sort_order = sort_order | default('asc') %}
 {% set selected_business_id = selected_business_id | default('', true) %}
 {% set selected_business_ids = selected_business_ids | default([], true) %}
 {% set origin = origin | default('', true) %}
