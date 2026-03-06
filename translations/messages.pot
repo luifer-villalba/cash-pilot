@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-05 20:14+0000\n"
+"POT-Creation-Date: 2026-03-06 23:10+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -45,6 +45,9 @@ msgid "Deposit date cannot be earlier than selected session date."
 msgstr ""
 
 msgid "Enter a valid amount."
+msgstr ""
+
+msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
 msgstr ""
 
 msgid "Amount must be greater than zero."
@@ -129,9 +132,6 @@ msgstr ""
 msgid "You already have an open session for this business."
 msgstr ""
 
-msgid "Currency value too large. Maximum allowed: 9,999,999,999.99"
-msgstr ""
-
 msgid "Invalid number format. Please enter a valid amount."
 msgstr ""
 
@@ -155,13 +155,28 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
-msgid "Businesses"
-msgstr ""
-
 msgid "Reports"
 msgstr ""
 
+msgid "Envelopes"
+msgstr ""
+
+msgid "Management"
+msgstr ""
+
+msgid "Businesses"
+msgstr ""
+
 msgid "Users"
+msgstr ""
+
+msgid "Envelope report"
+msgstr ""
+
+msgid "Create deposit"
+msgstr ""
+
+msgid "Deposit history"
 msgstr ""
 
 msgid "Toggle theme"
@@ -188,21 +203,6 @@ msgstr ""
 msgid ""
 "Monitor cash sessions and\n"
 "                        reconciliation"
-msgstr ""
-
-msgid "Envelopes"
-msgstr ""
-
-msgid "Envelope management"
-msgstr ""
-
-msgid "View envelopes"
-msgstr ""
-
-msgid "Deposits list"
-msgstr ""
-
-msgid "New deposit"
 msgstr ""
 
 msgid "Back to Report"
@@ -347,6 +347,9 @@ msgid "Envelopes by Date Range"
 msgstr ""
 
 msgid "Review envelope amounts across multiple days with filters and pagination"
+msgstr ""
+
+msgid "Deposits list"
 msgstr ""
 
 msgid "Back"
@@ -513,6 +516,9 @@ msgid "Selected envelopes summary"
 msgstr ""
 
 msgid "Selected"
+msgstr ""
+
+msgid "New deposit"
 msgstr ""
 
 msgid "Clear selection"

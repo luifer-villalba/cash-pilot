@@ -548,7 +548,7 @@
                     <li><a href="/admin/envelopes/date-range" class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Envelopes') }}</a></li>
                     <li>
                         <details {% if request.path.startswith('/businesses') or request.path.startswith('/admin/users-page') %}open{% endif %}>
-                            <summary class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Admin') }}</summary>
+                            <summary class="text-sm text-primary font-semibold transition-colors hover:bg-primary/10">{{ _('Management') }}</summary>
                             <ul>
                                 <li><a href="/businesses" class="text-sm transition-colors hover:bg-primary/10{% if request.path.startswith('/businesses') %} font-semibold{% endif %}">{{ _('Businesses') }}</a></li>
                                 <li><a href="/admin/users-page" class="text-sm transition-colors hover:bg-primary/10{% if request.path.startswith('/admin/users-page') %} font-semibold{% endif %}">{{ _('Users') }}</a></li>
@@ -606,7 +606,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h10"/>
                     </svg>
-                    <span class="text-sm">{{ _('Admin') }}</span>
+                    <span class="text-sm">{{ _('Management') }}</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
