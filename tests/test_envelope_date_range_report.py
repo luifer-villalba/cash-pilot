@@ -644,6 +644,19 @@ class TestEnvelopeDateRangeReport:
         assert response_over.status_code == 400
         assert "Amount cannot exceed pending" in response_over.text
 
+        response_too_large = await admin_client.post(
+            "/admin/envelopes/deposits/batch",
+            data={
+                "session_ids": [str(session.id)],
+                f"amount_{session.id}": "9999999999999999",
+                "depositor_user_id": str(admin_client.test_user.id),
+                "deposit_date": session_date.isoformat(),
+                "return_to": "/admin/envelopes/date-range",
+            },
+        )
+        assert response_too_large.status_code == 400
+        assert "Currency value too large" in response_too_large.text
+
     @pytest.mark.asyncio
     async def test_batch_deposit_requires_note_when_pending_remains(
         self, db_session: AsyncSession, factories, admin_client

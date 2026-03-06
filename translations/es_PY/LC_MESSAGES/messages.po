@@ -452,7 +452,7 @@ msgstr "# Sobres"
 msgid "Total"
 msgstr "Total"
 
-#, no-python-format, python-format
+#, no-python-format
 msgid "% of total"
 msgstr "% of total"
 
@@ -797,8 +797,6 @@ msgstr "Consejos de Margen:"
 
 msgid "Gross margin uses manual sales minus daily cost total when available."
 msgstr "El margen bruto usa ventas manuales menos el total de costo diario cuando está disponible."
-"El margen bruto usa ventas manuales menos el total de costo diario cuando"
-" está disponible."
 
 msgid "Session Notes"
 msgstr "Notas de Sesión"
@@ -2556,8 +2554,6 @@ msgstr "Seleccionar un Negocio"
 
 msgid "No businesses assigned. Contact an administrator to assign you a location."
 msgstr "No hay negocios asignados. Contactá a un administrador para que te asigne una sucursal."
-"No hay negocios asignados. Contactá al administrador para asignar una "
-"sucursal."
 
 msgid "Which business location?"
 msgstr "¿Cuál ubicación del negocio?"
@@ -2641,8 +2637,6 @@ msgstr "Consejo Rápido"
 
 msgid "All edits are logged with reason and timestamp for compliance."
 msgstr "Todas las ediciones quedan registradas con motivo y fecha/hora para cumplimiento."
-"Todas las ediciones se registran con razón y marca de tiempo para "
-"cumplimiento."
 
 msgid "Edit Open Cash Session"
 msgstr "Editar Sesión de Caja Abierta"

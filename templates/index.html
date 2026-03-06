@@ -30,48 +30,6 @@
                  hx-trigger="load, reconciliationBadgeUpdate from:body"
                  hx-swap="innerHTML">
             </div>
-            <div class="dropdown dropdown-end">
-                <button
-                    tabindex="0"
-                    class="btn btn-sm gap-2 transition-all duration-200 hover:scale-105 active:scale-95{% if request.path.startswith('/admin/envelopes') %} btn-primary{% else %} btn-outline{% endif %}"
-                >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9 6 9-6m-18 8h18a1 1 0 001-1V7a1 1 0 00-1-1H3a1 1 0 00-1 1v8a1 1 0 001 1z"/>
-                    </svg>
-                    {{ _('Envelopes') }}
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </button>
-                <ul tabindex="0" class="dropdown-content menu p-2 shadow-lg bg-base-100 rounded-lg w-56 border border-base-200 mt-2">
-                    <li class="menu-title"><span>{{ _('Envelope workspace') }}</span></li>
-                    <li>
-                        <a href="/admin/envelopes/date-range" class="gap-2 transition-colors hover:bg-primary/10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            {{ _('Envelope report') }}
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/admin/envelopes/date-range" class="gap-2 transition-colors hover:bg-primary/10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            {{ _('Create deposit') }}
-                        </a>
-                    </li>
-                    <li class="menu-title mt-2"><span>{{ _('Deposits list') }}</span></li>
-                    <li>
-                        <a href="/admin/envelopes/deposits" class="gap-2 transition-colors hover:bg-success/10">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            {{ _('Deposit history') }}
-                        </a>
-                    </li>
-                </ul>
-            </div>
             {% if from_report %}
             <a href="/admin/reconciliation/compare?date={{ from_report }}" class="btn btn-outline btn-sm gap-2 transition-all hover:scale-105 active:scale-95" data-back>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

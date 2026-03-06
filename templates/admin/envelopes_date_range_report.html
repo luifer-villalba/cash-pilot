@@ -634,6 +634,15 @@
         return 'Gs ' + withThousands + ',' + decimalPart;
     }
 
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     function updateSelectionSummary() {
         var checkboxes = document.querySelectorAll('.envelope-select-checkbox');
         var rows = document.querySelectorAll('.envelope-select-row');
@@ -993,11 +1002,14 @@
                 var eventItem = events[i];
                 var noteText = eventItem.note ? eventItem.note : '—';
                 var depositorText = eventItem.deposited_by_name ? eventItem.deposited_by_name : '—';
+                var safeDateText = escapeHtml(eventItem.deposit_date || '');
+                var safeNoteText = escapeHtml(noteText);
+                var safeDepositorText = escapeHtml(depositorText);
                 html += '<div class="border border-base-300 rounded-lg p-2">';
-                html += '<div class="text-xs text-base-content/60">' + (eventItem.deposit_date || '') + '</div>';
+                html += '<div class="text-xs text-base-content/60">' + safeDateText + '</div>';
                 html += '<div class="font-mono font-semibold">Gs ' + formatGs(eventItem.amount || 0).replace('Gs ', '') + '</div>';
-                html += '<div class="text-xs">{{ _('Deposited by') }}: ' + depositorText + '</div>';
-                html += '<div class="text-xs">{{ _('Note') }}: ' + noteText + '</div>';
+                html += '<div class="text-xs">{{ _('Deposited by') }}: ' + safeDepositorText + '</div>';
+                html += '<div class="text-xs">{{ _('Note') }}: ' + safeNoteText + '</div>';
 
                 var batchTotal = parseAmount(eventItem.batch_total_amount || 0);
                 var batchSessionCount = parseInt(eventItem.batch_session_count || 0, 10);
@@ -1011,7 +1023,11 @@
 
                 var otherEnvelopes = eventItem.batch_other_session_labels || [];
                 if (otherEnvelopes.length > 0) {
-                    html += '<div class="text-xs mt-1">{{ _('Also deposited with') }}: ' + otherEnvelopes.join(', ') + '</div>';
+                    var safeOtherEnvelopeLabels = [];
+                    for (var o = 0; o < otherEnvelopes.length; o += 1) {
+                        safeOtherEnvelopeLabels.push(escapeHtml(otherEnvelopes[o]));
+                    }
+                    html += '<div class="text-xs mt-1">{{ _('Also deposited with') }}: ' + safeOtherEnvelopeLabels.join(', ') + '</div>';
                 }
                 html += '</div>';
             }
