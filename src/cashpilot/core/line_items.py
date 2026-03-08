@@ -35,8 +35,3 @@ async def sync_session_totals(session: CashSession, db: AsyncSession) -> None:
     # Update session (SQLAlchemy func.sum returns Decimal or None)
     session.bank_transfer_total = Decimal(transfer_sum) if transfer_sum is not None else Decimal(0)
     session.expenses = Decimal(expense_sum) if expense_sum is not None else Decimal(0)
-
-    # Debug logging
-    print(f"DEBUG: sync_session_totals - transfer_sum={transfer_sum}, expense_sum={expense_sum}")
-    print(f"DEBUG: Updated session.bank_transfer_total={session.bank_transfer_total}")
-    print(f"DEBUG: Updated session.expenses={session.expenses}")
