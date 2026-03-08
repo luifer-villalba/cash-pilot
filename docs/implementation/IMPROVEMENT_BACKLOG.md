@@ -591,6 +591,53 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 
 ---
 
+## 🟠 EPIC 8 — Quick Wins (2026-03)
+
+**Risk:** Reporting trust gaps and avoidable user-facing errors
+
+### CP-QUICK-01 — Fix payment mix double counting in dashboard stats
+
+* **Severity:** High
+* **Problem:** Payment mix denominator can double count bank transfers when `cash_sales` already includes transfers
+* **Evidence:** `src/cashpilot/api/routes/dashboard.py` (`total_income` calculation)
+* **Related audit:** `docs/business_stats_audit.md` (bank transfer double-counting findings)
+* **Status:** ⏳ Not started
+* **Acceptance notes:**
+  - Payment mix percentages must use mutually exclusive components
+  - Percentages should stay stable against known fixture data
+
+### CP-QUICK-02 — Correct discrepancy formula in sessions export
+
+* **Severity:** Medium
+* **Problem:** Export discrepancy uses a derived cash formula path that can diverge from session-level expectations
+* **Evidence:** `src/cashpilot/api/export_sessions.py` (`_session_to_row` expected/discrepancy calculation)
+* **Status:** ⏳ Not started
+* **Acceptance notes:**
+  - CSV/XLSX discrepancy must match the same business rule used in app views
+  - Add regression coverage for at least one closed session with envelope/expenses/credit-payment values
+
+### CP-QUICK-03 — Harden Paraguay currency parsing for comma-decimal input
+
+* **Severity:** High
+* **Problem:** Inputs like `1.234,56` / `1234,56` may be misinterpreted due to mixed separator handling
+* **Evidence:** `src/cashpilot/api/utils.py` (`parse_currency`)
+* **Status:** ⏳ Not started
+* **Acceptance notes:**
+  - Correctly parse `1.234,56`, `1234,56`, `1.234.567,89`, `1,50`, `1500.75`, `1.500.000`
+  - Preserve current behavior for integer Guaraní-style values
+
+### CP-QUICK-04 — Avoid exposing raw exception messages in session create form
+
+* **Severity:** Medium
+* **Problem:** Raw `str(e)` can leak internal details to end users
+* **Evidence:** `src/cashpilot/api/routes/sessions.py` (generic exception branch in create flow)
+* **Status:** ⏳ Not started
+* **Acceptance notes:**
+  - Show localized generic error to users
+  - Keep full exception details in structured logs only
+
+---
+
 ## Backlog Rules Reminder
 
 * Backlog items do NOT equal implementation approval
