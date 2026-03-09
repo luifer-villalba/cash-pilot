@@ -266,7 +266,7 @@
                 <p class="text-sm font-semibold truncate mb-1">{{ item.description }}</p>
                 <div class="flex items-center justify-between text-xs text-base-content/70 mt-2">
                     <span>{{ item.cashier_name }}</span>
-                    <span class="font-mono">{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') if item.created_at else '—' }}</span>
+                    <span class="font-mono">{{ item.created_at | format_datetime_business('%Y-%m-%d %H:%M:%S') if item.created_at else '—' }}</span>
                 </div>
                 <div class="text-right mt-2">
                     <span class="font-mono font-bold">Gs {{ item.amount | format_currency_py }}</span>
@@ -313,7 +313,7 @@
                         <td class="text-sm">{{ item.cashier_name }}</td>
                         <td class="text-sm">{{ item.description | truncate(60) }}</td>
                         <td class="text-right font-mono font-semibold">Gs {{ item.amount | format_currency_py }}</td>
-                        <td class="text-right font-mono text-xs text-base-content/70">{{ item.created_at.strftime('%Y-%m-%d %H:%M:%S') if item.created_at else '—' }}</td>
+                        <td class="text-right font-mono text-xs text-base-content/70">{{ item.created_at | format_datetime_business('%Y-%m-%d %H:%M:%S') if item.created_at else '—' }}</td>
                         <td class="text-center">
                             <input
                                 type="checkbox"
