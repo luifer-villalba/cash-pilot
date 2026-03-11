@@ -45,9 +45,17 @@ def _calculate_payment_mix(
 ) -> tuple[Decimal, Decimal, Decimal]:
     """Return cash/card/bank percentages using mutually exclusive components.
 
-    cash_sales_val already includes bank transfers, so we split it into:
-    - cash-only component: cash_sales - bank_transfers
-    - bank transfer component: bank_transfers
+    This helper splits ``cash_sales_val`` into:
+    - cash-only component: ``cash_sales_val - bank_val``
+    - bank transfer component: ``bank_val``
+
+    Percentages are computed over total recorded income:
+    ``cash_only_val + card_total_val + bank_val + credit_sales_val``.
+
+    ``credit_sales_val`` is intentionally included in the denominator so
+    cash/card/bank are expressed as a share of all income sources. Because no
+    separate credit percentage is returned, these three percentages can sum to
+    less than 100% when credit sales are non-zero.
     """
     cash_only_val = cash_sales_val - bank_val
     if cash_only_val < 0:
@@ -61,6 +69,13 @@ def _calculate_payment_mix(
     cash_pct = (cash_only_val / total_income) * 100
     card_pct = (card_total_val / total_income) * 100
     bank_pct = (bank_val / total_income) * 100
+
+    # Keep display/tests stable with consistent one-decimal precision.
+    quant = Decimal("0.1")
+    cash_pct = cash_pct.quantize(quant)
+    card_pct = card_pct.quantize(quant)
+    bank_pct = bank_pct.quantize(quant)
+
     return cash_pct, card_pct, bank_pct
 
 
