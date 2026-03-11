@@ -652,7 +652,7 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Problem:** Payment mix denominator can double count bank transfers when `cash_sales` already includes transfers
 * **Evidence:** `src/cashpilot/api/routes/dashboard.py` (`total_income` calculation)
 * **Related audit:** `docs/business_stats_audit.md` (bank transfer double-counting findings)
-* **Status:** ⏳ Not started
+* **Status:** ✅ Completed (2026-03-10)
 * **Acceptance notes:**
   - Payment mix percentages must use mutually exclusive components
   - Percentages should stay stable against known fixture data

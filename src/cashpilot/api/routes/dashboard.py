@@ -37,6 +37,33 @@ def _is_single_day_filter(from_date: str | None, to_date: str | None) -> bool:
         return False
 
 
+def _calculate_payment_mix(
+    cash_sales_val: Decimal,
+    card_total_val: Decimal,
+    bank_val: Decimal,
+    credit_sales_val: Decimal,
+) -> tuple[Decimal, Decimal, Decimal]:
+    """Return cash/card/bank percentages using mutually exclusive components.
+
+    cash_sales_val already includes bank transfers, so we split it into:
+    - cash-only component: cash_sales - bank_transfers
+    - bank transfer component: bank_transfers
+    """
+    cash_only_val = cash_sales_val - bank_val
+    if cash_only_val < 0:
+        # Keep percentages stable on legacy or inconsistent historical data.
+        cash_only_val = Decimal("0")
+
+    total_income = cash_only_val + card_total_val + bank_val + credit_sales_val
+    if total_income <= 0:
+        return Decimal("0"), Decimal("0"), Decimal("0")
+
+    cash_pct = (cash_only_val / total_income) * 100
+    card_pct = (card_total_val / total_income) * 100
+    bank_pct = (bank_val / total_income) * 100
+    return cash_pct, card_pct, bank_pct
+
+
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
@@ -428,10 +455,12 @@ async def get_dashboard_stats(
     # Already calculated as credit_payments_val
 
     # Card #9: Payment Mix % (for collapsible section)
-    total_income = cash_sales_val + card_total_val + bank_val + credit_sales_val
-    cash_pct = (cash_sales_val / total_income * 100) if total_income > 0 else 0
-    card_pct = (card_total_val / total_income * 100) if total_income > 0 else 0
-    bank_pct = (bank_val / total_income * 100) if total_income > 0 else 0
+    cash_pct, card_pct, bank_pct = _calculate_payment_mix(
+        cash_sales_val=cash_sales_val,
+        card_total_val=card_total_val,
+        bank_val=bank_val,
+        credit_sales_val=credit_sales_val,
+    )
 
     # Card #10: Sessions Status (for collapsible section)
     # Already calculated: sessions_open, sessions_closed, sessions_need_review
