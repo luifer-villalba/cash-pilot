@@ -20,6 +20,8 @@ class TestDashboardPaymentMix:
         assert cash_pct == Decimal("50")
         assert card_pct == Decimal("12.5")
         assert bank_pct == Decimal("25")
+        # Remaining 12.5% corresponds to credit sales share.
+        assert cash_pct + card_pct + bank_pct == Decimal("87.5")
 
     def test_payment_mix_returns_zero_when_total_income_is_zero(self):
         """AC: avoid division errors on empty aggregates."""
@@ -44,5 +46,5 @@ class TestDashboardPaymentMix:
         )
 
         assert cash_pct == Decimal("0")
-        assert card_pct == Decimal("16.66666666666666666666666667")
-        assert bank_pct == Decimal("83.33333333333333333333333333")
+        assert card_pct == Decimal("16.7")
+        assert bank_pct == Decimal("83.3")
