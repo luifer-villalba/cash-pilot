@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models.user import User, UserRole
 from cashpilot.core.security import hash_password
+from cashpilot.utils.datetime import today_local
 from tests.factories import UserFactory, BusinessFactory, CashSessionFactory
 
 
@@ -325,7 +326,7 @@ class TestRBACBusinessAssignmentOnSessionCreate:
             data={
                 "business_id": str(assigned_business.id),
                 "initial_cash": "1000000",
-                "session_date": "2026-02-02",
+                "session_date": today_local().isoformat(),
                 "opened_time": "09:00",
             },
             follow_redirects=False,
