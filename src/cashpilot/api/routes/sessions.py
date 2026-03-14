@@ -188,11 +188,9 @@ async def create_session_post(
                 db,
             )
             if existing_session:
-                await db.refresh(current_user, ["businesses"])
-                block_new_session = (
-                    user_role == UserRole.CASHIER and len(current_user.businesses) == 1
-                )
+                await db.refresh(current_user)
                 businesses = await get_assigned_businesses(current_user, db)
+                block_new_session = user_role == UserRole.CASHIER and len(businesses) == 1
                 return templates.TemplateResponse(
                     request,
                     "sessions/create_session.html",
@@ -236,9 +234,9 @@ async def create_session_post(
         await db.rollback()
 
         logger.warning("session.create_validation_failed", error=str(e), user_id=user_id)
-        await db.refresh(current_user, ["businesses"])
-        block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
+        await db.refresh(current_user)
         businesses = await get_assigned_businesses(current_user, db)
+        block_new_session = user_role == UserRole.CASHIER and len(businesses) == 1
         return templates.TemplateResponse(
             request,
             "sessions/create_session.html",
@@ -259,9 +257,9 @@ async def create_session_post(
     except Exception as e:
         await db.rollback()
         logger.error("session.create_failed", error=str(e), user_id=user_id)
-        await db.refresh(current_user, ["businesses"])
-        block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
+        await db.refresh(current_user)
         businesses = await get_assigned_businesses(current_user, db)
+        block_new_session = user_role == UserRole.CASHIER and len(businesses) == 1
         return templates.TemplateResponse(
             request,
             "sessions/create_session.html",

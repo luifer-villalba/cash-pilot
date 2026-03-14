@@ -74,7 +74,7 @@
                             </select>
                         {% else %}
                             <!-- CASHIER: Check assigned businesses count -->
-                            {% set assigned_count = current_user.businesses|length %}
+                            {% set assigned_count = businesses|length %}
 
                             {% if assigned_count == 0 %}
                                 <!-- No businesses assigned: Show error -->
@@ -90,17 +90,17 @@
                                 <input
                                     type="text"
                                     class="input input-sm input-bordered w-full bg-base-200"
-                                    value="{{ current_user.businesses[0].name }}"
+                                    value="{{ businesses[0].name }}"
                                     disabled
                                     readonly
                                 />
-                                <input type="hidden" name="business_id" value="{{ current_user.businesses[0].id }}">
+                                <input type="hidden" name="business_id" value="{{ businesses[0].id }}">
 
                             {% else %}
                                 <!-- Multiple businesses: Dropdown of assigned only -->
                                 <select name="business_id" id="business_id" class="select select-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all" required aria-describedby="business-help" {% if block_new_session %}disabled{% endif %}>
                                     <option value="">{{ _('Select a business') }}</option>
-                                    {% for business in current_user.businesses %}
+                                    {% for business in businesses %}
                                     <option value="{{ business.id }}">{{ business.name }}</option>
                                     {% endfor %}
                                 </select>
@@ -165,7 +165,7 @@
                                 {% if block_new_session %}
                                     disabled
                                 {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
-                                    {% if current_user.businesses|length == 0 %}disabled{% endif %}
+                                    {% if businesses|length == 0 %}disabled{% endif %}
                                 {% endif %}
                             />
                         </div>
@@ -225,7 +225,7 @@
                                 {% if block_new_session %}
                                     disabled
                                 {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
-                                    {% if current_user.businesses|length == 0 %}disabled{% endif %}
+                                    {% if businesses|length == 0 %}disabled{% endif %}
                                 {% endif %}
                             />
                             <label class="label pt-2" id="opened-time-help">
@@ -244,7 +244,7 @@
                         {% if block_new_session %}
                             disabled
                         {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
-                            {% if current_user.businesses|length == 0 %}disabled{% endif %}
+                            {% if businesses|length == 0 %}disabled{% endif %}
                         {% endif %}
                     >
                         <span class="loading loading-spinner loading-sm hidden" id="submit-loading"></span>
