@@ -506,6 +506,7 @@ async def update_open_session_fields(
     initial_cash: str | None,
     credit_sales_total: str | None,
     credit_payments_collected: str | None,
+    session_date: str | None,
     opened_time: str | None,
     notes: str | None,
 ) -> tuple[list[str], dict, dict]:
@@ -540,6 +541,14 @@ async def update_open_session_fields(
             new_values["opened_time"] = opened_time_val.isoformat()
             session.opened_time = opened_time_val
             changed_fields.append("opened_time")
+
+    if session_date:
+        session_date_val = datetime.fromisoformat(session_date).date()
+        if session_date_val != session.session_date:
+            old_values["session_date"] = session.session_date.isoformat()
+            new_values["session_date"] = session_date_val.isoformat()
+            session.session_date = session_date_val
+            changed_fields.append("session_date")
 
     # Notes (special handling for empty string)
     if notes is not None and notes != "":

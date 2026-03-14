@@ -158,6 +158,39 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Session Date -->
+                        <div class="form-control">
+                            <label class="label pb-2">
+                                <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Session Date') }}</span>
+                            </label>
+                            <div
+                                class="{% if not can_edit_session_date %}tooltip tooltip-right w-full{% endif %}"
+                                {% if not can_edit_session_date %}data-tip="{{ _('Only administrators can change session date') }}"{% endif %}
+                            >
+                                <input
+                                    type="date"
+                                    name="session_date"
+                                    id="session_date"
+                                    class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{{ session.session_date.isoformat() }}"
+                                    aria-describedby="session-date-help"
+                                    {% if not can_edit_session_date %}
+                                        disabled
+                                        title="{{ _('Only administrators can change session date') }}"
+                                    {% endif %}
+                                />
+                            </div>
+                            <label class="label pt-1" id="session-date-help">
+                                <span class="label-text-alt text-xs text-base-content/60">
+                                    {% if can_edit_session_date %}
+                                        {{ _('Adjust date only when correcting opening records') }}
+                                    {% else %}
+                                        {{ _('Only administrators can change session date') }}
+                                    {% endif %}
+                                </span>
+                            </label>
+                        </div>
+
                         <!-- Opened Time -->
                         <div class="form-control">
                             <label class="label pb-2">

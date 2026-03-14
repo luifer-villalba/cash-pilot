@@ -25,7 +25,7 @@ from cashpilot.api.utils import (
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
-from cashpilot.core.validators import validate_currency
+from cashpilot.core.validators import validate_currency, validate_no_future_date
 from cashpilot.models import CashSession
 from cashpilot.models.user import User, UserRole
 from cashpilot.utils.datetime import current_time_local, now_utc, today_local
@@ -138,13 +138,27 @@ async def create_session_post(
         validate_currency(initial_cash_val)
 
         # Business logic: parse date/time formats
+        today = today_local()
         if session_date:
             try:
-                session_date_val = datetime.fromisoformat(session_date).date()
+                parsed_session_date = datetime.fromisoformat(session_date).date()
             except (ValueError, TypeError):
                 raise ValueError("Invalid session_date format")
+
+            parsed_session_date = validate_no_future_date(parsed_session_date, "Session date")
+
+            if user_role != UserRole.ADMIN and parsed_session_date != today:
+                logger.warning(
+                    "session.create_session_date_override_blocked",
+                    user_id=user_id,
+                    attempted_session_date=session_date,
+                    enforced_session_date=today.isoformat(),
+                )
+                raise ValueError("Only administrators can change session date")
+
+            session_date_val = parsed_session_date if user_role == UserRole.ADMIN else today
         else:
-            session_date_val = today_local()
+            session_date_val = today
 
         if opened_time:
             try:

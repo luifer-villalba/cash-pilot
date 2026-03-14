@@ -1,12 +1,17 @@
 # File: tests/test_session_form_rbac.py
 """Tests for role-aware session creation form."""
 
+from datetime import timedelta
+
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from cashpilot.models.cash_session import CashSession
 from cashpilot.models.user import UserRole
 from cashpilot.models.user_business import UserBusiness
+from cashpilot.utils.datetime import today_local
 from tests.factories import BusinessFactory, UserFactory
 
 
@@ -105,3 +110,74 @@ class TestSessionFormRBAC:
         assert response.status_code == 200
         assert client.test_user.display_name in response.text
         assert "readonly" in response.text or "disabled" in response.text
+
+    @pytest.mark.asyncio
+    async def test_cashier_session_date_is_disabled_with_tooltip(
+            self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Cashier cannot edit session_date in create form and sees explanation."""
+        business = await BusinessFactory.create(db_session)
+        assignment = UserBusiness(user_id=client.test_user.id, business_id=business.id)
+        db_session.add(assignment)
+        await db_session.commit()
+
+        response = await client.get("/sessions/create")
+
+        assert response.status_code == 200
+        assert 'name="session_date"' in response.text
+        assert "Only administrators can change session date" in response.text
+        assert "disabled" in response.text
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_override_session_date_on_create(
+            self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Server rejects cashier attempts to override session_date."""
+        business = await BusinessFactory.create(db_session)
+        assignment = UserBusiness(user_id=client.test_user.id, business_id=business.id)
+        db_session.add(assignment)
+        await db_session.commit()
+
+        attempted_date = (today_local() - timedelta(days=1)).isoformat()
+        response = await client.post(
+            "/sessions",
+            data={
+                "business_id": str(business.id),
+                "initial_cash": "500000",
+                "session_date": attempted_date,
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 400
+        assert "Only administrators can change session date" in response.text
+
+        stmt = select(CashSession).where(CashSession.cashier_id == client.test_user.id)
+        result = await db_session.execute(stmt)
+        sessions = result.scalars().all()
+        assert len(sessions) == 0
+
+    @pytest.mark.asyncio
+    async def test_admin_can_override_session_date_on_create(
+            self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Admin can override session_date during session creation."""
+        business = await BusinessFactory.create(db_session)
+        requested_date = today_local() - timedelta(days=1)
+
+        response = await admin_client.post(
+            "/sessions",
+            data={
+                "business_id": str(business.id),
+                "initial_cash": "500000",
+                "session_date": requested_date.isoformat(),
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
+
+        stmt = select(CashSession).where(CashSession.cashier_id == admin_client.test_user.id)
+        result = await db_session.execute(stmt)
+        created_session = result.scalar_one()
+        assert created_session.session_date == requested_date

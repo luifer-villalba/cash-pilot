@@ -180,21 +180,34 @@
                             <label class="label pb-2">
                                 <span class="label-text text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Session Date') }}</span>
                             </label>
-                            <input
-                                type="date"
-                                name="session_date"
-                                id="session_date"
-                                class="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
-                                value="{{ today }}"
-                                aria-describedby="session-date-help"
-                                {% if block_new_session %}
-                                    disabled
-                                {% elif current_user.role == 'CASHIER' or current_user.role.value == 'CASHIER' %}
-                                    {% if current_user.businesses|length == 0 %}disabled{% endif %}
-                                {% endif %}
-                            />
+                            {% set can_edit_session_date = current_user.role == 'ADMIN' or current_user.role.value == 'ADMIN' %}
+                            <div
+                                class="{% if not can_edit_session_date %}tooltip tooltip-right w-full{% endif %}"
+                                {% if not can_edit_session_date %}data-tip="{{ _('Only administrators can change session date') }}"{% endif %}
+                            >
+                                <input
+                                    type="date"
+                                    name="session_date"
+                                    id="session_date"
+                                    class="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
+                                    value="{{ today }}"
+                                    aria-describedby="session-date-help"
+                                    {% if block_new_session %}
+                                        disabled
+                                    {% elif not can_edit_session_date %}
+                                        disabled
+                                        title="{{ _('Only administrators can change session date') }}"
+                                    {% endif %}
+                                />
+                            </div>
                             <label class="label pt-2" id="session-date-help">
-                                <span class="label-text-alt text-xs text-base-content/60">{{ _('Leave blank for today') }}</span>
+                                <span class="label-text-alt text-xs text-base-content/60">
+                                    {% if can_edit_session_date %}
+                                        {{ _('Leave blank for today') }}
+                                    {% else %}
+                                        {{ _('Date is set automatically for non-admin users') }}
+                                    {% endif %}
+                                </span>
                             </label>
                         </div>
 
