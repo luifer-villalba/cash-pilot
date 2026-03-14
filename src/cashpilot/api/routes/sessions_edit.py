@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/routes/sessions_edit.py
 """Session edit routes (edit-open, edit-closed)."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -25,6 +25,7 @@ from cashpilot.api.utils import (
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
+from cashpilot.core.validators import validate_no_future_date
 from cashpilot.models import CashSession
 from cashpilot.models.business import Business
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
@@ -81,6 +82,7 @@ async def edit_open_session_form(
             "locale": locale,
             "_": _,
             "editable": True,
+            "can_edit_session_date": current_user.role == UserRole.ADMIN,
         },
     )
 
@@ -94,6 +96,7 @@ async def edit_open_session_post(
     initial_cash: str | None = Form(None),
     credit_sales_total: str | None = Form(None),
     credit_payments_collected: str | None = Form(None),
+    session_date: str | None = Form(None),
     opened_time: str | None = Form(None),
     notes: str | None = Form(None),
     reason: str | None = Form(None),
@@ -110,11 +113,30 @@ async def edit_open_session_post(
         if session.status != "OPEN":
             return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
 
+        if session_date:
+            try:
+                parsed_session_date = datetime.fromisoformat(session_date).date()
+            except (ValueError, TypeError):
+                raise ValueError("Invalid session_date format")
+
+            parsed_session_date = validate_no_future_date(parsed_session_date, "Session date")
+
+            if current_user.role != UserRole.ADMIN and parsed_session_date != session.session_date:
+                logger.warning(
+                    "session.edit_open_session_date_override_blocked",
+                    session_id=str(session.id),
+                    user_id=str(current_user.id),
+                    attempted_session_date=session_date,
+                    enforced_session_date=session.session_date.isoformat(),
+                )
+                raise ValueError("Only administrators can change session date")
+
         changed_fields, old_values, new_values = await update_open_session_fields(
             session,
             initial_cash,
             credit_sales_total,
             credit_payments_collected,
+            session_date,
             opened_time,
             notes,
         )
@@ -158,6 +180,8 @@ async def edit_open_session_post(
             error_message = _("Invalid business selection.")
         elif "Business not found" in error_message:
             error_message = _("Selected business not found.")
+        elif "Only administrators can change session date" in error_message:
+            error_message = _("Only administrators can change session date.")
 
         await db.rollback()
         await db.refresh(session)
@@ -176,6 +200,7 @@ async def edit_open_session_post(
                 "session": session,
                 "error": error_message,
                 "locale": locale,
+                "can_edit_session_date": current_user.role == UserRole.ADMIN,
                 "_": _,
             },
             status_code=400,

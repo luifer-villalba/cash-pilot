@@ -4,13 +4,14 @@
 
 import pytest
 from decimal import Decimal
-from datetime import datetime, time
+from datetime import date, datetime, time, timedelta
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
+from cashpilot.models.user_business import UserBusiness
 from tests.factories import BusinessFactory, CashSessionFactory
 
 
@@ -185,6 +186,73 @@ class TestEditOpenSessionValidation:
         )
 
         assert response.status_code == 400
+
+    @pytest.mark.asyncio
+    async def test_cashier_cannot_change_session_date(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Cashier cannot override session_date when editing an open session."""
+        business = await BusinessFactory.create(db_session)
+        assignment = UserBusiness(user_id=client.test_user.id, business_id=business.id)
+        db_session.add(assignment)
+        await db_session.commit()
+
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=client.test_user.id,
+            status="OPEN",
+            session_date=date.today(),
+            created_by=client.test_user.id,
+        )
+
+        attempted_date = (date.today() - timedelta(days=1)).isoformat()
+        response = await client.post(
+            f"/sessions/{session.id}/edit-open",
+            data={
+                "session_date": attempted_date,
+                "reason": "Trying to backdate",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 400
+        assert "Only administrators can change session date" in response.text
+
+        await db_session.refresh(session)
+        assert session.session_date == date.today()
+
+    @pytest.mark.asyncio
+    async def test_admin_can_change_session_date(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Admin can change session_date when editing an open session."""
+        business = await BusinessFactory.create(db_session)
+        original_date = date.today()
+        updated_date = original_date - timedelta(days=1)
+
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=admin_client.test_user.id,
+            status="OPEN",
+            session_date=original_date,
+            created_by=admin_client.test_user.id,
+        )
+
+        response = await admin_client.post(
+            f"/sessions/{session.id}/edit-open",
+            data={
+                "session_date": updated_date.isoformat(),
+                "reason": "Correct opening date",
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 302
+
+        await db_session.refresh(session)
+        assert session.session_date == updated_date
 
 
 class TestEditOpenSessionAuditLogging:
