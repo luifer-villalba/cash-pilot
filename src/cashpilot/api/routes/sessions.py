@@ -156,7 +156,7 @@ async def create_session_post(
                 )
                 raise ValueError("Only administrators can change session date")
 
-            session_date_val = parsed_session_date if user_role == UserRole.ADMIN else today
+            session_date_val = parsed_session_date
         else:
             session_date_val = today
 
@@ -230,6 +230,8 @@ async def create_session_post(
             error_message = _("Currency value too large. Maximum allowed: 9,999,999,999.99")
         elif "Invalid" in error_message and "format" in error_message:
             error_message = _("Invalid number format. Please enter a valid amount.")
+        elif "Only administrators can change session date" in error_message:
+            error_message = _("Only administrators can change session date")
 
         await db.rollback()
 
