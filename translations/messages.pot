@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-03-06 23:10+0000\n"
+"POT-Creation-Date: 2026-03-15 00:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -142,6 +142,9 @@ msgid "Operation failed"
 msgstr ""
 
 msgid "Selected business not found."
+msgstr ""
+
+msgid "Only administrators can change session date."
 msgstr ""
 
 msgid ""
@@ -2528,7 +2531,13 @@ msgstr ""
 msgid "Starting amount in drawer"
 msgstr ""
 
+msgid "Only administrators can change session date"
+msgstr ""
+
 msgid "Leave blank for today"
+msgstr ""
+
+msgid "Date is set automatically for non-admin users"
 msgstr ""
 
 msgid "Opened At (Time)"
@@ -2611,6 +2620,9 @@ msgid "Customer paid old debt"
 msgstr ""
 
 msgid "Time & Notes"
+msgstr ""
+
+msgid "Adjust date only when correcting opening records"
 msgstr ""
 
 msgid "Time session was opened"
