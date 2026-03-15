@@ -30,7 +30,7 @@ from cashpilot.models import CashSession
 from cashpilot.models.business import Business
 from cashpilot.models.cash_session_audit_log import CashSessionAuditLog
 from cashpilot.models.user import User, UserRole
-from cashpilot.utils.datetime import now_utc
+from cashpilot.utils.datetime import now_utc, today_local
 
 logger = get_logger(__name__)
 
@@ -83,6 +83,7 @@ async def edit_open_session_form(
             "_": _,
             "editable": True,
             "can_edit_session_date": current_user.role == UserRole.ADMIN,
+            "today": today_local().isoformat(),
         },
     )
 
@@ -201,6 +202,7 @@ async def edit_open_session_post(
                 "error": error_message,
                 "locale": locale,
                 "can_edit_session_date": current_user.role == UserRole.ADMIN,
+                "today": today_local().isoformat(),
                 "_": _,
             },
             status_code=400,

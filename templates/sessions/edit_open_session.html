@@ -173,6 +173,7 @@
                                     id="session_date"
                                     class="input input-sm input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
                                     value="{{ session.session_date.isoformat() }}"
+                                    max="{{ today }}"
                                     aria-describedby="session-date-help"
                                     {% if not can_edit_session_date %}
                                         disabled
