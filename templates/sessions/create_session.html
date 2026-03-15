@@ -191,6 +191,7 @@
                                     id="session_date"
                                     class="input input-bordered w-full focus:ring-2 focus:ring-primary/20 transition-all"
                                     value="{{ today }}"
+                                    max="{{ today }}"
                                     aria-describedby="session-date-help"
                                     {% if block_new_session %}
                                         disabled

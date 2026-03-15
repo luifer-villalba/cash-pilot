@@ -181,3 +181,29 @@ class TestSessionFormRBAC:
         result = await db_session.execute(stmt)
         created_session = result.scalar_one()
         assert created_session.session_date == requested_date
+
+    @pytest.mark.asyncio
+    async def test_admin_cannot_create_session_with_future_date(
+            self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Admin cannot create a session with a future session_date."""
+        business = await BusinessFactory.create(db_session)
+        requested_date = today_local() + timedelta(days=1)
+
+        response = await admin_client.post(
+            "/sessions",
+            data={
+                "business_id": str(business.id),
+                "initial_cash": "500000",
+                "session_date": requested_date.isoformat(),
+            },
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 400
+        assert "Session date cannot be in the future" in response.text
+
+        stmt = select(CashSession).where(CashSession.cashier_id == admin_client.test_user.id)
+        result = await db_session.execute(stmt)
+        sessions = result.scalars().all()
+        assert len(sessions) == 0
