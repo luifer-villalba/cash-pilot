@@ -2,6 +2,7 @@
 """Frontend routes - dashboard only. Session/business routes moved to routes/."""
 
 import gettext
+import re
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -135,8 +136,16 @@ def get_translation_function(locale: str):
 
 
 def parse_currency(value: str | None) -> Decimal | None:
-    """Parse Paraguay currency format (5.000.000 → 5000000 or 750000.00 → 750000.00)."""
-    # Validate input
+    """Parse currency strings using Paraguay and legacy decimal formats.
+
+    Supported examples:
+    - 1.234,56 -> 1234.56
+    - 1234,56 -> 1234.56
+    - 1.234.567,89 -> 1234567.89
+    - 1,50 -> 1.50
+    - 1500.75 -> 1500.75
+    - 1.500.000 -> 1500000
+    """
     if value is None:
         return None
     if not isinstance(value, str):
@@ -144,30 +153,38 @@ def parse_currency(value: str | None) -> Decimal | None:
     if not value.strip():
         return None
 
-    value = value.strip()
+    raw = value.strip()
 
-    # Handle decimal point: split on last dot
-    if "." in value:
-        parts = value.rsplit(".", 1)
-        integer_part = parts[0].replace(".", "").replace(",", "")
-        decimal_part = parts[1].replace(",", "")
+    # Fast reject for invalid characters.
+    if not re.fullmatch(r"[+-]?\d[\d.,]*", raw):
+        return None
 
-        # If decimal part is 2 digits, it's a decimal; if 3+ it's thousands sep
-        if len(decimal_part) <= 2:
-            value = f"{integer_part}.{decimal_part}"
-        else:
-            # Last dot was thousands separator, remove all dots
-            value = value.replace(".", "").replace(",", "")
-    else:
-        # No dots, just remove commas
-        value = value.replace(",", "")
+    normalized: str | None = None
 
-    # After cleaning, check if valid
-    if not value or value == "." or value == "":
+    # Plain integer.
+    if re.fullmatch(r"[+-]?\d+", raw):
+        normalized = raw
+    # Paraguay style with grouped thousands and comma decimal.
+    elif re.fullmatch(r"[+-]?\d{1,3}(?:\.\d{3})+,\d{1,2}", raw):
+        normalized = raw.replace(".", "").replace(",", ".")
+    # Legacy US-style grouped thousands and dot decimal.
+    elif re.fullmatch(r"[+-]?\d{1,3}(?:,\d{3})+\.\d{1,2}", raw):
+        normalized = raw.replace(",", "")
+    # Decimal comma without grouped thousands.
+    elif re.fullmatch(r"[+-]?\d+,\d{1,2}", raw):
+        normalized = raw.replace(",", ".")
+    # Decimal dot without grouped thousands.
+    elif re.fullmatch(r"[+-]?\d+\.\d{1,2}", raw):
+        normalized = raw
+    # Thousands grouped with dot or comma and no decimals.
+    elif re.fullmatch(r"[+-]?\d{1,3}(?:[.,]\d{3})+", raw):
+        normalized = raw.replace(".", "").replace(",", "")
+
+    if normalized is None:
         return None
 
     try:
-        return Decimal(value)
+        return Decimal(normalized)
     except (ValueError, InvalidOperation):
         return None
 
