@@ -672,7 +672,8 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** High
 * **Problem:** Inputs like `1.234,56` / `1234,56` may be misinterpreted due to mixed separator handling
 * **Evidence:** `src/cashpilot/api/utils.py` (`parse_currency`)
-* **Status:** ⏳ Not started
+* **Status:** ✅ Completed (2026-03-15)
+* **Implementation evidence:** `src/cashpilot/api/utils.py` (`parse_currency`), `tests/test_parse_currency.py`
 * **Acceptance notes:**
   - Correctly parse `1.234,56`, `1234,56`, `1.234.567,89`, `1,50`, `1500.75`, `1.500.000`
   - Preserve current behavior for integer Guaraní-style values
