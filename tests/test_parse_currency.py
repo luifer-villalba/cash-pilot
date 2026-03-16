@@ -28,6 +28,10 @@ class TestParseCurrency:
         """AC: CP-QUICK-03 - keep dot-decimal compatibility."""
         assert parse_currency("1500.75") == Decimal("1500.75")
 
+    def test_parses_grouped_decimal_dot_legacy_format(self):
+        """AC: CP-QUICK-03 - keep legacy grouped dot-decimal compatibility."""
+        assert parse_currency("1,234.56") == Decimal("1234.56")
+
     def test_parses_grouped_integer_dot(self):
         """AC: CP-QUICK-03 - keep Guarani grouped integers."""
         assert parse_currency("1.500.000") == Decimal("1500000")
