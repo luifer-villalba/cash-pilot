@@ -237,3 +237,55 @@ class TestExportSessions:
         # Verify flag reason is included
         flagged_session = flagged_sessions[0]
         assert flagged_session["Flag Reason"] == "Test flag reason"
+
+    @pytest.mark.asyncio
+    async def test_export_discrepancy_preserves_envelope_adjustment(
+        self,
+        admin_export_client: AsyncClient,
+        db_session: AsyncSession,
+        admin_user,
+    ):
+        """Regression (CP-QUICK-02): envelope removals must not be exported as shortages."""
+        business = await BusinessFactory.create(
+            db_session,
+            name="Discrepancy Export Business",
+        )
+        cashier = await UserFactory.create(
+            db_session,
+            email="cashier_discrepancy@test.com",
+            full_name="Discrepancy Cashier",
+            role="CASHIER",
+            is_active=True,
+        )
+
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=cashier.id,
+            created_by=admin_user.id,
+            session_date=date(2026, 1, 11),
+            opened_time=time(9, 0),
+            closed_time=time(17, 0),
+            status="CLOSED",
+            initial_cash=Decimal("1000.00"),
+            final_cash=Decimal("1300.00"),
+            envelope_amount=Decimal("100.00"),
+            expenses=Decimal("150.00"),
+            notes="REGRESSION_DISCREPANCY_CP_QUICK_02",
+        )
+        # Include credit-payment value so the scenario covers all requested fields
+        # while remaining balanced after envelope adjustment.
+        session.credit_payments_collected = Decimal("150.00")
+        await db_session.commit()
+
+        response = await admin_export_client.get(
+            "/api/export/sessions?format=csv&from_date=2026-01-11&to_date=2026-01-11"
+        )
+        assert response.status_code == 200
+
+        rows = list(csv.DictReader(io.StringIO(response.text)))
+        target_rows = [
+            row for row in rows if row["Notes"] == "REGRESSION_DISCREPANCY_CP_QUICK_02"
+        ]
+        assert len(target_rows) == 1
+        assert target_rows[0]["Discrepancy"] == "0,00"

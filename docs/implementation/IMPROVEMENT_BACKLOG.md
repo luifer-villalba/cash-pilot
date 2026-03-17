@@ -662,7 +662,8 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 * **Severity:** Medium
 * **Problem:** Export discrepancy uses a derived cash formula path that can diverge from session-level expectations
 * **Evidence:** `src/cashpilot/api/export_sessions.py` (`_session_to_row` expected/discrepancy calculation)
-* **Status:** ⏳ Not started
+* **Status:** ✅ Completed (2026-03-17)
+* **Implementation evidence:** `src/cashpilot/api/export_sessions.py` (`_session_to_row` discrepancy rule), `tests/test_export_sessions.py` (`test_export_discrepancy_preserves_envelope_adjustment`)
 * **Acceptance notes:**
   - CSV/XLSX discrepancy must match the same business rule used in app views
   - Add regression coverage for at least one closed session with envelope/expenses/credit-payment values
