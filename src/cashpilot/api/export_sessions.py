@@ -156,7 +156,8 @@ def _session_to_row(session: CashSession, format_type: Literal["csv", "excel"]) 
         session: The cash session to convert
         format_type: 'csv' or 'excel' - determines number formatting
     """
-    # Calculate discrepancy
+    # Preserve the export's cash-expected adjustment for envelope removals.
+    # Without this, envelope-only flows are exported as false shortages.
     if session.final_cash is not None:
         expected = session.initial_cash + session.cash_sales - session.envelope_amount
         discrepancy = session.final_cash - expected
