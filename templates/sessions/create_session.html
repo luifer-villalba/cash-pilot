@@ -343,7 +343,7 @@
                     const digits = this.value.replace(/\D/g, '');
                     if (digits) {
                         const num = parseInt(digits);
-                        this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                        this.value = num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
                     }
                 }
             });

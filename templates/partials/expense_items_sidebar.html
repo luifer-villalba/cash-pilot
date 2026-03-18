@@ -12,7 +12,7 @@
             <span class="badge badge-ghost badge-sm text-xs font-semibold text-base-content/70">
                 {{ item.created_at | format_time_business if item.created_at else '—' }}
             </span>
-            <p class="text-sm font-semibold font-mono text-base-content tabular-nums">−Gs {{ "{:,.0f}".format(item.amount) }}</p>
+            <p class="text-sm font-semibold font-mono text-base-content tabular-nums">−Gs {{ item.amount | format_currency_py }}</p>
         </div>
     </div>
     {% endfor %}

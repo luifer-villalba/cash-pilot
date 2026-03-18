@@ -107,7 +107,7 @@
                 </p>
             </div>
             <div class="flex items-center gap-3 flex-shrink-0">
-                <p class="text-base font-bold font-mono text-error tabular-nums">−Gs {{ "{:,.0f}".format(item.amount) }}</p>
+                <p class="text-base font-bold font-mono text-error tabular-nums">−Gs {{ item.amount | format_currency_py }}</p>
                 {% if editable %}
                 <button
                     type="button"
@@ -148,8 +148,8 @@
                 </svg>
                 <span class="text-xs font-bold uppercase tracking-wider text-base-content/70">{{ _('Total Expenses') }}</span>
             </div>
-            <p class="text-2xl font-bold font-mono text-error tabular-nums" data-expenses-total="{{ '{:.0f}'.format(session.expenses) if session.expenses else '0' }}" aria-label="{{ _('Total expenses') }}: −Gs {{ '{:,.0f}'.format(session.expenses) if session.expenses else '0' }}">
-                −Gs {{ "{:,.0f}".format(session.expenses) if session.expenses else "0" }}
+            <p class="text-2xl font-bold font-mono text-error tabular-nums" data-expenses-total="{{ '{:.0f}'.format(session.expenses) if session.expenses else '0' }}" aria-label="{{ _('Total expenses') }}: −Gs {{ session.expenses | format_currency_py if session.expenses else '0' }}">
+                −Gs {{ session.expenses | format_currency_py if session.expenses else "0" }}
             </p>
         </div>
     </div>

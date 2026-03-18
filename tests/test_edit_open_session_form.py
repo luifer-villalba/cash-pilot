@@ -52,6 +52,9 @@ class TestEditOpenSessionFormGET:
 
         response = await admin_client.get(f"/sessions/{session.id}/edit-open")  
         assert response.status_code == 200
+        assert 'value="1.000.000"' in response.text
+        assert 'Gs 1.000.000' in response.text
+        assert 'value="1,000,000"' not in response.text
 
     @pytest.mark.asyncio
     async def test_form_closed_session_redirects(

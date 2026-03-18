@@ -39,6 +39,33 @@ class TestEditClosedSessionFormGET:
         assert "Business A" in response.text
         assert "Business B" in response.text
 
+    @pytest.mark.asyncio
+    async def test_form_uses_paraguayan_currency_format(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Visible amounts should render with dots for thousands."""
+        business = await BusinessFactory.create(db_session, name="Business A")
+        session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=admin_client.test_user.id,
+            created_by=admin_client.test_user.id,
+            status="CLOSED",
+            initial_cash=Decimal("1000000.00"),
+            final_cash=Decimal("1500000.00"),
+            envelope_amount=Decimal("250000.00"),
+            card_total=Decimal("125000.00"),
+            closed_time=time(18, 30),
+        )
+
+        response = await admin_client.get(f"/sessions/{session.id}/edit-closed")
+
+        assert response.status_code == 200
+        assert 'value="1.000.000"' in response.text
+        assert 'value="1.500.000"' in response.text
+        assert 'Gs 1.500.000' in response.text
+        assert '1,500,000' not in response.text
+
 
 class TestEditClosedSessionFormPOST:
     """Test POST /sessions/{id}/edit-closed."""

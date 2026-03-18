@@ -9,8 +9,8 @@ function CurrencyFormatter() {
     this.locale = window.LOCALE || 'es';
     this.currencyLocale = window.CURRENCY_LOCALE || 'es-PY';
 
-    // Locale-specific number formatter (for input display)
-    this.numberFormatter = new Intl.NumberFormat(this.locale === 'es' ? 'es-PY' : 'en-US', {
+    // Currency display must stay in Paraguay format regardless of UI language.
+    this.numberFormatter = new Intl.NumberFormat(this.currencyLocale, {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
     });
