@@ -524,7 +524,7 @@ function displayReport(data) {
     var formatCurrency = function(value) {
         var num = Math.round(parseFloat(value));
         // es-PY uses comma, but we need dots per design system
-        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+        return 'Gs ' + num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
     };
 
     // Update summary cards
@@ -690,7 +690,7 @@ function displayCashierPerformance(cashiers) {
         
         var formatCurrency = function(value) {
             var num = Math.round(parseFloat(value));
-            return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+            return 'Gs ' + num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
         };
         
         var card = document.createElement('div');
@@ -805,7 +805,7 @@ function createPaymentMethodsChart(cashSales, cardSales, bankSales, creditSales)
     
     var formatCurrency = function(value) {
         var num = Math.round(parseFloat(value));
-        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+        return 'Gs ' + num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
     };
     
     var total = parseFloat(cashSales) + parseFloat(cardSales) + parseFloat(bankSales) + parseFloat(creditSales);
@@ -863,7 +863,7 @@ function createHistoricalRevenueChart(historicalData) {
     
     var formatCurrency = function(value) {
         var num = Math.round(parseFloat(value));
-        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+        return 'Gs ' + num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
     };
     
     var labels = historicalData.map(function(d) { return d.day_name; });

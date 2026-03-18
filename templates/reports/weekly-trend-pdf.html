@@ -350,7 +350,7 @@
 
     const formatCurrency = (value) => {
         const num = Math.round(parseFloat(value));
-        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+        return 'Gs ' + num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
     };
 
     const formatCompactCurrency = (value) => {

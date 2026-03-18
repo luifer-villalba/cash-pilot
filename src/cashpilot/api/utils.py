@@ -34,7 +34,7 @@ def format_currency_py(value):
 
     from babel.numbers import format_decimal
 
-    return format_decimal(value, locale="es_PY", group_separator=".")
+    return format_decimal(value, format="#,##0", locale="es_PY")
 
 
 # Shared Jinja2Templates instance - import this in other modules instead of creating new instances

@@ -82,7 +82,7 @@
                                 name="initial_cash"
                                 id="initial_cash"
                                 class="input input-lg input-bordered w-full font-mono pl-10 text-lg focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                                value="{{ " {:,.0f}".format(session.initial_cash) }}"
+                                value="{{ session.initial_cash | format_currency_py }}"
                                 placeholder="500.000"
                                 inputmode="decimal"
                                 required
@@ -108,7 +108,7 @@
                                 name="final_cash"
                                 id="final_cash"
                                 class="input input-lg input-bordered w-full font-mono pl-10 text-lg focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                                value="{{ " {:,.0f}".format(session.final_cash) if session.final_cash else '' }}"
+                                value="{{ session.final_cash | format_currency_py if session.final_cash else '' }}"
                                 placeholder="1.250.000"
                                 inputmode="decimal"
                                 data-currency-input
@@ -143,7 +143,7 @@
                                     name="envelope_amount"
                                     id="envelope_amount"
                                     class="input input-bordered w-full font-mono pl-10 focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                                    value="{{ " {:,.0f}".format(session.envelope_amount) if session.envelope_amount else '' }}"
+                                    value="{{ session.envelope_amount | format_currency_py if session.envelope_amount else '' }}"
                                     placeholder="0"
                                     inputmode="decimal"
                                     data-currency-input
@@ -173,7 +173,7 @@
                                     name="card_total"
                                     id="card_total"
                                     class="input input-bordered w-full font-mono pl-10 focus:input-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                                    value="{% if session.card_total and session.card_total > 0 %}{{ '{:,.0f}'.format(session.card_total) }}{% endif %}"
+                                    value="{% if session.card_total and session.card_total > 0 %}{{ session.card_total | format_currency_py }}{% endif %}"
                                     placeholder="0"
                                     inputmode="decimal"
                                     data-currency-input
@@ -229,7 +229,7 @@
                                         name="credit_sales_total"
                                         id="credit_sales_total"
                                         class="input input-sm input-bordered w-full font-mono pl-8 focus:ring-2 focus:ring-primary/20 transition-all"
-                                        value="{% if session.credit_sales_total and session.credit_sales_total > 0 %}{{ '{:,.0f}'.format(session.credit_sales_total) }}{% endif %}"
+                                        value="{% if session.credit_sales_total and session.credit_sales_total > 0 %}{{ session.credit_sales_total | format_currency_py }}{% endif %}"
                                         placeholder="0"
                                         inputmode="decimal"
                                         data-currency-input
@@ -259,7 +259,7 @@
                                         name="credit_payments_collected"
                                         id="credit_payments_collected"
                                         class="input input-sm input-bordered w-full font-mono pl-8 focus:ring-2 focus:ring-primary/20 transition-all"
-                                        value="{% if session.credit_payments_collected and session.credit_payments_collected > 0 %}{{ '{:,.0f}'.format(session.credit_payments_collected) }}{% endif %}"
+                                        value="{% if session.credit_payments_collected and session.credit_payments_collected > 0 %}{{ session.credit_payments_collected | format_currency_py }}{% endif %}"
                                         placeholder="0"
                                         inputmode="decimal"
                                         data-currency-input
@@ -386,23 +386,23 @@
                     </div>
                     <div class="pt-2 border-t border-primary/20">
                         <p class="text-xs text-base-content/60 mb-1">{{ _('Final Cash') }}</p>
-                        <p class="font-mono font-bold text-xl text-primary tabular-nums">Gs {{ "{:,.0f}".format(session.final_cash) if session.final_cash else '0' }}</p>
+                        <p class="font-mono font-bold text-xl text-primary tabular-nums">Gs {{ session.final_cash | format_currency_py if session.final_cash else '0' }}</p>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base-content/60">{{ _('Envelope') }}</span>
-                        <span class="font-mono font-semibold tabular-nums">Gs {{ "{:,.0f}".format(session.envelope_amount) if session.envelope_amount else '0' }}</span>
+                        <span class="font-mono font-semibold tabular-nums">Gs {{ session.envelope_amount | format_currency_py if session.envelope_amount else '0' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base-content/60">{{ _('Cards') }}</span>
-                        <span class="font-mono font-semibold tabular-nums">Gs {{ "{:,.0f}".format(session.card_total) if session.card_total else '0' }}</span>
+                        <span class="font-mono font-semibold tabular-nums">Gs {{ session.card_total | format_currency_py if session.card_total else '0' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base-content/60">{{ _('Bank Transfer') }}</span>
-                        <span class="font-mono font-semibold tabular-nums">Gs {{ "{:,.0f}".format(session.bank_transfer_total) if session.bank_transfer_total else '0' }}</span>
+                        <span class="font-mono font-semibold tabular-nums">Gs {{ session.bank_transfer_total | format_currency_py if session.bank_transfer_total else '0' }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base-content/60">{{ _('Expenses') }}</span>
-                        <span class="font-mono font-semibold text-error tabular-nums">−Gs {{ "{:,.0f}".format(session.expenses) if session.expenses else '0' }}</span>
+                        <span class="font-mono font-semibold text-error tabular-nums">−Gs {{ session.expenses | format_currency_py if session.expenses else '0' }}</span>
                     </div>
                 </div>
             </div>
@@ -427,7 +427,7 @@
     function formatCurrency(value) {
         if (!value && value !== 0) return 'Gs 0';
         var num = Math.abs(parseInt(value.toString().replace(/\D/g, '')) || 0);
-        return 'Gs ' + num.toLocaleString('es-PY').replace(/,/g, '.');
+        return 'Gs ' + num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
     }
 
     function parseCurrency(value) {
@@ -463,7 +463,7 @@
                         var digits = this.value.replace(/\D/g, '');
                         if (digits) {
                             var num = parseInt(digits);
-                            this.value = num.toLocaleString('es-PY').replace(/,/g, '.');
+                            this.value = num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
                         }
                     }
                 });

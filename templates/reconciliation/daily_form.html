@@ -184,7 +184,7 @@
                                             data-sales-component
                                             autocomplete="off"
                                             {% if existing and existing.is_closed %}disabled{% endif %}
-                                            {% if existing and existing.cash_sales %}value="{{ '{:,.0f}'.format(existing.cash_sales) }}"{% endif %}
+                                            {% if existing and existing.cash_sales %}value="{{ existing.cash_sales | format_currency_py }}"{% endif %}
                                         />
                                     </div>
                                 </div>
@@ -208,7 +208,7 @@
                                             data-sales-component
                                             autocomplete="off"
                                             {% if existing and existing.is_closed %}disabled{% endif %}
-                                            {% if existing and existing.credit_sales %}value="{{ '{:,.0f}'.format(existing.credit_sales) }}"{% endif %}
+                                            {% if existing and existing.credit_sales %}value="{{ existing.credit_sales | format_currency_py }}"{% endif %}
                                         />
                                     </div>
                                 </div>
@@ -232,7 +232,7 @@
                                             data-sales-component
                                             autocomplete="off"
                                             {% if existing and existing.is_closed %}disabled{% endif %}
-                                            {% if existing and existing.card_sales %}value="{{ '{:,.0f}'.format(existing.card_sales) }}"{% endif %}
+                                            {% if existing and existing.card_sales %}value="{{ existing.card_sales | format_currency_py }}"{% endif %}
                                         />
                                     </div>
                                 </div>
@@ -280,7 +280,7 @@
                                         data-total-sales-input
                                         autocomplete="off"
                                         {% if existing and existing.is_closed %}disabled{% endif %}
-                                        {% if existing and existing.total_sales %}value="{{ '{:,.0f}'.format(existing.total_sales) }}"{% endif %}
+                                        {% if existing and existing.total_sales %}value="{{ existing.total_sales | format_currency_py }}"{% endif %}
                                     />
                                 </div>
                             </div>
@@ -303,7 +303,7 @@
                                         data-sum-input
                                         data-allow-closed
                                         autocomplete="off"
-                                        {% if existing and existing.daily_cost_total is not none %}value="{{ '{:,.0f}'.format(existing.daily_cost_total) }}"{% endif %}
+                                        {% if existing and existing.daily_cost_total is not none %}value="{{ existing.daily_cost_total | format_currency_py }}"{% endif %}
                                     />
                                 </div>
                             </div>
@@ -376,7 +376,7 @@
 
         function formatGuarani(value) {
             const absValue = Math.abs(value);
-            const formatted = absValue.toLocaleString('es-PY').replace(/,/g, '.');
+            const formatted = absValue.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
             return value < 0 ? `-${formatted}` : formatted;
         }
 
@@ -452,7 +452,7 @@
             const card = parseInt(cardInput.value.replace(/\D/g, '') || '0');
             
             const total = cash + credit + card;
-            totalInput.value = total.toLocaleString('es-PY').replace(/,/g, '.');
+            totalInput.value = total.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
         }
         
         // Auto-format currency inputs on blur

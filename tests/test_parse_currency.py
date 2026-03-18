@@ -2,7 +2,7 @@
 
 from decimal import Decimal
 
-from cashpilot.api.utils import parse_currency
+from cashpilot.api.utils import format_currency_py, parse_currency
 
 
 class TestParseCurrency:
@@ -47,3 +47,19 @@ class TestParseCurrency:
         assert parse_currency("") is None
         assert parse_currency("   ") is None
         assert parse_currency(None) is None
+
+
+class TestFormatCurrencyPy:
+    """Validate visible Guarani formatting used across HTML templates."""
+
+    def test_formats_thousands_with_paraguayan_separator(self):
+        assert format_currency_py(Decimal("1234567")) == "1.234.567"
+
+    def test_formats_negative_values_without_comma_separator(self):
+        assert format_currency_py(Decimal("-250000")) == "-250.000"
+
+    def test_drops_fractional_display_for_ui_amounts(self):
+        formatted = format_currency_py(Decimal("1234.25"))
+
+        assert formatted == "1.234"
+        assert "," not in formatted

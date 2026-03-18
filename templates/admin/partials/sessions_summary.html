@@ -52,46 +52,46 @@
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">
-                            <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.session.initial_cash or 0) }}</span>
+                            <span class="font-medium text-base-content">{{ (item.session.initial_cash or 0) | format_currency_py }}</span>
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">
                             {% if item.session.status == 'CLOSED' %}
-                                <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.session.final_cash or 0) }}</span>
+                                <span class="font-medium text-base-content">{{ (item.session.final_cash or 0) | format_currency_py }}</span>
                             {% else %}
                                 <span class="text-base-content/40">-</span>
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10 text-base-content/50">
                             {% if item.session.status == 'CLOSED' %}
-                                <span>{{ "{:,.0f}".format(item.session.envelope_amount or 0) }}</span>
+                                <span>{{ (item.session.envelope_amount or 0) | format_currency_py }}</span>
                             {% else %}
                                 <span>-</span>
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10 text-base-content/50">
                             {% if item.session.status == 'CLOSED' %}
-                                <span>{{ "{:,.0f}".format(item.session.bank_transfer_total or 0) }}</span>
+                                <span>{{ (item.session.bank_transfer_total or 0) | format_currency_py }}</span>
                             {% else %}
                                 <span>-</span>
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10 text-base-content/50">
                             {% if item.session.status == 'CLOSED' %}
-                                <span>{{ "{:,.0f}".format(item.session.expenses or 0) }}</span>
+                                <span>{{ (item.session.expenses or 0) | format_currency_py }}</span>
                             {% else %}
                                 <span>-</span>
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">
                             {% if item.session.status == 'CLOSED' %}
-                                <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.card_sales) }}</span>
+                                <span class="font-medium text-base-content">{{ item.card_sales | format_currency_py }}</span>
                             {% else %}
                                 <span class="text-base-content/40">-</span>
                             {% endif %}
                         </td>
                         <td class="text-right font-mono tabular-nums text-xs border-r border-info/10">
                             {% if item.session.status == 'CLOSED' %}
-                                <span class="font-medium text-base-content">{{ "{:,.0f}".format(item.credit_sales) }}</span>
+                                <span class="font-medium text-base-content">{{ item.credit_sales | format_currency_py }}</span>
                             {% else %}
                                 <span class="text-base-content/40">-</span>
                             {% endif %}
@@ -143,20 +143,20 @@
                 
                 <div class="flex items-center gap-1.5">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/60">{{ _('Cash') }}:</span>
-                    <span class="text-sm font-mono font-bold text-base-content tabular-nums">{{ "{:,.0f}".format(total_cash) }}</span>
+                    <span class="text-sm font-mono font-bold text-base-content tabular-nums">{{ total_cash | format_currency_py }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/60">{{ _('Card') }}:</span>
-                    <span class="text-sm font-mono font-bold text-base-content tabular-nums">{{ "{:,.0f}".format(total_card) }}</span>
+                    <span class="text-sm font-mono font-bold text-base-content tabular-nums">{{ total_card | format_currency_py }}</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                     <span class="text-[10px] font-semibold uppercase tracking-wider text-base-content/60">{{ _('Credit') }}:</span>
-                    <span class="text-sm font-mono font-bold text-base-content tabular-nums">{{ "{:,.0f}".format(total_credit) }}</span>
+                    <span class="text-sm font-mono font-bold text-base-content tabular-nums">{{ total_credit | format_currency_py }}</span>
                 </div>
                 <div class="h-6 w-px bg-success/30 hidden sm:block"></div>
                 <div class="flex items-center gap-1.5">
                     <span class="text-xs font-bold uppercase tracking-wider text-success">{{ _('Total') }}:</span>
-                    <span class="text-xl font-mono font-bold text-success tabular-nums">{{ "{:,.0f}".format(grand_total) }}</span>
+                    <span class="text-xl font-mono font-bold text-success tabular-nums">{{ grand_total | format_currency_py }}</span>
                 </div>
             </div>
         </div>

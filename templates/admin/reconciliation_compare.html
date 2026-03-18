@@ -289,19 +289,19 @@
                         <div class="flex items-center justify-between">
                             <span class="font-semibold text-base-content/70">{{ _('Sales Total') }}</span>
                             <span class="font-mono text-base-content/70">
-                                {% if manual_sales is not none %}{{ "{:,.0f}".format(manual_sales) }}{% else %}-{% endif %}
+                                {% if manual_sales is not none %}{{ manual_sales | format_currency_py }}{% else %}-{% endif %}
                             </span>
                         </div>
                         <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
                             <span>{{ _('System') }}</span>
-                            <span class="font-mono">{% if system_sales is not none %}{{ "{:,.0f}".format(system_sales) }}{% else %}-{% endif %}</span>
+                            <span class="font-mono">{% if system_sales is not none %}{{ system_sales | format_currency_py }}{% else %}-{% endif %}</span>
                         </div>
                     </div>
                     <div class="rounded-lg border border-base-200 p-3">
                         <div class="flex items-center justify-between">
                             <span class="font-semibold text-base-content/70">{{ _('Daily Cost Total') }}</span>
                             <span class="font-mono text-base-content/70">
-                                {% if cost_total is not none %}{{ "{:,.0f}".format(cost_total) }}{% else %}-{% endif %}
+                                {% if cost_total is not none %}{{ cost_total | format_currency_py }}{% else %}-{% endif %}
                             </span>
                         </div>
                     </div>
@@ -309,7 +309,7 @@
                         <div class="flex items-center justify-between">
                             <span class="font-semibold text-base-content/70">{{ _('Gross Margin') }}</span>
                             <span class="font-mono {% if gross_margin is not none and gross_margin >= 0 %}text-success{% elif gross_margin is not none %}text-error{% else %}text-base-content/40{% endif %}">
-                                {% if gross_margin is not none %}{{ "{:,.0f}".format(gross_margin) }}{% else %}-{% endif %}
+                                {% if gross_margin is not none %}{{ gross_margin | format_currency_py }}{% else %}-{% endif %}
                             </span>
                         </div>
                         <div class="flex items-center justify-between text-[10px] text-base-content/50 mt-1">
@@ -346,15 +346,15 @@
                 <div class="mt-2 grid grid-cols-1 gap-2 text-xs">
                     <div class="flex items-center justify-between">
                         <span class="font-semibold text-base-content/70">{{ _('Sales Total') }}</span>
-                        <span class="font-mono text-primary font-semibold">{{ "{:,.0f}".format(totals.manual_sales) }}</span>
+                        <span class="font-mono text-primary font-semibold">{{ totals.manual_sales | format_currency_py }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="font-semibold text-base-content/70">{{ _('Daily Cost Total') }}</span>
-                        <span class="font-mono font-semibold">{{ "{:,.0f}".format(totals.cost) }}</span>
+                        <span class="font-mono font-semibold">{{ totals.cost | format_currency_py }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="font-semibold text-base-content/70">{{ _('Gross Margin') }}</span>
-                        <span class="font-mono font-semibold {% if totals.gross_margin >= 0 %}text-success{% else %}text-error{% endif %}">{{ "{:,.0f}".format(totals.gross_margin) }}</span>
+                        <span class="font-mono font-semibold {% if totals.gross_margin >= 0 %}text-success{% else %}text-error{% endif %}">{{ totals.gross_margin | format_currency_py }}</span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="font-semibold text-base-content/70">{{ _('Margin %') }}</span>
@@ -417,14 +417,14 @@
                     </td>
                     <td class="text-right font-mono tabular-nums">
                         {% if manual_sales is not none %}
-                        <span class="font-semibold text-primary">{{ "{:,.0f}".format(manual_sales) }}</span>
+                        <span class="font-semibold text-primary">{{ manual_sales | format_currency_py }}</span>
                         {% else %}
                         <span class="text-base-content/40">-</span>
                         {% endif %}
                     </td>
                     <td class="text-right font-mono tabular-nums">
                         {% if cost_total is not none %}
-                        {{ "{:,.0f}".format(cost_total) }}
+                        {{ cost_total | format_currency_py }}
                         {% else %}
                         <span class="text-base-content/40">-</span>
                         {% endif %}
@@ -432,9 +432,9 @@
                     <td class="text-right font-mono tabular-nums">
                         {% if gross_margin is not none %}
                         {% if gross_margin >= 0 %}
-                        <span class="text-success font-semibold">{{ "{:,.0f}".format(gross_margin) }}</span>
+                        <span class="text-success font-semibold">{{ gross_margin | format_currency_py }}</span>
                         {% else %}
-                        <span class="text-error font-semibold">{{ "{:,.0f}".format(gross_margin) }}</span>
+                        <span class="text-error font-semibold">{{ gross_margin | format_currency_py }}</span>
                         {% endif %}
                         {% else %}
                         <span class="text-base-content/40">-</span>
@@ -480,13 +480,13 @@
                         {{ _('Totals') }}
                     </td>
                     <td class="text-right font-mono tabular-nums font-semibold text-primary">
-                        {{ "{:,.0f}".format(totals.manual_sales) }}
+                        {{ totals.manual_sales | format_currency_py }}
                     </td>
                     <td class="text-right font-mono tabular-nums font-semibold">
-                        {{ "{:,.0f}".format(totals.cost) }}
+                        {{ totals.cost | format_currency_py }}
                     </td>
                     <td class="text-right font-mono tabular-nums font-semibold {% if totals.gross_margin >= 0 %}text-success{% else %}text-error{% endif %}">
-                        {{ "{:,.0f}".format(totals.gross_margin) }}
+                        {{ totals.gross_margin | format_currency_py }}
                     </td>
                     <td class="text-right font-mono tabular-nums">
                         {% if total_margin_pct is not none %}
