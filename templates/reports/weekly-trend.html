@@ -668,7 +668,7 @@
     // Format currency values (Gs 2.500.000 - dot separator, no decimals)
     const formatCurrency = (value) => {
         const num = Math.round(parseFloat(value));
-        // es-PY uses comma, but we need dots per design system
+            // Use configured currency locale for grouping/separator style.
         return 'Gs ' + num.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
     };
 

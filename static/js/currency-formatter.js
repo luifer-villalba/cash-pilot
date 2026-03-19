@@ -2,7 +2,7 @@
 
 /**
  * Locale-aware currency formatter for CashPilot
- * Supports multiple locales but maintains es-PY currency always
+ * Uses window.CURRENCY_LOCALE for all currency number grouping/separators.
  */
 
 function CurrencyFormatter() {
@@ -17,9 +17,8 @@ function CurrencyFormatter() {
 }
 
 /**
- * Format number for display (e.g., preview cards)
- * es-PY: 1234567 → "Gs 1.234.567"
- * en-US: 1234567 → "Gs 1,234,567"
+ * Format number for display (e.g., preview cards) with the configured currency locale.
+ * Example (es-PY): 1234567 -> "Gs 1.234.567"
  */
 CurrencyFormatter.prototype.format = function(value) {
     if (!value && value !== 0) return 'Gs 0';
@@ -27,8 +26,8 @@ CurrencyFormatter.prototype.format = function(value) {
 };
 
 /**
- * Format for locale-specific input display
- * Used in real-time preview updates
+ * Format a plain numeric value for currency input display using currency locale.
+ * Used in real-time preview updates.
  */
 CurrencyFormatter.prototype.formatForLocale = function(value) {
     if (!value && value !== 0) return '0';
