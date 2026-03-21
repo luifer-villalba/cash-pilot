@@ -288,6 +288,98 @@ class TestTransferItemsDisplay:
         assert "Timezone check transfer" in response.text
         assert expected_local_time in response.text
 
+    @pytest.mark.asyncio
+    async def test_reconciliation_compare_shows_transfer_verification_summary(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Transfer tab shows verified and pending counts for the filtered result set."""
+        business = await factories.business(name="Summary Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-summary@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date(2026, 2, 16)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+
+        db_session.add_all(
+            [
+                TransferItem(
+                    session_id=session.id,
+                    description="Verified transfer",
+                    amount=Decimal("50000.00"),
+                    created_at=datetime(2026, 2, 16, 14, 0, 0, tzinfo=timezone.utc),
+                    is_verified=True,
+                ),
+                TransferItem(
+                    session_id=session.id,
+                    description="Pending transfer",
+                    amount=Decimal("25000.00"),
+                    created_at=datetime(2026, 2, 16, 15, 0, 0, tzinfo=timezone.utc),
+                    is_verified=False,
+                ),
+            ]
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            f"/admin/reconciliation/compare?date={session_date.isoformat()}&tab=transfers"
+        )
+
+        assert response.status_code == 200
+        assert 'data-transfer-summary="verified-count">1<' in response.text
+        assert 'data-transfer-summary="pending-count">1<' in response.text
+        assert 'data-transfer-progress="verified"' in response.text
+        assert 'data-transfer-progress="pending"' in response.text
+
+    @pytest.mark.asyncio
+    async def test_reconciliation_compare_marks_pending_transfer_rows(
+        self, db_session: AsyncSession, factories, admin_client
+    ):
+        """Pending transfers render explicit status markers for visual highlighting hooks."""
+        business = await factories.business(name="Pending Marker Business")
+        cashier = await factories.user(role=UserRole.CASHIER, email="cashier-pending@test.com")
+        await factories.user_business(business=business, user=cashier)
+
+        session_date = date(2026, 2, 16)
+        session = await factories.cash_session(
+            business=business,
+            cashier=cashier,
+            session_date=session_date,
+            status="CLOSED",
+        )
+
+        db_session.add_all(
+            [
+                TransferItem(
+                    session_id=session.id,
+                    description="Pending marker transfer",
+                    amount=Decimal("60000.00"),
+                    created_at=datetime(2026, 2, 16, 16, 0, 0, tzinfo=timezone.utc),
+                    is_verified=False,
+                ),
+                TransferItem(
+                    session_id=session.id,
+                    description="Verified marker transfer",
+                    amount=Decimal("30000.00"),
+                    created_at=datetime(2026, 2, 16, 17, 0, 0, tzinfo=timezone.utc),
+                    is_verified=True,
+                ),
+            ]
+        )
+        await db_session.commit()
+
+        response = await admin_client.get(
+            f"/admin/reconciliation/compare?date={session_date.isoformat()}&tab=transfers"
+        )
+
+        assert response.status_code == 200
+        assert 'data-transfer-status="pending"' in response.text
+        assert 'data-transfer-status="verified"' in response.text
+
     # ─────── AC-6: RBAC enforcement ────────
 
     @pytest.mark.asyncio

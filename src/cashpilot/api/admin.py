@@ -1032,6 +1032,9 @@ async def reconciliation_compare_dashboard(
         filter_cashier=filter_cashier,
     )
 
+    verified_transfer_count = sum(1 for item in filtered_items if item.get("is_verified"))
+    pending_transfer_count = len(filtered_items) - verified_transfer_count
+
     total_count = len(filtered_items)
     if total_count == 0:
         total_pages = 0
@@ -1074,6 +1077,8 @@ async def reconciliation_compare_dashboard(
             "transfer_items_by_business": transfer_items_by_business,
             "all_transfer_items": sorted_items,
             "transfer_items_total_count": total_count,
+            "verified_transfer_count": verified_transfer_count,
+            "pending_transfer_count": pending_transfer_count,
             "businesses_by_id": business_names_by_id,
             "last_updated": last_updated,
             "last_updated_display": last_updated_display,
