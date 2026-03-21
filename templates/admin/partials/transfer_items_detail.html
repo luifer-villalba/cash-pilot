@@ -20,6 +20,8 @@
 
 {% set visible_count = all_transfer_items | length %}
 {% set total_amount = all_transfer_items | map(attribute='amount') | sum %}
+{% set verified_transfer_count = verified_transfer_count | default(0) %}
+{% set pending_transfer_count = pending_transfer_count | default(0) %}
 
 <!-- Header with count -->
 <div class="px-4 pt-4 pb-4 border-b border-base-300 bg-base-200/30">
@@ -36,9 +38,21 @@
             </div>
         </div>
         {% if transfer_items_total_count > 0 %}
-        <div class="flex items-center gap-1 rounded-lg bg-secondary/10 px-3 py-1.5 border border-secondary/20 flex-shrink-0">
-            <span class="text-xs font-bold text-secondary uppercase tracking-wider hidden sm:inline">{{ _('Transfers') }}</span>
-            <span class="badge badge-ghost badge-sm font-mono font-bold text-secondary">{{ transfer_items_total_count }}</span>
+        <div class="flex flex-wrap items-center justify-end gap-2 flex-shrink-0">
+            <div class="flex items-center gap-1 rounded-lg bg-secondary/10 px-3 py-1.5 border border-secondary/20">
+                <span class="text-xs font-bold text-secondary uppercase tracking-wider hidden sm:inline">{{ _('Transfers') }}</span>
+                <span class="badge badge-ghost badge-sm font-mono font-bold text-secondary">{{ transfer_items_total_count }}</span>
+            </div>
+            <div class="flex items-center gap-1 rounded-lg bg-success/10 px-3 py-1.5 border border-success/20" data-transfer-progress="verified">
+                <span class="text-xs font-bold text-success uppercase tracking-wider hidden sm:inline">{{ _('Verified') }}</span>
+                <span class="badge badge-success badge-sm font-mono font-bold">{{ verified_transfer_count }}</span>
+            </div>
+            {% if pending_transfer_count > 0 %}
+            <div class="flex items-center gap-1 rounded-lg bg-warning/10 px-3 py-1.5 border border-warning/20" data-transfer-progress="pending">
+                <span class="text-xs font-bold text-warning uppercase tracking-wider hidden sm:inline">{{ _('Pending') }}</span>
+                <span class="badge badge-warning badge-sm font-mono font-bold">{{ pending_transfer_count }}</span>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>
@@ -129,7 +143,7 @@
     <div class="space-y-3">
         {% for item in all_transfer_items %}
         {% set row_index = loop.index + (current_page - 1) * page_size %}
-        <div data-transfer-row="{{ item.id }}" class="border border-base-300 rounded-lg p-3 bg-base-100 hover:shadow-md transition-all duration-200">
+        <div data-transfer-row="{{ item.id }}" data-transfer-status="{{ 'verified' if item.is_verified else 'pending' }}" class="border rounded-lg p-3 hover:shadow-md transition-all duration-200 {% if item.is_verified %}border-base-300 bg-base-100{% else %}border-warning/40 bg-warning/5{% endif %}">
             <!-- Row Number & Business -->
             <div class="mb-2 flex items-center gap-2">
                 <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-base-content bg-base-200 rounded-full flex-shrink-0">{{ row_index }}</span>
@@ -206,7 +220,7 @@
         <tbody>
             {% for item in all_transfer_items %}
             {% set row_index = loop.index + (current_page - 1) * page_size %}
-            <tr data-transfer-row="{{ item.id }}" class="hover:bg-base-200/30 transition-colors duration-150">
+            <tr data-transfer-row="{{ item.id }}" data-transfer-status="{{ 'verified' if item.is_verified else 'pending' }}" class="transition-colors duration-150 {% if item.is_verified %}hover:bg-base-200/30{% else %}bg-warning/5 hover:bg-warning/10{% endif %}">
                 <td class="text-center font-mono text-xs font-semibold text-base-content/60">{{ row_index }}</td>
                 <td class="text-center">
                     <a href="/sessions/{{ item.session_id }}" 
@@ -222,14 +236,19 @@
                     {{ item.created_at | format_datetime_business('%H:%M:%S') if item.created_at else '—' }}
                 </td>
                 <td class="text-center">
-                    <input 
-                        type="checkbox" 
-                        class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
-                        data-transfer-id="{{ item.id }}"
-                        {% if item.is_verified %}checked{% endif %}
-                        title="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
-                        aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
-                    />
+                    <div class="flex items-center justify-center gap-2">
+                        <input 
+                            type="checkbox" 
+                            class="checkbox checkbox-sm transfer-verify-checkbox focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2"
+                            data-transfer-id="{{ item.id }}"
+                            {% if item.is_verified %}checked{% endif %}
+                            title="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                            aria-label="{% if item.is_verified %}{{ _('Mark as unverified') }}{% else %}{{ _('Mark as verified') }}{% endif %}"
+                        />
+                        <span class="badge badge-xs {% if item.is_verified %}badge-success{% else %}badge-warning{% endif %}">
+                            {% if item.is_verified %}{{ _('Verified') }}{% else %}{{ _('Pending') }}{% endif %}
+                        </span>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -316,7 +335,17 @@
 <!-- Summary Footer -->
 <div class="bg-base-200/70 border-t border-base-300 px-4 py-3">
     <div class="flex items-center justify-between gap-4">
-        <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Page Total') }}</span>
+        <div>
+            <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Page Total') }}</span>
+            {% if transfer_items_total_count > 0 %}
+            <p class="text-xs text-base-content/60 mt-1">
+                <span data-transfer-summary="verified-count">{{ verified_transfer_count }}</span> {{ _('verified') }}
+                {% if pending_transfer_count > 0 %}
+                | <span data-transfer-summary="pending-count">{{ pending_transfer_count }}</span> {{ _('pending') }}
+                {% endif %}
+            </p>
+            {% endif %}
+        </div>
         <div class="text-right">
             <p class="text-xs text-base-content/60 font-mono">{{ visible_count }} {{ _('transfer') }}{{ 's' if visible_count != 1 else '' }}</p>
             <p class="text-sm font-bold font-mono text-base-content tabular-nums">
