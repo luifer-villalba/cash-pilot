@@ -1199,6 +1199,9 @@ msgstr ""
 msgid "Page Total"
 msgstr ""
 
+msgid "Filtered Total"
+msgstr ""
+
 msgid "transfer"
 msgstr ""
 

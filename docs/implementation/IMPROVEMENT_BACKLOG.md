@@ -691,6 +691,75 @@ Each item must be implemented via a dedicated **Implementation Plan** following 
 
 ---
 
+## 🟡 EPIC 9 — Admin UX & Operational Entry Points
+
+**Risk:** Operational inefficiency; elderly users unable to reach key tasks without help
+
+### CP-ADMIN-HOME-01 — Admin home: executive dashboard + quick access to sessions by cashier/business
+
+* **Severity:** Medium
+* **Priority:** High
+* **Problem:** Admin and owners land on a shared dashboard with no obvious entry point for the most common daily tasks: checking open/missing sessions, reviewing a specific cashier's closed session, and triggering reconciliation. The current home is designed for cashiers and requires navigation knowledge to reach operational data.
+* **Evidence:** `templates/index.html`, `src/cashpilot/api/routes/dashboard.py`
+* **User Story:** The pharmacy owner (70+ years old, not technical) opens the app on a notebook (~1333×768) and needs to:
+  1. See today's top numbers at a glance (sales, open sessions, closed sessions, pending transfers)
+  2. Press one big button to get to daily reconciliation, open/missing sessions, pending transfers, envelopes, or reports
+  3. Go directly to a specific cashier's session from a specific business (even if closed) and review all its financial details (initial cash, final cash, envelope, transfers, expenses, card, credit, notes)
+* **Audience:** Two 70-year-old pharmacy owners (primary), 35-year-old admin (secondary), 27-year-old cashier (secondary — keep cashier home unchanged)
+* **Device:** Notebook, ~1333×768 resolution. No mobile priority for this view.
+* **Style:** Very simple and large. Generous padding and font size. Zero ambiguity in navigation.
+* **Status:** ⏳ Not started
+
+* **Scope:**
+  - **Admin-only landing block** (conditionally rendered inside existing `index.html` or new `/admin/home` route, behind `require_admin`)
+  - **Executive stats row**: 4 large cards — Sales Today · Open Sessions · Closed Sessions · Pending Transfers
+  - **Quick Actions block**: 4–5 large buttons — Daily Reconciliation · Open/Missing Sessions · Pending Transfers · Envelopes · Reports
+  - **Session access block**: compact table showing today's sessions grouped by business, with all financial columns (Session #, Cashier, Time, Initial Cash, Final Cash, Envelope, Transfer, Expenses, Card, Credit, Status) — each row links to `/sessions/{id}` for full detail
+  - Admin can navigate to any closed session from any cashier/business and review the same data that appears in `reconciliation_compare`'s cash sessions section
+
+* **Technical Design:**
+  - Stats row: reuse existing HTMX endpoint `/stats` (already returns open/closed counts, total_revenue)
+  - Pending transfers count: can be fetched from existing reconciliation context or add a lightweight query
+  - Quick Actions: static links, large `btn` components (DaisyUI)
+  - Session access block: reuse `templates/admin/partials/sessions_summary.html` (already renders all financial columns + link to `/sessions/{id}`) via HTMX call to `/admin/reconciliation/sessions?business_id=&date=` or a new dedicated endpoint scoped to today + all businesses
+  - No new backend logic required for session access block — the partial and the HTMX endpoint already exist; scope to today + all businesses for this view
+  - RBAC: all elements guarded by `require_admin`; cashier home remains unchanged
+
+* **Implementation Steps:**
+  - Read `docs/sdlc/IMPLEMENTATION_PLAN.md` before starting
+  - Read `templates/index.html` and `src/cashpilot/api/routes/dashboard.py` to understand current shared home
+  - Read `templates/admin/partials/sessions_summary.html` to understand reusable partial
+  - Decide: extend `index.html` with admin-only block vs. new `/admin/home` route (prefer minimal change; lean toward extending `index.html`)
+  - Add stats row (4 cards) using HTMX `/stats` and a pending-transfers count
+  - Add Quick Actions block (5 large buttons)
+  - Add session access block reusing `sessions_summary.html` partial, scoped to today + all admin-visible businesses
+  - Ensure font sizes and padding are large enough for elderly users on 1333×768
+  - Write render-path tests (admin sees the new block; cashier does not)
+  - Manual test on low-resolution notebook
+
+* **Dependencies:**
+  - `templates/admin/partials/sessions_summary.html` exists and has all required columns ✓
+  - HTMX endpoint `/admin/reconciliation/sessions` exists ✓
+  - `require_admin` dependency exists ✓
+  - `/stats` HTMX endpoint exists ✓
+
+* **Docs to read before implementation (required):**
+  - `docs/sdlc/IMPLEMENTATION_PLAN.md`
+  - `docs/architecture/DATA_MODEL.md`
+  - `docs/reference/API.md`
+
+* **Acceptance Criteria:**
+  - [ ] Admin/owner lands on a page that shows 4 key metrics (sales today, open sessions, closed sessions, pending transfers) without scrolling on 1333×768
+  - [ ] 4–5 large Quick Action buttons are immediately visible for the most common daily tasks
+  - [ ] Session access block shows today's sessions for all businesses, with all financial columns (initial cash, final cash, envelope, transfer, expenses, card, credit, status)
+  - [ ] Each session row is a clickable link to the full session detail page (`/sessions/{id}`)
+  - [ ] Admin can open any closed session from any cashier/business and review all financial details (same data as reconciliation_compare cash sessions section)
+  - [ ] Cashier experience is completely unchanged (cashier does not see the new admin block)
+  - [ ] Font sizes and spacing are suitable for a 70-year-old user on a low-resolution notebook (no tiny text, no crowded layout)
+  - [ ] All UI elements pass Windows 7 / IE11 compatibility requirements
+
+---
+
 ## Backlog Rules Reminder
 
 * Backlog items do NOT equal implementation approval
