@@ -423,6 +423,7 @@ async def login_page(request: Request):
 
     # Render template with translation function
     return templates.TemplateResponse(
+        request,
         "login.html",
         {
             "request": request,

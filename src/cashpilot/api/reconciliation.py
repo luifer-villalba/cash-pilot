@@ -129,6 +129,7 @@ async def reconciliation_badge(
         if reconciled_dates > 0:
             # Show badge with count
             return templates.TemplateResponse(
+                request,
                 "partials/reconciliation_badge.html",
                 {
                     "request": request,
@@ -146,6 +147,7 @@ async def reconciliation_badge(
             )
         else:
             return templates.TemplateResponse(
+                request,
                 "partials/reconciliation_badge.html",
                 {
                     "request": request,
@@ -176,6 +178,7 @@ async def reconciliation_badge(
 
         if not reconciliations:
             return templates.TemplateResponse(
+                request,
                 "partials/reconciliation_badge.html",
                 {
                     "request": request,
@@ -221,6 +224,7 @@ async def reconciliation_badge(
                     break
 
         return templates.TemplateResponse(
+            request,
             "partials/reconciliation_badge.html",
             {
                 "request": request,

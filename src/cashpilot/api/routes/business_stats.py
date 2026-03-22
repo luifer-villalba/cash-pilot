@@ -672,6 +672,7 @@ async def business_stats(
     comparison_label = comparison_label_map.get(view, _("Compared to the previous period"))
 
     return templates.TemplateResponse(
+        request,
         "reports/business-stats.html",
         {
             "request": request,
