@@ -33,7 +33,6 @@ jobs:
   test:
     uses: ./.github/workflows/ci-job.yml
     needs: lint
-    if: ${{ github.event_name != 'pull_request' }}
     with:
       timeout_minutes: 30
       use_db: true
