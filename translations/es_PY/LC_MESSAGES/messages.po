@@ -1216,6 +1216,9 @@ msgstr "Última página"
 msgid "Page Total"
 msgstr "Total de la página"
 
+msgid "Filtered Total"
+msgstr "Total filtrado"
+
 msgid "transfer"
 msgstr "Transferencia"
 

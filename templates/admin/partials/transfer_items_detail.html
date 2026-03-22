@@ -335,19 +335,20 @@
 <!-- Summary Footer -->
 <div class="bg-base-200/70 border-t border-base-300 px-4 py-3">
     <div class="flex items-center justify-between gap-4">
+        {% if transfer_items_total_count > 0 %}
         <div>
-            <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Page Total') }}</span>
-            {% if transfer_items_total_count > 0 %}
+            <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Filtered Total') }}</span>
             <p class="text-xs text-base-content/60 mt-1">
                 <span data-transfer-summary="verified-count">{{ verified_transfer_count }}</span> {{ _('verified') }}
                 {% if pending_transfer_count > 0 %}
                 | <span data-transfer-summary="pending-count">{{ pending_transfer_count }}</span> {{ _('pending') }}
                 {% endif %}
             </p>
-            {% endif %}
         </div>
+        {% endif %}
         <div class="text-right">
-            <p class="text-xs text-base-content/60 font-mono">{{ visible_count }} {{ _('transfer') }}{{ 's' if visible_count != 1 else '' }}</p>
+            <span class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Page Total') }}</span>
+            <p class="text-xs text-base-content/60 font-mono mt-1">{{ visible_count }} {{ _('transfer') }}{{ 's' if visible_count != 1 else '' }}</p>
             <p class="text-sm font-bold font-mono text-base-content tabular-nums">
                 Gs {{ total_amount | format_currency_py }}
             </p>
