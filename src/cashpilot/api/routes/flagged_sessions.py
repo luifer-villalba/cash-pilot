@@ -308,6 +308,7 @@ async def flagged_sessions_report(
     )
 
     return templates.TemplateResponse(
+        request,
         "reports/flagged-sessions.html",
         {
             "request": request,

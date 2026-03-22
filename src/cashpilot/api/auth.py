@@ -37,6 +37,7 @@ async def login_page(request: Request, expired: str = None, error: str = None):
     _ = get_translation_function(locale)
 
     return templates.TemplateResponse(
+        request,
         "login.html",
         {
             "request": request,

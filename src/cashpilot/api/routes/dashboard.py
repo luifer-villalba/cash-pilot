@@ -226,6 +226,7 @@ async def dashboard(
         has_reconciliation = recon_count > 0
 
     return templates.TemplateResponse(
+        request,
         "index.html",
         {
             "request": request,
@@ -332,6 +333,7 @@ async def sessions_table(
         session.can_edit_closed = _can_edit_closed_session(session, current_user)
 
     return templates.TemplateResponse(
+        request,
         "partials/sessions_table.html",
         {
             "request": request,
@@ -481,6 +483,7 @@ async def get_dashboard_stats(
     # Already calculated: sessions_open, sessions_closed, sessions_need_review
 
     return templates.TemplateResponse(
+        request,
         "partials/stats_row.html",
         {
             "request": request,

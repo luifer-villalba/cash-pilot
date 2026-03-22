@@ -124,6 +124,7 @@ async def reports_dashboard(
     ]
 
     return templates.TemplateResponse(
+        request,
         "reports/dashboard.html",
         {
             "request": request,
@@ -158,6 +159,7 @@ async def daily_revenue_report(
     )
 
     return templates.TemplateResponse(
+        request,
         "reports/daily-revenue.html",
         {
             "request": request,
@@ -192,6 +194,7 @@ async def weekly_trend_report(
     )
 
     return templates.TemplateResponse(
+        request,
         "reports/weekly-trend.html",
         {
             "request": request,
@@ -299,6 +302,7 @@ async def weekly_trend_report_pdf_view(
     _ = get_translation_function(locale)
 
     return templates.TemplateResponse(
+        request,
         "reports/weekly-trend-pdf.html",
         {
             "request": request,
@@ -330,6 +334,7 @@ async def monthly_trend_report(
     )
 
     return templates.TemplateResponse(
+        request,
         "reports/monthly-trend.html",
         {
             "request": request,

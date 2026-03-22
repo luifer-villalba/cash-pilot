@@ -32,6 +32,7 @@ async def settings_page(
     success = request.query_params.get("success")
 
     return templates.TemplateResponse(
+        request,
         "settings.html",
         {
             "request": request,
