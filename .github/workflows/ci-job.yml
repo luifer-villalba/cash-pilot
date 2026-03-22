@@ -60,12 +60,13 @@ jobs:
       - name: Wait for database to be ready
         if: ${{ inputs.use_db }}
         run: |
-          timeout 30 bash -c 'until docker compose exec -T db pg_isready -U cashpilot; do sleep 1; done'
+          timeout 30 bash -c 'until docker compose exec -T db pg_isready -h 127.0.0.1 -p 5432 -U cashpilot; do sleep 1; done'
 
       - name: Create test database
         if: ${{ inputs.use_db }}
         run: |
-          docker compose exec -T db psql -U cashpilot -d cashpilot_dev -c "CREATE DATABASE cashpilot_test;"
+          docker compose exec -T db psql -h 127.0.0.1 -p 5432 -U cashpilot -d postgres -v ON_ERROR_STOP=1 -tc "SELECT 1 FROM pg_database WHERE datname = 'cashpilot_test';" | grep -q 1 || \
+            docker compose exec -T db psql -h 127.0.0.1 -p 5432 -U cashpilot -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE cashpilot_test;"
 
       - name: Run job command(s)
         run: ${{ inputs.run_command }}
