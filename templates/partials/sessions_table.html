@@ -249,16 +249,16 @@
                                 {% if session.is_deleted %}
                                     <!-- Restore button (Admin only) -->
                                     {% if current_user.role == 'ADMIN' %}
-                                        <button
-                                            hx-post="/sessions/{{ session.id|string }}/restore"
-                                            hx-confirm="{{ _('Restore this deleted session?') }}"
-                                            hx-on="htmx:afterRequest: if(event.detail.successful) window.location.reload()"
-                                            class="btn btn-ghost btn-xs btn-circle hover:!bg-success/20 focus-visible:ring-2 focus-visible:ring-success/30"
-                                            title="{{ _('Restore session') }}">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                            </svg>
-                                        </button>
+                                        <form method="POST" action="/sessions/{{ session.id|string }}/restore">
+                                            <button
+                                                type="submit"
+                                                class="btn btn-ghost btn-xs btn-circle hover:!bg-success/20 focus-visible:ring-2 focus-visible:ring-success/30"
+                                                title="{{ _('Restore session') }}">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                                </svg>
+                                            </button>
+                                        </form>
                                     {% endif %}
                                 {% elif session.status == 'OPEN' %}
                                     {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}
@@ -485,17 +485,17 @@
                     {% if session.is_deleted %}
                         <!-- Restore button (Admin only) -->
                         {% if current_user.role == 'ADMIN' %}
-                            <button
-                                hx-post="/sessions/{{ session.id|string }}/restore"
-                                hx-confirm="{{ _('Restore this deleted session?') }}"
-                                hx-on="htmx:afterRequest: if(event.detail.successful) window.location.reload()"
-                                class="btn btn-success btn-xs flex-1 hover:!bg-success/20 focus-visible:ring-2 focus-visible:ring-success/30"
-                                title="{{ _('Restore session') }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                                </svg>
-                                {{ _('Restore') }}
-                            </button>
+                            <form method="POST" action="/sessions/{{ session.id|string }}/restore" class="flex-1">
+                                <button
+                                    type="submit"
+                                    class="btn btn-success btn-xs w-full hover:!bg-success/20 focus-visible:ring-2 focus-visible:ring-success/30"
+                                    title="{{ _('Restore session') }}">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    {{ _('Restore') }}
+                                </button>
+                            </form>
                         {% endif %}
                     {% elif session.status == 'OPEN' %}
                         {% if current_user.role == 'ADMIN' or session.created_by == current_user.id %}

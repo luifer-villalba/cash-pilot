@@ -6,13 +6,14 @@ Ensures that:
 - Report filtering respects business assignments
 """
 
+from datetime import timedelta
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from cashpilot.models import Business, CashSession, User, UserRole
-from cashpilot.models.user_business import UserBusiness
-from tests.factories import BusinessFactory, CashSessionFactory, UserFactory
+from cashpilot.utils.datetime import today_local
+from tests.factories import BusinessFactory, CashSessionFactory
 
 
 class TestRBACDashboardVisibility:
@@ -32,8 +33,8 @@ class TestRBACDashboardVisibility:
     ):
         """Dashboard uses get_assigned_businesses() for filtering."""
         # Create businesses
-        business_a = await BusinessFactory.create(db_session, is_active=True)
-        business_b = await BusinessFactory.create(db_session, is_active=True)
+        await BusinessFactory.create(db_session, is_active=True)
+        await BusinessFactory.create(db_session, is_active=True)
 
         # Dashboard should render without errors
         response = await client.get("/")
@@ -46,8 +47,8 @@ class TestRBACDashboardVisibility:
         """Admin dashboard includes quick access links for envelopes and deposits list."""
         response = await admin_client.get("/")
         assert response.status_code == 200
-        assert '/admin/envelopes/date-range' in response.text
-        assert '/admin/envelopes/deposits' in response.text
+        assert "/admin/envelopes/date-range" in response.text
+        assert "/admin/envelopes/deposits" in response.text
 
     @pytest.mark.asyncio
     async def test_dashboard_hides_envelope_quick_links_for_cashier(
@@ -57,8 +58,52 @@ class TestRBACDashboardVisibility:
         response = await client.get("/")
         assert response.status_code in [200, 302]
         if response.status_code == 200:
-            assert '/admin/envelopes/date-range' not in response.text
-            assert '/admin/envelopes/deposits' not in response.text
+            assert "/admin/envelopes/date-range" not in response.text
+            assert "/admin/envelopes/deposits" not in response.text
+
+    @pytest.mark.asyncio
+    async def test_cashier_dashboard_warns_about_previous_open_sessions(
+        self, client: AsyncClient, db_session: AsyncSession
+    ):
+        """Cashiers see their own open sessions from previous days."""
+        business = await BusinessFactory.create(db_session)
+        yesterday = today_local() - timedelta(days=1)
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=client.test_user.id,
+            created_by=client.test_user.id,
+            session_date=yesterday,
+            status="OPEN",
+        )
+
+        response = await client.get("/")
+
+        assert response.status_code == 200
+        assert "You have open sessions from previous days" in response.text
+        assert "Open oldest" in response.text
+        assert "View all" in response.text
+
+    @pytest.mark.asyncio
+    async def test_admin_dashboard_does_not_show_cashier_previous_open_warning(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """The previous-open-session warning is part of the cashier experience."""
+        business = await BusinessFactory.create(db_session)
+        yesterday = today_local() - timedelta(days=1)
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=admin_client.test_user.id,
+            created_by=admin_client.test_user.id,
+            session_date=yesterday,
+            status="OPEN",
+        )
+
+        response = await admin_client.get("/")
+
+        assert response.status_code == 200
+        assert "You have open sessions from previous days" not in response.text
 
 
 class TestRBACBusinessListVisibility:

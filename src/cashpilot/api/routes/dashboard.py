@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/routes/dashboard.py
 """Dashboard routes (HTML endpoints)."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -137,6 +137,36 @@ async def dashboard(
     businesses_count = len(businesses)
 
     today = today_local()
+    stale_open_sessions_count = 0
+    stale_open_sessions_url = None
+    stale_open_session_id = None
+    if current_user.role == UserRole.CASHIER:
+        stale_stmt = select(func.count(CashSession.id)).where(
+            CashSession.cashier_id == current_user.id,
+            CashSession.status == "OPEN",
+            CashSession.session_date < today,
+            ~CashSession.is_deleted,
+        )
+        stale_result = await db.execute(stale_stmt)
+        stale_open_sessions_count = stale_result.scalar() or 0
+
+        if stale_open_sessions_count:
+            stale_first_stmt = (
+                select(CashSession.id)
+                .where(
+                    CashSession.cashier_id == current_user.id,
+                    CashSession.status == "OPEN",
+                    CashSession.session_date < today,
+                    ~CashSession.is_deleted,
+                )
+                .order_by(CashSession.session_date.asc(), CashSession.opened_time.asc())
+                .limit(1)
+            )
+            stale_first_result = await db.execute(stale_first_stmt)
+            stale_open_session_id = stale_first_result.scalar_one_or_none()
+            stale_to_date = (today - timedelta(days=1)).isoformat()
+            stale_open_sessions_url = f"/?status=OPEN&to_date={stale_to_date}"
+
     # Calculate total_revenue to match model's total_sales property:
     # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses
     #              - credit_payments_collected
@@ -195,6 +225,9 @@ async def dashboard(
 
     # Check if coming from reconciliation report
     from_report = request.query_params.get("from_report")
+    restore_error = request.query_params.get("restore_error")
+    restore_session_id = request.query_params.get("restore_session_id")
+    blocking_session_id = request.query_params.get("blocking_session_id")
 
     # Determine date to check for reconciliation
     # Use to_date if available, otherwise from_date, otherwise today
@@ -234,6 +267,9 @@ async def dashboard(
             "sessions": sessions,
             "now": now_local(),
             "active_sessions_count": active_count,
+            "stale_open_sessions_count": stale_open_sessions_count,
+            "stale_open_sessions_url": stale_open_sessions_url,
+            "stale_open_session_id": stale_open_session_id,
             "businesses_count": businesses_count,
             "businesses": businesses,
             "page": page,
@@ -253,6 +289,9 @@ async def dashboard(
             "sort_order": sort_order,
             "include_deleted": include_deleted,
             "from_report": from_report,
+            "restore_error": restore_error,
+            "restore_session_id": restore_session_id,
+            "blocking_session_id": blocking_session_id,
             "has_reconciliation": has_reconciliation,
             "reconciliation_date": reconciliation_check_date.isoformat(),
             "locale": locale,
