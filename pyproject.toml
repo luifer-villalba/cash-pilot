@@ -44,11 +44,11 @@ dev = [
     "isort==5.13.2",
     "pytest==9.0.3",
     "httpx==0.27.0",
-    "pytest-asyncio>=1.3.0",
+    "pytest-asyncio==1.3.0",
     "freezegun==1.5.1",
-    "pillow>=12.2.0",
-    "pygments>=2.20.0",
-    "requests>=2.33.0",
+    "pillow==12.2.0",
+    "pygments==2.20.0",  # Security floor for pip-audit/dev tooling transitive usage
+    "requests==2.33.1",  # Security floor for pip-audit/dev tooling transitive usage
     "pip-audit>=2.7.0",
 ]
 

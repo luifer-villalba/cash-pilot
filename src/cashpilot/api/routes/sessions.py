@@ -205,6 +205,7 @@ async def create_session_post(
                         "block_new_session": block_new_session,
                         "locale": locale,
                         "_": _,
+                        "today": today.isoformat(),
                     },
                     status_code=409,
                 )

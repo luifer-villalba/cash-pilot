@@ -164,10 +164,8 @@ async def dashboard(
             )
             stale_first_result = await db.execute(stale_first_stmt)
             stale_open_session_id = stale_first_result.scalar_one_or_none()
-            stale_open_sessions_url = (
-                "/?status=OPEN&from_date=2000-01-01"
-                f"&to_date={(today - timedelta(days=1)).isoformat()}"
-            )
+            stale_to_date = (today - timedelta(days=1)).isoformat()
+            stale_open_sessions_url = f"/?status=OPEN&to_date={stale_to_date}"
 
     # Calculate total_revenue to match model's total_sales property:
     # cash_sales = (final_cash - initial_cash) + envelope_amount + expenses

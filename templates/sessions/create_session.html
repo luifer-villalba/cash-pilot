@@ -19,7 +19,7 @@
                 </svg>
                 <div class="space-y-2 flex-1">
                     <div class="font-semibold text-base-content">
-                        {{ _('You already have an open session for this business.') }}
+                        {{ error or _('You already have an open session for this business.') }}
                     </div>
                     <div class="text-xs text-base-content/60">
                         {{ _('Opened at') }}: {{ existing_session.opened_time.strftime('%H:%M') }}
