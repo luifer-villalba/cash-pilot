@@ -1,7 +1,7 @@
 # File: src/cashpilot/api/auth_helpers.py
 """Role-based authorization helpers."""
 
-from datetime import timedelta
+from datetime import date, timedelta
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
@@ -196,8 +196,9 @@ async def get_open_session_for_cashier_business(
     cashier_id: UUID | str,
     business_id: UUID | str,
     db: AsyncSession,
+    session_date: date | None = None,
 ) -> CashSession | None:
-    """Check if cashier has an open session in the business (CP-DATA-02).
+    """Check if cashier has an open session in the business for a date (CP-DATA-02).
 
     Returns the open session if one exists, None otherwise.
     Used to detect and prevent duplicate open sessions.
@@ -215,5 +216,8 @@ async def get_open_session_for_cashier_business(
         & (CashSession.status == "OPEN")
         & (CashSession.is_deleted.is_(False))
     )
+    if session_date is not None:
+        stmt = stmt.where(CashSession.session_date == session_date)
+
     result = await db.execute(stmt)
     return result.scalars().first()

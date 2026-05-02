@@ -61,6 +61,7 @@ async def create_session_form(
             current_user.id,
             current_user.businesses[0].id,
             db,
+            today_local(),
         )
         block_new_session = existing_session is not None
 
@@ -104,32 +105,6 @@ async def create_session_post(
         # Enforce business assignment (AC-01, AC-02)
         business_uuid = await require_business_assignment(business_id, current_user, db)
 
-        # Prevent duplicate open sessions per cashier/business (CP-DATA-02)
-        existing_session = await get_open_session_for_cashier_business(
-            current_user.id,
-            business_uuid,
-            db,
-        )
-        if existing_session:
-            await db.refresh(current_user, ["businesses"])
-            block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
-            businesses = await get_assigned_businesses(current_user, db)
-            return templates.TemplateResponse(
-                request,
-                "sessions/create_session.html",
-                {
-                    "current_user": current_user,
-                    "businesses": businesses,
-                    "error": _("You already have an open session for this business."),
-                    "existing_session": existing_session,
-                    "block_new_session": block_new_session,
-                    "locale": locale,
-                    "_": _,
-                    "today": today_local().isoformat(),
-                },
-                status_code=400,
-            )
-
         # Business logic: parse currency format (es-PY specific)
         initial_cash_val = parse_currency(initial_cash)
         if initial_cash_val is None:
@@ -168,6 +143,33 @@ async def create_session_post(
         else:
             opened_time_val = current_time_local()
 
+        # Prevent duplicate open sessions per cashier/business/date (CP-DATA-02)
+        existing_session = await get_open_session_for_cashier_business(
+            current_user.id,
+            business_uuid,
+            db,
+            session_date_val,
+        )
+        if existing_session:
+            await db.refresh(current_user, ["businesses"])
+            block_new_session = user_role == UserRole.CASHIER and len(current_user.businesses) == 1
+            businesses = await get_assigned_businesses(current_user, db)
+            return templates.TemplateResponse(
+                request,
+                "sessions/create_session.html",
+                {
+                    "current_user": current_user,
+                    "businesses": businesses,
+                    "error": _("You already have an open session for this business and date."),
+                    "existing_session": existing_session,
+                    "block_new_session": block_new_session,
+                    "locale": locale,
+                    "_": _,
+                    "today": today.isoformat(),
+                },
+                status_code=400,
+            )
+
         session = CashSession(
             business_id=business_uuid,
             cashier_id=current_user.id,
@@ -186,6 +188,7 @@ async def create_session_post(
                 current_user.id,
                 business_uuid,
                 db,
+                session_date_val,
             )
             if existing_session:
                 await db.refresh(current_user)
@@ -197,7 +200,7 @@ async def create_session_post(
                     {
                         "current_user": current_user,
                         "businesses": businesses,
-                        "error": _("You already have an open session for this business."),
+                        "error": _("You already have an open session for this business and date."),
                         "existing_session": existing_session,
                         "block_new_session": block_new_session,
                         "locale": locale,

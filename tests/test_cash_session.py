@@ -2,8 +2,7 @@
 
 """Tests for cash session endpoints."""
 
-from datetime import date
-from decimal import Decimal
+from datetime import timedelta
 from uuid import UUID
 
 import pytest
@@ -31,7 +30,7 @@ class TestListCashSessions:
 
     @pytest.mark.asyncio
     async def test_list_sessions_with_filtering(
-            self, admin_client: AsyncClient, db_session: AsyncSession, business_id: str  
+        self, admin_client: AsyncClient, db_session: AsyncSession, business_id: str
     ):
         """Test listing sessions with filters."""
         business = await BusinessFactory.create(db_session)
@@ -39,10 +38,10 @@ class TestListCashSessions:
             db_session,
             business_id=business.id,
             cashier_name="María",
-            created_by=admin_client.test_user.id,  
+            created_by=admin_client.test_user.id,
         )
 
-        response = await admin_client.get("/")  
+        response = await admin_client.get("/")
         # Dashboard requires auth, redirects if not authenticated
         assert response.status_code in [200, 302]
 
@@ -86,11 +85,11 @@ class TestOpenCashSession:
 
     @pytest.mark.asyncio
     async def test_open_session_duplicate(
-        self, admin_client: AsyncClient, db_session: AsyncSession, business_id: str  
+        self, admin_client: AsyncClient, db_session: AsyncSession, business_id: str
     ):
         """Test opening overlapping sessions."""
         # Open first session
-        response1 = await admin_client.post(  
+        response1 = await admin_client.post(
             "/sessions",
             data={
                 "business_id": business_id,
@@ -101,7 +100,7 @@ class TestOpenCashSession:
         assert response1.status_code == 302
 
         # Try to open another at same time
-        response2 = await admin_client.post(  
+        response2 = await admin_client.post(
             "/sessions",
             data={
                 "business_id": business_id,
@@ -196,16 +195,16 @@ class TestGetCashSession:
     """Test retrieving session details."""
 
     @pytest.mark.asyncio
-    async def test_get_session_success(self, admin_client: AsyncClient, db_session: AsyncSession):  
+    async def test_get_session_success(self, admin_client: AsyncClient, db_session: AsyncSession):
         """Test retrieving a cash session details."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
             db_session,
             business_id=business.id,
-            created_by=admin_client.test_user.id,  
+            created_by=admin_client.test_user.id,
         )
 
-        response = await admin_client.get(f"/cash-sessions/{session.id}")  
+        response = await admin_client.get(f"/cash-sessions/{session.id}")
 
         assert response.status_code == 200
         data = response.json()
@@ -216,18 +215,16 @@ class TestCloseCashSession:
     """Test closing sessions."""
 
     @pytest.mark.asyncio
-    async def test_close_session_success(
-        self, admin_client: AsyncClient, db_session: AsyncSession  
-    ):
+    async def test_close_session_success(self, admin_client: AsyncClient, db_session: AsyncSession):
         """Test closing a session."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
             db_session,
             business_id=business.id,
-            created_by=admin_client.test_user.id,  
+            created_by=admin_client.test_user.id,
         )
 
-        response = await admin_client.put(  
+        response = await admin_client.put(
             f"/cash-sessions/{session.id}",
             json={
                 "final_cash": "550000.00",
@@ -242,17 +239,17 @@ class TestCloseCashSession:
 
     @pytest.mark.asyncio
     async def test_close_session_partial_data(
-        self, admin_client: AsyncClient, db_session: AsyncSession  
+        self, admin_client: AsyncClient, db_session: AsyncSession
     ):
         """Test closing with partial payment methods."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
             db_session,
             business_id=business.id,
-            created_by=admin_client.test_user.id,  
+            created_by=admin_client.test_user.id,
         )
 
-        response = await admin_client.put(  
+        response = await admin_client.put(
             f"/cash-sessions/{session.id}",
             json={
                 "final_cash": "500000.00",
@@ -267,7 +264,7 @@ class TestCloseCashSession:
 
     @pytest.mark.asyncio
     async def test_close_already_closed_session(
-        self, admin_client: AsyncClient, db_session: AsyncSession  
+        self, admin_client: AsyncClient, db_session: AsyncSession
     ):
         """Test closing already closed session."""
         business = await BusinessFactory.create(db_session)
@@ -275,10 +272,10 @@ class TestCloseCashSession:
             db_session,
             business_id=business.id,
             status="CLOSED",
-            created_by=admin_client.test_user.id,  
+            created_by=admin_client.test_user.id,
         )
 
-        response = await admin_client.put(  
+        response = await admin_client.put(
             f"/cash-sessions/{session.id}",
             json={
                 "final_cash": "600000.00",
@@ -293,17 +290,17 @@ class TestCloseCashSession:
 
     @pytest.mark.asyncio
     async def test_close_without_required_fields(
-        self, admin_client: AsyncClient, db_session: AsyncSession  
+        self, admin_client: AsyncClient, db_session: AsyncSession
     ):
         """Test closing without required fields."""
         business = await BusinessFactory.create(db_session)
         session = await CashSessionFactory.create(
             db_session,
             business_id=business.id,
-            created_by=admin_client.test_user.id,  
+            created_by=admin_client.test_user.id,
         )
 
-        response = await admin_client.put(  
+        response = await admin_client.put(
             f"/cash-sessions/{session.id}",
             json={"final_cash": "500000.00"},
         )
@@ -395,6 +392,80 @@ class TestOpenCashSessionAPI:
             },
         )
         assert response2.status_code == 201
+
+
+class TestRestoreCashSessionAPI:
+    """Test restoring soft-deleted cash sessions via REST API."""
+
+    @pytest.mark.asyncio
+    async def test_restore_open_session_conflicts_with_existing_open_session(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Restoring a deleted OPEN session must not violate the DB unique index."""
+        business = await BusinessFactory.create(db_session)
+        cashier_id = admin_client.test_user.id
+
+        deleted_session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=cashier_id,
+            created_by=cashier_id,
+            status="OPEN",
+            is_deleted=True,
+        )
+        blocking_session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=cashier_id,
+            created_by=cashier_id,
+            status="OPEN",
+        )
+
+        response = await admin_client.patch(f"/cash-sessions/{deleted_session.id}/restore")
+
+        assert response.status_code == 409
+        error = response.json()
+        assert error["code"] == "CONFLICT"
+        assert error["details"]["session_id"] == str(deleted_session.id)
+        assert error["details"]["blocking_session_id"] == str(blocking_session.id)
+
+        await db_session.refresh(deleted_session)
+        assert deleted_session.is_deleted is True
+
+    @pytest.mark.asyncio
+    async def test_restore_open_session_allows_existing_open_session_on_different_date(
+        self, admin_client: AsyncClient, db_session: AsyncSession
+    ):
+        """Admins can restore yesterday's deleted OPEN session while today is open."""
+        business = await BusinessFactory.create(db_session)
+        cashier_id = admin_client.test_user.id
+        yesterday = today_local() - timedelta(days=1)
+        today = today_local()
+
+        deleted_session = await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=cashier_id,
+            created_by=cashier_id,
+            session_date=yesterday,
+            status="OPEN",
+            is_deleted=True,
+        )
+        await CashSessionFactory.create(
+            db_session,
+            business_id=business.id,
+            cashier_id=cashier_id,
+            created_by=cashier_id,
+            session_date=today,
+            status="OPEN",
+        )
+
+        response = await admin_client.patch(f"/cash-sessions/{deleted_session.id}/restore")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == str(deleted_session.id)
+        assert data["is_deleted"] is False
 
     @pytest.mark.asyncio
     async def test_api_open_after_closing(

@@ -111,17 +111,21 @@ async def open_shift(
 
     # Prevent duplicate open sessions per cashier/business (CP-DATA-02)
     existing_session = await get_open_session_for_cashier_business(
-        cashier_id, session.business_id, db
+        cashier_id,
+        session.business_id,
+        db,
+        session.session_date or today_local(),
     )
     if existing_session:
         raise ConflictError(
-            "An open session already exists for this business. "
+            "An open session already exists for this business and date. "
             "Close the existing session first.",
             {
                 "session_id": str(existing_session.id),
                 "session_number": existing_session.session_number,
                 "cashier_id": str(cashier_id),
                 "business_id": str(session.business_id),
+                "session_date": (session.session_date or today_local()).isoformat(),
             },
         )
 
@@ -165,17 +169,21 @@ async def open_shift(
     except IntegrityError as exc:
         await db.rollback()
         existing_session = await get_open_session_for_cashier_business(
-            cashier_id, session.business_id, db
+            cashier_id,
+            session.business_id,
+            db,
+            session.session_date or today_local(),
         )
         if existing_session:
             raise ConflictError(
-                "An open session already exists for this business. "
+                "An open session already exists for this business and date. "
                 "Close the existing session first.",
                 {
                     "session_id": str(existing_session.id),
                     "session_number": existing_session.session_number,
                     "cashier_id": str(cashier_id),
                     "business_id": str(session.business_id),
+                    "session_date": (session.session_date or today_local()).isoformat(),
                 },
             ) from exc
         raise
@@ -322,6 +330,31 @@ async def restore_session(
             details={"session_id": session_id},
         )
 
+    session_status = session.status
+    session_cashier_id = session.cashier_id
+    session_business_id = session.business_id
+    session_date = session.session_date
+    restored_session_id = session.id
+
+    if session_status == SessionStatus.OPEN.value:
+        existing_session = await get_open_session_for_cashier_business(
+            session_cashier_id, session_business_id, db, session_date
+        )
+        if existing_session:
+            raise ConflictError(
+                "Cannot restore this open session because another open session "
+                "already exists for this cashier, business, and date. Close or delete "
+                "the existing open session first.",
+                {
+                    "session_id": str(restored_session_id),
+                    "blocking_session_id": str(existing_session.id),
+                    "blocking_session_number": existing_session.session_number,
+                    "cashier_id": str(session_cashier_id),
+                    "business_id": str(session_business_id),
+                    "session_date": session_date.isoformat(),
+                },
+            )
+
     # Capture old values for audit
     old_values = {
         "is_deleted": True,
@@ -360,7 +393,29 @@ async def restore_session(
     )
 
     db.add(session)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        if session_status == SessionStatus.OPEN.value:
+            existing_session = await get_open_session_for_cashier_business(
+                session_cashier_id, session_business_id, db, session_date
+            )
+            if existing_session:
+                raise ConflictError(
+                    "Cannot restore this open session because another open session "
+                    "already exists for this cashier, business, and date. Close or delete "
+                    "the existing open session first.",
+                    {
+                        "session_id": str(restored_session_id),
+                        "blocking_session_id": str(existing_session.id),
+                        "blocking_session_number": existing_session.session_number,
+                        "cashier_id": str(session_cashier_id),
+                        "business_id": str(session_business_id),
+                        "session_date": session_date.isoformat(),
+                    },
+                ) from exc
+        raise
     await db.refresh(session)
 
     logger.info(

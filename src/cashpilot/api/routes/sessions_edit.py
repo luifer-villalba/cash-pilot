@@ -2,6 +2,7 @@
 """Session edit routes (edit-open, edit-closed)."""
 
 from datetime import datetime, timedelta
+from urllib.parse import urlencode
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -24,6 +25,7 @@ from cashpilot.api.utils import (
     update_open_session_fields,
 )
 from cashpilot.core.db import get_db
+from cashpilot.core.errors import ConflictError
 from cashpilot.core.logging import get_logger
 from cashpilot.core.validators import validate_no_future_date
 from cashpilot.models import CashSession
@@ -431,6 +433,23 @@ async def restore_session_post(
             restored_by=str(current_user.id),
         )
         return RedirectResponse(url=f"/sessions/{session_id}", status_code=302)
+    except ConflictError as e:
+        logger.warning(
+            "session.restore_conflict",
+            session_id=session_id,
+            error=str(e),
+            user_id=str(current_user.id),
+            details=e.details,
+        )
+        params = {
+            "restore_error": "open_session_conflict",
+            "restore_session_id": session_id,
+            "include_deleted": "true",
+        }
+        blocking_session_id = e.details.get("blocking_session_id")
+        if blocking_session_id:
+            params["blocking_session_id"] = blocking_session_id
+        return RedirectResponse(url=f"/?{urlencode(params)}", status_code=302)
     except Exception as e:
         logger.error(
             "session.restore_failed",
