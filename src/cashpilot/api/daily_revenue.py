@@ -20,6 +20,7 @@ from cashpilot.models.report_schemas import (
     ExpenseItem,
     TransferItem,
 )
+from cashpilot.services.insights import generate_alerts, generate_daily_summary
 from cashpilot.utils.datetime import today_local
 
 logger = get_logger(__name__)
@@ -365,6 +366,20 @@ async def get_daily_revenue(
                 )
             )
 
+    date_label = target_date.strftime("%b %d, %Y")
+    summary = generate_daily_summary(
+        total_sales=total_sales,
+        net_earnings=net_earnings,
+        total_sessions=total_sessions,
+        perfect_count=perfect_count,
+        shortage_count=shortage_count,
+        surplus_count=surplus_count,
+        date_label=date_label,
+    )
+    alerts = generate_alerts(
+        zero_revenue_days=1 if total_sessions == 0 else 0,
+    )
+
     result = DailyRevenueSummary(
         date=target_date,
         business_id=business_uuid,
@@ -383,6 +398,8 @@ async def get_daily_revenue(
         transfer_items=transfer_items,
         expense_items=expense_items,
         historical_revenue=historical_revenue,
+        summary=summary,
+        alerts=alerts,
     )
 
     # Cache the result

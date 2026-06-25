@@ -1,8 +1,7 @@
 # File: src/cashpilot/api/routes/flagged_sessions.py
 """Flagged cash sessions report route (HTML)."""
 
-from calendar import monthrange
-from datetime import date, timedelta
+from datetime import date
 from urllib.parse import quote_plus
 from uuid import UUID
 
@@ -22,58 +21,29 @@ from cashpilot.api.utils import (
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import Business, CashSession, User
+from cashpilot.services.insights import generate_alerts
+from cashpilot.services.report_utils import calculate_date_range, calculate_previous_period
 from cashpilot.utils.datetime import today_local
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
-
-def _this_week_range(today: date) -> tuple[date, date]:
-    start = today - timedelta(days=today.weekday())
-    end = start + timedelta(days=6)
-    return start, end
-
-
-def _last_week_range(today: date) -> tuple[date, date]:
-    this_start, _ = _this_week_range(today)
-    end = this_start - timedelta(days=1)
-    start = end - timedelta(days=6)
-    return start, end
-
-
-def _this_month_range(today: date) -> tuple[date, date]:
-    start = date(today.year, today.month, 1)
-    end = date(today.year, today.month, monthrange(today.year, today.month)[1])
-    return start, end
-
-
-def _last_month_range(today: date) -> tuple[date, date]:
-    year = today.year
-    month = today.month - 1
-    if month == 0:
-        month = 12
-        year -= 1
-    start = date(year, month, 1)
-    end = date(year, month, monthrange(year, month)[1])
-    return start, end
+_RANGE_KEY_TO_VIEW = {
+    "this_week": "this_week",
+    "last_week": "last_week",
+    "this_month": "this_month",
+    "last_month": "last_month",
+}
 
 
 def _resolve_date_range(range_key: str, today: date) -> tuple[date, date]:
-    if range_key == "last_week":
-        return _last_week_range(today)
-    if range_key == "this_month":
-        return _this_month_range(today)
-    if range_key == "last_month":
-        return _last_month_range(today)
-    return _this_week_range(today)
+    view = _RANGE_KEY_TO_VIEW.get(range_key, "this_week")
+    return calculate_date_range(view)
 
 
 def _previous_period(from_date: date, to_date: date) -> tuple[date, date]:
-    duration = (to_date - from_date).days
-    prev_to = from_date - timedelta(days=1)
-    prev_from = prev_to - timedelta(days=duration)
-    return prev_from, prev_to
+    return calculate_previous_period(from_date, to_date)
 
 
 def _format_period_label(from_date: date, to_date: date) -> str:
@@ -307,6 +277,11 @@ async def flagged_sessions_report(
         flagged_count=len(flagged_sessions),
     )
 
+    # --- Insights ---
+    alerts = generate_alerts(
+        flag_rate_percent=stats_current["flag_rate_percent"],
+    )
+
     return templates.TemplateResponse(
         request,
         "reports/flagged-sessions.html",
@@ -331,5 +306,6 @@ async def flagged_sessions_report(
             "date_error": date_error,
             "locale": locale,
             "_": _,
+            "alerts": alerts,
         },
     )

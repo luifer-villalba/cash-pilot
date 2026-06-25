@@ -1,5 +1,6 @@
 <!-- File: templates/reports/flagged-sessions.html -->
 {% extends "reports/base.html" %}
+{% from "macros/report_components.html" import alerts_banner %}
 
 {% block report_title %}{{ _('Flagged Cash Sessions') }}{% endblock %}
 
@@ -18,6 +19,7 @@
 {% endmacro %}
 
 <div class="space-y-4">
+    {{ alerts_banner(alerts) }}
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-3">
         {% if date_error %}
         <div role="alert" class="alert alert-error mb-3 shadow-lg rounded-xl border-none">
