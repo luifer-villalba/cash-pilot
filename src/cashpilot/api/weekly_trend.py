@@ -331,12 +331,15 @@ async def get_weekly_trend(
     _week_start, _ = get_week_dates(year, week)
     _elapsed_days = min((_today - _week_start).days + 1, 7) if _week_start <= _today else 7
 
-    all_week_dicts = [
+    # Use last 2 weeks for enough z-score context, but flag only current-week days
+    recent_week_dicts = [
         {"date": d.date, "revenue": d.revenue, "has_data": d.has_data}
-        for week_info in weeks_data
+        for week_info in weeks_data[-2:]
         for d in week_info["days"]
     ]
-    anomalies = detect_revenue_anomalies(all_week_dicts)
+    all_anomalies = detect_revenue_anomalies(recent_week_dicts)
+    current_week_dates = {d.date for d in weeks_data[-1]["days"]}
+    anomalies = [a for a in all_anomalies if a["date"] in current_week_dates]
     days_with_data = len([d for d in weeks_data[-1]["days"] if d.has_data])
     zero_revenue_days = max(0, _elapsed_days - days_with_data)
     summary = generate_weekly_summary(

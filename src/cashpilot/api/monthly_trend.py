@@ -343,12 +343,12 @@ async def get_monthly_trend(
         )
 
     # --- Insights ---
-    all_month_dicts = [
+    # Anomaly detection runs only over the current month's days (not all historical months)
+    current_month_dicts = [
         {"date": d.date, "revenue": d.revenue, "has_data": d.has_data}
-        for month_info in months_data
-        for d in month_info["days"]
+        for d in months_data[-1]["days"]
     ]
-    anomalies = detect_revenue_anomalies(all_month_dicts)
+    anomalies = detect_revenue_anomalies(current_month_dicts)
     days_with_data = len([d for d in months_data[-1]["days"] if d.has_data])
     month_name = calendar.month_name[month]
     summary = generate_monthly_summary(
