@@ -5,7 +5,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import and_, case, func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
@@ -21,6 +21,7 @@ from cashpilot.models.report_schemas import (
     TransferItem,
 )
 from cashpilot.services.insights import generate_alerts, generate_daily_summary
+from cashpilot.services.report_utils import cash_sales_expr
 from cashpilot.utils.datetime import today_local
 
 logger = get_logger(__name__)
@@ -89,28 +90,11 @@ async def get_daily_revenue(
 
     # Query 1: Financial aggregates
     stmt_financial = select(
-        # Cash Sales = (final_cash - initial_cash) + envelope + expenses - credit_payments_collected
-        func.sum(
-            case(
-                (
-                    CashSession.final_cash.is_not(None),
-                    (CashSession.final_cash - CashSession.initial_cash)
-                    + func.coalesce(CashSession.envelope_amount, 0)
-                    + func.coalesce(CashSession.expenses, 0)
-                    - func.coalesce(CashSession.credit_payments_collected, 0),
-                ),
-                else_=0,
-            )
-        ).label("cash_sales"),
-        # Card sales
+        func.sum(cash_sales_expr()).label("cash_sales"),
         func.sum(func.coalesce(CashSession.card_total, 0)).label("card_sales"),
-        # Bank transfers
         func.sum(func.coalesce(CashSession.bank_transfer_total, 0)).label("bank_transfer_sales"),
-        # Credit sales (on-account)
         func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
-        # Total expenses
         func.sum(func.coalesce(CashSession.expenses, 0)).label("total_expenses"),
-        # Session count
         func.count(CashSession.id).label("total_sessions"),
     ).where(base_filters)
 
@@ -309,62 +293,54 @@ async def get_daily_revenue(
     transfer_items.sort(key=lambda x: x.time)
     expense_items.sort(key=lambda x: x.time)
 
-    # Get historical revenue (last 7 days before target date)
-    historical_revenue = []
+    # Get historical revenue (last 7 days before target date) — single query with GROUP BY
     from datetime import timedelta
 
-    for i in range(7, 0, -1):
-        hist_date = target_date - timedelta(days=i)
+    hist_start = target_date - timedelta(days=7)
+    hist_end = target_date - timedelta(days=1)
 
-        # Query revenue for that day
-        hist_filters = and_(
-            CashSession.business_id == business_uuid,
-            CashSession.session_date == hist_date,
-            CashSession.status == "CLOSED",
-            CashSession.final_cash.is_not(None),
-            ~CashSession.is_deleted,
-        )
-
-        hist_stmt = select(
-            func.sum(
-                case(
-                    (
-                        CashSession.final_cash.is_not(None),
-                        (CashSession.final_cash - CashSession.initial_cash)
-                        + func.coalesce(CashSession.envelope_amount, 0)
-                        + func.coalesce(CashSession.expenses, 0)
-                        - func.coalesce(CashSession.credit_payments_collected, 0),
-                    ),
-                    else_=0,
-                )
-            ).label("cash_sales"),
+    hist_stmt = (
+        select(
+            CashSession.session_date,
+            func.sum(cash_sales_expr()).label("cash_sales"),
             func.sum(func.coalesce(CashSession.card_total, 0)).label("card_sales"),
             func.sum(func.coalesce(CashSession.bank_transfer_total, 0)).label("bank_sales"),
             func.sum(func.coalesce(CashSession.credit_sales_total, 0)).label("credit_sales"),
-        ).where(hist_filters)
-
-        hist_result = await db.execute(hist_stmt)
-        hist_data = hist_result.one_or_none()
-
-        if hist_data:
-            hist_total = (
-                (hist_data[0] or Decimal("0.00"))
-                + (hist_data[1] or Decimal("0.00"))
-                + (hist_data[2] or Decimal("0.00"))
-                + (hist_data[3] or Decimal("0.00"))
+        )
+        .where(
+            and_(
+                CashSession.business_id == business_uuid,
+                CashSession.session_date >= hist_start,
+                CashSession.session_date <= hist_end,
+                CashSession.status == "CLOSED",
+                CashSession.final_cash.is_not(None),
+                ~CashSession.is_deleted,
             )
+        )
+        .group_by(CashSession.session_date)
+    )
 
-            # Get day name abbreviation
-            day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-            day_name = day_names[hist_date.weekday()]
+    hist_result = await db.execute(hist_stmt)
+    hist_rows = {row[0]: row for row in hist_result.all()}
 
-            historical_revenue.append(
-                DailyHistoricalRevenue(
-                    date=hist_date,
-                    total_sales=hist_total,
-                    day_name=day_name,
-                )
+    day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    historical_revenue = []
+    for i in range(7, 0, -1):
+        hist_date = target_date - timedelta(days=i)
+        row = hist_rows.get(hist_date)
+        hist_total = (
+            (row[1] or Decimal("0.00"))
+            + (row[2] or Decimal("0.00"))
+            + (row[3] or Decimal("0.00"))
+            + (row[4] or Decimal("0.00"))
+        ) if row else Decimal("0.00")
+        historical_revenue.append(
+            DailyHistoricalRevenue(
+                date=hist_date,
+                total_sales=hist_total,
+                day_name=day_names[hist_date.weekday()],
             )
+        )
 
     date_label = target_date.strftime("%b %d, %Y")
     summary = generate_daily_summary(
