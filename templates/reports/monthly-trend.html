@@ -232,6 +232,18 @@
                 <p class="text-xl md:text-2xl font-bold font-mono tabular-nums" id="monthGrowthPercent">-</p>
                 <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1 truncate whitespace-nowrap" id="monthGrowthDifference">-</p>
             </div>
+
+            <!-- Tickets / Avg Ticket -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Tickets') }}</h3>
+                </div>
+                <p class="text-xl md:text-2xl font-bold font-mono tabular-nums text-base-content" id="monthTicketCount">-</p>
+                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1 truncate whitespace-nowrap" id="monthAvgTicket">-</p>
+            </div>
         </div>
 
         <!-- Day Type Revenue Breakdown -->
@@ -905,6 +917,20 @@
             growthDiffEl.textContent = '{{ _("No previous data") }}';
         }
 
+        // Ticket KPI
+        const monthTicketCountEl = document.getElementById('monthTicketCount');
+        const monthAvgTicketEl = document.getElementById('monthAvgTicket');
+        const totalMonthTickets = data.current_month.reduce((sum, day) => sum + (getTicketValue(day) || 0), 0);
+        if (totalMonthTickets > 0) {
+            monthTicketCountEl.textContent = totalMonthTickets.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
+            const monthTotal = parseFloat(data.current_month_total) || 0;
+            const avgTicket = monthTotal / totalMonthTickets;
+            monthAvgTicketEl.textContent = `{{ _("avg") }} ${formatCompactCurrency(avgTicket)}`;
+        } else {
+            monthTicketCountEl.textContent = '-';
+            monthAvgTicketEl.textContent = '{{ _("No ticket data") }}';
+        }
+
         // Display current month table - grouped by calendar weeks (Mon-Sun)
         const tableBody = document.getElementById('currentMonthTable');
         tableBody.innerHTML = '';
@@ -1193,6 +1219,13 @@
         const previousWeekTotals = previousWeeks.map(
             (week) => week.reduce((sum, day) => sum + (day.has_data ? parseFloat(day.revenue) : 0), 0)
         );
+        const currentWeekTickets = currentWeeks.map(
+            (week) => {
+                const t = week.reduce((sum, day) => sum + (getTicketValue(day) || 0), 0);
+                return t > 0 ? t : null;
+            }
+        );
+        const hasMonthTicketData = currentWeekTickets.some(v => v !== null);
         
         // Chart 1: Running Total Progress (Cumulative)
         const runningTotalCtx = document.getElementById('runningTotalChart');
@@ -1344,7 +1377,23 @@
             spanGaps: true,
             fill: true,
         });
-        
+
+        if (hasMonthTicketData) {
+            dailyDatasets.push({
+                label: '{{ _("Tickets") }}',
+                data: currentWeekTickets,
+                yAxisID: 'yTickets',
+                borderColor: 'rgb(168, 85, 247)',
+                backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                tension: 0.3,
+                spanGaps: true,
+                fill: false,
+            });
+        }
+
         comparisonChart = new Chart(comparisonCtx, {
             type: 'line',
             data: {
@@ -1365,6 +1414,9 @@
                     tooltip: {
                         callbacks: {
                             label: function(context) {
+                                if (context.dataset.yAxisID === 'yTickets') {
+                                    return `${context.dataset.label}: ${context.parsed.y !== null ? context.parsed.y : '{{ _("No data") }}'}`;
+                                }
                                 let label = context.dataset.label || '';
                                 if (label) {
                                     label += ': ';
@@ -1385,7 +1437,19 @@
                                 return formatCurrency(value);
                             }
                         }
-                    }
+                    },
+                    ...(hasMonthTicketData ? {
+                        yTickets: {
+                            type: 'linear',
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: { drawOnChartArea: false },
+                            ticks: {
+                                precision: 0,
+                                callback: v => v + ' tkts'
+                            }
+                        }
+                    } : {})
                 }
             }
         });
