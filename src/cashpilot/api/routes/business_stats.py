@@ -528,6 +528,19 @@ async def business_stats(
     # --- Insights ---
     totals_growth = totals_deltas.get("total_sales", {}).get("percent")
     top_business_name = business_stats_list[0]["business"].name if business_stats_list else ""
+    bottom_business_name = (
+        business_stats_list[-1]["business"].name if len(business_stats_list) > 1 else ""
+    )
+    top_business_share = (
+        business_stats_list[0]["current"]["total_sales"] / totals_current["total_sales"] * 100
+        if business_stats_list and totals_current["total_sales"] > 0
+        else None
+    )
+    businesses_growing = sum(
+        1
+        for item in business_stats_list
+        if item["deltas"].get("total_sales", {}).get("direction") == "up"
+    )
     summary = generate_business_stats_summary(
         total_sales=totals_current["total_sales"],
         previous_sales=totals_previous["total_sales"],
@@ -535,6 +548,9 @@ async def business_stats(
         business_count=len(business_stats_list),
         period_label=current_period_label,
         top_business_name=top_business_name,
+        bottom_business_name=bottom_business_name,
+        top_business_share=top_business_share,
+        businesses_growing=businesses_growing,
     )
     alerts = generate_alerts(
         growth_percent=totals_growth,

@@ -303,8 +303,11 @@ def generate_business_stats_summary(
     business_count: int,
     period_label: str = "",
     top_business_name: str = "",
+    bottom_business_name: str = "",
+    top_business_share: Decimal | float | None = None,
+    businesses_growing: int | None = None,
 ) -> str:
-    """Return a brief natural language summary for the multi-business stats report."""
+    """Return a natural language summary for the multi-business stats report."""
     lines: list[str] = []
     period = f" en {period_label}" if period_label else ""
     suc = "sucursal" if business_count == 1 else "sucursales"
@@ -315,14 +318,23 @@ def generate_business_stats_summary(
 
     if growth_percent is not None:
         g = float(growth_percent)
+        diff = abs(float(total_sales) - float(previous_sales))
+        diff_str = _fmt_currency(diff)
         if g > 0:
-            lines.append(f"Subió {g:.1f}% respecto al período anterior.")
+            lines.append(f"Subió {g:.1f}% vs período anterior (+{diff_str}).")
         elif g < 0:
-            lines.append(f"Bajó {abs(g):.1f}% respecto al período anterior.")
+            lines.append(f"Bajó {abs(g):.1f}% vs período anterior (-{diff_str}).")
         else:
             lines.append("Sin cambios respecto al período anterior.")
 
+    if businesses_growing is not None and business_count > 1:
+        lines.append(f"{businesses_growing} de {business_count} sucursales crecieron.")
+
     if top_business_name:
-        lines.append(f"Mejor desempeño: {top_business_name}.")
+        share_str = f" ({float(top_business_share):.0f}% del total)" if top_business_share else ""
+        lines.append(f"Mejor desempeño: {top_business_name}{share_str}.")
+
+    if bottom_business_name and bottom_business_name != top_business_name:
+        lines.append(f"Menor desempeño: {bottom_business_name}.")
 
     return " ".join(lines)

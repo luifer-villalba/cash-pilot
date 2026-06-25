@@ -306,10 +306,16 @@ def test_business_stats_summary_growth():
         business_count=3,
         period_label="jun 2026",
         top_business_name="Sucursal Centro",
+        bottom_business_name="Sucursal Norte",
+        top_business_share=Decimal("45.0"),
+        businesses_growing=2,
     )
     assert "3 sucursales" in s
     assert "25.0%" in s
     assert "Sucursal Centro" in s
+    assert "45%" in s
+    assert "2 de 3" in s
+    assert "Sucursal Norte" in s
 
 
 def test_business_stats_summary_flat():
@@ -322,3 +328,17 @@ def test_business_stats_summary_flat():
         top_business_name="",
     )
     assert "Sin cambios" in s
+
+
+def test_business_stats_summary_absolute_diff():
+    s = generate_business_stats_summary(
+        total_sales=Decimal("110000000"),
+        previous_sales=Decimal("100000000"),
+        growth_percent=Decimal("10.0"),
+        business_count=2,
+        period_label="",
+        top_business_name="Suc A",
+        businesses_growing=2,
+    )
+    assert "10.0%" in s
+    assert "Gs." in s  # absolute diff shown
