@@ -35,6 +35,7 @@ logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
+
 def _resolve_date_range(range_key: str, today: date) -> tuple[date, date]:
     """Return a full calendar period (not MTD) for the given range key."""
     from datetime import timedelta

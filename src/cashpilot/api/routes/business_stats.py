@@ -270,7 +270,6 @@ async def aggregate_business_metrics(
     return metrics_by_business
 
 
-
 @router.get("/business-stats", response_class=HTMLResponse)
 async def business_stats(
     request: Request,

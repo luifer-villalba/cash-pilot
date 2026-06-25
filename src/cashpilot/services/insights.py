@@ -29,9 +29,7 @@ def detect_revenue_anomalies(
     Requires at least 4 data points to compute a meaningful z-score.
     Returns a list of anomaly dicts: {date, revenue, z_score, direction}.
     """
-    points = [
-        d for d in daily_data if d.get(has_data_key, True) and d.get(revenue_key, 0) > 0
-    ]
+    points = [d for d in daily_data if d.get(has_data_key, True) and d.get(revenue_key, 0) > 0]
     if len(points) < 4:
         return []
 
@@ -105,8 +103,7 @@ def generate_alerts(
             {
                 "level": "warning",
                 "message": (
-                    f"{flag_rate_percent:.1f}% of sessions are flagged"
-                    " — review recommended."
+                    f"{flag_rate_percent:.1f}% of sessions are flagged" " — review recommended."
                 ),
             }
         )

@@ -329,11 +329,15 @@ async def get_daily_revenue(
         hist_date = target_date - timedelta(days=i)
         row = hist_rows.get(hist_date)
         hist_total = (
-            (row[1] or Decimal("0.00"))
-            + (row[2] or Decimal("0.00"))
-            + (row[3] or Decimal("0.00"))
-            + (row[4] or Decimal("0.00"))
-        ) if row else Decimal("0.00")
+            (
+                (row[1] or Decimal("0.00"))
+                + (row[2] or Decimal("0.00"))
+                + (row[3] or Decimal("0.00"))
+                + (row[4] or Decimal("0.00"))
+            )
+            if row
+            else Decimal("0.00")
+        )
         historical_revenue.append(
             DailyHistoricalRevenue(
                 date=hist_date,

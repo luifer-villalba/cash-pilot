@@ -329,11 +329,7 @@ async def get_weekly_trend(
 
     _today = _today_local()
     _week_start, _ = get_week_dates(year, week)
-    _elapsed_days = (
-        min((_today - _week_start).days + 1, 7)
-        if _week_start <= _today
-        else 7
-    )
+    _elapsed_days = min((_today - _week_start).days + 1, 7) if _week_start <= _today else 7
 
     all_week_dicts = [
         {"date": d.date, "revenue": d.revenue, "has_data": d.has_data}
