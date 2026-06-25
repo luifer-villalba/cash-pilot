@@ -702,10 +702,16 @@ function displayCashierPerformance(cashiers) {
                 '</svg>' +
                 cashier.flagged_sessions +
             '</span>' : '';
-        var expensesInfo = parseFloat(cashier.total_expenses) > 0 ? 
+        var expensesInfo = parseFloat(cashier.total_expenses) > 0 ?
             '<span>•</span>' +
             '<span class="text-error font-semibold">' + formatCurrency(cashier.total_expenses) + ' {{ _("expenses") }}</span>' : '';
-        card.innerHTML = 
+        var shiftBadge = cashier.shift_label ?
+            '<span class="badge badge-sm ' + getShiftBadgeClass(cashier.shift_label) + '">' +
+                translateShift(cashier.shift_label) +
+                (cashier.shift_start ? ' · ' + formatShiftTime(cashier.shift_start) : '') +
+                (cashier.shift_end ? '–' + formatShiftTime(cashier.shift_end) : '') +
+            '</span>' : '';
+        card.innerHTML =
             '<div class="flex items-center gap-4">' +
                 '<div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full ' + rankColor + ' font-bold text-lg shadow-sm">' +
                     (isTopThree ? medals[index] : (index + 1)) +
@@ -720,6 +726,7 @@ function displayCashierPerformance(cashiers) {
                         '<span class="badge badge-sm badge-ghost font-mono">' + parseFloat(cashier.debit_percentage).toFixed(0) + '% {{ _("debit") }}</span>' +
                         '<span class="badge badge-sm badge-ghost font-mono">' + parseFloat(cashier.credit_percentage).toFixed(0) + '% {{ _("credit") }}</span>' +
                         '<span class="badge badge-sm badge-ghost font-mono">' + parseFloat(cashier.bank_percentage).toFixed(0) + '% {{ _("bank") }}</span>' +
+                        shiftBadge +
                     '</div>' +
                     '<div class="flex flex-wrap gap-2 text-xs text-base-content/60">' +
                         '<span>' + parseFloat(cashier.avg_session_duration_hours).toFixed(1) + 'h</span>' +

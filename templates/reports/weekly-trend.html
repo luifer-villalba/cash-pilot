@@ -531,6 +531,18 @@
                 <p class="text-xl md:text-2xl font-bold font-mono tabular-nums" id="weekGrowthPercent">-</p>
                 <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1 truncate whitespace-nowrap" id="weekGrowthDifference">-</p>
             </div>
+
+            <!-- Tickets / Avg Ticket -->
+            <div class="bg-base-100 border border-base-300 rounded-lg p-4 shadow-sm min-w-[220px] flex-1 pdf-keep">
+                <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                    <h3 class="font-semibold text-sm text-base-content/70 truncate">{{ _('Tickets') }}</h3>
+                </div>
+                <p class="text-xl md:text-2xl font-bold font-mono tabular-nums text-base-content" id="weekTicketCount">-</p>
+                <p class="text-sm font-mono tabular-nums text-base-content/60 mt-1 truncate whitespace-nowrap" id="weekAvgTicket">-</p>
+            </div>
         </div>
 
         <!-- Day Type Revenue Breakdown -->
@@ -1295,6 +1307,20 @@
             growthDiffEl.textContent = '{{ _("No previous data") }}';
         }
 
+        // Ticket KPI
+        const weekTicketCountEl = document.getElementById('weekTicketCount');
+        const weekAvgTicketEl = document.getElementById('weekAvgTicket');
+        const totalTickets = data.current_week.reduce((sum, day) => sum + (getTicketValue(day) || 0), 0);
+        if (totalTickets > 0) {
+            weekTicketCountEl.textContent = totalTickets.toLocaleString(window.CURRENCY_LOCALE || 'es-PY');
+            const weekTotal = parseNumber(data.current_week_total) || 0;
+            const avgTicket = weekTotal / totalTickets;
+            weekAvgTicketEl.textContent = `{{ _("avg") }} ${formatCompactCurrency(avgTicket)}`;
+        } else {
+            weekTicketCountEl.textContent = '-';
+            weekAvgTicketEl.textContent = '{{ _("No ticket data") }}';
+        }
+
         // Calculate day-type revenue breakdown
         let regularDaysRev = 0; // Mon, Tue, Wed
         let discountDaysRev = 0; // Thu, Fri (25% discount)
@@ -1872,6 +1898,7 @@
         const weekMarginTotals = [];
         const weekRevenueFallback = [];
         const weekCostNotes = [];
+        const weekTicketTotals = [];
 
         const pushWeekTotals = (weekDays, label) => {
             const costCoverage = getCostCoverage(weekDays);
@@ -1881,6 +1908,9 @@
             );
 
             weekLabels.push(label);
+
+            const weekTickets = weekDays.reduce((sum, day) => sum + (getTicketValue(day) || 0), 0);
+            weekTicketTotals.push(weekTickets > 0 ? weekTickets : null);
 
             if (costCoverage.daysWithData.length === 0) {
                 weekCostTotals.push(null);
@@ -1960,6 +1990,24 @@
             });
         }
 
+        const hasTicketData = weekTicketTotals.some(v => v !== null);
+        if (hasTicketData) {
+            trendDatasets.push({
+                label: '{{ _("Tickets") }}',
+                data: weekTicketTotals,
+                type: 'line',
+                yAxisID: 'yTickets',
+                borderColor: 'rgb(168, 85, 247)',
+                backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                borderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: false,
+                tension: 0.3,
+                stack: undefined,
+            });
+        }
+
         trendChart = new Chart(trendCtx, {
             type: 'bar',
             data: {
@@ -1982,6 +2030,9 @@
                                 if (context.parsed.y === null) {
                                     return `${context.dataset.label}: {{ _("No data") }}`;
                                 }
+                                if (context.dataset.yAxisID === 'yTickets') {
+                                    return `${context.dataset.label}: ${context.parsed.y}`;
+                                }
                                 return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
                             }
                         },
@@ -2001,7 +2052,6 @@
                         stacked: true,
                         ticks: {
                             callback: function(value) {
-                                // Shorten to millions if needed
                                 if (value >= 1000000) {
                                     return 'Gs ' + (value / 1000000).toFixed(1) + 'M';
                                 }
@@ -2009,6 +2059,18 @@
                             }
                         }
                     },
+                    ...(hasTicketData ? {
+                        yTickets: {
+                            type: 'linear',
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: { drawOnChartArea: false },
+                            ticks: {
+                                precision: 0,
+                                callback: v => v + ' tkts'
+                            }
+                        }
+                    } : {}),
                     x: {
                         stacked: true,
                         grid: {
