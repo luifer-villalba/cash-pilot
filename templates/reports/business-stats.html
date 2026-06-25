@@ -1,5 +1,6 @@
 <!-- File: templates/reports/business-stats.html -->
 {% extends "reports/base.html" %}
+{% from "macros/report_components.html" import alerts_banner, summary_banner %}
 
 {% block report_title %}{{ _('Business Statistics') }}{% endblock %}
 
@@ -44,6 +45,10 @@
             </div>
         </div>
     </div>
+
+    <!-- Insights: Summary & Alerts -->
+    {{ summary_banner(summary) }}
+    {{ alerts_banner(alerts) }}
 
     <!-- Date Range Selector -->
     <div class="bg-base-100 border border-base-300 rounded-lg shadow-sm p-3">

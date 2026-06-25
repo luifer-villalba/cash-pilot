@@ -2,8 +2,7 @@
 """Business statistics report route."""
 
 import asyncio
-from calendar import monthrange
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Query, Request
@@ -18,130 +17,25 @@ from cashpilot.api.utils import (
     get_translation_function,
     templates,
 )
+from cashpilot.core.cache import get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession, DailyReconciliation
 from cashpilot.models.user import User
+from cashpilot.services.insights import generate_alerts, generate_business_stats_summary
+from cashpilot.services.report_utils import (
+    calculate_comparison_range,
+    calculate_date_range,
+    calculate_delta,
+    format_date_range,
+)
 from cashpilot.utils.datetime import today_local
 
 logger = get_logger(__name__)
 
-# Threshold for determining neutral delta direction (percentage)
-NEUTRAL_DELTA_THRESHOLD_PERCENT = 3
-
 router = APIRouter(prefix="/reports", tags=["reports"])
 
-
-def start_of_week(day: date, week_start: int = 0) -> date:
-    """Get week start for a date (default Monday=0)."""
-    return day - timedelta(days=(day.weekday() - week_start) % 7)
-
-
-def start_of_month(day: date) -> date:
-    """Get first day of month for a date."""
-    return day.replace(day=1)
-
-
-def end_of_month(day: date) -> date:
-    """Get last day of month for a date."""
-    last_day = monthrange(day.year, day.month)[1]
-    return day.replace(day=last_day)
-
-
-def previous_month_anchor(day: date) -> tuple[int, int]:
-    """Return (year, month) for the month prior to the given date."""
-    if day.month == 1:
-        return day.year - 1, 12
-    return day.year, day.month - 1
-
-
-def mtd_previous_month_range(today: date) -> tuple[date, date]:
-    """Get previous month MTD range aligned to today's day-of-month."""
-    prev_year, prev_month = previous_month_anchor(today)
-    last_day_prev = monthrange(prev_year, prev_month)[1]
-    prev_to = date(prev_year, prev_month, min(today.day, last_day_prev))
-    prev_from = date(prev_year, prev_month, 1)
-    return prev_from, prev_to
-
-
-def calculate_date_range(
-    view: str, from_date: str | None = None, to_date: str | None = None
-) -> tuple[date, date]:
-    """Calculate date range based on view type."""
-    today = today_local()
-
-    if view == "today":
-        return today, today
-    if view == "yesterday":
-        yesterday = today - timedelta(days=1)
-        return yesterday, yesterday
-    if view == "this_week":
-        week_start = start_of_week(today)
-        return week_start, today
-    if view == "last_week":
-        week_start = start_of_week(today) - timedelta(days=7)
-        return week_start, week_start + timedelta(days=6)
-    if view == "this_month":
-        return start_of_month(today), today
-    if view == "last_month":
-        prev_year, prev_month = previous_month_anchor(today)
-        month_start = date(prev_year, prev_month, 1)
-        return month_start, end_of_month(month_start)
-    if view == "custom" and from_date and to_date:
-        # Custom range
-        try:
-            from_dt = date.fromisoformat(from_date)
-            to_dt = date.fromisoformat(to_date)
-        except ValueError as e:
-            # Invalid date format
-            raise ValueError("Invalid date format. Please use YYYY-MM-DD format.") from e
-
-        # Validate date range
-        if to_dt > today:
-            raise ValueError("End date cannot be in the future.")
-
-        if from_dt > to_dt:
-            # Invalid range: from_date after to_date
-            raise ValueError("Start date must be before or equal to end date.")
-
-        # Limit date range to prevent performance issues
-        range_days = (to_dt - from_dt).days
-        if range_days > 365:
-            raise ValueError("Date range cannot exceed 365 days. Please select a smaller range.")
-
-        return from_dt, to_dt
-
-    # Default to today
-    return today, today
-
-
-def calculate_previous_period(from_date: date, to_date: date) -> tuple[date, date]:
-    """Calculate previous period of same duration."""
-    duration = (to_date - from_date).days
-    prev_to = from_date - timedelta(days=1)
-    prev_from = prev_to - timedelta(days=duration)
-    return prev_from, prev_to
-
-
-def calculate_comparison_range(
-    view: str, current_from: date, current_to: date
-) -> tuple[date, date]:
-    """Calculate comparison range based on view type."""
-    if view in {"today", "yesterday"}:
-        prev_day = current_from - timedelta(days=7)
-        return prev_day, prev_day
-    if view == "this_week":
-        return current_from - timedelta(days=7), current_to - timedelta(days=7)
-    if view == "last_week":
-        return current_from - timedelta(days=7), current_to - timedelta(days=7)
-    if view == "this_month":
-        return mtd_previous_month_range(current_to)
-    if view == "last_month":
-        prev_year, prev_month = previous_month_anchor(current_from)
-        prev_start = date(prev_year, prev_month, 1)
-        return prev_start, end_of_month(prev_start)
-    # Custom or fallback: previous period same duration
-    return calculate_previous_period(current_from, current_to)
+BUSINESS_STATS_CACHE_VERSION = "v1"
 
 
 async def aggregate_business_metrics(
@@ -376,56 +270,6 @@ async def aggregate_business_metrics(
     return metrics_by_business
 
 
-def calculate_delta(current: Decimal | int, previous: Decimal | int) -> dict:
-    """Calculate delta percentage and direction.
-
-    Returns dict with value, percent, direction, color.
-    """
-    # Convert to Decimal for calculations
-    current_decimal = Decimal(str(current))
-    previous_decimal = Decimal(str(previous))
-
-    if previous_decimal == 0:
-        if current_decimal == 0:
-            return {
-                "value": Decimal("0"),
-                "percent": Decimal("0"),
-                "direction": "neutral",
-                "color": "neutral",
-            }
-        else:
-            return {
-                "value": current_decimal,
-                "percent": Decimal("100"),
-                "direction": "up",
-                "color": "success",
-            }
-
-    delta_value = current_decimal - previous_decimal
-    delta_percent = (delta_value / previous_decimal) * 100
-
-    # Round to 1 decimal place using Decimal to avoid float precision issues
-    delta_percent = delta_percent.quantize(Decimal("0.1"))
-
-    # Determine direction and color
-    if abs(delta_percent) <= NEUTRAL_DELTA_THRESHOLD_PERCENT:
-        direction = "neutral"
-        color = "neutral"
-    elif delta_percent > 0:
-        direction = "up"
-        color = "success"
-    else:
-        direction = "down"
-        color = "error"
-
-    return {
-        "value": delta_value,
-        "percent": Decimal(str(delta_percent)),
-        "direction": direction,
-        "color": color,
-    }
-
-
 @router.get("/business-stats", response_class=HTMLResponse)
 async def business_stats(
     request: Request,
@@ -480,9 +324,32 @@ async def business_stats(
     prev_from, prev_to = calculate_comparison_range(view, current_from, current_to)
 
     # Aggregate metrics for current and previous periods concurrently
+    # Cache keyed by date range (not user — RBAC filtering happens after)
+    today_date = today_local()
+
+    def _metrics_cache_key(fd: date, td: date) -> str:
+        return make_cache_key(
+            f"biz_stats_{BUSINESS_STATS_CACHE_VERSION}",
+            from_date=str(fd),
+            to_date=str(td),
+        )
+
+    def _metrics_cache_ttl(fd: date, td: date) -> int:
+        # 5 min if the range includes today, 1 hour otherwise (historical = immutable)
+        return 300 if td >= today_date else 3600
+
+    async def _get_or_fetch_metrics(fd: date, td: date) -> dict:
+        key = _metrics_cache_key(fd, td)
+        cached = get_cache(key)
+        if cached is not None:
+            return cached
+        result = await aggregate_business_metrics(db, fd, td)
+        set_cache(key, result, ttl_seconds=_metrics_cache_ttl(fd, td))
+        return result
+
     current_metrics, previous_metrics = await asyncio.gather(
-        aggregate_business_metrics(db, current_from, current_to),
-        aggregate_business_metrics(db, prev_from, prev_to),
+        _get_or_fetch_metrics(current_from, current_to),
+        _get_or_fetch_metrics(prev_from, prev_to),
     )
 
     # Filter businesses by user role (AC-01, AC-02)
@@ -643,19 +510,6 @@ async def business_stats(
             continue
         totals_deltas[key] = calculate_delta(totals_current[key], totals_previous[key])
 
-    # Format dates for display - more readable format
-    def format_date_range(from_d: date, to_d: date) -> str:
-        """Format date range concisely."""
-        if from_d == to_d:
-            # Single day: "Dec 31, 2025"
-            return from_d.strftime("%b %d, %Y")
-        else:
-            # Range: "Dec 25 - Dec 31, 2025" (only show year once)
-            if from_d.year == to_d.year:
-                return f"{from_d.strftime('%b %d')} - {to_d.strftime('%b %d, %Y')}"
-            else:
-                return f"{from_d.strftime('%b %d, %Y')} - {to_d.strftime('%b %d, %Y')}"
-
     current_period_label = format_date_range(current_from, current_to)
     previous_period_label = format_date_range(prev_from, prev_to)
 
@@ -670,6 +524,22 @@ async def business_stats(
     }
 
     comparison_label = comparison_label_map.get(view, _("Compared to the previous period"))
+
+    # --- Insights ---
+    totals_growth = totals_deltas.get("total_sales", {}).get("percent")
+    top_business_name = business_stats_list[0]["business"].name if business_stats_list else ""
+    summary = generate_business_stats_summary(
+        total_sales=totals_current["total_sales"],
+        previous_sales=totals_previous["total_sales"],
+        growth_percent=totals_growth,
+        business_count=len(business_stats_list),
+        period_label=current_period_label,
+        top_business_name=top_business_name,
+    )
+    alerts = generate_alerts(
+        growth_percent=totals_growth,
+        period_label=previous_period_label,
+    )
 
     return templates.TemplateResponse(
         request,
@@ -694,5 +564,7 @@ async def business_stats(
             "locale": locale,
             "_": _,
             "date_error": date_error,
+            "summary": summary,
+            "alerts": alerts,
         },
     )

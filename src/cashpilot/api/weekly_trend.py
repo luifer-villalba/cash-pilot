@@ -27,6 +27,12 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession, DailyReconciliation, User
 from cashpilot.models.report_schemas import DayOfWeekRevenue, WeeklyRevenueTrend
+from cashpilot.services.insights import (
+    detect_revenue_anomalies,
+    generate_alerts,
+    generate_weekly_summary,
+)
+from cashpilot.services.report_utils import calculate_growth_percent, get_trend_arrow
 
 logger = get_logger(__name__)
 
@@ -37,79 +43,17 @@ CACHE_VERSION = "v5"
 
 
 def clear_old_cache_versions() -> None:
-    """Clear cache entries from previous versions.
-
-    This function should be called during application startup to clean up
-    any cache entries from previous versions. Since the cache is in-memory,
-    this is only necessary after a deployment without restart, but provides
-    a clean way to handle version migrations.
-    """
-    # Clear all weekly_trend entries that don't match current version
-    # In a production system with persistent cache (Redis), you would
-    # iterate through keys and delete non-matching versions
-    for old_version in ["v1", "v2", "v3", "v4"]:  # Add old versions here
+    for old_version in ["v1", "v2", "v3", "v4"]:
         clear_cache(f"weekly_trend_{old_version}")
     logger.info(f"Cleared old cache versions. Current version: {CACHE_VERSION}")
 
 
 def get_week_dates(year: int, week: int) -> tuple[date, date]:
-    """
-    Get the start (Monday) and end (Sunday) dates for an ISO week.
-
-    Args:
-        year: ISO year
-        week: ISO week number (1-53)
-
-    Returns:
-        Tuple of (start_date, end_date)
-    """
-    # ISO week date: Jan 4th is always in week 1
+    """Get the start (Monday) and end (Sunday) dates for an ISO week."""
     jan4 = date(year, 1, 4)
     week_start = jan4 - timedelta(days=jan4.weekday()) + timedelta(weeks=week - 1)
     week_end = week_start + timedelta(days=6)
     return week_start, week_end
-
-
-def calculate_growth_percent(current: Decimal, previous: Decimal) -> Decimal | None:
-    """
-    Calculate week-over-week growth percentage.
-
-    Formula: ((current - previous) / previous) * 100
-
-    Args:
-        current: Current week revenue (must be a non-negative Decimal)
-        previous: Previous week revenue (must be a non-negative Decimal)
-
-    Returns:
-        Growth percentage or None if previous is 0
-
-    Raises:
-        ValueError: If either current or previous is negative.
-    """
-    if current < 0 or previous < 0:
-        raise ValueError("current and previous revenue must be non-negative")
-    if previous == 0:
-        return None
-    return ((current - previous) / previous * 100).quantize(Decimal("0.1"))
-
-
-def get_trend_arrow(growth: Decimal | None) -> str:
-    """
-    Get trend arrow based on growth percentage.
-
-    Args:
-        growth: Growth percentage
-
-    Returns:
-        Trend arrow: ↑ (positive), ↓ (negative), → (zero or None)
-    """
-    if growth is None:
-        return "→"
-    if growth > 0:
-        return "↑"
-    elif growth < 0:
-        return "↓"
-    return "→"
 
 
 @router.get("/weekly-trend/data", response_model=WeeklyRevenueTrend)
@@ -380,6 +324,35 @@ async def get_weekly_trend(
     if previous_week_total > 0:
         week_over_week_growth = calculate_growth_percent(current_week_total, previous_week_total)
 
+    # --- Insights ---
+    from cashpilot.utils.datetime import today_local as _today_local
+
+    _today = _today_local()
+    _week_start, _ = get_week_dates(year, week)
+    _elapsed_days = min((_today - _week_start).days + 1, 7) if _week_start <= _today else 7
+
+    all_week_dicts = [
+        {"date": d.date, "revenue": d.revenue, "has_data": d.has_data}
+        for week_info in weeks_data
+        for d in week_info["days"]
+    ]
+    anomalies = detect_revenue_anomalies(all_week_dicts)
+    days_with_data = len([d for d in weeks_data[-1]["days"] if d.has_data])
+    zero_revenue_days = max(0, _elapsed_days - days_with_data)
+    summary = generate_weekly_summary(
+        current_week_total=current_week_total,
+        previous_week_total=previous_week_total,
+        growth_percent=week_over_week_growth,
+        highest_day=highest_day,
+        lowest_day=lowest_day,
+        days_with_data=days_with_data,
+    )
+    alerts = generate_alerts(
+        growth_percent=week_over_week_growth,
+        anomalies=anomalies,
+        zero_revenue_days=zero_revenue_days,
+    )
+
     # Prepare response
     result = WeeklyRevenueTrend(
         business_id=business_uuid,
@@ -397,6 +370,9 @@ async def get_weekly_trend(
         current_week_card_total=current_week_card_total,
         current_week_bank_transfer_total=current_week_bank_transfer_total,
         current_week_credit_total=current_week_credit_total,
+        summary=summary,
+        alerts=alerts,
+        anomalies=[{**a, "date": str(a["date"])} for a in anomalies],
     )
 
     # Cache the result

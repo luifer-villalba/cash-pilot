@@ -1,0 +1,108 @@
+{# Shared macros for all reports.
+   Import with: {% from "macros/report_components.html" import metric_card, delta_badge, trend_badge, alerts_banner, summary_banner %}
+#}
+
+{# Metric card with optional delta indicator.
+   label: display name
+   value: formatted string (e.g. "Gs 1.234.567")
+   delta: dict with keys direction (up/down/neutral), percent, color — or None
+   size: "md" (default) | "lg" | "sm"
+#}
+{% macro metric_card(label, value, delta=None, size="md", extra_class="") %}
+<div class="bg-base-100 border border-base-300 rounded-xl p-3 shadow-sm {{ extra_class }}">
+    <div class="text-xs font-semibold uppercase tracking-wider text-base-content/60 mb-1">{{ label }}</div>
+    <div class="font-mono tabular-nums font-bold
+        {% if size == 'lg' %}text-2xl text-primary
+        {% elif size == 'sm' %}text-base text-base-content
+        {% else %}text-xl text-base-content{% endif %}">
+        {{ value }}
+    </div>
+    {% if delta %}
+        {{ delta_badge(delta) }}
+    {% endif %}
+</div>
+{% endmacro %}
+
+{# Delta badge showing direction and percent change.
+   delta: dict with direction (up/down/neutral), percent, color
+#}
+{% macro delta_badge(delta) %}
+<div class="mt-1 text-xs font-medium
+    {% if delta.direction == 'up' %}text-success
+    {% elif delta.direction == 'down' %}text-error
+    {% else %}text-base-content/40{% endif %}">
+    {% if delta.direction == 'up' %}↑ +{{ delta.percent }}%
+    {% elif delta.direction == 'down' %}↓ {{ delta.percent }}%
+    {% else %}± {{ delta.percent }}%{% endif %}
+</div>
+{% endmacro %}
+
+{# Single trend arrow badge (used in day-by-day tables).
+   arrow: "↑" | "↓" | "→"
+   percent: Decimal or None
+#}
+{% macro trend_badge(arrow, percent=None) %}
+<span class="inline-flex items-center gap-0.5 text-xs font-semibold
+    {% if arrow == '↑' %}text-success
+    {% elif arrow == '↓' %}text-error
+    {% else %}text-base-content/40{% endif %}">
+    {{ arrow }}
+    {% if percent is not none and percent != 0 %}
+        <span class="text-xs">{{ percent | abs | round(1) }}%</span>
+    {% endif %}
+</span>
+{% endmacro %}
+
+{# Alerts banner — renders a list of alert dicts [{level, message}].
+   Levels: success, warning, error
+   Skip render if alerts list is empty.
+#}
+{% macro alerts_banner(alerts) %}
+{% if alerts %}
+<div class="space-y-2">
+    {% for alert in alerts %}
+    <div role="alert" class="alert
+        {% if alert.level == 'success' %}alert-success
+        {% elif alert.level == 'error' %}alert-error
+        {% else %}alert-warning{% endif %}
+        shadow-sm rounded-xl border-none py-2 px-3">
+        <svg class="stroke-current shrink-0 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            {% if alert.level == 'success' %}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {% elif alert.level == 'error' %}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {% else %}
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.1 0 1.79-1.18 1.24-2.15L13.24 4.94c-.55-.97-1.93-.97-2.48 0L3.83 16.85c-.55.97.14 2.15 1.24 2.15z" />
+            {% endif %}
+        </svg>
+        <span class="text-sm">{{ alert.message }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Summary banner — renders a natural language paragraph above the report content. #}
+{% macro summary_banner(summary) %}
+{% if summary %}
+<div class="bg-base-200/60 border border-base-300 rounded-xl px-4 py-3 text-sm text-base-content/80 leading-relaxed">
+    <span class="font-semibold text-primary mr-1">📊</span>{{ summary }}
+</div>
+{% endif %}
+{% endmacro %}
+
+{# Period selector tab bar.
+   current_view: active view key
+   base_url: e.g. "/reports/business-stats"
+   views: list of {key, label} dicts
+#}
+{% macro period_tabs(current_view, base_url, views) %}
+<div class="flex flex-wrap gap-2 items-center">
+    {% for v in views %}
+    <a href="{{ base_url }}?view={{ v.key }}"
+       class="btn btn-sm {% if current_view == v.key %}btn-primary{% else %}btn-outline{% endif %} transition-all hover:scale-[1.02] active:scale-[0.98]">
+        {{ v.label }}
+    </a>
+    {% endfor %}
+</div>
+{% endmacro %}

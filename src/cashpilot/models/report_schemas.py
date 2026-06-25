@@ -138,6 +138,10 @@ class DailyRevenueSummary(BaseModel):
         default=[], description="Revenue for the last 7 days"
     )
 
+    # Insights
+    summary: str = Field(default="", description="Natural language summary of the day")
+    alerts: list[dict] = Field(default=[], description="Smart alerts for this day")
+
 
 class DayOfWeekRevenue(BaseModel):
     """Revenue data for a single day of the week.
@@ -246,6 +250,11 @@ class WeeklyRevenueTrend(BaseModel):
     current_week_credit_total: Decimal = Field(
         default=Decimal("0.00"), description="Total credit sales for current week"
     )
+
+    # Insights
+    summary: str = Field(default="", description="Natural language summary of the week")
+    alerts: list[dict] = Field(default=[], description="Smart alerts for anomalies or trends")
+    anomalies: list[dict] = Field(default=[], description="Statistical anomalies in daily revenue")
 
 
 class DayOfMonthRevenue(BaseModel):
@@ -356,3 +365,8 @@ class MonthlyRevenueTrend(BaseModel):
     current_month_credit_total: Decimal = Field(
         default=Decimal("0.00"), description="Total credit sales for current month"
     )
+
+    # Insights
+    summary: str = Field(default="", description="Natural language summary of the month")
+    alerts: list[dict] = Field(default=[], description="Smart alerts for anomalies or trends")
+    anomalies: list[dict] = Field(default=[], description="Statistical anomalies in daily revenue")

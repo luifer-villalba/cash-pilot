@@ -134,6 +134,9 @@
 
     <!-- Report Content -->
     <div id="reportContent" class="hidden space-y-6">
+        <!-- Insights: summary & alerts (populated by JS after data loads) -->
+        <div id="insightsSection" class="space-y-2 hidden"></div>
+
         <!-- Early Month Warning -->
         <div id="earlyMonthWarning" class="hidden alert alert-warning shadow-lg">
             <div class="flex items-start gap-3">
@@ -1093,8 +1096,49 @@
         // Create chart
         createChart(data, year, month);
 
+        // Render insights
+        renderInsights(data);
+
         // Show report content
         document.getElementById('reportContent').classList.remove('hidden');
+    }
+
+    function renderInsights(data) {
+        const section = document.getElementById('insightsSection');
+        if (!section) return;
+        const parts = [];
+
+        if (data.summary) {
+            parts.push(`
+                <div class="bg-base-200/60 border border-base-300 rounded-xl px-4 py-3 text-sm text-base-content/80 leading-relaxed">
+                    <span class="font-semibold text-primary mr-1">📊</span>${data.summary}
+                </div>`);
+        }
+
+        if (data.alerts && data.alerts.length > 0) {
+            const levelClass = { success: 'alert-success', warning: 'alert-warning', error: 'alert-error' };
+            const icons = {
+                success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />',
+                error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />',
+                warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.1 0 1.79-1.18 1.24-2.15L13.24 4.94c-.55-.97-1.93-.97-2.48 0L3.83 16.85c-.55.97.14 2.15 1.24 2.15z" />'
+            };
+            data.alerts.forEach(alert => {
+                const cls = levelClass[alert.level] || 'alert-warning';
+                const icon = icons[alert.level] || icons.warning;
+                parts.push(`
+                    <div role="alert" class="alert ${cls} shadow-sm rounded-xl border-none py-2 px-3">
+                        <svg class="stroke-current shrink-0 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">${icon}</svg>
+                        <span class="text-sm">${alert.message}</span>
+                    </div>`);
+            });
+        }
+
+        if (parts.length > 0) {
+            section.innerHTML = parts.join('');
+            section.classList.remove('hidden');
+        } else {
+            section.classList.add('hidden');
+        }
     }
 
     let comparisonChart = null;

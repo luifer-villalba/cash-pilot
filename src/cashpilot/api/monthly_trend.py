@@ -13,6 +13,7 @@ This approach avoids serving stale data after deployments while allowing the in-
 cache to self-clean over time.
 """
 
+import calendar
 from datetime import date, timedelta
 from decimal import Decimal
 from uuid import UUID
@@ -27,6 +28,12 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import CashSession, DailyReconciliation, User
 from cashpilot.models.report_schemas import DayOfMonthRevenue, MonthlyRevenueTrend
+from cashpilot.services.insights import (
+    detect_revenue_anomalies,
+    generate_alerts,
+    generate_monthly_summary,
+)
+from cashpilot.services.report_utils import calculate_growth_percent, get_trend_arrow
 
 logger = get_logger(__name__)
 
@@ -37,79 +44,17 @@ CACHE_VERSION = "v2"
 
 
 def clear_old_cache_versions() -> None:
-    """Clear cache entries from previous versions.
-
-    This function should be called during application startup to clean up
-    any cache entries from previous versions. Since the cache is in-memory,
-    this is only necessary after a deployment without restart, but provides
-    a clean way to handle version migrations.
-    """
-    # Clear all monthly_trend entries that don't match current version
-    # In a production system with persistent cache (Redis), you would
-    # iterate through keys and delete non-matching versions
     logger.info(f"Cleared old cache versions. Current version: {CACHE_VERSION}")
 
 
 def get_month_dates(year: int, month: int) -> tuple[date, date]:
-    """
-    Get the start and end dates for a month.
-
-    Args:
-        year: Year
-        month: Month (1-12)
-
-    Returns:
-        Tuple of (start_date, end_date)
-    """
+    """Get the start and end dates for a calendar month."""
     start_date = date(year, month, 1)
-    # Get last day of month
     if month == 12:
         end_date = date(year + 1, 1, 1) - timedelta(days=1)
     else:
         end_date = date(year, month + 1, 1) - timedelta(days=1)
     return start_date, end_date
-
-
-def calculate_growth_percent(current: Decimal, previous: Decimal) -> Decimal | None:
-    """
-    Calculate month-over-month growth percentage.
-
-    Formula: ((current - previous) / previous) * 100
-
-    Args:
-        current: Current month revenue (must be a non-negative Decimal)
-        previous: Previous month revenue (must be a non-negative Decimal)
-
-    Returns:
-        Growth percentage or None if previous is 0
-
-    Raises:
-        ValueError: If either current or previous is negative.
-    """
-    if current < 0 or previous < 0:
-        raise ValueError("current and previous revenue must be non-negative")
-    if previous == 0:
-        return None
-    return ((current - previous) / previous * 100).quantize(Decimal("0.1"))
-
-
-def get_trend_arrow(growth: Decimal | None) -> str:
-    """
-    Get trend arrow based on growth percentage.
-
-    Args:
-        growth: Growth percentage
-
-    Returns:
-        Trend arrow: ↑ (positive), ↓ (negative), → (zero or None)
-    """
-    if growth is None:
-        return "→"
-    if growth > 0:
-        return "↑"
-    elif growth < 0:
-        return "↓"
-    return "→"
 
 
 @router.get("/monthly-trend/data", response_model=MonthlyRevenueTrend)
@@ -397,6 +342,29 @@ async def get_monthly_trend(
             current_month_total, previous_month_total
         )
 
+    # --- Insights ---
+    all_month_dicts = [
+        {"date": d.date, "revenue": d.revenue, "has_data": d.has_data}
+        for month_info in months_data
+        for d in month_info["days"]
+    ]
+    anomalies = detect_revenue_anomalies(all_month_dicts)
+    days_with_data = len([d for d in months_data[-1]["days"] if d.has_data])
+    month_name = calendar.month_name[month]
+    summary = generate_monthly_summary(
+        current_month_total=current_month_total,
+        previous_month_total=previous_month_total,
+        growth_percent=month_over_month_growth,
+        highest_day=highest_day,
+        lowest_day=lowest_day,
+        days_with_data=days_with_data,
+        month_name=month_name,
+    )
+    alerts = generate_alerts(
+        growth_percent=month_over_month_growth,
+        anomalies=anomalies,
+    )
+
     # Prepare response
     result = MonthlyRevenueTrend(
         business_id=business_uuid,
@@ -414,6 +382,9 @@ async def get_monthly_trend(
         current_month_card_total=current_month_card_total,
         current_month_bank_transfer_total=current_month_bank_transfer_total,
         current_month_credit_total=current_month_credit_total,
+        summary=summary,
+        alerts=alerts,
+        anomalies=[{**a, "date": str(a["date"])} for a in anomalies],
     )
 
     # Cache the result
