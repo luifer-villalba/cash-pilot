@@ -13,6 +13,7 @@ This approach avoids serving stale data after deployments while allowing the in-
 cache to self-clean over time.
 """
 
+import calendar
 from datetime import date, timedelta
 from decimal import Decimal
 from uuid import UUID
@@ -20,8 +21,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-import calendar
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.core.cache import get_cache, make_cache_key, set_cache

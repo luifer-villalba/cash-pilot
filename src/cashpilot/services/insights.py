@@ -6,7 +6,6 @@ Provides:
 - Natural language summaries (template-driven, no LLM dependency)
 """
 
-from datetime import date
 from decimal import Decimal
 from statistics import mean, stdev
 from typing import Any
@@ -86,7 +85,11 @@ def generate_alerts(
             alerts.append(
                 {
                     "level": "error",
-                    "message": f"Revenue dropped {abs(g):.1f}% vs prior period{' (' + period_label + ')' if period_label else ''}.",
+                    "message": (
+                        f"Revenue dropped {abs(g):.1f}% vs prior period"
+                        + (f" ({period_label})" if period_label else "")
+                        + "."
+                    ),
                 }
             )
         elif g >= GROWTH_ALERT_POSITIVE_THRESHOLD:
@@ -101,13 +104,18 @@ def generate_alerts(
         alerts.append(
             {
                 "level": "warning",
-                "message": f"{flag_rate_percent:.1f}% of sessions are flagged — review recommended.",
+                "message": (
+                    f"{flag_rate_percent:.1f}% of sessions are flagged"
+                    " — review recommended."
+                ),
             }
         )
 
     if anomalies:
         for a in anomalies:
-            day_str = a["date"].strftime("%b %d") if hasattr(a["date"], "strftime") else str(a["date"])
+            day_str = (
+                a["date"].strftime("%b %d") if hasattr(a["date"], "strftime") else str(a["date"])
+            )
             direction_word = "unusually high" if a["direction"] == "high" else "unusually low"
             alerts.append(
                 {
@@ -165,22 +173,22 @@ def generate_weekly_summary(
     if growth_percent is not None:
         g = float(growth_percent)
         if g > 0:
-            lines.append(f"That's {g:.1f}% above last week — an improvement of {_fmt_currency(current_week_total - previous_week_total)}.")
+            diff = _fmt_currency(current_week_total - previous_week_total)
+            lines.append(f"That's {g:.1f}% above last week — an improvement of {diff}.")
         elif g < 0:
-            lines.append(f"That's {abs(g):.1f}% below last week — a decline of {_fmt_currency(previous_week_total - current_week_total)}.")
+            diff = _fmt_currency(previous_week_total - current_week_total)
+            lines.append(f"That's {abs(g):.1f}% below last week — a decline of {diff}.")
         else:
             lines.append("Revenue was flat compared to last week.")
     elif previous_week_total == 0:
         lines.append("No comparison data is available for the previous week.")
 
     if highest_day:
-        lines.append(
-            f"Best day: {highest_day.get('day_name', '')} ({_fmt_currency(highest_day.get('revenue', 0))})."
-        )
+        best_rev = _fmt_currency(highest_day.get("revenue", 0))
+        lines.append(f"Best day: {highest_day.get('day_name', '')} ({best_rev}).")
     if lowest_day and lowest_day != highest_day:
-        lines.append(
-            f"Slowest day: {lowest_day.get('day_name', '')} ({_fmt_currency(lowest_day.get('revenue', 0))})."
-        )
+        slow_rev = _fmt_currency(lowest_day.get("revenue", 0))
+        lines.append(f"Slowest day: {lowest_day.get('day_name', '')} ({slow_rev}).")
 
     return " ".join(lines)
 
@@ -215,9 +223,8 @@ def generate_monthly_summary(
             lines.append("Revenue was flat compared to the previous month.")
 
     if highest_day:
-        lines.append(
-            f"Peak day: {highest_day.get('day_number', '')} ({_fmt_currency(highest_day.get('revenue', 0))})."
-        )
+        peak_rev = _fmt_currency(highest_day.get("revenue", 0))
+        lines.append(f"Peak day: {highest_day.get('day_number', '')} ({peak_rev}).")
 
     return " ".join(lines)
 
@@ -239,8 +246,9 @@ def generate_daily_summary(
     if total_sessions == 0:
         return f"No closed sessions were found{period}."
 
+    sales_str = _fmt_currency(total_sales)
     lines.append(
-        f"{total_sessions} session(s) were closed{period}, generating {_fmt_currency(total_sales)} in total sales."
+        f"{total_sessions} session(s) were closed{period}, generating {sales_str} in total sales."
     )
     lines.append(f"Net earnings: {_fmt_currency(net_earnings)}.")
 

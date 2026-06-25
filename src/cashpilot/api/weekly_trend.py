@@ -325,10 +325,16 @@ async def get_weekly_trend(
         week_over_week_growth = calculate_growth_percent(current_week_total, previous_week_total)
 
     # --- Insights ---
-    current_week_dicts = [
-        {"date": d.date, "revenue": d.revenue, "has_data": d.has_data}
-        for d in weeks_data[-1]["days"]
-    ]
+    from cashpilot.utils.datetime import today_local as _today_local
+
+    _today = _today_local()
+    _week_start, _ = get_week_dates(year, week)
+    _elapsed_days = (
+        min((_today - _week_start).days + 1, 7)
+        if _week_start <= _today
+        else 7
+    )
+
     all_week_dicts = [
         {"date": d.date, "revenue": d.revenue, "has_data": d.has_data}
         for week_info in weeks_data
@@ -336,6 +342,7 @@ async def get_weekly_trend(
     ]
     anomalies = detect_revenue_anomalies(all_week_dicts)
     days_with_data = len([d for d in weeks_data[-1]["days"] if d.has_data])
+    zero_revenue_days = max(0, _elapsed_days - days_with_data)
     summary = generate_weekly_summary(
         current_week_total=current_week_total,
         previous_week_total=previous_week_total,
@@ -347,7 +354,7 @@ async def get_weekly_trend(
     alerts = generate_alerts(
         growth_percent=week_over_week_growth,
         anomalies=anomalies,
-        zero_revenue_days=7 - days_with_data if days_with_data < 7 else 0,
+        zero_revenue_days=zero_revenue_days,
     )
 
     # Prepare response

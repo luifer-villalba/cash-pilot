@@ -22,24 +22,35 @@ from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.models import Business, CashSession, User
 from cashpilot.services.insights import generate_alerts
-from cashpilot.services.report_utils import calculate_date_range, calculate_previous_period
+from cashpilot.services.report_utils import (
+    calculate_date_range,
+    calculate_previous_period,
+    end_of_month,
+    start_of_month,
+    start_of_week,
+)
 from cashpilot.utils.datetime import today_local
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
-_RANGE_KEY_TO_VIEW = {
-    "this_week": "this_week",
-    "last_week": "last_week",
-    "this_month": "this_month",
-    "last_month": "last_month",
-}
-
-
 def _resolve_date_range(range_key: str, today: date) -> tuple[date, date]:
-    view = _RANGE_KEY_TO_VIEW.get(range_key, "this_week")
-    return calculate_date_range(view)
+    """Return a full calendar period (not MTD) for the given range key."""
+    from datetime import timedelta
+
+    if range_key == "this_week":
+        week_start = start_of_week(today)
+        return week_start, week_start + timedelta(days=6)
+    if range_key == "last_week":
+        return calculate_date_range("last_week")
+    if range_key == "this_month":
+        return start_of_month(today), end_of_month(today)
+    if range_key == "last_month":
+        return calculate_date_range("last_month")
+    # Default: current full week
+    week_start = start_of_week(today)
+    return week_start, week_start + timedelta(days=6)
 
 
 def _previous_period(from_date: date, to_date: date) -> tuple[date, date]:

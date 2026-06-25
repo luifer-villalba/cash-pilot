@@ -107,8 +107,18 @@ def calculate_delta(current: Decimal | int, previous: Decimal | int) -> dict:
 
     if previous_d == 0:
         if current_d == 0:
-            return {"value": Decimal("0"), "percent": Decimal("0"), "direction": "neutral", "color": "neutral"}
-        return {"value": current_d, "percent": Decimal("100"), "direction": "up", "color": "success"}
+            return {
+                "value": Decimal("0"),
+                "percent": Decimal("0"),
+                "direction": "neutral",
+                "color": "neutral",
+            }
+        return {
+            "value": current_d,
+            "percent": Decimal("100"),
+            "direction": "up",
+            "color": "success",
+        }
 
     delta_value = current_d - previous_d
     delta_percent = (delta_value / previous_d * 100).quantize(Decimal("0.1"))
@@ -228,7 +238,7 @@ def calculate_comparison_range(
 
 
 def format_date_range(from_d: date, to_d: date) -> str:
-    """Format a date range for display. Single day → 'Dec 31, 2025', range → 'Dec 25 - Dec 31, 2025'."""
+    """Format a date range for display."""
     if from_d == to_d:
         return from_d.strftime("%b %d, %Y")
     if from_d.year == to_d.year:
