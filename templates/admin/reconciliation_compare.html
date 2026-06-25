@@ -30,17 +30,6 @@
                 </svg>
                 {{ _('Edit Entries') }}
             </a>
-            <a
-                href="/admin/envelopes/date-range?from_date={{ comparison_date.isoformat() }}&to_date={{ comparison_date.isoformat() }}&preset=custom{% if selected_business_id %}&business_id={{ selected_business_id }}{% endif %}"
-                class="btn btn-outline btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150"
-                title="{{ _('Envelopes by Date Range') }}"
-                aria-label="{{ _('Envelopes by Date Range') }}"
-            >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7l9 6 9-6-9-4-9 4zm0 0v10l9 4 9-4V7"/>
-                </svg>
-                {{ _('Envelopes') }}
-            </a>
             <a href="/" class="btn btn-ghost btn-sm gap-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 transition-all duration-150">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
