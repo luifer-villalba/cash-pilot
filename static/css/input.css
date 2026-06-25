@@ -117,106 +117,135 @@ textarea:-ms-input-placeholder {
 
 @layer components {
   .dashboard-filters-body {
-    padding: 0.75rem;
+    padding: 0.65rem 0.75rem;
   }
 
-  .dashboard-filters-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .filters-primary-row {
+  /* ── Unified single-row filter layout ── */
+  .filters-main-row {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
-    gap: 0.35rem;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    row-gap: 0.45rem;
   }
 
-  .filters-primary-row .filters-item {
-    flex: 0 0 auto;
-  }
-
-  .filters-left {
+  /* Quick date preset buttons */
+  .filters-quick-group {
     display: flex;
     align-items: center;
-    flex: 1 1 auto;
-    gap: 0.35rem;
-    min-width: 0;
-  }
-
-  .filters-right {
-    display: flex;
-    align-items: center;
-    flex: 0 0 auto;
-  }
-
-  .filters-primary-row .filters-quick {
-    display: flex;
-    align-items: center;
-    flex-wrap: nowrap;
     gap: 0.25rem;
+    flex-shrink: 0;
   }
 
-  .filters-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  .filters-actions .btn {
-    transform: none;
-    padding-left: 0.45rem;
-    padding-right: 0.45rem;
-  }
-
-  .filters-actions .btn:hover,
-  .filters-actions .btn:active {
-    transform: none;
-  }
-
-  .filters-actions .btn-square {
-    width: 1.85rem;
-    min-width: 1.85rem;
-    height: 1.85rem;
-    padding: 0;
-  }
-
-  .filters-primary-row .preset-btn {
+  .filters-quick-group .preset-btn {
     min-height: 1.85rem;
     height: 1.85rem;
     padding-left: 0.45rem;
     padding-right: 0.45rem;
     font-size: 0.75rem;
+    white-space: nowrap;
+    transform: none;
   }
 
-  .filters-primary-row .preset-btn svg {
+  .filters-quick-group .preset-btn svg {
     width: 0.85rem;
     height: 0.85rem;
   }
 
-  .filters-compact-select {
+  /* Vertical separator between groups */
+  .filters-vsep {
+    width: 1px;
+    height: 1.4rem;
+    background-color: oklch(var(--bc) / 0.18);
+    flex-shrink: 0;
+    margin: 0 0.15rem;
+  }
+
+  /* Date range group */
+  .filters-date-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .filters-date-arrow {
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    color: oklch(var(--bc) / 0.4);
+    line-height: 1;
+  }
+
+  .filters-date-input,
+  .filters-cashier-input,
+  .filters-status-select,
+  .filters-business-select {
     min-height: 1.85rem;
     height: 1.85rem;
     font-size: 0.75rem;
+  }
+
+  .filters-date-input    { width: 8.5rem; }
+  .filters-cashier-input { width: 8.5rem; }
+  .filters-status-select { width: 5.25rem; }
+  .filters-business-select { width: 9.5rem; }
+
+  .filters-deleted-label {
+    flex-shrink: 0;
+    user-select: none;
   }
 
   #include-deleted-toggle {
     transform: scale(0.9);
   }
 
-  .filters-advanced-row {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  .filters-clear-btn {
+    min-height: 1.85rem;
+    height: 1.85rem;
+    font-size: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    flex-shrink: 0;
+    transform: none;
   }
 
-  .filters-advanced-row .filters-item {
-    flex: 0 0 auto;
+  /* ── Responsive breakpoints ── */
+
+  /* At ≤1100px: quick-group wraps to its own row; separators hide */
+  @media (max-width: 1100px) {
+    .filters-quick-group {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .filters-vsep {
+      display: none;
+    }
   }
 
+  /* At ≤640px: full-width stacked layout */
+  @media (max-width: 640px) {
+    .filters-main-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .filters-quick-group {
+      flex-wrap: wrap;
+    }
+    .filters-date-group {
+      width: 100%;
+    }
+    .filters-date-input {
+      flex: 1;
+      width: auto;
+    }
+    .filters-cashier-input,
+    .filters-status-select,
+    .filters-business-select {
+      width: 100%;
+    }
+  }
+
+  /* ── Shared dashboard filter helpers (used by other pages) ── */
   .dashboard-filters-row {
     display: flex;
     align-items: center;
@@ -244,13 +273,8 @@ textarea:-ms-input-placeholder {
     margin-right: 0.4rem;
   }
 
-  .dashboard-filters-header {
-    gap: 0.5rem;
-  }
-
-  .dashboard-filters-chips {
-    gap: 0.5rem;
-  }
+  .dashboard-filters-header { gap: 0.5rem; }
+  .dashboard-filters-chips  { gap: 0.5rem; }
 
   .dashboard-filters-body .label {
     padding-top: 0.125rem;
@@ -269,74 +293,9 @@ textarea:-ms-input-placeholder {
     height: 1.9rem;
   }
 
-  .dashboard-filters-body .btn {
-    min-height: 2rem;
-    height: 2rem;
-    font-size: 0.75rem;
-  }
-
-  .dashboard-filters-body .select,
-  .dashboard-filters-body .input {
-    min-height: 2rem;
-    height: 2rem;
-    font-size: 0.75rem;
-  }
-
-  .dashboard-filters-body .gap-4 {
-    gap: 0.5rem;
-  }
+  .dashboard-filters-body .gap-4 { gap: 0.5rem; }
 
   .dashboard-filters-body .space-y-6 > :not([hidden]) ~ :not([hidden]) {
     margin-top: 0.75rem;
-  }
-
-  @media (max-width: 640px) {
-    .filters-primary-row {
-      flex-wrap: nowrap;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .filters-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-
-    .filters-primary-row .filters-quick {
-      flex: 1 1 auto;
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
-    }
-
-    .filters-primary-row .preset-btn {
-      white-space: nowrap;
-    }
-
-    .filters-primary-row .preset-btn[data-preset="month"] {
-      display: none !important;
-    }
-
-    .filters-right {
-      flex: 0 0 auto;
-      justify-content: flex-end;
-    }
-
-    .filters-compact-select,
-    .dashboard-filters-body .select,
-    .dashboard-filters-body .input {
-      width: 100%;
-    }
-
-    .filters-advanced-row {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .filters-advanced-row .filters-item {
-      width: 100%;
-    }
   }
 }

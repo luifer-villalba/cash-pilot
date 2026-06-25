@@ -148,7 +148,12 @@
                 <div class="bg-base-200/50 border border-base-300 rounded-lg p-3 sm:p-4 space-y-4" data-business-id="{{ business.id }}">
                     <!-- Business Header with Closed Checkbox -->
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 pb-2 border-b border-base-300">
-                        <h3 class="text-sm sm:text-base font-semibold text-base-content break-words">{{ business.name }}</h3>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm sm:text-base font-semibold text-base-content break-words">{{ business.name }}</h3>
+                            {% if existing and existing.is_closed %}
+                            <span class="badge badge-warning badge-sm font-bold uppercase">{{ _('Closed') }}</span>
+                            {% endif %}
+                        </div>
                         <label class="flex items-center gap-2 cursor-pointer flex-shrink-0">
                             <input
                                 type="checkbox"
@@ -273,13 +278,14 @@
                                         type="text"
                                         name="total_sales_{{ business.id }}"
                                         id="total_sales_{{ business.id }}"
-                                        class="input input-bordered w-full font-mono pl-8 focus:input-info focus:ring-2 focus:ring-info/20 transition-all"
+                                        class="input input-bordered w-full font-mono pl-8 bg-base-200/60 cursor-not-allowed"
                                         placeholder="0"
                                         inputmode="decimal"
                                         data-currency-input
                                         data-total-sales-input
                                         autocomplete="off"
-                                        {% if existing and existing.is_closed %}disabled{% endif %}
+                                        readonly
+                                        tabindex="-1"
                                         {% if existing and existing.total_sales %}value="{{ existing.total_sales | format_currency_py }}"{% endif %}
                                     />
                                 </div>
@@ -301,8 +307,8 @@
                                         inputmode="decimal"
                                         data-currency-input
                                         data-sum-input
-                                        data-allow-closed
                                         autocomplete="off"
+                                        {% if existing and existing.is_closed %}disabled{% endif %}
                                         {% if existing and existing.daily_cost_total is not none %}value="{{ existing.daily_cost_total | format_currency_py }}"{% endif %}
                                     />
                                 </div>
@@ -444,7 +450,7 @@
             const cardInput = document.getElementById(`card_sales_${businessId}`);
             const totalInput = document.getElementById(`total_sales_${businessId}`);
             
-            if (!cashInput || !creditInput || !cardInput || !totalInput || totalInput.disabled) return;
+            if (!cashInput || !creditInput || !cardInput || !totalInput) return;
             
             // Parse values, removing dots and converting to numbers
             const cash = parseInt(cashInput.value.replace(/\D/g, '') || '0');
@@ -607,11 +613,9 @@
         const fieldsContainer = document.getElementById('fields_' + businessId);
         if (!fieldsContainer) return;
 
-        const inputs = fieldsContainer.querySelectorAll('input[data-currency-input]');
+        const inputs = fieldsContainer.querySelectorAll('input[data-currency-input], input[type="number"]');
         inputs.forEach(input => {
-            if (input.hasAttribute('data-allow-closed')) {
-                return;
-            }
+            if (input.hasAttribute('readonly')) return;
             if (isClosed) {
                 input.disabled = true;
                 input.value = '';
@@ -619,6 +623,21 @@
                 input.disabled = false;
             }
         });
+
+        // Show/hide closed badge
+        const header = fieldsContainer.closest('[data-business-id]');
+        if (header) {
+            let badge = header.querySelector('.closed-badge');
+            if (isClosed && !badge) {
+                const nameEl = header.querySelector('h3');
+                badge = document.createElement('span');
+                badge.className = 'badge badge-warning badge-sm font-bold uppercase closed-badge';
+                badge.textContent = '{{ _("Closed") }}';
+                nameEl.insertAdjacentElement('afterend', badge);
+            } else if (!isClosed && badge) {
+                badge.remove();
+            }
+        }
     }
 </script>
 {% endblock %}

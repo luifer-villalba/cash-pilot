@@ -103,173 +103,99 @@
 
     <!-- Filters Section -->
     <div class="dashboard-filters bg-base-100 border border-base-300 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-        <div class="dashboard-filters-body p-4 md:p-6 space-y-6">
-            <form id="filter-form" class="dashboard-filters-form">
-                <div class="filters-primary-row">
-                    <div class="filters-left">
-                        <div class="filters-item filters-quick">
-                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="today">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <div class="dashboard-filters-body">
+            <form id="filter-form">
+                <div class="filters-main-row">
+
+                    <!-- Quick date presets -->
+                    <div class="filters-quick-group">
+                        <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="today" aria-label="{{ _('Today') }}">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                             {{ _('Today') }}
-                            </button>
-                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="yesterday">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <path d="M7 14 L9 16 L7 18" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            {{ _('Yesterday') }}
-                            </button>
-                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="week">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <rect x="7" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <rect x="14" y="14" width="3" height="3" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            {{ _('Last 7 Days') }}
-                            </button>
-                            <button type="button" class="preset-btn btn btn-sm btn-outline gap-1" data-preset="month">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <rect x="7" y="13" width="3" height="6" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <rect x="11" y="9" width="3" height="10" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                <rect x="15" y="6" width="3" height="13" rx="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            {{ _('Last 30 Days') }}
-                            </button>
-                        </div>
-
-                        <div class="filters-item" id="filters-status-item">
-                            <label class="sr-only" for="status">{{ _('Status') }}</label>
-                            <select id="status" name="status" class="select select-sm select-bordered w-24 filters-compact-select{% if current_filters.status %} select-primary{% endif %}" aria-label="{{ _('Status') }}">
-                                <option value="">{{ _('All') }}</option>
-                                <option value="OPEN" {% if current_filters.status=='OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
-                                <option value="CLOSED" {% if current_filters.status=='CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
-                            </select>
-                        </div>
-
-                        <div class="filters-item" id="filters-business-item">
-                            <label class="sr-only" for="business_quick">{{ _('Business') }}</label>
-                            <select id="business_quick" class="select select-sm select-bordered w-36 filters-compact-select" aria-label="{{ _('Business') }}">
-                                <option value="">{{ _('All Businesses') }}</option>
-                                {% for biz in businesses %}
-                                <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                        </button>
+                        <button type="button" class="preset-btn btn btn-sm btn-outline" data-preset="yesterday">{{ _('Yesterday') }}</button>
+                        <button type="button" class="preset-btn btn btn-sm btn-outline" data-preset="2days">{{ _('2 Days Ago') }}</button>
+                        <button type="button" class="preset-btn btn btn-sm btn-outline" data-preset="thisweek">{{ _('This Week') }}</button>
+                        <button type="button" class="preset-btn btn btn-sm btn-outline" data-preset="thismonth">{{ _('This Month') }}</button>
                     </div>
 
-                    <div class="filters-right">
-                        <div class="filters-actions">
-                            {% if current_user.role == 'ADMIN' %}
-                            <label class="flex items-center gap-2 cursor-pointer" id="filters-deleted-item">
-                                <input type="checkbox"
-                                       id="include-deleted-toggle"
-                                       class="toggle toggle-sm toggle-primary"
-                                       {% if include_deleted %}checked{% endif %}
-                                       onchange="toggleDeletedSessions()">
-                                <span class="text-xs text-base-content/70">{{ _('Deleted') }}</span>
-                            </label>
-                            {% endif %}
+                    <div class="filters-vsep" aria-hidden="true"></div>
 
-                            <button
-                                    type="button"
-                                    id="filter-toggle"
-                                    class="btn btn-sm btn-ghost btn-square hover:bg-base-200"
-                                    aria-label="{{ _('More options') }}"
-                                    aria-expanded="false"
-                            >
-                                <svg id="filter-chevron" class="w-4 h-4" fill="none"
-                                     stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="filter-advanced" class="filters-advanced-row hidden">
-                    <div class="filters-item">
+                    <!-- Date range -->
+                    <div class="filters-date-group">
                         <label class="sr-only" for="from_date">{{ _('From Date') }}</label>
-                        <div class="relative">
-                            <input
-                                    type="date"
-                                    id="from_date"
-                                    name="from_date"
-                                    class="input input-sm input-bordered w-36 pr-8 h-9{% if current_filters.from_date %} input-primary{% endif %}"
-                                    value="{{ current_filters.from_date }}"
-                                    aria-label="{{ _('From Date') }}"
-                            />
-                            <button type="button"
-                                    class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
-                                    data-field="from_date"
-                                    aria-label="{{ _('Clear from date') }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="filters-item">
+                        <input
+                            type="date"
+                            id="from_date"
+                            name="from_date"
+                            class="input input-sm input-bordered filters-date-input{% if current_filters.from_date %} input-primary{% endif %}"
+                            value="{{ current_filters.from_date }}"
+                            aria-label="{{ _('From Date') }}"
+                        />
+                        <span class="filters-date-arrow" aria-hidden="true">→</span>
                         <label class="sr-only" for="to_date">{{ _('To Date') }}</label>
-                        <div class="relative">
-                            <input
-                                    type="date"
-                                    id="to_date"
-                                    name="to_date"
-                                    class="input input-sm input-bordered w-36 pr-8 h-9{% if current_filters.to_date %} input-primary{% endif %}"
-                                    value="{{ current_filters.to_date }}"
-                                    aria-label="{{ _('To Date') }}"
-                            />
-                            <button type="button"
-                                    class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
-                                    data-field="to_date"
-                                    aria-label="{{ _('Clear to date') }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
+                        <input
+                            type="date"
+                            id="to_date"
+                            name="to_date"
+                            class="input input-sm input-bordered filters-date-input{% if current_filters.to_date %} input-primary{% endif %}"
+                            value="{{ current_filters.to_date }}"
+                            aria-label="{{ _('To Date') }}"
+                        />
                     </div>
 
-                    <div class="filters-item">
-                        <label class="sr-only" for="cashier_name">{{ _('Cashier Name') }}</label>
-                        <div class="relative">
-                            <input
-                                    type="text"
-                                    id="cashier_name"
-                                    name="cashier_name"
-                                    class="input input-sm input-bordered w-44 pr-8 h-9{% if current_filters.cashier_name %} input-primary{% endif %}"
-                                    placeholder="{{ _('Cashier') }}"
-                                    value="{{ current_filters.cashier_name or '' }}"
-                                    aria-label="{{ _('Cashier Name') }}"
-                            />
-                            <button type="button"
-                                    class="clear-filter-btn absolute right-2 top-1/2 -translate-y-1/2 text-base-content/30 hover:text-base-content/60 opacity-0 transition-all pointer-events-none"
-                                    data-field="cashier_name"
-                                    aria-label="{{ _('Clear cashier name') }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+                    <div class="filters-vsep" aria-hidden="true"></div>
 
-                    <div class="filters-item">
-                        <a href="/" class="btn btn-outline btn-sm px-3 h-9 hover:btn-error transition-all duration-200 hover:scale-105 active:scale-95">{{ _('Clear All') }}</a>
-                    </div>
+                    <!-- Cashier -->
+                    <label class="sr-only" for="cashier_name">{{ _('Cashier Name') }}</label>
+                    <input
+                        type="text"
+                        id="cashier_name"
+                        name="cashier_name"
+                        class="input input-sm input-bordered filters-cashier-input{% if current_filters.cashier_name %} input-primary{% endif %}"
+                        placeholder="{{ _('Cashier') }}"
+                        value="{{ current_filters.cashier_name or '' }}"
+                        aria-label="{{ _('Cashier Name') }}"
+                    />
+
+                    <!-- Status -->
+                    <label class="sr-only" for="status">{{ _('Status') }}</label>
+                    <select id="status" name="status" class="select select-sm select-bordered filters-status-select{% if current_filters.status %} select-primary{% endif %}" aria-label="{{ _('Status') }}">
+                        <option value="">{{ _('All') }}</option>
+                        <option value="OPEN" {% if current_filters.status=='OPEN' %}selected{% endif %}>{{ _('Open') }}</option>
+                        <option value="CLOSED" {% if current_filters.status=='CLOSED' %}selected{% endif %}>{{ _('Closed') }}</option>
+                    </select>
+
+                    <!-- Business -->
+                    <label class="sr-only" for="business_quick">{{ _('Business') }}</label>
+                    <select id="business_quick" class="select select-sm select-bordered filters-business-select" aria-label="{{ _('Business') }}">
+                        <option value="">{{ _('All Businesses') }}</option>
+                        {% for biz in businesses %}
+                        <option value="{{ biz.id }}" {% if current_filters.business_id==biz.id|string %}selected{% endif %}>{{ biz.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    {% if current_user.role == 'ADMIN' %}
+                    <!-- Deleted toggle -->
+                    <label class="filters-deleted-label flex items-center gap-1.5 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            id="include-deleted-toggle"
+                            class="toggle toggle-sm toggle-primary"
+                            {% if include_deleted %}checked{% endif %}
+                            onchange="toggleDeletedSessions()"
+                        >
+                        <span class="text-xs text-base-content/70 whitespace-nowrap">{{ _('Deleted') }}</span>
+                    </label>
+                    {% endif %}
+
+                    <!-- Clear all -->
+                    <a href="/" class="filters-clear-btn btn btn-outline btn-sm hover:btn-error">{{ _('Clear All') }}</a>
                 </div>
 
                 <input type="hidden" id="business_id" name="business_id" value="{{ current_filters.business_id or '' }}">
@@ -327,393 +253,207 @@
 </div>
 
 <script>
-    // Get local date (not UTC)
-    function getLocalDateString() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
+    // ── Utilities ──────────────────────────────────────────────────────────────
+
+    function formatLocalDate(d) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
-    // CRITICAL: Set client dates and redirect if missing
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasFromDate = urlParams.has('from_date');
-    const hasToDate = urlParams.has('to_date');
+    function getLocalDateString() {
+        return formatLocalDate(new Date());
+    }
 
-    if (!hasFromDate || !hasToDate) {
+    // ── Bootstrap: redirect if dates missing ───────────────────────────────────
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('from_date') || !urlParams.has('to_date')) {
         const today = getLocalDateString();
         urlParams.set('from_date', today);
         urlParams.set('to_date', today);
         window.location.search = urlParams.toString();
     }
 
-    // Filter Toggle
-    const filterToggle = document.getElementById('filter-toggle');
-    const filterAdvanced = document.getElementById('filter-advanced');
-    const filterChevron = document.getElementById('filter-chevron');
+    // ── Preset date ranges ─────────────────────────────────────────────────────
 
-    if (filterToggle && filterAdvanced && filterChevron) {
-        filterToggle.addEventListener('click', function () {
-            const isExpanded = filterAdvanced.classList.contains('hidden');
-            filterAdvanced.classList.toggle('hidden');
-            filterChevron.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
-            filterToggle.setAttribute('aria-expanded', isExpanded);
-        });
+    function getPresetDates(preset) {
+        const now = new Date();
+        const today = formatLocalDate(now);
+
+        if (preset === 'today') {
+            return { start: today, end: today };
+        }
+        if (preset === 'yesterday') {
+            const d = new Date(now); d.setDate(d.getDate() - 1);
+            const s = formatLocalDate(d);
+            return { start: s, end: s };
+        }
+        if (preset === '2days') {
+            const d = new Date(now); d.setDate(d.getDate() - 2);
+            const s = formatLocalDate(d);
+            return { start: s, end: s };
+        }
+        if (preset === 'thisweek') {
+            // Monday of the current calendar week → today
+            const d = new Date(now);
+            const dow = d.getDay(); // 0=Sun … 6=Sat
+            const daysFromMon = dow === 0 ? 6 : dow - 1;
+            d.setDate(d.getDate() - daysFromMon);
+            return { start: formatLocalDate(d), end: today };
+        }
+        if (preset === 'thismonth') {
+            // 1st of the current calendar month → today
+            const d = new Date(now.getFullYear(), now.getMonth(), 1);
+            return { start: formatLocalDate(d), end: today };
+        }
+        return null;
     }
 
-    // Move primary filters into advanced options on mobile
-    const mobileFilterQuery = window.matchMedia('(max-width: 640px)');
-    const mobileFilterTargets = [
-        document.getElementById('filters-status-item'),
-        document.getElementById('filters-business-item'),
-        document.getElementById('filters-deleted-item')
-    ].filter(Boolean);
-    const mobileFilterPositions = new Map();
+    // ── Active preset detection ─────────────────────────────────────────────────
 
-    mobileFilterTargets.forEach((el) => {
-        mobileFilterPositions.set(el, {
-            parent: el.parentElement,
-            next: el.nextElementSibling
-        });
-    });
+    function detectActivePreset() {
+        const fromDate = document.getElementById('from_date').value;
+        const toDate   = document.getElementById('to_date').value;
 
-    function relocateMobileFilters(isMobile) {
-        if (!filterAdvanced) return;
-        mobileFilterTargets.forEach((el) => {
-            const original = mobileFilterPositions.get(el);
-            if (!original) return;
-            if (isMobile) {
-                filterAdvanced.appendChild(el);
-            } else {
-                // Guard: original.next may no longer be a sibling when restoring, so insertBefore can throw.
-                original.parent.insertBefore(el, original.next);
+        const presets = ['today', 'yesterday', '2days', 'thisweek', 'thismonth'];
+        let matched = null;
+        for (const p of presets) {
+            const r = getPresetDates(p);
+            if (r && fromDate === r.start && toDate === r.end) {
+                matched = p;
+                break;
             }
+        }
+        setActivePreset(matched);
+    }
+
+    // ── Mark active preset button ───────────────────────────────────────────────
+
+    function setActivePreset(preset) {
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            const active = preset && btn.dataset.preset === preset;
+            btn.classList.toggle('btn-primary', active);
+            btn.classList.toggle('btn-outline', !active);
         });
     }
 
-    relocateMobileFilters(mobileFilterQuery.matches);
-    mobileFilterQuery.addEventListener('change', (event) => relocateMobileFilters(event.matches));
+    // ── Apply filters (update URL + HTMX) ─────────────────────────────────────
 
-
-    // Helper to trigger both stats and table updates
     function applyFilters() {
         const params = new URLSearchParams(new FormData(document.getElementById('filter-form')));
-        const includeDeletedToggle = document.getElementById('include-deleted-toggle');
-        if (includeDeletedToggle && includeDeletedToggle.checked) {
+        const deletedToggle = document.getElementById('include-deleted-toggle');
+        if (deletedToggle && deletedToggle.checked) {
             params.set('include_deleted', 'true');
         }
         const queryString = '?' + params.toString();
-
         window.history.pushState({}, '', queryString);
-        
-        // Update visual indicators on inputs
+
         updateFilterIndicators();
 
-        // Only load stats if element exists (Admin only)
-        // Stats should NEVER include deleted sessions
         const statsRow = document.getElementById('stats-row');
         if (statsRow) {
             const statsParams = new URLSearchParams(params);
-            statsParams.delete('include_deleted'); // Remove include_deleted from stats
+            statsParams.delete('include_deleted');
             htmx.ajax('GET', '/stats?' + statsParams.toString(), '#stats-row');
         }
 
         htmx.ajax('GET', '/sessions/table' + queryString, '#sessions-table');
-        
-        // Update reconciliation badge
+
         if (typeof htmx !== 'undefined') {
             htmx.trigger(document.body, 'reconciliationBadgeUpdate');
         }
     }
-    
-    // Update visual indicators on filter inputs
+
+    // ── Visual indicators on inputs ────────────────────────────────────────────
+
     function updateFilterIndicators() {
-        const inputs = {
-            'from_date': document.getElementById('from_date'),
-            'to_date': document.getElementById('to_date'),
-            'status': document.getElementById('status'),
-            'cashier_name': document.getElementById('cashier_name')
-        };
-        
-        Object.entries(inputs).forEach(([id, input]) => {
+        [
+            document.getElementById('from_date'),
+            document.getElementById('to_date'),
+            document.getElementById('status'),
+            document.getElementById('cashier_name'),
+        ].forEach(input => {
             if (!input) return;
-            const hasValue = input.value && input.value.trim() !== '';
-            if (hasValue) {
-                input.classList.add('input-primary');
-                if (input.tagName === 'SELECT') {
-                    input.classList.add('select-primary');
-                }
-            } else {
-                input.classList.remove('input-primary');
-                if (input.tagName === 'SELECT') {
-                    input.classList.remove('select-primary');
-                }
-            }
+            const has = !!input.value?.trim();
+            input.classList.toggle('input-primary',  has && input.tagName !== 'SELECT');
+            input.classList.toggle('select-primary', has && input.tagName === 'SELECT');
         });
     }
 
-    // Mark active preset button
-    function setActivePreset(preset) {
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            if (btn.dataset.preset === preset) {
-                btn.classList.remove('btn-outline');
-                btn.classList.add('btn-primary');
-            } else {
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-outline');
-            }
-        });
+    // ── Reconciliation links ───────────────────────────────────────────────────
+
+    function updateReconciliationLinks() {
+        const from = document.getElementById('from_date')?.value;
+        const to   = document.getElementById('to_date')?.value;
+        const date = (from && to && from === to) ? from : (to || from || getLocalDateString());
+
+        const addLink  = document.getElementById('add-reconciliation-link');
+        const viewLink = document.getElementById('view-reconciliations-link');
+        if (addLink)  addLink.href  = `/reconciliation/daily?date=${date}`;
+        if (viewLink) viewLink.href = `/admin/reconciliation/compare?date=${date}`;
     }
 
-    // Check which preset matches current dates on load
-    function detectActivePreset() {
-        const fromDate = document.getElementById('from_date').value;
-        const toDate = document.getElementById('to_date').value;
-        
-        function formatLocalDate(d) {
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        const now = new Date();
-        const today = formatLocalDate(now);
-        
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = formatLocalDate(yesterday);
-        
-        // Last 7 days: today - 6 days to today (7 days total)
-        const weekStartDate = new Date(now);
-        weekStartDate.setDate(weekStartDate.getDate() - 6);
-        const weekStart = formatLocalDate(weekStartDate);
-        const weekEndStr = today;
-        
-        // Last 30 days: today - 29 days to today (30 days total)
-        const monthStartDate = new Date(now);
-        monthStartDate.setDate(monthStartDate.getDate() - 29);
-        const monthStart = formatLocalDate(monthStartDate);
-        const monthEnd = today;
-        
-        const presetSelect = document.getElementById('preset_quick');
-        if (fromDate === today && toDate === today) {
-            setActivePreset('today');
-            if (presetSelect) presetSelect.value = 'today';
-        } else if (fromDate === yesterdayStr && toDate === yesterdayStr) {
-            setActivePreset('yesterday');
-            if (presetSelect) presetSelect.value = 'yesterday';
-        } else if (fromDate === weekStart && toDate === weekEndStr) {
-            setActivePreset('week');
-            if (presetSelect) presetSelect.value = 'week';
-        } else if (fromDate === monthStart && toDate === monthEnd) {
-            setActivePreset('month');
-            if (presetSelect) presetSelect.value = 'month';
-        } else if (presetSelect) {
-            presetSelect.value = '';
-        }
-    }
+    // ── Preset button click handler ────────────────────────────────────────────
 
-    // Preset button handlers
-    document.querySelectorAll('[data-preset]').forEach(btn => {
+    document.querySelectorAll('.preset-btn[data-preset]').forEach(btn => {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
-            const preset = this.dataset.preset;
-            const now = new Date();
-            let startDate, endDate;
-
-            if (preset === 'today') {
-                startDate = endDate = now;
-            } else if (preset === 'yesterday') {
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 1);
-                endDate = startDate;
-            } else if (preset === 'week') {
-                // Last 7 days: today - 6 days to today (7 days total)
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 6);
-                endDate = new Date(now);
-            } else if (preset === 'month') {
-                // Last 30 days: today - 29 days to today (30 days total)
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 29);
-                endDate = new Date(now);
-            }
-
-            function formatLocalDate(d) {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            document.getElementById('from_date').value = formatLocalDate(startDate);
-            document.getElementById('to_date').value = formatLocalDate(endDate);
-
-            setActivePreset(preset);
+            const r = getPresetDates(this.dataset.preset);
+            if (!r) return;
+            document.getElementById('from_date').value = r.start;
+            document.getElementById('to_date').value   = r.end;
+            setActivePreset(this.dataset.preset);
             updateReconciliationLinks();
             applyFilters();
-            
-            // Update reconciliation badge after filters are applied
-            setTimeout(() => {
-                if (typeof htmx !== 'undefined') {
-                    htmx.trigger(document.body, 'reconciliationBadgeUpdate');
-                }
-            }, 100);
         });
     });
 
-    const presetSelect = document.getElementById('preset_quick');
-    if (presetSelect) {
-        presetSelect.addEventListener('change', function (e) {
-            e.stopPropagation();
-            const preset = this.value;
-            if (!preset) return;
+    // ── from_date change → auto-sync to_date ──────────────────────────────────
 
-            const now = new Date();
-            let startDate, endDate;
+    document.getElementById('from_date').addEventListener('change', function () {
+        // Sync to_date to match from_date (single-day mode).
+        // User can then widen the range by editing to_date separately.
+        document.getElementById('to_date').value = this.value;
+        setActivePreset(null); // manual edit — clear preset highlight
+        // applyFilters() fires via form 'change' event below
+    });
 
-            if (preset === 'today') {
-                startDate = endDate = now;
-            } else if (preset === 'yesterday') {
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 1);
-                endDate = startDate;
-            } else if (preset === 'week') {
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 6);
-                endDate = new Date(now);
-            } else if (preset === 'month') {
-                startDate = new Date(now);
-                startDate.setDate(startDate.getDate() - 29);
-                endDate = new Date(now);
-            }
+    // ── to_date change → re-detect preset ────────────────────────────────────
 
-            function formatLocalDate(d) {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
+    document.getElementById('to_date').addEventListener('change', function () {
+        detectActivePreset();
+        // applyFilters() fires via form 'change' event below
+    });
 
-            document.getElementById('from_date').value = formatLocalDate(startDate);
-            document.getElementById('to_date').value = formatLocalDate(endDate);
+    // ── Form change handler (catches all remaining inputs) ────────────────────
 
-            setActivePreset(preset);
-            updateReconciliationLinks();
-            applyFilters();
-
-            setTimeout(() => {
-                if (typeof htmx !== 'undefined') {
-                    htmx.trigger(document.body, 'reconciliationBadgeUpdate');
-                }
-            }, 100);
-        });
-    }
-
-    // Detect active preset on page load
-    detectActivePreset();
-    
-    // Initialize filter indicators
-    updateFilterIndicators();
-
-    // Update reconciliation links with current filter date
-    function updateReconciliationLinks() {
-        const fromDateInput = document.getElementById('from_date');
-        const toDateInput = document.getElementById('to_date');
-        const addReconLink = document.getElementById('add-reconciliation-link');
-        const viewReconLink = document.getElementById('view-reconciliations-link');
-        
-        if (!fromDateInput || !toDateInput) return;
-        
-        const fromDate = fromDateInput.value;
-        const toDate = toDateInput.value;
-        
-        // Use to_date if available, otherwise from_date, otherwise today
-        let selectedDate = toDate || fromDate;
-        if (!selectedDate) {
-            const today = new Date();
-            selectedDate = today.toISOString().split('T')[0];
-        }
-        
-        // If both dates are the same, use that date; otherwise use to_date
-        if (fromDate && toDate && fromDate === toDate) {
-            selectedDate = fromDate;
-        } else if (toDate) {
-            selectedDate = toDate;
-        } else if (fromDate) {
-            selectedDate = fromDate;
-        }
-        
-        // Update links if they exist
-        if (addReconLink) {
-            addReconLink.href = `/reconciliation/daily?date=${selectedDate}`;
-        }
-        if (viewReconLink) {
-            viewReconLink.href = `/admin/reconciliation/compare?date=${selectedDate}`;
-        }
-    }
-    
-    // Update reconciliation links on page load and filter changes
-    updateReconciliationLinks();
-    
-    // Filter form change handler
-    document.getElementById('filter-form').addEventListener('change', function() {
+    document.getElementById('filter-form').addEventListener('change', function () {
         applyFilters();
         updateReconciliationLinks();
-        
-        // Update reconciliation badge
-        setTimeout(() => {
-            if (typeof htmx !== 'undefined') {
-                htmx.trigger(document.body, 'reconciliationBadgeUpdate');
-            }
-        }, 100);
     });
-    
-    // Toggle deleted sessions (Admin only)
-    function toggleDeletedSessions() {
-        const toggle = document.getElementById('include-deleted-toggle');
-        const includeDeleted = toggle.checked;
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        if (includeDeleted) {
-            urlParams.set('include_deleted', 'true');
-        } else {
-            urlParams.delete('include_deleted');
-        }
-        
-        window.location.search = urlParams.toString();
-    }
 
-    // Business quick filter handler
-    document.getElementById('business_quick').addEventListener('change', function() {
+    // ── Business quick-select ─────────────────────────────────────────────────
+
+    document.getElementById('business_quick').addEventListener('change', function () {
         document.getElementById('business_id').value = this.value;
         applyFilters();
     });
 
-    // Filter field clear handlers
-    document.querySelectorAll('.clear-filter-btn').forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            const field = this.dataset.field;
-            document.getElementById(field).value = '';
-            applyFilters();
-        });
-    });
+    // ── Deleted toggle (Admin only) ────────────────────────────────────────────
 
-    // Show clear button on input
-    document.querySelectorAll('#filter-form input, #filter-form select').forEach(input => {
-        input.addEventListener('focus', function () {
-            if (this.value) {
-                this.parentElement.querySelector('.clear-filter-btn')?.classList.remove('opacity-0', 'pointer-events-none');
-            }
-        });
-        input.addEventListener('blur', function () {
-            if (!this.value) {
-                this.parentElement.querySelector('.clear-filter-btn')?.classList.add('opacity-0', 'pointer-events-none');
-            }
-        });
-    });
+    function toggleDeletedSessions() {
+        const toggle = document.getElementById('include-deleted-toggle');
+        const p = new URLSearchParams(window.location.search);
+        toggle.checked ? p.set('include_deleted', 'true') : p.delete('include_deleted');
+        window.location.search = p.toString();
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+
+    detectActivePreset();
+    updateFilterIndicators();
+    updateReconciliationLinks();
 </script>
 {% endblock %}
