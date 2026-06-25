@@ -1,15 +1,13 @@
 # File: src/cashpilot/api/admin.py
 import secrets
 import string
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
-from urllib.parse import urlsplit
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from babel.dates import format_date, format_time
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, case, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,13 +18,11 @@ from cashpilot.api.utils import (
     get_active_businesses,
     get_locale,
     get_translation_function,
-    parse_currency,
     templates,
 )
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
 from cashpilot.core.security import hash_password
-from cashpilot.core.validators import validate_currency
 from cashpilot.models.business import Business
 from cashpilot.models.cash_session import CashSession
 from cashpilot.models.daily_reconciliation import DailyReconciliation
