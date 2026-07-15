@@ -338,7 +338,7 @@ def create_app() -> FastAPI:
     if is_production and session_secret_key == default_session_secret:
         raise RuntimeError(
             "SESSION_SECRET_KEY must be set to a strong random value in production. "
-            "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(48))\""
+            'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"'
         )
 
     # Register static files route handler before exception handlers

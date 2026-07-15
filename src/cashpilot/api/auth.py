@@ -59,6 +59,7 @@ def _record_login_failure(key: str) -> None:
 
     _login_failures.setdefault(key, []).append(time.monotonic())
 
+
 # Configurable inactivity timeout by role (seconds)
 ROLE_TIMEOUTS = {
     UserRole.CASHIER: 10 * 60 * 60,  # 10 hours
