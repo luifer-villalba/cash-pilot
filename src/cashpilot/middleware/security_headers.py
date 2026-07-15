@@ -9,8 +9,13 @@ Adds a conservative set of hardening headers to every response:
 - ``Content-Security-Policy`` — restrict where scripts/styles/frames may load
   from. The policy keeps ``'unsafe-inline'`` and the current CDN origins because
   the templates rely on inline scripts/handlers and load htmx/Chart.js from a
-  CDN; it still blocks unknown external script origins, framing, plugins, and
-  ``<base>`` hijacking. Tighten toward nonces if the inline scripts are removed.
+  CDN. ``'unsafe-eval'`` is also required: the templates use htmx ``hx-on`` and
+  ``hx-vals='js:...'`` attributes, which htmx evaluates via ``Function()`` —
+  without it, adding transfers/expenses on the close-session form is blocked by
+  the browser (EvalError). The policy still blocks unknown external script
+  origins, framing, plugins, and ``<base>`` hijacking. Tighten toward nonces
+  (and drop ``'unsafe-eval'``) if the inline scripts and js: attributes are
+  removed.
 """
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -18,7 +23,7 @@ from starlette.requests import Request
 
 _CSP = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; "
     "style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data:; "
     "font-src 'self' data:; "
