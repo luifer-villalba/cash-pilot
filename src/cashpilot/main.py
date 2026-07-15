@@ -37,7 +37,9 @@ class AuthRedirectMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         # Skip for public routes
-        public_paths = ["/login", "/logout", "/static", "/health"]
+        # /api/bi is public to the session-cookie check because it has its own
+        # auth (Bearer service token, see api/service_auth.py + api/bi.py)
+        public_paths = ["/login", "/logout", "/static", "/health", "/api/bi"]
         if any(request.url.path.startswith(path) for path in public_paths):
             return await call_next(request)
 
@@ -274,6 +276,11 @@ def _register_routers(app: FastAPI) -> None:
     from cashpilot.api.admin import router as admin_router
 
     app.include_router(admin_router)
+
+    # BI integration (read-only, service-token auth)
+    from cashpilot.api.bi import router as bi_router
+
+    app.include_router(bi_router)
 
     # API endpoints
     from cashpilot.api.business import router as business_api_router
