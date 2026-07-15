@@ -315,8 +315,12 @@ def create_app() -> FastAPI:
     # Get root_path from environment (Railway/Cloudflare may set this)
     root_path = os.getenv("RAILWAY_STATIC_URL", "").rstrip("/") or os.getenv("ROOT_PATH", "")
 
-    environment = os.getenv("ENVIRONMENT", "development")
-    is_production = environment.lower() in {"production", "prod"}
+    # Resolve environment via ENVIRONMENT or RAILWAY_ENVIRONMENT (same detection
+    # as _get_static_dir), so Railway's RAILWAY_ENVIRONMENT=production is honored
+    # even when ENVIRONMENT is unset — otherwise the production hardening below
+    # (fail-closed secret, disabled docs, HTTPS-only cookies, HSTS) would silently
+    # stay off. `environment` is already lowercased by _get_environment_info().
+    environment, is_production = _get_environment_info()
 
     app = FastAPI(
         title="CashPilot API",

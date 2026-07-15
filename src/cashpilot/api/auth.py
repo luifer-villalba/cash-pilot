@@ -34,10 +34,15 @@ _login_failures: dict[str, list[float]] = {}
 
 
 def _client_ip(request: Request) -> str:
-    """Best-effort client IP, honoring the proxy's X-Forwarded-For (leftmost hop)."""
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    """Client IP used to bucket login throttling.
+
+    Uses the socket peer address that the server already resolved, NOT the raw
+    ``X-Forwarded-For`` header. In production uvicorn runs with ``--proxy-headers``
+    (see Dockerfile), so ``request.client.host`` is the client IP normalized from
+    the trusted proxy. Trusting the raw header here would let an attacker rotate
+    ``X-Forwarded-For`` on each request into a fresh throttle bucket, defeating the
+    limit entirely.
+    """
     return request.client.host if request.client else "unknown"
 
 
