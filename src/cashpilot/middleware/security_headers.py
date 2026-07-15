@@ -16,6 +16,10 @@ Adds a conservative set of hardening headers to every response:
   origins, framing, plugins, and ``<base>`` hijacking. Tighten toward nonces
   (and drop ``'unsafe-eval'``) if the inline scripts and js: attributes are
   removed.
+
+  The Cloudflare Web Analytics beacon is proxy-injected in production
+  (``static.cloudflareinsights.com`` in ``script-src``); it reports RUM data to
+  ``cloudflareinsights.com``, allowed in ``connect-src``.
 """
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -23,11 +27,11 @@ from starlette.requests import Request
 
 _CSP = (
     "default-src 'self'; "
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://static.cloudflareinsights.com; "
     "style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data:; "
     "font-src 'self' data:; "
-    "connect-src 'self'; "
+    "connect-src 'self' https://cloudflareinsights.com; "
     "frame-ancestors 'self'; "
     "base-uri 'self'; "
     "object-src 'none'; "
