@@ -192,6 +192,29 @@ async def require_business_assignment(
     return business_uuid
 
 
+async def enforce_report_business_scope(
+    business_id: str | UUID,
+    current_user: User | None,
+    db: AsyncSession,
+) -> None:
+    """Enforce that a report request is scoped to a business the caller may access.
+
+    The report-data endpoints (daily revenue, weekly/monthly trend) are reached by
+    two callers:
+
+    - Human sessions, where ``current_user`` is set. Admins may read any business;
+      cashiers may only read businesses they are assigned to (via ``UserBusiness``).
+    - The BI service-token layer (``api/bi.py``), which passes ``current_user=None``
+      because the request was already authorized by the bearer token.
+
+    Skips the check for the BI path and delegates to ``require_business_assignment``
+    otherwise (which raises 403 for an unassigned cashier).
+    """
+    if current_user is None:
+        return
+    await require_business_assignment(business_id=business_id, current_user=current_user, db=db)
+
+
 async def get_open_session_for_cashier_business(
     cashier_id: UUID | str,
     business_id: UUID | str,

@@ -22,6 +22,7 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
+from cashpilot.api.auth_helpers import enforce_report_business_scope
 from cashpilot.core.cache import clear_cache, get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
@@ -97,6 +98,10 @@ async def get_weekly_trend(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid business_id format",
         )
+
+    # Scope check: cashiers may only read businesses they are assigned to.
+    # No-op for the BI service-token path (current_user=None).
+    await enforce_report_business_scope(business_uuid, current_user, db)
 
     # Check cache (v4 = changed to week-over-week growth instead of 5-week average)
     cache_key = make_cache_key(

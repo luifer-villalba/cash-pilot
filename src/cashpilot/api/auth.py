@@ -23,6 +23,42 @@ logger = get_logger(__name__)
 router = APIRouter(tags=["auth"])
 templates = Jinja2Templates(directory="templates")
 
+# In-memory brute-force throttle for the login endpoint. Counts recent FAILED
+# attempts per (client IP, username) and blocks once the threshold is exceeded
+# within the window. In-memory only (matches core/cache.py + service_auth.py):
+# resets on restart and is per-instance, which is adequate for a single small
+# deployment. Successful logins clear the counter for that key.
+_LOGIN_MAX_FAILURES = 10
+_LOGIN_WINDOW_SECONDS = 300  # 5 minutes
+_login_failures: dict[str, list[float]] = {}
+
+
+def _client_ip(request: Request) -> str:
+    """Best-effort client IP, honoring the proxy's X-Forwarded-For (leftmost hop)."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+def _login_key(request: Request, username: str) -> str:
+    return f"{_client_ip(request)}:{username.strip().lower()}"
+
+
+def _login_is_blocked(key: str) -> bool:
+    import time
+
+    window_start = time.monotonic() - _LOGIN_WINDOW_SECONDS
+    recent = [ts for ts in _login_failures.get(key, []) if ts > window_start]
+    _login_failures[key] = recent
+    return len(recent) >= _LOGIN_MAX_FAILURES
+
+
+def _record_login_failure(key: str) -> None:
+    import time
+
+    _login_failures.setdefault(key, []).append(time.monotonic())
+
 # Configurable inactivity timeout by role (seconds)
 ROLE_TIMEOUTS = {
     UserRole.CASHIER: 10 * 60 * 60,  # 10 hours
@@ -167,25 +203,39 @@ async def login(
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
+    # Brute-force throttle: block further attempts once too many recent failures
+    # have accumulated for this (IP, username) pair.
+    login_key = _login_key(request, username)
+    if _login_is_blocked(login_key):
+        logger.warning("auth.login_rate_limited", email=username, ip=_client_ip(request))
+        return RedirectResponse(url="/login?error=true", status_code=303)
+
     stmt = select(User).where(User.email == username)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
     if not user:
+        _record_login_failure(login_key)
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
     if not user.hashed_password:
+        _record_login_failure(login_key)
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
     if not verify_password(password, user.hashed_password):
+        _record_login_failure(login_key)
         logger.warning("auth.login_failed", email=username)
         return RedirectResponse(url="/login?error=true", status_code=303)
 
     if not user.is_active:
+        _record_login_failure(login_key)
         logger.warning("auth.login_disabled_account", email=user.email, user_id=str(user.id))
         return RedirectResponse(url="/login?error=true", status_code=303)
+
+    # Successful credential check — reset the throttle for this key.
+    _login_failures.pop(login_key, None)
 
     # Session should be available via SessionMiddleware, but check safely
     if not hasattr(request, "session"):
