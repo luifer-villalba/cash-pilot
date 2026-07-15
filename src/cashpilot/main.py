@@ -118,6 +118,14 @@ def _setup_middleware(app: FastAPI, environment: str, session_secret_key: str) -
         same_site="lax",
     )
 
+    # 7. SecurityHeadersMiddleware (Added LAST, Runs OUTERMOST)
+    # Added last so it wraps every response — including redirects emitted by the
+    # auth/admin middleware — and stamps hardening headers on all of them.
+    from cashpilot.middleware.security_headers import SecurityHeadersMiddleware
+
+    is_production = environment.lower() in {"production", "prod"}
+    app.add_middleware(SecurityHeadersMiddleware, is_production=is_production)
+
 
 def _get_static_dir() -> Path:
     """Get the static directory path based on environment."""
@@ -307,8 +315,12 @@ def create_app() -> FastAPI:
     # Get root_path from environment (Railway/Cloudflare may set this)
     root_path = os.getenv("RAILWAY_STATIC_URL", "").rstrip("/") or os.getenv("ROOT_PATH", "")
 
-    environment = os.getenv("ENVIRONMENT", "development")
-    is_production = environment.lower() in {"production", "prod"}
+    # Resolve environment via ENVIRONMENT or RAILWAY_ENVIRONMENT (same detection
+    # as _get_static_dir), so Railway's RAILWAY_ENVIRONMENT=production is honored
+    # even when ENVIRONMENT is unset — otherwise the production hardening below
+    # (fail-closed secret, disabled docs, HTTPS-only cookies, HSTS) would silently
+    # stay off. `environment` is already lowercased by _get_environment_info().
+    environment, is_production = _get_environment_info()
 
     app = FastAPI(
         title="CashPilot API",
@@ -322,7 +334,16 @@ def create_app() -> FastAPI:
         openapi_url=None if is_production else "/openapi.json",
     )
 
-    session_secret_key = os.getenv("SESSION_SECRET_KEY", "dev-secret-key-change-in-production")
+    # Session cookies are signed with this key. If it is missing or left at the
+    # public default in production, anyone could forge an admin session cookie and
+    # read all data — so fail closed instead of booting with a known-bad key.
+    default_session_secret = "dev-secret-key-change-in-production"
+    session_secret_key = os.getenv("SESSION_SECRET_KEY", default_session_secret)
+    if is_production and session_secret_key == default_session_secret:
+        raise RuntimeError(
+            "SESSION_SECRET_KEY must be set to a strong random value in production. "
+            'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(48))"'
+        )
 
     # Register static files route handler before exception handlers
     # The actual fix is in exception_handlers.py which returns plain text for /static/* paths

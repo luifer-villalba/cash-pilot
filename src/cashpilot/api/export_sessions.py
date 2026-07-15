@@ -54,6 +54,21 @@ def _format_boolean(value: bool) -> str:
     return "Yes" if value else "No"
 
 
+# Characters that spreadsheet apps treat as the start of a formula. A cell like
+# ``=CMD()`` or ``+HYPERLINK(...)`` in a user-supplied field (notes, flag reason,
+# etc.) can execute or exfiltrate when the export is opened, so neutralize them.
+_CSV_INJECTION_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _sanitize_text(value: str | None) -> str:
+    """Neutralize spreadsheet formula injection in free-text fields."""
+    if not value:
+        return ""
+    if value[0] in _CSV_INJECTION_PREFIXES:
+        return "'" + value
+    return value
+
+
 async def _get_sessions_for_export(
     db: AsyncSession,
     current_user: User,
@@ -176,8 +191,8 @@ def _session_to_row(session: CashSession, format_type: Literal["csv", "excel"]) 
         str(session.id),
         session.session_number,
         session.session_date.isoformat(),
-        session.business.name if session.business else "",
-        session.cashier.display_name if session.cashier else "",
+        _sanitize_text(session.business.name if session.business else ""),
+        _sanitize_text(session.cashier.display_name if session.cashier else ""),
         session.status,
         session.opened_time.strftime("%H:%M:%S") if session.opened_time else "",
         session.closed_time.strftime("%H:%M:%S") if session.closed_time else "",
@@ -194,9 +209,9 @@ def _session_to_row(session: CashSession, format_type: Literal["csv", "excel"]) 
         format_num(session.envelope_amount),
         format_num(discrepancy),
         _format_boolean(session.flagged),
-        session.flag_reason or "",
-        session.notes or "",
-        session.closing_ticket or "",
+        _sanitize_text(session.flag_reason),
+        _sanitize_text(session.notes),
+        _sanitize_text(session.closing_ticket),
     ]
 
 
