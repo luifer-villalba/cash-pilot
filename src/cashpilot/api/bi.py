@@ -10,7 +10,6 @@ scoping — it's only used as an auth gate on the human-facing routes — so it'
 safe to call them here with `current_user=None`.
 """
 
-import asyncio
 from datetime import date
 from decimal import Decimal
 from uuid import UUID
@@ -160,10 +159,11 @@ async def bi_business_stats(
     _validate_date_range(from_date, to_date)
     prev_from, prev_to = calculate_previous_period(from_date, to_date)
 
-    current_metrics, previous_metrics = await asyncio.gather(
-        aggregate_business_metrics(db, from_date, to_date),
-        aggregate_business_metrics(db, prev_from, prev_to),
-    )
+    # Sequential, not gathered: both calls share this request-scoped AsyncSession,
+    # and SQLAlchemy async sessions don't support concurrent operations on one
+    # connection (asyncpg raises "another operation is in progress").
+    current_metrics = await aggregate_business_metrics(db, from_date, to_date)
+    previous_metrics = await aggregate_business_metrics(db, prev_from, prev_to)
 
     businesses = await get_active_businesses(db)
     if business_id:
@@ -238,9 +238,12 @@ async def bi_flagged_sessions(
     prev_from, prev_to = calculate_previous_period(from_date, to_date)
     authorized_ids = [business_id] if business_id else None
 
-    stats_current, stats_previous = await asyncio.gather(
-        fetch_flagged_stats(db, from_date, to_date, business_id, cashier_name, authorized_ids),
-        fetch_flagged_stats(db, prev_from, prev_to, business_id, cashier_name, authorized_ids),
+    # Sequential, not gathered: see the comment in bi_business_stats above.
+    stats_current = await fetch_flagged_stats(
+        db, from_date, to_date, business_id, cashier_name, authorized_ids
+    )
+    stats_previous = await fetch_flagged_stats(
+        db, prev_from, prev_to, business_id, cashier_name, authorized_ids
     )
 
     stmt = (
