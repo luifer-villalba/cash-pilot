@@ -37,6 +37,24 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 BUSINESS_STATS_CACHE_VERSION = "v1"
 
+# Metric keys aggregated per business (and summed for the "all businesses" totals row).
+METRIC_KEYS = [
+    "total_sales",
+    "cash_sales",
+    "card_payments_total",
+    "credit_sales_total",
+    "credit_payments_collected",
+    "bank_transfer_total",
+    "cash_profit",
+    "total_expenses",
+    "daily_cost_total",
+    "gross_margin",
+    "invoice_count",
+    "sessions_count_open",
+    "sessions_count_closed",
+    "sessions_need_review",
+]
+
 
 async def aggregate_business_metrics(
     db: AsyncSession,
@@ -270,6 +288,58 @@ async def aggregate_business_metrics(
     return metrics_by_business
 
 
+def derive_margin_and_mix(period: dict) -> None:
+    """Mutate *period* in place: add gross_margin_percent and payment_method_mix.
+
+    Assumes total_sales, gross_margin, cash_sales, card_payments_total, and
+    bank_transfer_total are already present (either per-business or summed totals).
+    """
+    total = period["total_sales"]
+    period["gross_margin_percent"] = (
+        (period["gross_margin"] / total * 100) if total > 0 else Decimal("0")
+    )
+    period["payment_method_mix"] = {
+        "cash_percent": (period["cash_sales"] / total * 100) if total > 0 else Decimal("0"),
+        "card_percent": (
+            (period["card_payments_total"] / total * 100) if total > 0 else Decimal("0")
+        ),
+        "bank_percent": (
+            (period["bank_transfer_total"] / total * 100) if total > 0 else Decimal("0")
+        ),
+    }
+
+
+def build_business_metrics(current_raw: dict, previous_raw: dict) -> tuple[dict, dict, dict]:
+    """Fill defaults, derive gross margin / payment mix, and compute deltas.
+
+    Shared by the human business-stats dashboard and the read-only BI endpoint so both
+    stay in sync with the same derivation rules for a single business's raw metrics
+    (as returned by ``aggregate_business_metrics``).
+    """
+    current: dict = {}
+    previous: dict = {}
+    for key in METRIC_KEYS:
+        if key.startswith("sessions_") or key == "invoice_count":
+            current[key] = current_raw.get(key, 0)
+            previous[key] = previous_raw.get(key, 0)
+        else:
+            current[key] = current_raw.get(key, Decimal("0"))
+            previous[key] = previous_raw.get(key, Decimal("0"))
+
+    current["gross_margin"] = current["total_sales"] - current["daily_cost_total"]
+    previous["gross_margin"] = previous["total_sales"] - previous["daily_cost_total"]
+    derive_margin_and_mix(current)
+    derive_margin_and_mix(previous)
+
+    deltas = {
+        key: calculate_delta(current[key], previous[key])
+        for key in METRIC_KEYS
+        if key != "payment_method_mix"
+    }
+
+    return current, previous, deltas
+
+
 @router.get("/business-stats", response_class=HTMLResponse)
 async def business_stats(
     request: Request,
@@ -359,102 +429,22 @@ async def business_stats(
     business_stats_list = []
 
     # Initialize totals with all metrics
-    metric_keys = [
-        "total_sales",
-        "cash_sales",
-        "card_payments_total",
-        "credit_sales_total",
-        "credit_payments_collected",
-        "bank_transfer_total",
-        "cash_profit",
-        "total_expenses",
-        "daily_cost_total",
-        "gross_margin",
-        "invoice_count",
-        "sessions_count_open",
-        "sessions_count_closed",
-        "sessions_need_review",
-    ]
-
-    totals_current = {key: Decimal("0") for key in metric_keys}
-    totals_previous = {key: Decimal("0") for key in metric_keys}
-
-    # Payment method mix for totals (calculated separately)
-    totals_current["payment_method_mix"] = {
-        "cash_percent": Decimal("0"),
-        "card_percent": Decimal("0"),
-        "bank_percent": Decimal("0"),
-    }
-    totals_previous["payment_method_mix"] = {
-        "cash_percent": Decimal("0"),
-        "card_percent": Decimal("0"),
-        "bank_percent": Decimal("0"),
-    }
+    totals_current = {key: Decimal("0") for key in METRIC_KEYS}
+    totals_previous = {key: Decimal("0") for key in METRIC_KEYS}
 
     for business in businesses:
         business_id = str(business.id)
-        current_raw = current_metrics.get(business_id, {})
-        previous_raw = previous_metrics.get(business_id, {})
+        current, previous, deltas = build_business_metrics(
+            current_metrics.get(business_id, {}), previous_metrics.get(business_id, {})
+        )
 
-        # Initialize current and previous with all required keys (default to 0)
-        current = {}
-        previous = {}
-        for key in metric_keys:
+        for key in METRIC_KEYS:
             if key.startswith("sessions_") or key == "invoice_count":
-                current[key] = current_raw.get(key, 0)
-                previous[key] = previous_raw.get(key, 0)
+                totals_current[key] = Decimal(str(int(totals_current[key]) + int(current[key])))
+                totals_previous[key] = Decimal(str(int(totals_previous[key]) + int(previous[key])))
             else:
-                current[key] = current_raw.get(key, Decimal("0"))
-                previous[key] = previous_raw.get(key, Decimal("0"))
-
-        # Derived margin metrics
-        current["gross_margin"] = current["total_sales"] - current["daily_cost_total"]
-        previous["gross_margin"] = previous["total_sales"] - previous["daily_cost_total"]
-        current["gross_margin_percent"] = (
-            (current["gross_margin"] / current["total_sales"] * 100)
-            if current["total_sales"] > 0
-            else Decimal("0")
-        )
-        previous["gross_margin_percent"] = (
-            (previous["gross_margin"] / previous["total_sales"] * 100)
-            if previous["total_sales"] > 0
-            else Decimal("0")
-        )
-
-        # Ensure payment_method_mix is always present
-        current["payment_method_mix"] = current_raw.get(
-            "payment_method_mix",
-            {
-                "cash_percent": Decimal("0"),
-                "card_percent": Decimal("0"),
-                "bank_percent": Decimal("0"),
-            },
-        )
-        previous["payment_method_mix"] = previous_raw.get(
-            "payment_method_mix",
-            {
-                "cash_percent": Decimal("0"),
-                "card_percent": Decimal("0"),
-                "bank_percent": Decimal("0"),
-            },
-        )
-
-        # Calculate deltas for all metrics
-        deltas = {}
-        for key in metric_keys:
-            if key == "payment_method_mix":
-                # Skip payment method mix for deltas (it's a percentage breakdown)
-                continue
-            current_val = current[key]
-            previous_val = previous[key]
-            deltas[key] = calculate_delta(current_val, previous_val)
-            # Add to totals (convert integers to Decimal for consistency)
-            if key.startswith("sessions_") or key == "invoice_count":
-                totals_current[key] = Decimal(str(int(totals_current[key]) + int(current_val)))
-                totals_previous[key] = Decimal(str(int(totals_previous[key]) + int(previous_val)))
-            else:
-                totals_current[key] += current_val
-                totals_previous[key] += previous_val
+                totals_current[key] += current[key]
+                totals_previous[key] += previous[key]
 
         business_stats_list.append(
             {
@@ -468,47 +458,16 @@ async def business_stats(
     # Sort by current total sales for ranking display
     business_stats_list.sort(key=lambda item: item["current"]["total_sales"], reverse=True)
 
-    # Calculate payment method mix for totals
-    if totals_current["total_sales"] > 0:
-        totals_current["payment_method_mix"]["cash_percent"] = (
-            totals_current["cash_sales"] / totals_current["total_sales"] * 100
-        )
-        totals_current["payment_method_mix"]["card_percent"] = (
-            totals_current["card_payments_total"] / totals_current["total_sales"] * 100
-        )
-        totals_current["payment_method_mix"]["bank_percent"] = (
-            totals_current["bank_transfer_total"] / totals_current["total_sales"] * 100
-        )
-
-    if totals_previous["total_sales"] > 0:
-        totals_previous["payment_method_mix"]["cash_percent"] = (
-            totals_previous["cash_sales"] / totals_previous["total_sales"] * 100
-        )
-        totals_previous["payment_method_mix"]["card_percent"] = (
-            totals_previous["card_payments_total"] / totals_previous["total_sales"] * 100
-        )
-        totals_previous["payment_method_mix"]["bank_percent"] = (
-            totals_previous["bank_transfer_total"] / totals_previous["total_sales"] * 100
-        )
-
-    # Calculate gross margin percent for totals
-    totals_current["gross_margin_percent"] = (
-        (totals_current["gross_margin"] / totals_current["total_sales"] * 100)
-        if totals_current["total_sales"] > 0
-        else Decimal("0")
-    )
-    totals_previous["gross_margin_percent"] = (
-        (totals_previous["gross_margin"] / totals_previous["total_sales"] * 100)
-        if totals_previous["total_sales"] > 0
-        else Decimal("0")
-    )
+    # Derive gross margin % and payment mix for the "all businesses" totals row
+    derive_margin_and_mix(totals_current)
+    derive_margin_and_mix(totals_previous)
 
     # Calculate totals deltas
-    totals_deltas = {}
-    for key in metric_keys:
-        if key == "payment_method_mix":
-            continue
-        totals_deltas[key] = calculate_delta(totals_current[key], totals_previous[key])
+    totals_deltas = {
+        key: calculate_delta(totals_current[key], totals_previous[key])
+        for key in METRIC_KEYS
+        if key != "payment_method_mix"
+    }
 
     current_period_label = format_date_range(current_from, current_to)
     previous_period_label = format_date_range(prev_from, prev_to)

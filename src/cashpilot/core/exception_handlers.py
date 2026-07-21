@@ -28,8 +28,13 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 
 
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    # Handle 401 Unauthorized for HTMX and normal requests
-    if exc.status_code == status.HTTP_401_UNAUTHORIZED:
+    # Handle 401 Unauthorized for HTMX and normal requests.
+    # /api/bi uses its own service-token auth (see api/service_auth.py) for a
+    # machine client, not a browser session, so a bad/missing token must come back
+    # as a plain 401 JSON response rather than a login-page redirect.
+    if exc.status_code == status.HTTP_401_UNAUTHORIZED and not request.url.path.startswith(
+        "/api/bi"
+    ):
         is_htmx = request.headers.get("HX-Request") == "true"
         login_url = "/login?expired=true"
         if is_htmx:

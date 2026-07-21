@@ -36,7 +36,7 @@ async def test_resolve_date_ranges_and_previous_period():
 @pytest.mark.asyncio
 async def test_fetch_flagged_stats_filters(db_session: AsyncSession):
     """AC-06/AC-07: Fetch flagged sessions with proper filtering."""
-    from cashpilot.api.routes.flagged_sessions import _fetch_flagged_stats
+    from cashpilot.api.routes.flagged_sessions import fetch_flagged_stats
 
     business_a = Business(
         id=uuid4(),
@@ -109,7 +109,7 @@ async def test_fetch_flagged_stats_filters(db_session: AsyncSession):
     db_session.add_all(sessions)
     await db_session.commit()
 
-    stats = await _fetch_flagged_stats(
+    stats = await fetch_flagged_stats(
         db_session,
         date(2026, 1, 12),
         date(2026, 1, 18),
@@ -123,7 +123,7 @@ async def test_fetch_flagged_stats_filters(db_session: AsyncSession):
     assert stats["cashiers_with_flags"] == 2
     assert stats["flag_rate_percent"] == 75.0
 
-    cashier_stats = await _fetch_flagged_stats(
+    cashier_stats = await fetch_flagged_stats(
         db_session,
         date(2026, 1, 12),
         date(2026, 1, 18),
@@ -137,7 +137,7 @@ async def test_fetch_flagged_stats_filters(db_session: AsyncSession):
     assert cashier_stats["cashiers_with_flags"] == 1
     assert cashier_stats["flag_rate_percent"] == 66.7
 
-    token_stats = await _fetch_flagged_stats(
+    token_stats = await fetch_flagged_stats(
         db_session,
         date(2026, 1, 12),
         date(2026, 1, 18),

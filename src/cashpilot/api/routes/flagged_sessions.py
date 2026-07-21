@@ -84,7 +84,7 @@ def _build_delta(current: float, previous: float, unit: str = "") -> dict:
     }
 
 
-def _cashier_name_filters(cashier_name: str):
+def cashier_name_filters(cashier_name: str):
     full_name = func.concat(User.first_name, " ", User.last_name)
     tokens = [token for token in cashier_name.split() if token]
     if not tokens:
@@ -113,7 +113,7 @@ def _cashier_name_filters(cashier_name: str):
     return and_(*token_filters)
 
 
-async def _fetch_flagged_stats(
+async def fetch_flagged_stats(
     db: AsyncSession,
     from_date: date,
     to_date: date,
@@ -147,7 +147,7 @@ async def _fetch_flagged_stats(
     ).select_from(CashSession)
 
     if cashier_name:
-        name_filter = _cashier_name_filters(cashier_name)
+        name_filter = cashier_name_filters(cashier_name)
         if name_filter is not None:
             stmt = stmt.join(CashSession.cashier).where(name_filter)
 
@@ -215,10 +215,10 @@ async def flagged_sessions_report(
         selected_business_id = None
         date_error = _("You are not authorized to view this business.")
 
-    stats_current = await _fetch_flagged_stats(
+    stats_current = await fetch_flagged_stats(
         db, from_date, to_date, selected_business_id, cashier_name_clean, authorized_business_ids
     )
-    stats_previous = await _fetch_flagged_stats(
+    stats_previous = await fetch_flagged_stats(
         db, prev_from, prev_to, selected_business_id, cashier_name_clean, authorized_business_ids
     )
     stats_delta = {
@@ -259,7 +259,7 @@ async def flagged_sessions_report(
     if selected_business_id:
         stmt_sessions = stmt_sessions.where(CashSession.business_id == selected_business_id)
     if cashier_name_clean:
-        name_filter = _cashier_name_filters(cashier_name_clean)
+        name_filter = cashier_name_filters(cashier_name_clean)
         if name_filter is not None:
             stmt_sessions = stmt_sessions.where(name_filter)
 
