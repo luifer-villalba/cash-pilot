@@ -18,7 +18,11 @@ elif not DATABASE_URL:
         "postgresql+asyncpg://cashpilot:dev_password_change_in_prod@db:5432/cashpilot_dev"
     )
 
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=1800,
+)
 
 # Session factory
 AsyncSessionLocal = async_sessionmaker(
