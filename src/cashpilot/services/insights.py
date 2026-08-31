@@ -17,14 +17,32 @@ from typing import Any
 ANOMALY_ZSCORE_THRESHOLD = 2.0  # days beyond this z-score are flagged
 
 _MONTH_ABBR_ES = {
-    1: "ene", 2: "feb", 3: "mar", 4: "abr", 5: "may", 6: "jun",
-    7: "jul", 8: "ago", 9: "sep", 10: "oct", 11: "nov", 12: "dic",
+    1: "ene",
+    2: "feb",
+    3: "mar",
+    4: "abr",
+    5: "may",
+    6: "jun",
+    7: "jul",
+    8: "ago",
+    9: "sep",
+    10: "oct",
+    11: "nov",
+    12: "dic",
 }
 
 _MONTH_NAME_ES = {
-    "January": "enero", "February": "febrero", "March": "marzo", "April": "abril",
-    "May": "mayo", "June": "junio", "July": "julio", "August": "agosto",
-    "September": "septiembre", "October": "octubre", "November": "noviembre",
+    "January": "enero",
+    "February": "febrero",
+    "March": "marzo",
+    "April": "abril",
+    "May": "mayo",
+    "June": "junio",
+    "July": "julio",
+    "August": "agosto",
+    "September": "septiembre",
+    "October": "octubre",
+    "November": "noviembre",
     "December": "diciembre",
 }
 
@@ -152,7 +170,9 @@ def generate_alerts(
     if anomalies:
         for a in anomalies:
             day_str = _fmt_day_short(a["date"])
-            direction_word = "inusualmente alto" if a["direction"] == "high" else "inusualmente bajo"
+            direction_word = (
+                "inusualmente alto" if a["direction"] == "high" else "inusualmente bajo"
+            )
             alerts.append(
                 {
                     "level": "warning",
@@ -217,7 +237,9 @@ def generate_weekly_summary(
             lines.append(f"Eso es un {g:.1f}% más que la semana pasada — una mejora de {diff}.")
         elif g < 0:
             diff = _fmt_currency(previous_week_total - current_week_total)
-            lines.append(f"Eso es un {abs(g):.1f}% menos que la semana pasada — una caída de {diff}.")
+            lines.append(
+                f"Eso es un {abs(g):.1f}% menos que la semana pasada — una caída de {diff}."
+            )
         else:
             lines.append("Los ingresos se mantuvieron estables respecto a la semana pasada.")
     elif previous_week_total == 0:
@@ -253,7 +275,9 @@ def generate_monthly_summary(
     if days_with_data == 0:
         return f"No se registraron sesiones{period}."
 
-    lines.append(f"Los ingresos{period} totalizaron {total_str} en {days_with_data} día(s) activo(s).")
+    lines.append(
+        f"Los ingresos{period} totalizaron {total_str} en {days_with_data} día(s) activo(s)."
+    )
 
     if growth_percent is not None:
         g = float(growth_percent)
