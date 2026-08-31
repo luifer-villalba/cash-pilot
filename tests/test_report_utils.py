@@ -276,13 +276,13 @@ def test_comparison_range_this_week():
 
 def test_format_date_range_single_day():
     result = format_date_range(date(2026, 6, 25), date(2026, 6, 25))
-    assert result == "Jun 25, 2026"
+    assert result == "25 jun, 2026"
 
 
 def test_format_date_range_same_year():
     result = format_date_range(date(2026, 6, 1), date(2026, 6, 30))
-    assert "Jun 01" in result
-    assert "Jun 30, 2026" in result
+    assert "01 jun" in result
+    assert "30 jun, 2026" in result
 
 
 def test_format_date_range_cross_year():

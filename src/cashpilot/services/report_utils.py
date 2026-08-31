@@ -237,10 +237,30 @@ def calculate_comparison_range(
     return calculate_previous_period(current_from, current_to)
 
 
+_MONTH_ABBR_ES = {
+    1: "ene",
+    2: "feb",
+    3: "mar",
+    4: "abr",
+    5: "may",
+    6: "jun",
+    7: "jul",
+    8: "ago",
+    9: "sep",
+    10: "oct",
+    11: "nov",
+    12: "dic",
+}
+
+
+def _fmt_day_month(d: date) -> str:
+    return f"{d.day:02d} {_MONTH_ABBR_ES[d.month]}"
+
+
 def format_date_range(from_d: date, to_d: date) -> str:
     """Format a date range for display."""
     if from_d == to_d:
-        return from_d.strftime("%b %d, %Y")
+        return f"{_fmt_day_month(from_d)}, {from_d.year}"
     if from_d.year == to_d.year:
-        return f"{from_d.strftime('%b %d')} - {to_d.strftime('%b %d, %Y')}"
-    return f"{from_d.strftime('%b %d, %Y')} - {to_d.strftime('%b %d, %Y')}"
+        return f"{_fmt_day_month(from_d)} - {_fmt_day_month(to_d)}, {to_d.year}"
+    return f"{_fmt_day_month(from_d)}, {from_d.year} - {_fmt_day_month(to_d)}, {to_d.year}"

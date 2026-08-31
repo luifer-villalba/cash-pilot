@@ -342,6 +342,14 @@ async def get_weekly_trend(
         for d in week_info["days"]
     ]
     anomalies = detect_revenue_anomalies(all_week_dicts)
+    # Only surface anomalies from the current week as alerts — anomalies from
+    # earlier weeks in the 5-week window were already surfaced when those
+    # weeks were current, and re-alerting them on every later report is noise.
+    current_week_start_date = weeks_data[-1]["start"]
+    current_week_end_date = weeks_data[-1]["end"]
+    current_week_anomalies = [
+        a for a in anomalies if current_week_start_date <= a["date"] <= current_week_end_date
+    ]
     days_with_data = len([d for d in weeks_data[-1]["days"] if d.has_data])
     zero_revenue_days = max(0, _elapsed_days - days_with_data)
     summary = generate_weekly_summary(
@@ -354,7 +362,7 @@ async def get_weekly_trend(
     )
     alerts = generate_alerts(
         growth_percent=week_over_week_growth,
-        anomalies=anomalies,
+        anomalies=current_week_anomalies,
         zero_revenue_days=zero_revenue_days,
     )
 
