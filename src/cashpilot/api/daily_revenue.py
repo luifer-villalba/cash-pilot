@@ -22,7 +22,7 @@ from cashpilot.models.report_schemas import (
     TransferItem,
 )
 from cashpilot.services.insights import generate_alerts, generate_daily_summary
-from cashpilot.services.report_utils import cash_sales_expr
+from cashpilot.services.report_utils import cash_sales_expr, format_date_range
 from cashpilot.utils.datetime import today_local
 
 logger = get_logger(__name__)
@@ -328,7 +328,7 @@ async def get_daily_revenue(
     hist_result = await db.execute(hist_stmt)
     hist_rows = {row[0]: row for row in hist_result.all()}
 
-    day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    day_names = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
     historical_revenue = []
     for i in range(7, 0, -1):
         hist_date = target_date - timedelta(days=i)
@@ -351,7 +351,7 @@ async def get_daily_revenue(
             )
         )
 
-    date_label = target_date.strftime("%b %d, %Y")
+    date_label = format_date_range(target_date, target_date)
     summary = generate_daily_summary(
         total_sales=total_sales,
         net_earnings=net_earnings,

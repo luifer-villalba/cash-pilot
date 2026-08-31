@@ -354,6 +354,12 @@ async def get_monthly_trend(
         for d in month_info["days"]
     ]
     anomalies = detect_revenue_anomalies(all_month_dicts)
+    # Only surface anomalies from the current month as alerts — anomalies from
+    # earlier months in the 6-month window were already surfaced when those
+    # months were current, and re-alerting them on every later report is noise.
+    current_month_anomalies = [
+        a for a in anomalies if current_month_start <= a["date"] <= current_month_end
+    ]
     days_with_data = len([d for d in months_data[-1]["days"] if d.has_data])
     month_name = calendar.month_name[month]
     summary = generate_monthly_summary(
@@ -367,7 +373,7 @@ async def get_monthly_trend(
     )
     alerts = generate_alerts(
         growth_percent=month_over_month_growth,
-        anomalies=anomalies,
+        anomalies=current_month_anomalies,
     )
 
     # Prepare response

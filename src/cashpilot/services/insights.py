@@ -16,6 +16,43 @@ from typing import Any
 
 ANOMALY_ZSCORE_THRESHOLD = 2.0  # days beyond this z-score are flagged
 
+_MONTH_ABBR_ES = {
+    1: "ene", 2: "feb", 3: "mar", 4: "abr", 5: "may", 6: "jun",
+    7: "jul", 8: "ago", 9: "sep", 10: "oct", 11: "nov", 12: "dic",
+}
+
+_MONTH_NAME_ES = {
+    "January": "enero", "February": "febrero", "March": "marzo", "April": "abril",
+    "May": "mayo", "June": "junio", "July": "julio", "August": "agosto",
+    "September": "septiembre", "October": "octubre", "November": "noviembre",
+    "December": "diciembre",
+}
+
+_DAY_NAME_ES = {
+    "Monday": "Lunes",
+    "Tuesday": "Martes",
+    "Wednesday": "Miércoles",
+    "Thursday": "Jueves",
+    "Friday": "Viernes",
+    "Saturday": "Sábado",
+    "Sunday": "Domingo",
+}
+
+
+def _fmt_day_short(d: Any) -> str:
+    """Format a date as 'DD mmm' using Spanish month abbreviations."""
+    if hasattr(d, "day") and hasattr(d, "month"):
+        return f"{d.day} {_MONTH_ABBR_ES[d.month]}"
+    return str(d)
+
+
+def _translate_day_name(day_name: str) -> str:
+    return _DAY_NAME_ES.get(day_name, day_name)
+
+
+def _translate_month_name(month_name: str) -> str:
+    return _MONTH_NAME_ES.get(month_name, month_name)
+
 
 def detect_revenue_anomalies(
     daily_data: list[dict[str, Any]],
@@ -84,7 +121,7 @@ def generate_alerts(
                 {
                     "level": "error",
                     "message": (
-                        f"Revenue dropped {abs(g):.1f}% vs prior period"
+                        f"Los ingresos cayeron {abs(g):.1f}% respecto al período anterior"
                         + (f" ({period_label})" if period_label else "")
                         + "."
                     ),
@@ -94,7 +131,10 @@ def generate_alerts(
             alerts.append(
                 {
                     "level": "success",
-                    "message": f"Revenue grew {g:.1f}% vs prior period — strong performance.",
+                    "message": (
+                        f"Los ingresos crecieron {g:.1f}% respecto al período anterior "
+                        "— un desempeño sólido."
+                    ),
                 }
             )
 
@@ -103,30 +143,33 @@ def generate_alerts(
             {
                 "level": "warning",
                 "message": (
-                    f"{flag_rate_percent:.1f}% of sessions are flagged" " — review recommended."
+                    f"El {flag_rate_percent:.1f}% de las sesiones están marcadas"
+                    " — se recomienda revisión."
                 ),
             }
         )
 
     if anomalies:
         for a in anomalies:
-            day_str = (
-                a["date"].strftime("%b %d") if hasattr(a["date"], "strftime") else str(a["date"])
-            )
-            direction_word = "unusually high" if a["direction"] == "high" else "unusually low"
+            day_str = _fmt_day_short(a["date"])
+            direction_word = "inusualmente alto" if a["direction"] == "high" else "inusualmente bajo"
             alerts.append(
                 {
                     "level": "warning",
-                    "message": f"{day_str} had {direction_word} revenue (z={a['z_score']:+.1f}).",
+                    "message": (
+                        f"El {day_str} tuvo un ingreso {direction_word} (z={a['z_score']:+.1f})."
+                    ),
                 }
             )
 
     if zero_revenue_days > 0:
-        noun = "day" if zero_revenue_days == 1 else "days"
+        noun = "día" if zero_revenue_days == 1 else "días"
         alerts.append(
             {
                 "level": "warning",
-                "message": f"{zero_revenue_days} {noun} with no recorded sessions this period.",
+                "message": (
+                    f"{zero_revenue_days} {noun} sin sesiones registradas en este período."
+                ),
             }
         )
 
@@ -163,29 +206,31 @@ def generate_weekly_summary(
     total_str = _fmt_currency(current_week_total)
 
     if days_with_data == 0:
-        return "No sessions were recorded for this week."
+        return "No se registraron sesiones esta semana."
 
-    lines.append(f"This week totaled {total_str} across {days_with_data} active day(s).")
+    lines.append(f"Esta semana totalizó {total_str} en {days_with_data} día(s) activo(s).")
 
     if growth_percent is not None:
         g = float(growth_percent)
         if g > 0:
             diff = _fmt_currency(current_week_total - previous_week_total)
-            lines.append(f"That's {g:.1f}% above last week — an improvement of {diff}.")
+            lines.append(f"Eso es un {g:.1f}% más que la semana pasada — una mejora de {diff}.")
         elif g < 0:
             diff = _fmt_currency(previous_week_total - current_week_total)
-            lines.append(f"That's {abs(g):.1f}% below last week — a decline of {diff}.")
+            lines.append(f"Eso es un {abs(g):.1f}% menos que la semana pasada — una caída de {diff}.")
         else:
-            lines.append("Revenue was flat compared to last week.")
+            lines.append("Los ingresos se mantuvieron estables respecto a la semana pasada.")
     elif previous_week_total == 0:
-        lines.append("No comparison data is available for the previous week.")
+        lines.append("No hay datos de comparación disponibles para la semana anterior.")
 
     if highest_day:
         best_rev = _fmt_currency(highest_day.get("revenue", 0))
-        lines.append(f"Best day: {highest_day.get('day_name', '')} ({best_rev}).")
+        best_day_name = _translate_day_name(highest_day.get("day_name", ""))
+        lines.append(f"Mejor día: {best_day_name} ({best_rev}).")
     if lowest_day and lowest_day != highest_day:
         slow_rev = _fmt_currency(lowest_day.get("revenue", 0))
-        lines.append(f"Slowest day: {lowest_day.get('day_name', '')} ({slow_rev}).")
+        slow_day_name = _translate_day_name(lowest_day.get("day_name", ""))
+        lines.append(f"Día más flojo: {slow_day_name} ({slow_rev}).")
 
     return " ".join(lines)
 
@@ -203,25 +248,25 @@ def generate_monthly_summary(
     """Return a one-paragraph natural language summary for a monthly trend report."""
     lines: list[str] = []
     total_str = _fmt_currency(current_month_total)
-    period = f" in {month_name}" if month_name else ""
+    period = f" en {_translate_month_name(month_name)}" if month_name else ""
 
     if days_with_data == 0:
-        return f"No sessions were recorded{period}."
+        return f"No se registraron sesiones{period}."
 
-    lines.append(f"Revenue{period} totaled {total_str} across {days_with_data} active day(s).")
+    lines.append(f"Los ingresos{period} totalizaron {total_str} en {days_with_data} día(s) activo(s).")
 
     if growth_percent is not None:
         g = float(growth_percent)
         if g > 0:
-            lines.append(f"That's {g:.1f}% above the previous month.")
+            lines.append(f"Eso es un {g:.1f}% más que el mes anterior.")
         elif g < 0:
-            lines.append(f"That's {abs(g):.1f}% below the previous month.")
+            lines.append(f"Eso es un {abs(g):.1f}% menos que el mes anterior.")
         else:
-            lines.append("Revenue was flat compared to the previous month.")
+            lines.append("Los ingresos se mantuvieron estables respecto al mes anterior.")
 
     if highest_day:
         peak_rev = _fmt_currency(highest_day.get("revenue", 0))
-        lines.append(f"Peak day: {highest_day.get('day_number', '')} ({peak_rev}).")
+        lines.append(f"Día pico: {highest_day.get('day_number', '')} ({peak_rev}).")
 
     return " ".join(lines)
 
@@ -238,30 +283,30 @@ def generate_daily_summary(
 ) -> str:
     """Return a one-paragraph natural language summary for a daily revenue report."""
     lines: list[str] = []
-    period = f" on {date_label}" if date_label else ""
+    period = f" el {date_label}" if date_label else ""
 
     if total_sessions == 0:
-        return f"No closed sessions were found{period}."
+        return f"No se encontraron sesiones cerradas{period}."
 
     sales_str = _fmt_currency(total_sales)
     lines.append(
-        f"{total_sessions} session(s) were closed{period}, generating {sales_str} in total sales."
+        f"Se cerraron {total_sessions} sesión(es){period}, generando {sales_str} en ventas totales."
     )
-    lines.append(f"Net earnings: {_fmt_currency(net_earnings)}.")
+    lines.append(f"Ganancia neta: {_fmt_currency(net_earnings)}.")
 
     if total_sessions > 0:
         pct_perfect = perfect_count / total_sessions * 100
         if pct_perfect == 100:
-            lines.append("All sessions balanced perfectly.")
+            lines.append("Todas las sesiones cuadraron perfectamente.")
         else:
             parts = []
             if perfect_count:
-                parts.append(f"{perfect_count} perfect")
+                parts.append(f"{perfect_count} perfectas")
             if shortage_count:
-                parts.append(f"{shortage_count} shortage")
+                parts.append(f"{shortage_count} con faltante")
             if surplus_count:
-                parts.append(f"{surplus_count} surplus")
-            lines.append(f"Discrepancy breakdown: {', '.join(parts)}.")
+                parts.append(f"{surplus_count} con sobrante")
+            lines.append(f"Desglose de discrepancias: {', '.join(parts)}.")
 
     return " ".join(lines)
 
@@ -277,22 +322,22 @@ def generate_business_stats_summary(
 ) -> str:
     """Return a brief natural language summary for the multi-business stats report."""
     lines: list[str] = []
-    period = f" for {period_label}" if period_label else ""
+    period = f" de {period_label}" if period_label else ""
 
     lines.append(
-        f"Combined sales{period} across {business_count} location(s): {_fmt_currency(total_sales)}."
+        f"Ventas combinadas{period} en {business_count} local(es): {_fmt_currency(total_sales)}."
     )
 
     if growth_percent is not None:
         g = float(growth_percent)
         if g > 0:
-            lines.append(f"Up {g:.1f}% vs prior period.")
+            lines.append(f"Subió {g:.1f}% respecto al período anterior.")
         elif g < 0:
-            lines.append(f"Down {abs(g):.1f}% vs prior period.")
+            lines.append(f"Bajó {abs(g):.1f}% respecto al período anterior.")
         else:
-            lines.append("Flat vs prior period.")
+            lines.append("Estable respecto al período anterior.")
 
     if top_business_name:
-        lines.append(f"Top performer: {top_business_name}.")
+        lines.append(f"Mejor desempeño: {top_business_name}.")
 
     return " ".join(lines)
