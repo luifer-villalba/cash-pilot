@@ -18,12 +18,13 @@ from datetime import date, timedelta
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import enforce_report_business_scope
+from cashpilot.api.utils import get_locale
 from cashpilot.core.cache import get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
@@ -60,6 +61,7 @@ def get_month_dates(year: int, month: int) -> tuple[date, date]:
 
 @router.get("/monthly-trend/data", response_model=MonthlyRevenueTrend)
 async def get_monthly_trend(
+    request: Request,
     year: int = Query(..., description="Year", ge=2020, le=2100),
     month: int = Query(..., description="Month number (1-12)", ge=1, le=12),
     business_id: str = Query(..., description="Business UUID"),
@@ -106,12 +108,15 @@ async def get_monthly_trend(
     # No-op for the BI service-token path (current_user=None).
     await enforce_report_business_scope(business_uuid, current_user, db)
 
+    locale = get_locale(request)
+
     # Check cache
     cache_key = make_cache_key(
         f"monthly_trend_{CACHE_VERSION}",
         year=str(year),
         month=str(month),
         business_id=str(business_uuid),
+        locale=locale,
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
@@ -370,10 +375,12 @@ async def get_monthly_trend(
         lowest_day=lowest_day,
         days_with_data=days_with_data,
         month_name=month_name,
+        locale=locale,
     )
     alerts = generate_alerts(
         growth_percent=month_over_month_growth,
         anomalies=current_month_anomalies,
+        locale=locale,
     )
 
     # Prepare response

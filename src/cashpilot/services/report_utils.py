@@ -257,10 +257,17 @@ def _fmt_day_month(d: date) -> str:
     return f"{d.day:02d} {_MONTH_ABBR_ES[d.month]}"
 
 
-def format_date_range(from_d: date, to_d: date) -> str:
-    """Format a date range for display."""
+def format_date_range(from_d: date, to_d: date, locale: str = "en") -> str:
+    """Format a date range for display, in the given locale (en/es)."""
+    if locale == "es":
+        if from_d == to_d:
+            return f"{_fmt_day_month(from_d)}, {from_d.year}"
+        if from_d.year == to_d.year:
+            return f"{_fmt_day_month(from_d)} - {_fmt_day_month(to_d)}, {to_d.year}"
+        return f"{_fmt_day_month(from_d)}, {from_d.year} - {_fmt_day_month(to_d)}, {to_d.year}"
+
     if from_d == to_d:
-        return f"{_fmt_day_month(from_d)}, {from_d.year}"
+        return from_d.strftime("%b %d, %Y")
     if from_d.year == to_d.year:
-        return f"{_fmt_day_month(from_d)} - {_fmt_day_month(to_d)}, {to_d.year}"
-    return f"{_fmt_day_month(from_d)}, {from_d.year} - {_fmt_day_month(to_d)}, {to_d.year}"
+        return f"{from_d.strftime('%b %d')} - {to_d.strftime('%b %d, %Y')}"
+    return f"{from_d.strftime('%b %d, %Y')} - {to_d.strftime('%b %d, %Y')}"

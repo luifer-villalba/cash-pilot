@@ -629,7 +629,7 @@
 
         try {
             const response = await fetch(
-                `/reports/monthly-trend/data?year=${year}&month=${month}&business_id=${businessId}`,
+                `/reports/monthly-trend/data?year=${year}&month=${month}&business_id=${businessId}&lang=${window.LOCALE || 'en'}`,
                 {
                     headers: {
                         'Accept': 'application/json',

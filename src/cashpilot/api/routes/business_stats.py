@@ -469,8 +469,8 @@ async def business_stats(
         if key != "payment_method_mix"
     }
 
-    current_period_label = format_date_range(current_from, current_to)
-    previous_period_label = format_date_range(prev_from, prev_to)
+    current_period_label = format_date_range(current_from, current_to, locale=locale)
+    previous_period_label = format_date_range(prev_from, prev_to, locale=locale)
 
     comparison_label_map = {
         "today": _("Compared to the same weekday last week"),
@@ -494,10 +494,12 @@ async def business_stats(
         business_count=len(business_stats_list),
         period_label=current_period_label,
         top_business_name=top_business_name,
+        locale=locale,
     )
     alerts = generate_alerts(
         growth_percent=totals_growth,
         period_label=previous_period_label,
+        locale=locale,
     )
 
     return templates.TemplateResponse(

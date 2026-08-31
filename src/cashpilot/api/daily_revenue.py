@@ -4,12 +4,13 @@ from datetime import date
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import enforce_report_business_scope
+from cashpilot.api.utils import get_locale
 from cashpilot.core.cache import get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
@@ -32,6 +33,7 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 @router.get("/daily-revenue/data", response_model=DailyRevenueSummary)
 async def get_daily_revenue(
+    request: Request,
     date_param: date = Query(None, alias="date", description="Date in YYYY-MM-DD format"),
     business_id: str = Query(..., description="Business UUID"),
     current_user: User = Depends(get_current_user),
@@ -71,10 +73,11 @@ async def get_daily_revenue(
 
     # Default to today if not provided
     target_date = date_param or today_local()
+    locale = get_locale(request)
 
     # Check cache (use 24-hour TTL for past dates, 1-hour for today)
     cache_key = make_cache_key(
-        "daily_revenue", date=str(target_date), business_id=str(business_uuid)
+        "daily_revenue", date=str(target_date), business_id=str(business_uuid), locale=locale
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
@@ -328,7 +331,11 @@ async def get_daily_revenue(
     hist_result = await db.execute(hist_stmt)
     hist_rows = {row[0]: row for row in hist_result.all()}
 
-    day_names = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+    day_names = (
+        ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+        if locale == "es"
+        else ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    )
     historical_revenue = []
     for i in range(7, 0, -1):
         hist_date = target_date - timedelta(days=i)
@@ -351,7 +358,7 @@ async def get_daily_revenue(
             )
         )
 
-    date_label = format_date_range(target_date, target_date)
+    date_label = format_date_range(target_date, target_date, locale=locale)
     summary = generate_daily_summary(
         total_sales=total_sales,
         net_earnings=net_earnings,
@@ -360,9 +367,11 @@ async def get_daily_revenue(
         shortage_count=shortage_count,
         surplus_count=surplus_count,
         date_label=date_label,
+        locale=locale,
     )
     alerts = generate_alerts(
         zero_revenue_days=1 if total_sessions == 0 else 0,
+        locale=locale,
     )
 
     result = DailyRevenueSummary(

@@ -17,12 +17,13 @@ from datetime import date, timedelta
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from cashpilot.api.auth import get_current_user
 from cashpilot.api.auth_helpers import enforce_report_business_scope
+from cashpilot.api.utils import get_locale
 from cashpilot.core.cache import clear_cache, get_cache, make_cache_key, set_cache
 from cashpilot.core.db import get_db
 from cashpilot.core.logging import get_logger
@@ -59,6 +60,7 @@ def get_week_dates(year: int, week: int) -> tuple[date, date]:
 
 @router.get("/weekly-trend/data", response_model=WeeklyRevenueTrend)
 async def get_weekly_trend(
+    request: Request,
     year: int = Query(..., description="ISO year", ge=2020, le=2100),
     week: int = Query(..., description="ISO week number", ge=1, le=53),
     business_id: str = Query(..., description="Business UUID"),
@@ -103,12 +105,15 @@ async def get_weekly_trend(
     # No-op for the BI service-token path (current_user=None).
     await enforce_report_business_scope(business_uuid, current_user, db)
 
+    locale = get_locale(request)
+
     # Check cache (v4 = changed to week-over-week growth instead of 5-week average)
     cache_key = make_cache_key(
         f"weekly_trend_{CACHE_VERSION}",
         year=str(year),
         week=str(week),
         business_id=str(business_uuid),
+        locale=locale,
     )
     cached_result = get_cache(cache_key)
     if cached_result is not None:
@@ -359,11 +364,13 @@ async def get_weekly_trend(
         highest_day=highest_day,
         lowest_day=lowest_day,
         days_with_data=days_with_data,
+        locale=locale,
     )
     alerts = generate_alerts(
         growth_percent=week_over_week_growth,
         anomalies=current_week_anomalies,
         zero_revenue_days=zero_revenue_days,
+        locale=locale,
     )
 
     # Prepare response

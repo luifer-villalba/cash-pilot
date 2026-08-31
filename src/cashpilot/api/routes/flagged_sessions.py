@@ -295,6 +295,7 @@ async def flagged_sessions_report(
     # --- Insights ---
     alerts = generate_alerts(
         flag_rate_percent=stats_current["flag_rate_percent"],
+        locale=locale,
     )
 
     return templates.TemplateResponse(

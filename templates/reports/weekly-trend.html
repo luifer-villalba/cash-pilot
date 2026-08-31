@@ -1149,7 +1149,7 @@
 
         try {
             const response = await fetch(
-                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}`,
+                `/reports/weekly-trend/data?year=${year}&week=${week}&business_id=${businessId}&lang=${window.LOCALE || 'en'}`,
                 {
                     headers: {
                         'Accept': 'application/json',

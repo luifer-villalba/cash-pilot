@@ -3,12 +3,8 @@
 from datetime import date
 from decimal import Decimal
 
-import pytest
-
 from cashpilot.services.insights import (
     FLAG_RATE_ALERT_THRESHOLD,
-    GROWTH_ALERT_NEGATIVE_THRESHOLD,
-    GROWTH_ALERT_POSITIVE_THRESHOLD,
     detect_revenue_anomalies,
     generate_alerts,
     generate_business_stats_summary,
@@ -75,7 +71,7 @@ def test_anomaly_returns_date_and_zscore():
 
 
 # ---------------------------------------------------------------------------
-# generate_alerts
+# generate_alerts (default locale: en)
 # ---------------------------------------------------------------------------
 
 
@@ -100,12 +96,12 @@ def test_alert_no_alert_for_moderate_growth():
 def test_alert_high_flag_rate():
     alerts = generate_alerts(flag_rate_percent=FLAG_RATE_ALERT_THRESHOLD + 1)
     assert any(a["level"] == "warning" for a in alerts)
-    assert any("marcadas" in a["message"].lower() for a in alerts)
+    assert any("flagged" in a["message"].lower() for a in alerts)
 
 
 def test_alert_flag_rate_below_threshold():
     alerts = generate_alerts(flag_rate_percent=5.0)
-    flag_alerts = [a for a in alerts if "marcadas" in a["message"].lower()]
+    flag_alerts = [a for a in alerts if "flagged" in a["message"].lower()]
     assert len(flag_alerts) == 0
 
 
@@ -113,17 +109,17 @@ def test_alert_anomalies():
     anomaly = {"date": date(2026, 6, 15), "revenue": Decimal("9000"), "z_score": 2.5, "direction": "high"}
     alerts = generate_alerts(anomalies=[anomaly])
     assert any(a["level"] == "warning" for a in alerts)
-    assert any("15 jun" in a["message"] for a in alerts)
+    assert any("Jun 15" in a["message"] for a in alerts)
 
 
 def test_alert_zero_revenue_days():
     alerts = generate_alerts(zero_revenue_days=3)
-    assert any("3 días" in a["message"] for a in alerts)
+    assert any("3 days" in a["message"] for a in alerts)
 
 
 def test_alert_zero_revenue_days_singular():
     alerts = generate_alerts(zero_revenue_days=1)
-    assert any("1 día" in a["message"] for a in alerts)
+    assert any("1 day" in a["message"] for a in alerts)
 
 
 def test_alerts_empty_when_no_issues():
@@ -141,7 +137,34 @@ def test_alerts_multiple_issues():
 
 
 # ---------------------------------------------------------------------------
-# generate_weekly_summary
+# generate_alerts (locale: es)
+# ---------------------------------------------------------------------------
+
+
+def test_alert_revenue_drop_es():
+    alerts = generate_alerts(growth_percent=Decimal("-25"), locale="es")
+    assert any(a["level"] == "error" for a in alerts)
+    assert any("cayeron" in a["message"] for a in alerts)
+
+
+def test_alert_high_flag_rate_es():
+    alerts = generate_alerts(flag_rate_percent=FLAG_RATE_ALERT_THRESHOLD + 1, locale="es")
+    assert any("marcadas" in a["message"].lower() for a in alerts)
+
+
+def test_alert_anomalies_es():
+    anomaly = {"date": date(2026, 6, 15), "revenue": Decimal("9000"), "z_score": 2.5, "direction": "high"}
+    alerts = generate_alerts(anomalies=[anomaly], locale="es")
+    assert any("15 jun" in a["message"] for a in alerts)
+
+
+def test_alert_zero_revenue_days_es():
+    alerts = generate_alerts(zero_revenue_days=3, locale="es")
+    assert any("3 días" in a["message"] for a in alerts)
+
+
+# ---------------------------------------------------------------------------
+# generate_weekly_summary (default locale: en)
 # ---------------------------------------------------------------------------
 
 
@@ -155,8 +178,8 @@ def test_weekly_summary_with_growth():
         days_with_data=6,
     )
     assert "40.0%" in s
-    assert "Viernes" in s
-    assert "6 día(s) activo(s)" in s
+    assert "Friday" in s
+    assert "6 active day" in s
 
 
 def test_weekly_summary_decline():
@@ -168,7 +191,7 @@ def test_weekly_summary_decline():
         lowest_day={},
         days_with_data=5,
     )
-    assert "menos" in s.lower()
+    assert "below" in s.lower()
 
 
 def test_weekly_summary_no_data():
@@ -180,7 +203,7 @@ def test_weekly_summary_no_data():
         lowest_day={},
         days_with_data=0,
     )
-    assert "No se registraron sesiones" in s
+    assert "No sessions" in s
 
 
 def test_weekly_summary_no_previous_data():
@@ -192,7 +215,22 @@ def test_weekly_summary_no_previous_data():
         lowest_day={},
         days_with_data=3,
     )
-    assert "No hay datos de comparación" in s
+    assert "No comparison" in s
+
+
+def test_weekly_summary_with_growth_es():
+    s = generate_weekly_summary(
+        current_week_total=Decimal("7000000"),
+        previous_week_total=Decimal("5000000"),
+        growth_percent=Decimal("40.0"),
+        highest_day={"day_name": "Friday", "revenue": 1500000},
+        lowest_day={"day_name": "Monday", "revenue": 500000},
+        days_with_data=6,
+        locale="es",
+    )
+    assert "40.0%" in s
+    assert "Viernes" in s
+    assert "6 día(s) activo(s)" in s
 
 
 # ---------------------------------------------------------------------------
@@ -210,7 +248,7 @@ def test_monthly_summary_positive():
         days_with_data=22,
         month_name="June",
     )
-    assert "junio" in s
+    assert "June" in s
     assert "20.0%" in s
 
 
@@ -224,8 +262,23 @@ def test_monthly_summary_no_data():
         days_with_data=0,
         month_name="June",
     )
-    assert "No se registraron sesiones" in s
+    assert "No sessions" in s
+    assert "June" in s
+
+
+def test_monthly_summary_positive_es():
+    s = generate_monthly_summary(
+        current_month_total=Decimal("30000000"),
+        previous_month_total=Decimal("25000000"),
+        growth_percent=Decimal("20.0"),
+        highest_day={"day_number": 15, "revenue": 2000000},
+        lowest_day={},
+        days_with_data=22,
+        month_name="June",
+        locale="es",
+    )
     assert "junio" in s
+    assert "20.0%" in s
 
 
 # ---------------------------------------------------------------------------
@@ -241,11 +294,11 @@ def test_daily_summary_all_perfect():
         perfect_count=5,
         shortage_count=0,
         surplus_count=0,
-        date_label="25 jun, 2026",
+        date_label="Jun 25, 2026",
     )
-    assert "5 sesión" in s
-    assert "perfectamente" in s.lower()
-    assert "25 jun, 2026" in s
+    assert "5 session" in s
+    assert "perfectly" in s.lower()
+    assert "Jun 25, 2026" in s
 
 
 def test_daily_summary_mixed_discrepancies():
@@ -258,9 +311,9 @@ def test_daily_summary_mixed_discrepancies():
         surplus_count=1,
         date_label="",
     )
-    assert "3 perfectas" in s
-    assert "1 con faltante" in s
-    assert "1 con sobrante" in s
+    assert "3 perfect" in s
+    assert "1 shortage" in s
+    assert "1 surplus" in s
 
 
 def test_daily_summary_no_sessions():
@@ -271,9 +324,25 @@ def test_daily_summary_no_sessions():
         perfect_count=0,
         shortage_count=0,
         surplus_count=0,
-        date_label="25 jun, 2026",
+        date_label="Jun 25, 2026",
     )
-    assert "No se encontraron sesiones cerradas" in s
+    assert "No closed sessions" in s
+
+
+def test_daily_summary_all_perfect_es():
+    s = generate_daily_summary(
+        total_sales=Decimal("5000000"),
+        net_earnings=Decimal("4800000"),
+        total_sessions=5,
+        perfect_count=5,
+        shortage_count=0,
+        surplus_count=0,
+        date_label="25 jun, 2026",
+        locale="es",
+    )
+    assert "5 sesión" in s
+    assert "perfectamente" in s.lower()
+    assert "25 jun, 2026" in s
 
 
 # ---------------------------------------------------------------------------
@@ -287,10 +356,10 @@ def test_business_stats_summary_growth():
         previous_sales=Decimal("40000000"),
         growth_percent=Decimal("25.0"),
         business_count=3,
-        period_label="jun 2026",
+        period_label="Jun 2026",
         top_business_name="Sucursal Centro",
     )
-    assert "3 local" in s
+    assert "3 location" in s
     assert "25.0%" in s
     assert "Sucursal Centro" in s
 
@@ -303,5 +372,33 @@ def test_business_stats_summary_flat():
         business_count=1,
         period_label="",
         top_business_name="",
+    )
+    assert "Flat" in s
+
+
+def test_business_stats_summary_growth_es():
+    s = generate_business_stats_summary(
+        total_sales=Decimal("50000000"),
+        previous_sales=Decimal("40000000"),
+        growth_percent=Decimal("25.0"),
+        business_count=3,
+        period_label="jun 2026",
+        top_business_name="Sucursal Centro",
+        locale="es",
+    )
+    assert "3 local" in s
+    assert "25.0%" in s
+    assert "Sucursal Centro" in s
+
+
+def test_business_stats_summary_flat_es():
+    s = generate_business_stats_summary(
+        total_sales=Decimal("10000000"),
+        previous_sales=Decimal("10000000"),
+        growth_percent=Decimal("0.0"),
+        business_count=1,
+        period_label="",
+        top_business_name="",
+        locale="es",
     )
     assert "Estable" in s

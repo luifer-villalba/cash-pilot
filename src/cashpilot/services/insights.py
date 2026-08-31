@@ -4,6 +4,9 @@ Provides:
 - Anomaly detection (statistical outliers in daily revenue series)
 - Alert generation (thresholds, flags, unusual patterns)
 - Natural language summaries (template-driven, no LLM dependency)
+
+All generated text is bilingual (en/es), matching the app's `get_locale()`
+convention (query param `?lang=`, falling back to Accept-Language, default "en").
 """
 
 from decimal import Decimal
@@ -57,19 +60,23 @@ _DAY_NAME_ES = {
 }
 
 
-def _fmt_day_short(d: Any) -> str:
-    """Format a date as 'DD mmm' using Spanish month abbreviations."""
-    if hasattr(d, "day") and hasattr(d, "month"):
+def _fmt_day_short(d: Any, locale: str) -> str:
+    """Format a date as a short 'day month' label in the given locale."""
+    if locale == "es" and hasattr(d, "day") and hasattr(d, "month"):
         return f"{d.day} {_MONTH_ABBR_ES[d.month]}"
-    return str(d)
+    return d.strftime("%b %d") if hasattr(d, "strftime") else str(d)
 
 
-def _translate_day_name(day_name: str) -> str:
-    return _DAY_NAME_ES.get(day_name, day_name)
+def _translate_day_name(day_name: str, locale: str) -> str:
+    if locale == "es":
+        return _DAY_NAME_ES.get(day_name, day_name)
+    return day_name
 
 
-def _translate_month_name(month_name: str) -> str:
-    return _MONTH_NAME_ES.get(month_name, month_name)
+def _translate_month_name(month_name: str, locale: str) -> str:
+    if locale == "es":
+        return _MONTH_NAME_ES.get(month_name, month_name)
+    return month_name
 
 
 def detect_revenue_anomalies(
@@ -125,73 +132,72 @@ def generate_alerts(
     anomalies: list[dict] | None = None,
     zero_revenue_days: int = 0,
     period_label: str = "",
+    locale: str = "en",
 ) -> list[dict[str, str]]:
     """Return a list of alert dicts for display in report headers.
 
     Each alert: {level: 'warning'|'error'|'success', message: str}
     """
+    is_es = locale == "es"
     alerts: list[dict[str, str]] = []
 
     if growth_percent is not None:
         g = float(growth_percent)
         if g <= GROWTH_ALERT_NEGATIVE_THRESHOLD:
-            alerts.append(
-                {
-                    "level": "error",
-                    "message": (
-                        f"Los ingresos cayeron {abs(g):.1f}% respecto al período anterior"
-                        + (f" ({period_label})" if period_label else "")
-                        + "."
-                    ),
-                }
-            )
+            if is_es:
+                message = (
+                    f"Los ingresos cayeron {abs(g):.1f}% respecto al período anterior"
+                    + (f" ({period_label})" if period_label else "")
+                    + "."
+                )
+            else:
+                message = (
+                    f"Revenue dropped {abs(g):.1f}% vs prior period"
+                    + (f" ({period_label})" if period_label else "")
+                    + "."
+                )
+            alerts.append({"level": "error", "message": message})
         elif g >= GROWTH_ALERT_POSITIVE_THRESHOLD:
-            alerts.append(
-                {
-                    "level": "success",
-                    "message": (
-                        f"Los ingresos crecieron {g:.1f}% respecto al período anterior "
-                        "— un desempeño sólido."
-                    ),
-                }
-            )
+            if is_es:
+                message = (
+                    f"Los ingresos crecieron {g:.1f}% respecto al período anterior "
+                    "— un desempeño sólido."
+                )
+            else:
+                message = f"Revenue grew {g:.1f}% vs prior period — strong performance."
+            alerts.append({"level": "success", "message": message})
 
     if flag_rate_percent is not None and flag_rate_percent >= FLAG_RATE_ALERT_THRESHOLD:
-        alerts.append(
-            {
-                "level": "warning",
-                "message": (
-                    f"El {flag_rate_percent:.1f}% de las sesiones están marcadas"
-                    " — se recomienda revisión."
-                ),
-            }
-        )
+        if is_es:
+            message = (
+                f"El {flag_rate_percent:.1f}% de las sesiones están marcadas"
+                " — se recomienda revisión."
+            )
+        else:
+            message = f"{flag_rate_percent:.1f}% of sessions are flagged — review recommended."
+        alerts.append({"level": "warning", "message": message})
 
     if anomalies:
         for a in anomalies:
-            day_str = _fmt_day_short(a["date"])
-            direction_word = (
-                "inusualmente alto" if a["direction"] == "high" else "inusualmente bajo"
-            )
-            alerts.append(
-                {
-                    "level": "warning",
-                    "message": (
-                        f"El {day_str} tuvo un ingreso {direction_word} (z={a['z_score']:+.1f})."
-                    ),
-                }
-            )
+            day_str = _fmt_day_short(a["date"], locale)
+            if is_es:
+                direction_word = (
+                    "inusualmente alto" if a["direction"] == "high" else "inusualmente bajo"
+                )
+                message = f"El {day_str} tuvo un ingreso {direction_word} (z={a['z_score']:+.1f})."
+            else:
+                direction_word = "unusually high" if a["direction"] == "high" else "unusually low"
+                message = f"{day_str} had {direction_word} revenue (z={a['z_score']:+.1f})."
+            alerts.append({"level": "warning", "message": message})
 
     if zero_revenue_days > 0:
-        noun = "día" if zero_revenue_days == 1 else "días"
-        alerts.append(
-            {
-                "level": "warning",
-                "message": (
-                    f"{zero_revenue_days} {noun} sin sesiones registradas en este período."
-                ),
-            }
-        )
+        if is_es:
+            noun = "día" if zero_revenue_days == 1 else "días"
+            message = f"{zero_revenue_days} {noun} sin sesiones registradas en este período."
+        else:
+            noun = "day" if zero_revenue_days == 1 else "days"
+            message = f"{zero_revenue_days} {noun} with no recorded sessions this period."
+        alerts.append({"level": "warning", "message": message})
 
     return alerts
 
@@ -219,40 +225,71 @@ def generate_weekly_summary(
     highest_day: dict,
     lowest_day: dict,
     days_with_data: int,
+    locale: str = "en",
 ) -> str:
     """Return a one-paragraph natural language summary for a weekly trend report."""
+    is_es = locale == "es"
     lines: list[str] = []
 
     total_str = _fmt_currency(current_week_total)
 
     if days_with_data == 0:
-        return "No se registraron sesiones esta semana."
+        return (
+            "No se registraron sesiones esta semana."
+            if is_es
+            else ("No sessions were recorded for this week.")
+        )
 
-    lines.append(f"Esta semana totalizó {total_str} en {days_with_data} día(s) activo(s).")
+    if is_es:
+        lines.append(f"Esta semana totalizó {total_str} en {days_with_data} día(s) activo(s).")
+    else:
+        lines.append(f"This week totaled {total_str} across {days_with_data} active day(s).")
 
     if growth_percent is not None:
         g = float(growth_percent)
         if g > 0:
             diff = _fmt_currency(current_week_total - previous_week_total)
-            lines.append(f"Eso es un {g:.1f}% más que la semana pasada — una mejora de {diff}.")
+            if is_es:
+                lines.append(f"Eso es un {g:.1f}% más que la semana pasada — una mejora de {diff}.")
+            else:
+                lines.append(f"That's {g:.1f}% above last week — an improvement of {diff}.")
         elif g < 0:
             diff = _fmt_currency(previous_week_total - current_week_total)
-            lines.append(
-                f"Eso es un {abs(g):.1f}% menos que la semana pasada — una caída de {diff}."
-            )
+            if is_es:
+                lines.append(
+                    f"Eso es un {abs(g):.1f}% menos que la semana pasada — una caída de {diff}."
+                )
+            else:
+                lines.append(f"That's {abs(g):.1f}% below last week — a decline of {diff}.")
         else:
-            lines.append("Los ingresos se mantuvieron estables respecto a la semana pasada.")
+            lines.append(
+                "Los ingresos se mantuvieron estables respecto a la semana pasada."
+                if is_es
+                else "Revenue was flat compared to last week."
+            )
     elif previous_week_total == 0:
-        lines.append("No hay datos de comparación disponibles para la semana anterior.")
+        lines.append(
+            "No hay datos de comparación disponibles para la semana anterior."
+            if is_es
+            else "No comparison data is available for the previous week."
+        )
 
     if highest_day:
         best_rev = _fmt_currency(highest_day.get("revenue", 0))
-        best_day_name = _translate_day_name(highest_day.get("day_name", ""))
-        lines.append(f"Mejor día: {best_day_name} ({best_rev}).")
+        best_day_name = _translate_day_name(highest_day.get("day_name", ""), locale)
+        lines.append(
+            f"Mejor día: {best_day_name} ({best_rev})."
+            if is_es
+            else f"Best day: {best_day_name} ({best_rev})."
+        )
     if lowest_day and lowest_day != highest_day:
         slow_rev = _fmt_currency(lowest_day.get("revenue", 0))
-        slow_day_name = _translate_day_name(lowest_day.get("day_name", ""))
-        lines.append(f"Día más flojo: {slow_day_name} ({slow_rev}).")
+        slow_day_name = _translate_day_name(lowest_day.get("day_name", ""), locale)
+        lines.append(
+            f"Día más flojo: {slow_day_name} ({slow_rev})."
+            if is_es
+            else f"Slowest day: {slow_day_name} ({slow_rev})."
+        )
 
     return " ".join(lines)
 
@@ -266,31 +303,60 @@ def generate_monthly_summary(
     lowest_day: dict,
     days_with_data: int,
     month_name: str = "",
+    locale: str = "en",
 ) -> str:
     """Return a one-paragraph natural language summary for a monthly trend report."""
+    is_es = locale == "es"
     lines: list[str] = []
     total_str = _fmt_currency(current_month_total)
-    period = f" en {_translate_month_name(month_name)}" if month_name else ""
+    translated_month = _translate_month_name(month_name, locale)
+    if month_name:
+        period = f" en {translated_month}" if is_es else f" in {translated_month}"
+    else:
+        period = ""
 
     if days_with_data == 0:
-        return f"No se registraron sesiones{period}."
+        return (
+            f"No se registraron sesiones{period}."
+            if is_es
+            else f"No sessions were recorded{period}."
+        )
 
-    lines.append(
-        f"Los ingresos{period} totalizaron {total_str} en {days_with_data} día(s) activo(s)."
-    )
+    if is_es:
+        lines.append(
+            f"Los ingresos{period} totalizaron {total_str} en {days_with_data} día(s) activo(s)."
+        )
+    else:
+        lines.append(f"Revenue{period} totaled {total_str} across {days_with_data} active day(s).")
 
     if growth_percent is not None:
         g = float(growth_percent)
         if g > 0:
-            lines.append(f"Eso es un {g:.1f}% más que el mes anterior.")
+            lines.append(
+                f"Eso es un {g:.1f}% más que el mes anterior."
+                if is_es
+                else f"That's {g:.1f}% above the previous month."
+            )
         elif g < 0:
-            lines.append(f"Eso es un {abs(g):.1f}% menos que el mes anterior.")
+            lines.append(
+                f"Eso es un {abs(g):.1f}% menos que el mes anterior."
+                if is_es
+                else f"That's {abs(g):.1f}% below the previous month."
+            )
         else:
-            lines.append("Los ingresos se mantuvieron estables respecto al mes anterior.")
+            lines.append(
+                "Los ingresos se mantuvieron estables respecto al mes anterior."
+                if is_es
+                else "Revenue was flat compared to the previous month."
+            )
 
     if highest_day:
         peak_rev = _fmt_currency(highest_day.get("revenue", 0))
-        lines.append(f"Día pico: {highest_day.get('day_number', '')} ({peak_rev}).")
+        lines.append(
+            f"Día pico: {highest_day.get('day_number', '')} ({peak_rev})."
+            if is_es
+            else f"Peak day: {highest_day.get('day_number', '')} ({peak_rev})."
+        )
 
     return " ".join(lines)
 
@@ -304,33 +370,60 @@ def generate_daily_summary(
     shortage_count: int,
     surplus_count: int,
     date_label: str = "",
+    locale: str = "en",
 ) -> str:
     """Return a one-paragraph natural language summary for a daily revenue report."""
+    is_es = locale == "es"
     lines: list[str] = []
-    period = f" el {date_label}" if date_label else ""
+    period = (f" el {date_label}" if is_es else f" on {date_label}") if date_label else ""
 
     if total_sessions == 0:
-        return f"No se encontraron sesiones cerradas{period}."
+        return (
+            f"No se encontraron sesiones cerradas{period}."
+            if is_es
+            else f"No closed sessions were found{period}."
+        )
 
     sales_str = _fmt_currency(total_sales)
-    lines.append(
-        f"Se cerraron {total_sessions} sesión(es){period}, generando {sales_str} en ventas totales."
-    )
-    lines.append(f"Ganancia neta: {_fmt_currency(net_earnings)}.")
+    if is_es:
+        lines.append(
+            f"Se cerraron {total_sessions} sesión(es){period}, "
+            f"generando {sales_str} en ventas totales."
+        )
+        lines.append(f"Ganancia neta: {_fmt_currency(net_earnings)}.")
+    else:
+        lines.append(
+            f"{total_sessions} session(s) were closed{period}, "
+            f"generating {sales_str} in total sales."
+        )
+        lines.append(f"Net earnings: {_fmt_currency(net_earnings)}.")
 
     if total_sessions > 0:
         pct_perfect = perfect_count / total_sessions * 100
         if pct_perfect == 100:
-            lines.append("Todas las sesiones cuadraron perfectamente.")
+            lines.append(
+                "Todas las sesiones cuadraron perfectamente."
+                if is_es
+                else "All sessions balanced perfectly."
+            )
         else:
             parts = []
-            if perfect_count:
-                parts.append(f"{perfect_count} perfectas")
-            if shortage_count:
-                parts.append(f"{shortage_count} con faltante")
-            if surplus_count:
-                parts.append(f"{surplus_count} con sobrante")
-            lines.append(f"Desglose de discrepancias: {', '.join(parts)}.")
+            if is_es:
+                if perfect_count:
+                    parts.append(f"{perfect_count} perfectas")
+                if shortage_count:
+                    parts.append(f"{shortage_count} con faltante")
+                if surplus_count:
+                    parts.append(f"{surplus_count} con sobrante")
+                lines.append(f"Desglose de discrepancias: {', '.join(parts)}.")
+            else:
+                if perfect_count:
+                    parts.append(f"{perfect_count} perfect")
+                if shortage_count:
+                    parts.append(f"{shortage_count} shortage")
+                if surplus_count:
+                    parts.append(f"{surplus_count} surplus")
+                lines.append(f"Discrepancy breakdown: {', '.join(parts)}.")
 
     return " ".join(lines)
 
@@ -343,25 +436,48 @@ def generate_business_stats_summary(
     business_count: int,
     period_label: str = "",
     top_business_name: str = "",
+    locale: str = "en",
 ) -> str:
     """Return a brief natural language summary for the multi-business stats report."""
+    is_es = locale == "es"
     lines: list[str] = []
-    period = f" de {period_label}" if period_label else ""
+    period = (f" de {period_label}" if is_es else f" for {period_label}") if period_label else ""
 
-    lines.append(
-        f"Ventas combinadas{period} en {business_count} local(es): {_fmt_currency(total_sales)}."
-    )
+    if is_es:
+        lines.append(
+            f"Ventas combinadas{period} en {business_count} local(es): "
+            f"{_fmt_currency(total_sales)}."
+        )
+    else:
+        lines.append(
+            f"Combined sales{period} across {business_count} location(s): "
+            f"{_fmt_currency(total_sales)}."
+        )
 
     if growth_percent is not None:
         g = float(growth_percent)
         if g > 0:
-            lines.append(f"Subió {g:.1f}% respecto al período anterior.")
+            lines.append(
+                f"Subió {g:.1f}% respecto al período anterior."
+                if is_es
+                else f"Up {g:.1f}% vs prior period."
+            )
         elif g < 0:
-            lines.append(f"Bajó {abs(g):.1f}% respecto al período anterior.")
+            lines.append(
+                f"Bajó {abs(g):.1f}% respecto al período anterior."
+                if is_es
+                else f"Down {abs(g):.1f}% vs prior period."
+            )
         else:
-            lines.append("Estable respecto al período anterior.")
+            lines.append(
+                "Estable respecto al período anterior." if is_es else "Flat vs prior period."
+            )
 
     if top_business_name:
-        lines.append(f"Mejor desempeño: {top_business_name}.")
+        lines.append(
+            f"Mejor desempeño: {top_business_name}."
+            if is_es
+            else f"Top performer: {top_business_name}."
+        )
 
     return " ".join(lines)

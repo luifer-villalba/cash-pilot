@@ -485,7 +485,7 @@ function generateReport() {
     showLoading(true);
     hideError();
 
-    fetch('/reports/daily-revenue/data?date=' + date + '&business_id=' + businessId)
+    fetch('/reports/daily-revenue/data?date=' + date + '&business_id=' + businessId + '&lang=' + (window.LOCALE || 'en'))
         .then(function(response) {
             if (!response.ok) {
                 return response.json().then(function(error) {
