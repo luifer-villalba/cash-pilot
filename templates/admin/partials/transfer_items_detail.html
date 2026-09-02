@@ -68,7 +68,7 @@
             <select
                 id="filter-business"
                 name="filter_business"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
+                class="select select-sm select-bordered w-full bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
                 autocomplete="off"
                 aria-label="{{ _('Filter by business') }}"
@@ -86,7 +86,7 @@
             <select
                 id="filter-verified"
                 name="filter_verified"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
+                class="select select-sm select-bordered w-full bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
                 autocomplete="off"
                 aria-label="{{ _('Filter by verification status') }}"
@@ -101,8 +101,8 @@
         <div class="flex flex-col gap-1">
             <label for="filter-amount" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Search Amount') }}</label>
             <div class="relative">
-                <span class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-base-content/50">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <span class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-2.5 text-base-content/50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
                     </svg>
                 </span>
@@ -114,10 +114,10 @@
                     inputmode="numeric"
                     autocomplete="off"
                     enterkeyhint="search"
-                    placeholder="{{ _('Example: 52000') }}"
-                    class="input input-bordered input-sm w-full h-10 pl-10 {% if filter_amount %}pr-10{% endif %} text-base font-mono tabular-nums bg-base-100 text-base-content"
+                    placeholder="{{ _('Example: 52000 (no dots)') }}"
+                    class="input input-bordered input-sm w-full h-8 pl-9! {% if filter_amount %}pr-9!{% endif %} text-sm font-mono tabular-nums bg-base-100 text-base-content"
                     aria-label="{{ _('Search transfers by amount') }}"
-                    aria-describedby="filter-amount-help"
+                    title="{{ _('No dots. Example: 52000 = Gs 52.000') }}"
                     onkeydown="if (event.key === 'Enter') { event.preventDefault(); updateTransferFilters(); }"
                     onchange="updateTransferFilters()"
                 >
@@ -125,17 +125,16 @@
                 <button
                     type="button"
                     onclick="clearTransferAmountFilter()"
-                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-base-content/50 hover:text-error"
+                    class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-base-content/50 hover:text-error"
                     aria-label="{{ _('Clear amount search') }}"
                     title="{{ _('Clear amount search') }}"
                 >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
                 {% endif %}
             </div>
-            <p id="filter-amount-help" class="text-xs text-base-content/60">{{ _('No dots. Example: 52000 = Gs 52.000') }}</p>
         </div>
 
         <!-- Page Size -->
@@ -144,7 +143,7 @@
             <select
                 id="page-size"
                 name="page_size"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
+                class="select select-sm select-bordered w-full bg-base-100 text-base-content"
                 onchange="updateTransferPageSize()"
                 autocomplete="off"
                 aria-label="{{ _('Items per page') }}"

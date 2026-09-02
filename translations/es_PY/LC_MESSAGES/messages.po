@@ -2902,8 +2902,8 @@ msgstr "¿Remover marca de esta sesión?"
 msgid "Search Amount"
 msgstr "Buscar Monto"
 
-msgid "Example: 52000"
-msgstr "Ejemplo: 52000"
+msgid "Example: 52000 (no dots)"
+msgstr "Ejemplo: 52000 (sin puntos)"
 
 msgid "No dots. Example: 52000 = Gs 52.000"
 msgstr "Sin puntos. Ejemplo: 52000 = Gs 52.000"
