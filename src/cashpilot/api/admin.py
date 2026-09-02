@@ -534,11 +534,23 @@ async def _fetch_transfer_items_for_date_range(
     return transfer_items, business_names_by_id
 
 
+def _normalize_amount_query(value: str | None) -> str:
+    """Keep only the digits of an amount search box entry.
+
+    Users type amounts the way they read them on screen, so "Gs 52.000",
+    "52.000" and "52000" must all mean the same search.
+    """
+    if not value:
+        return ""
+    return "".join(char for char in value if char.isdigit())
+
+
 async def _apply_transfer_filters(
     items: list[dict],
     filter_business: str | None = None,
     filter_verified: str = "all",
     filter_cashier: str | None = None,
+    filter_amount: str | None = None,
 ) -> list[dict]:
     """Apply filters to transfer items list (CP-REPORTS-05).
 
@@ -547,6 +559,9 @@ async def _apply_transfer_filters(
         filter_business: Business UUID (as string) to filter by, or None for all
         filter_verified: "all", "verified", or "unverified"
         filter_cashier: Cashier UUID (as string) to filter by, or None for all
+        filter_amount: Digits typed in the amount search box; an exact amount
+            match wins, otherwise amounts starting with those digits (52 matches
+            52.000 and 52.500)
 
     Returns:
         Filtered list of transfer items
@@ -570,6 +585,18 @@ async def _apply_transfer_filters(
             filtered = [item for item in filtered if item.get("cashier_id") == cashier_uuid]
         except (ValueError, TypeError):
             pass  # Invalid UUID, return unfiltered
+
+    # Filter by amount (search box): an exact amount wins, so typing the full
+    # amount (52000) never buries Gs 52.000 among longer ones like Gs 520.000.
+    # With no exact hit we fall back to "starts with", so a partial 52 still
+    # brings up Gs 52.000 and Gs 52.500.
+    amount_query = _normalize_amount_query(filter_amount)
+    if amount_query:
+        amount_digits = [(item, str(int(item.get("amount") or 0))) for item in filtered]
+        exact = [item for item, digits in amount_digits if digits == amount_query]
+        filtered = exact or [
+            item for item, digits in amount_digits if digits.startswith(amount_query)
+        ]
 
     return filtered
 
@@ -968,6 +995,14 @@ async def reconciliation_compare_dashboard(
     ),
     filter_business: str | None = Query(None, description="Filter transfer items by business ID"),
     filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
+    filter_amount: str | None = Query(
+        None,
+        max_length=20,
+        description=(
+            "Search transfers by amount as typed by the user (dots and 'Gs' are ignored). "
+            "Matches amounts starting with those digits: 52000 finds Gs 52.000"
+        ),
+    ),
     current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1023,6 +1058,7 @@ async def reconciliation_compare_dashboard(
         filter_business=filter_business,
         filter_verified=filter_verified,
         filter_cashier=filter_cashier,
+        filter_amount=filter_amount,
     )
 
     verified_transfer_count = sum(1 for item in filtered_items if item.get("is_verified"))
@@ -1086,6 +1122,7 @@ async def reconciliation_compare_dashboard(
             "filter_business": filter_business,
             "filter_verified": filter_verified,
             "filter_cashier": filter_cashier,
+            "filter_amount": _normalize_amount_query(filter_amount),
             "sort_by": sort_by,
             "sort_order": sort_order,
         },

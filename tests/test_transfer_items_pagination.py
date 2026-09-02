@@ -613,3 +613,84 @@ class TestTransferItemsPagination:
         )
         
         assert len(paginated_page2) == 5
+
+
+class TestTransferAmountSearch:
+    """Amount search box: users type the amount as they read it on screen."""
+
+    @staticmethod
+    def _transfers():
+        return [
+            {"id": UUID(int=1), "amount": Decimal("52000.00"), "is_verified": False},
+            {"id": UUID(int=2), "amount": Decimal("52500.00"), "is_verified": False},
+            {"id": UUID(int=3), "amount": Decimal("520000.00"), "is_verified": True},
+            {"id": UUID(int=4), "amount": Decimal("38500.00"), "is_verified": False},
+        ]
+
+    def test_normalize_amount_query_strips_separators(self):
+        from cashpilot.api.admin import _normalize_amount_query
+
+        assert _normalize_amount_query("52.000") == "52000"
+        assert _normalize_amount_query("Gs 52.000") == "52000"
+        assert _normalize_amount_query(" 52 000 ") == "52000"
+        assert _normalize_amount_query("abc") == ""
+        assert _normalize_amount_query(None) == ""
+
+    @pytest.mark.asyncio
+    async def test_search_exact_amount_without_dots(self):
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        filtered = await _apply_transfer_filters(self._transfers(), filter_amount="52000")
+
+        assert [item["id"] for item in filtered] == [UUID(int=1)]
+
+    @pytest.mark.asyncio
+    async def test_search_accepts_formatted_amount(self):
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        filtered = await _apply_transfer_filters(self._transfers(), filter_amount="Gs 52.000")
+
+        assert [item["id"] for item in filtered] == [UUID(int=1)]
+
+    @pytest.mark.asyncio
+    async def test_search_matches_by_leading_digits_when_no_exact_match(self):
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        filtered = await _apply_transfer_filters(self._transfers(), filter_amount="52")
+
+        assert [item["id"] for item in filtered] == [UUID(int=1), UUID(int=2), UUID(int=3)]
+
+    @pytest.mark.asyncio
+    async def test_exact_amount_wins_over_longer_amounts(self):
+        """Typing 52000 must not bury Gs 52.000 among Gs 520.000."""
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        filtered = await _apply_transfer_filters(self._transfers(), filter_amount="52000")
+
+        assert [item["id"] for item in filtered] == [UUID(int=1)]
+
+    @pytest.mark.asyncio
+    async def test_empty_search_returns_everything(self):
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        assert len(await _apply_transfer_filters(self._transfers(), filter_amount="")) == 4
+        assert len(await _apply_transfer_filters(self._transfers(), filter_amount=None)) == 4
+        assert len(await _apply_transfer_filters(self._transfers(), filter_amount="Gs")) == 4
+
+    @pytest.mark.asyncio
+    async def test_amount_search_combines_with_status_filter(self):
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        filtered = await _apply_transfer_filters(
+            self._transfers(),
+            filter_verified="unverified",
+            filter_amount="52",
+        )
+
+        assert [item["id"] for item in filtered] == [UUID(int=1), UUID(int=2)]
+
+    @pytest.mark.asyncio
+    async def test_no_match_returns_empty(self):
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        assert await _apply_transfer_filters(self._transfers(), filter_amount="99999") == []
