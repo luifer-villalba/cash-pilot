@@ -987,6 +987,92 @@ async def toggle_user_active(
     }
 
 
+async def _build_transfer_items_context(
+    db: AsyncSession,
+    comparison_date: date,
+    businesses,
+    *,
+    page: int = 1,
+    page_size: int = 20,
+    sort_by: str = "business,time",
+    sort_order: str = "asc",
+    filter_business: str | None = None,
+    filter_verified: str = "all",
+    filter_cashier: str | None = None,
+    filter_amount: str | None = None,
+) -> dict:
+    """Build the transfers tab context: fetch, filter, sort and paginate.
+
+    Shared by the full comparison dashboard and the partial endpoint the live
+    amount search calls, so both always agree on what the tab shows.
+    """
+    all_transfer_items = []
+    transfer_items_by_business = {}  # Keep for backwards compatibility
+    business_names_by_id = {}  # For template display
+
+    for business in businesses:
+        business_names_by_id[str(business.id)] = business.name
+        transfer_items = await _fetch_transfer_items_for_reconciliation(
+            db, business.id, comparison_date
+        )
+        transfer_items_by_business[str(business.id)] = transfer_items
+        # Add business_id to each transfer for consolidated display
+        for item in transfer_items:
+            item["business_id"] = str(business.id)
+        all_transfer_items.extend(transfer_items)
+
+    # Apply filtering (CP-REPORTS-05)
+    filtered_items = await _apply_transfer_filters(
+        all_transfer_items,
+        filter_business=filter_business,
+        filter_verified=filter_verified,
+        filter_cashier=filter_cashier,
+        filter_amount=filter_amount,
+    )
+
+    verified_transfer_count = sum(1 for item in filtered_items if item.get("is_verified"))
+    pending_transfer_count = len(filtered_items) - verified_transfer_count
+
+    total_count = len(filtered_items)
+    if total_count == 0:
+        total_pages = 0
+        clamped_page = 1
+        start_index = 0
+    else:
+        total_pages = (total_count + page_size - 1) // page_size
+        clamped_page = min(page, total_pages)
+        start_index = (clamped_page - 1) * page_size + 1
+
+    # Apply sorting and pagination (CP-REPORTS-05)
+    sorted_items, total_count = await _apply_transfer_sorting_and_pagination(
+        filtered_items,
+        business_names_by_id=business_names_by_id,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        page=clamped_page,
+        page_size=page_size,
+    )
+
+    return {
+        "transfer_items_by_business": transfer_items_by_business,
+        "all_transfer_items": sorted_items,
+        "transfer_items_total_count": total_count,
+        "verified_transfer_count": verified_transfer_count,
+        "pending_transfer_count": pending_transfer_count,
+        "businesses_by_id": business_names_by_id,
+        "current_page": clamped_page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "start_index": start_index,
+        "filter_business": filter_business,
+        "filter_verified": filter_verified,
+        "filter_cashier": filter_cashier,
+        "filter_amount": _normalize_amount_query(filter_amount),
+        "sort_by": sort_by,
+        "sort_order": sort_order,
+    }
+
+
 @router.get("/reconciliation/compare", response_class=HTMLResponse)
 async def reconciliation_compare_dashboard(
     request: Request,
@@ -1048,55 +1134,20 @@ async def reconciliation_compare_dashboard(
     # Build comparison data using shared helper function
     comparison_data = await _build_comparison_data(db, comparison_date, businesses)
 
-    # Fetch transfer items for each business and consolidate into single sorted list
-    all_transfer_items = []
-    transfer_items_by_business = {}  # Keep for backwards compatibility
-    business_names_by_id = {}  # For template display
-
-    for business in businesses:
-        business_names_by_id[str(business.id)] = business.name
-        transfer_items = await _fetch_transfer_items_for_reconciliation(
-            db, business.id, comparison_date
-        )
-        transfer_items_by_business[str(business.id)] = transfer_items
-        # Add business_id to each transfer for consolidated display
-        for item in transfer_items:
-            item["business_id"] = str(business.id)
-        all_transfer_items.extend(transfer_items)
-
-    # Apply filtering (CP-REPORTS-05)
-    filtered_items = await _apply_transfer_filters(
-        all_transfer_items,
+    # Transfers tab: fetch, filter, sort and paginate (CP-REPORTS-05)
+    transfer_context = await _build_transfer_items_context(
+        db,
+        comparison_date,
+        businesses,
+        page=page,
+        page_size=page_size,
+        sort_by=sort_by,
+        sort_order=sort_order,
         filter_business=filter_business,
         filter_verified=filter_verified,
         filter_cashier=filter_cashier,
         filter_amount=filter_amount,
     )
-
-    verified_transfer_count = sum(1 for item in filtered_items if item.get("is_verified"))
-    pending_transfer_count = len(filtered_items) - verified_transfer_count
-
-    total_count = len(filtered_items)
-    if total_count == 0:
-        total_pages = 0
-        clamped_page = 1
-        start_index = 0
-    else:
-        total_pages = (total_count + page_size - 1) // page_size
-        clamped_page = min(page, total_pages)
-        start_index = (clamped_page - 1) * page_size + 1
-
-    # Apply sorting and pagination (CP-REPORTS-05)
-    sorted_items, paginated_total_count = await _apply_transfer_sorting_and_pagination(
-        filtered_items,
-        business_names_by_id=business_names_by_id,
-        sort_by=sort_by,
-        sort_order=sort_order,
-        page=clamped_page,
-        page_size=page_size,
-    )
-
-    total_count = paginated_total_count
 
     # Get all businesses for the selector
     all_businesses = await get_active_businesses(db)
@@ -1115,28 +1166,83 @@ async def reconciliation_compare_dashboard(
             "selected_business_id": str(selected_business_id) if selected_business_id else None,
             "businesses": all_businesses,
             "comparison_data": comparison_data,
-            "transfer_items_by_business": transfer_items_by_business,
-            "all_transfer_items": sorted_items,
-            "transfer_items_total_count": total_count,
-            "verified_transfer_count": verified_transfer_count,
-            "pending_transfer_count": pending_transfer_count,
-            "businesses_by_id": business_names_by_id,
             "last_updated": last_updated,
             "last_updated_display": last_updated_display,
             "locale": locale,
             "_": _,
-            # Pagination (CP-REPORTS-05)
-            "current_page": clamped_page,
-            "page_size": page_size,
-            "total_pages": total_pages,
-            "start_index": start_index,
-            # Filter values (for form state)
-            "filter_business": filter_business,
-            "filter_verified": filter_verified,
-            "filter_cashier": filter_cashier,
-            "filter_amount": _normalize_amount_query(filter_amount),
-            "sort_by": sort_by,
-            "sort_order": sort_order,
+            # Transfers tab: items, counts, pagination and filter state
+            **transfer_context,
+        },
+    )
+
+
+@router.get("/reconciliation/transfer-items", response_class=HTMLResponse)
+async def reconciliation_transfer_items_partial(
+    request: Request,
+    date: str | None = Query(None, description="Date in YYYY-MM-DD format"),
+    business_id: str | None = Query(None, description="Filter by business ID"),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(20, ge=10, le=100, description="Items per page"),
+    sort_by: str = Query("business,time", description="Comma-separated sort fields"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$", description="Sort order"),
+    filter_verified: str = Query(
+        "all", pattern="^(all|verified|unverified)$", description="Filter by verification status"
+    ),
+    filter_business: str | None = Query(None, description="Filter transfer items by business ID"),
+    filter_cashier: str | None = Query(None, description="Filter by cashier ID"),
+    filter_amount: str | None = Query(
+        None, max_length=20, description="Search transfers by amount as typed by the user"
+    ),
+    current_user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Rows, pagination and totals of the transfers tab, without the page around them.
+
+    The amount search box calls this on every keystroke, so results update as the
+    user types while the filter controls above keep their focus and caret.
+    """
+    locale = get_locale(request)
+    _ = get_translation_function(locale)
+
+    comparison_date = _parse_iso_date(date) or today_local()
+
+    stmt_businesses = select(Business).where(Business.is_active).order_by(Business.name)
+    selected_business_id = None
+    if business_id and business_id.strip():
+        try:
+            selected_business_id = UUID(business_id)
+            stmt_businesses = stmt_businesses.where(Business.id == selected_business_id)
+        except (ValueError, TypeError):
+            selected_business_id = None
+    result_businesses = await db.execute(stmt_businesses)
+    businesses = result_businesses.scalars().all()
+
+    transfer_context = await _build_transfer_items_context(
+        db,
+        comparison_date,
+        businesses,
+        page=page,
+        page_size=page_size,
+        sort_by=sort_by,
+        sort_order=sort_order,
+        filter_business=filter_business,
+        filter_verified=filter_verified,
+        filter_cashier=filter_cashier,
+        filter_amount=filter_amount,
+    )
+
+    return templates.TemplateResponse(
+        request,
+        "admin/partials/transfer_items_results.html",
+        {
+            "comparison_date": comparison_date,
+            "selected_business_id": str(selected_business_id) if selected_business_id else None,
+            "locale": locale,
+            "_": _,
+            # Refresh the header badges out of band, so they cannot drift from
+            # the rows this response replaces.
+            "oob": True,
+            **transfer_context,
         },
     )
 
