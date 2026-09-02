@@ -690,6 +690,23 @@ class TestTransferAmountSearch:
         assert [item["id"] for item in filtered] == [UUID(int=1), UUID(int=2)]
 
     @pytest.mark.asyncio
+    async def test_search_matches_the_rounded_amount_shown_on_screen(self):
+        """Gs 1.234,75 is displayed as Gs 1.235, so 1235 has to find it."""
+        from cashpilot.api.admin import _apply_transfer_filters
+
+        transfers = [
+            {"id": UUID(int=10), "amount": Decimal("1234.75")},
+            {"id": UUID(int=11), "amount": Decimal("1234.50")},
+        ]
+
+        found = await _apply_transfer_filters(transfers, filter_amount="1235")
+        assert [item["id"] for item in found] == [UUID(int=10)]
+
+        # 1234.50 displays as Gs 1.234 (half-even), so that is what finds it
+        found = await _apply_transfer_filters(transfers, filter_amount="1234")
+        assert [item["id"] for item in found] == [UUID(int=11)]
+
+    @pytest.mark.asyncio
     async def test_no_match_returns_empty(self):
         from cashpilot.api.admin import _apply_transfer_filters
 

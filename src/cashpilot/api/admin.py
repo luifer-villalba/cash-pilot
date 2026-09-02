@@ -2,7 +2,7 @@
 import secrets
 import string
 from datetime import date, datetime, timedelta
-from decimal import Decimal
+from decimal import ROUND_HALF_EVEN, Decimal
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -534,6 +534,18 @@ async def _fetch_transfer_items_for_date_range(
     return transfer_items, business_names_by_id
 
 
+def _amount_search_digits(amount: Decimal | int | float | None) -> str:
+    """Digits of an amount as the table shows it.
+
+    ``format_currency_py`` renders amounts with babel's half-even rounding, so
+    Gs 1.234,75 reads as "Gs 1.235" on screen. Searching has to round the same
+    way or the amount the user reads would not find its own row.
+    """
+    if amount is None:
+        return "0"
+    return str(Decimal(amount).quantize(Decimal("1"), rounding=ROUND_HALF_EVEN))
+
+
 def _normalize_amount_query(value: str | None) -> str:
     """Keep only the digits of an amount search box entry.
 
@@ -592,7 +604,7 @@ async def _apply_transfer_filters(
     # brings up Gs 52.000 and Gs 52.500.
     amount_query = _normalize_amount_query(filter_amount)
     if amount_query:
-        amount_digits = [(item, str(int(item.get("amount") or 0))) for item in filtered]
+        amount_digits = [(item, _amount_search_digits(item.get("amount"))) for item in filtered]
         exact = [item for item, digits in amount_digits if digits == amount_query]
         filtered = exact or [
             item for item, digits in amount_digits if digits.startswith(amount_query)
