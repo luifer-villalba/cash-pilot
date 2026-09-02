@@ -1,0 +1,25 @@
+<!-- File: templates/admin/partials/transfer_items_counts.html -->
+<!-- Transfer totals shown in the tab header. Re-rendered out of band on every -->
+<!-- live search so the badges never disagree with the table below them. -->
+{% set transfer_items_total_count = transfer_items_total_count | default(0) %}
+{% set verified_transfer_count = verified_transfer_count | default(0) %}
+{% set pending_transfer_count = pending_transfer_count | default(0) %}
+
+<div id="transfer-items-counts" class="flex flex-wrap items-center justify-end gap-2 flex-shrink-0"{% if oob %} hx-swap-oob="true"{% endif %}>
+    {% if transfer_items_total_count > 0 %}
+    <div class="flex items-center gap-1 rounded-lg bg-secondary/10 px-3 py-1.5 border border-secondary/20">
+        <span class="text-xs font-bold text-secondary uppercase tracking-wider hidden sm:inline">{{ _('Transfers') }}</span>
+        <span class="badge badge-ghost badge-sm font-mono font-bold text-secondary">{{ transfer_items_total_count }}</span>
+    </div>
+    <div class="flex items-center gap-1 rounded-lg bg-success/10 px-3 py-1.5 border border-success/20" data-transfer-progress="verified">
+        <span class="text-xs font-bold text-success uppercase tracking-wider hidden sm:inline">{{ _('Verified') }}</span>
+        <span class="badge badge-success badge-sm font-mono font-bold">{{ verified_transfer_count }}</span>
+    </div>
+    {% if pending_transfer_count > 0 %}
+    <div class="flex items-center gap-1 rounded-lg bg-warning/10 px-3 py-1.5 border border-warning/20" data-transfer-progress="pending">
+        <span class="text-xs font-bold text-warning uppercase tracking-wider hidden sm:inline">{{ _('Pending') }}</span>
+        <span class="badge badge-warning badge-sm font-mono font-bold">{{ pending_transfer_count }}</span>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
