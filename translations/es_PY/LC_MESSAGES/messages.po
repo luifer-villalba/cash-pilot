@@ -2905,8 +2905,8 @@ msgstr "Buscar Monto"
 msgid "Example: 52000"
 msgstr "Ejemplo: 52000"
 
-msgid "Type the amount without dots. Example: 52000 finds Gs 52.000"
-msgstr "Escriba el monto sin puntos. Ejemplo: 52000 encuentra Gs 52.000"
+msgid "No dots. Example: 52000 = Gs 52.000"
+msgstr "Sin puntos. Ejemplo: 52000 = Gs 52.000"
 
 msgid "Search transfers by amount"
 msgstr "Buscar transferencias por monto"
