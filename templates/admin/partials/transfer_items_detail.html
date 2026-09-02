@@ -12,6 +12,7 @@
 {% set filter_business = filter_business | default('', true) %}
 {% set filter_verified = filter_verified | default('all', true) %}
 {% set filter_cashier = filter_cashier | default('', true) %}
+{% set filter_amount = filter_amount | default('', true) %}
 {% set sort_by = sort_by | default('business,time') %}
 {% set sort_order = sort_order | default('asc') %}
 {% set businesses = businesses | default([]) %}
@@ -67,7 +68,7 @@
             <select
                 id="filter-business"
                 name="filter_business"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
+                class="select select-sm select-bordered w-full bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
                 autocomplete="off"
                 aria-label="{{ _('Filter by business') }}"
@@ -85,7 +86,7 @@
             <select
                 id="filter-verified"
                 name="filter_verified"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
+                class="select select-sm select-bordered w-full bg-base-100 text-base-content"
                 onchange="updateTransferFilters()"
                 autocomplete="off"
                 aria-label="{{ _('Filter by verification status') }}"
@@ -96,26 +97,44 @@
             </select>
         </div>
 
-        <!-- Sort -->
+        <!-- Search by Amount (replaces Sort control) -->
         <div class="flex flex-col gap-1">
-            <label for="sort-option" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Sort') }}</label>
-            <select
-                id="sort-option"
-                name="sort_option"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
-                onchange="updateTransferFilters()"
-                autocomplete="off"
-                aria-label="{{ _('Sort transfer list') }}"
-            >
-                <option value="business,time|asc" {% if sort_option == 'business,time|asc' %}selected{% endif %}>{{ _('Business, Time (A-Z)') }}</option>
-                <option value="business,time|desc" {% if sort_option == 'business,time|desc' %}selected{% endif %}>{{ _('Business, Time (Z-A)') }}</option>
-                <option value="time|desc" {% if sort_option == 'time|desc' %}selected{% endif %}>{{ _('Time (Newest first)') }}</option>
-                <option value="time|asc" {% if sort_option == 'time|asc' %}selected{% endif %}>{{ _('Time (Oldest first)') }}</option>
-                <option value="amount|desc" {% if sort_option == 'amount|desc' %}selected{% endif %}>{{ _('Amount (High to low)') }}</option>
-                <option value="amount|asc" {% if sort_option == 'amount|asc' %}selected{% endif %}>{{ _('Amount (Low to high)') }}</option>
-                <option value="business|asc" {% if sort_option == 'business|asc' %}selected{% endif %}>{{ _('Business (A-Z)') }}</option>
-                <option value="business|desc" {% if sort_option == 'business|desc' %}selected{% endif %}>{{ _('Business (Z-A)') }}</option>
-            </select>
+            <label for="filter-amount" class="text-xs font-semibold uppercase tracking-wider text-base-content/70">{{ _('Search Amount') }}</label>
+            <div class="relative">
+                <span class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-2.5 text-base-content/50">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+                    </svg>
+                </span>
+                <input
+                    type="text"
+                    id="filter-amount"
+                    name="filter_amount"
+                    value="{{ filter_amount }}"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    enterkeyhint="search"
+                    placeholder="{{ _('Example: 52000 (no dots)') }}"
+                    class="input input-bordered input-sm w-full h-8 pl-9! {% if filter_amount %}pr-9!{% endif %} text-sm font-mono tabular-nums bg-base-100 text-base-content"
+                    aria-label="{{ _('Search transfers by amount') }}"
+                    title="{{ _('No dots. Example: 52000 = Gs 52.000') }}"
+                    onkeydown="if (event.key === 'Enter') { event.preventDefault(); updateTransferFilters(); }"
+                    onchange="updateTransferFilters()"
+                >
+                {% if filter_amount %}
+                <button
+                    type="button"
+                    onclick="clearTransferAmountFilter()"
+                    class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-base-content/50 hover:text-error"
+                    aria-label="{{ _('Clear amount search') }}"
+                    title="{{ _('Clear amount search') }}"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
         </div>
 
         <!-- Page Size -->
@@ -124,7 +143,7 @@
             <select
                 id="page-size"
                 name="page_size"
-                class="select select-sm select-bordered bg-base-100 text-base-content"
+                class="select select-sm select-bordered w-full bg-base-100 text-base-content"
                 onchange="updateTransferPageSize()"
                 autocomplete="off"
                 aria-label="{{ _('Items per page') }}"
@@ -268,7 +287,7 @@
         <div class="flex items-center gap-2">
             {% if current_page > 1 %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page=1&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page=1&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}{% if filter_amount %}&filter_amount={{ filter_amount | urlencode }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('First page') }}"
                 title="{{ _('First page') }}"
@@ -283,7 +302,7 @@
 
             {% if current_page > 1 %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page - 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page - 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}{% if filter_amount %}&filter_amount={{ filter_amount | urlencode }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Previous page') }}"
                 title="{{ _('Previous page') }}"
@@ -301,7 +320,7 @@
 
             {% if current_page < total_pages %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page + 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ current_page + 1 }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}{% if filter_amount %}&filter_amount={{ filter_amount | urlencode }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Next page') }}"
                 title="{{ _('Next page') }}"
@@ -316,7 +335,7 @@
 
             {% if current_page < total_pages %}
             <a
-                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ total_pages }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}&tab=transfers"
+                href="?date={{ comparison_date.isoformat() }}{% if business_id %}&business_id={{ business_id }}{% endif %}&page={{ total_pages }}&page_size={{ page_size }}&sort_by={{ sort_by }}&sort_order={{ sort_order }}{% if filter_business %}&filter_business={{ filter_business }}{% endif %}&filter_verified={{ filter_verified }}{% if filter_cashier %}&filter_cashier={{ filter_cashier }}{% endif %}{% if filter_amount %}&filter_amount={{ filter_amount | urlencode }}{% endif %}&tab=transfers"
                 class="btn btn-sm btn-outline gap-1"
                 aria-label="{{ _('Last page') }}"
                 title="{{ _('Last page') }}"
@@ -364,7 +383,11 @@
         <svg class="w-12 h-12 mx-auto text-base-content/30 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
         </svg>
-        {% if transfer_items_total_count > 0 %}
+        {% if filter_amount %}
+        <p class="text-base font-medium text-base-content/70">{{ _('No transfers found with that amount') }}</p>
+        <p class="text-sm text-base-content/60 mt-1">{{ _('Searched amount') }}: <span class="font-mono font-bold">Gs {{ filter_amount | int | format_currency_py }}</span></p>
+        <button type="button" onclick="clearTransferAmountFilter()" class="btn btn-sm btn-outline mt-4">{{ _('Clear amount search') }}</button>
+        {% elif transfer_items_total_count > 0 %}
         <p class="text-sm font-medium text-base-content/70">{{ _('No transfers match the current filters') }}</p>
         <p class="text-xs text-base-content/50 mt-1">{{ _('Try adjusting your filter settings above') }}</p>
         {% else %}
@@ -380,41 +403,42 @@
 document.addEventListener('DOMContentLoaded', function() {
     const filterBusinessElem = document.getElementById('filter-business');
     const filterVerifiedElem = document.getElementById('filter-verified');
-    const sortOptionElem = document.getElementById('sort-option');
+    const filterAmountElem = document.getElementById('filter-amount');
     const pageSizeElem = document.getElementById('page-size');
 
     // Set values from server context (prevents browser autocomplete override)
     if (filterBusinessElem) filterBusinessElem.value = {{ filter_business | tojson }};
     if (filterVerifiedElem) filterVerifiedElem.value = {{ filter_verified | tojson }};
-    if (sortOptionElem) sortOptionElem.value = {{ sort_option | tojson }};
+    if (filterAmountElem) filterAmountElem.value = {{ filter_amount | tojson }};
     if (pageSizeElem) pageSizeElem.value = {{ page_size | tojson }};
 });
 
-function parseSortOption(sortOptionValue) {
-    if (!sortOptionValue) {
-        return { sortBy: 'business,time', sortOrder: 'asc' };
-    }
+// Sort is no longer user-selectable in the UI; keep whatever the server resolved
+// (defaults to business,time asc) so pagination and links stay consistent.
+const TRANSFER_SORT = {
+    sortBy: {{ sort_by | tojson }},
+    sortOrder: {{ sort_order | tojson }},
+};
 
-    const parts = sortOptionValue.split('|');
-    const sortBy = parts[0] || 'business,time';
-    const sortOrder = parts[1] || 'asc';
-
-    return { sortBy, sortOrder };
+function normalizeAmountQuery(value) {
+    // Keep digits only: "Gs 52.000", "52.000" and "52000" all mean the same thing.
+    return (value || '').replace(/\D/g, '');
 }
 
 function updateTransferFilters() {
     const filterBusinessElem = document.getElementById('filter-business');
     const filterVerifiedElem = document.getElementById('filter-verified');
-    const sortOptionElem = document.getElementById('sort-option');
+    const filterAmountElem = document.getElementById('filter-amount');
     const pageSizeElem = document.getElementById('page-size');
 
-    if (!filterBusinessElem || !filterVerifiedElem || !sortOptionElem || !pageSizeElem) {
+    if (!filterBusinessElem || !filterVerifiedElem || !pageSizeElem) {
         return;
     }
 
     const filterBusiness = filterBusinessElem.value;
     const filterVerified = filterVerifiedElem.value;
-    const sortSelection = parseSortOption(sortOptionElem.value);
+    const filterAmount = normalizeAmountQuery(filterAmountElem ? filterAmountElem.value : '');
+    const sortSelection = TRANSFER_SORT;
     const pageSize = pageSizeElem.value;
 
     let url = new URL(window.location);
@@ -431,6 +455,13 @@ function updateTransferFilters() {
 
     // Always set filter_verified (backend expects it)
     url.searchParams.set('filter_verified', filterVerified);
+
+    // Amount search: digits only, empty removes the filter
+    if (filterAmount) {
+        url.searchParams.set('filter_amount', filterAmount);
+    } else {
+        url.searchParams.delete('filter_amount');
+    }
 
     url.searchParams.set('sort_by', sortSelection.sortBy);
     url.searchParams.set('sort_order', sortSelection.sortOrder);
@@ -450,39 +481,15 @@ function updateTransferFilters() {
 }
 
 function updateTransferPageSize() {
-    const filterBusiness = document.getElementById('filter-business').value;
-    const filterVerified = document.getElementById('filter-verified').value;
-    const sortOption = document.getElementById('sort-option').value;
-    const sortSelection = parseSortOption(sortOption);
-    const pageSize = document.getElementById('page-size').value;
+    updateTransferFilters();
+}
 
-    let url = new URL(window.location);
-    const filterCashier = url.searchParams.get('filter_cashier');
-    const businessId = url.searchParams.get('business_id');
-    url.searchParams.set('page', '1');  // Reset to page 1
-
-    if (filterBusiness) {
-        url.searchParams.set('filter_business', filterBusiness);
-    } else {
-        url.searchParams.delete('filter_business');
+function clearTransferAmountFilter() {
+    const filterAmountElem = document.getElementById('filter-amount');
+    if (filterAmountElem) {
+        filterAmountElem.value = '';
     }
-
-    url.searchParams.set('filter_verified', filterVerified);
-    url.searchParams.set('sort_by', sortSelection.sortBy);
-    url.searchParams.set('sort_order', sortSelection.sortOrder);
-    url.searchParams.set('page_size', pageSize);
-
-    if (filterCashier) {
-        url.searchParams.set('filter_cashier', filterCashier);
-    } else {
-        url.searchParams.delete('filter_cashier');
-    }
-
-    if (businessId) {
-        url.searchParams.set('business_id', businessId);
-    }
-
-    window.location.href = url.toString();
+    updateTransferFilters();
 }
 
 document.addEventListener('change', function(event) {

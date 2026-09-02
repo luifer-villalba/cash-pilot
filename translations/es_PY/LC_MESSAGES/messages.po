@@ -2898,3 +2898,24 @@ msgstr "ej., Discrepancia alta, requiere revisión del gerente..."
 msgid "Remove flag from this session?"
 msgstr "¿Remover marca de esta sesión?"
 
+
+msgid "Search Amount"
+msgstr "Buscar Monto"
+
+msgid "Example: 52000 (no dots)"
+msgstr "Ejemplo: 52000 (sin puntos)"
+
+msgid "No dots. Example: 52000 = Gs 52.000"
+msgstr "Sin puntos. Ejemplo: 52000 = Gs 52.000"
+
+msgid "Search transfers by amount"
+msgstr "Buscar transferencias por monto"
+
+msgid "Clear amount search"
+msgstr "Borrar búsqueda de monto"
+
+msgid "No transfers found with that amount"
+msgstr "No se encontraron transferencias con ese monto"
+
+msgid "Searched amount"
+msgstr "Monto buscado"
